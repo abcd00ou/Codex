@@ -17,6 +17,7 @@ class DocumentRecord(BaseModel):
     storage_path: str
     metadata: DocumentMetadata
     chunk_count: int
+    paragraph_count: int = 0
     topic_count: int = 0
     agent: dict[str, Any] = Field(default_factory=dict)
 
@@ -30,6 +31,8 @@ class ChunkRecord(BaseModel):
     topic: str | None = None
     topic_summary: str | None = None
     keywords: list[str] = Field(default_factory=list)
+    paragraphs: list[dict[str, Any]] = Field(default_factory=list)
+    paragraph_count: int = 0
     text: str
     metadata: dict[str, Any] = Field(default_factory=dict)
 
@@ -43,6 +46,8 @@ class TopicRecord(BaseModel):
     page_start: int
     page_end: int
     chunk_ids: list[str] = Field(default_factory=list)
+    paragraphs: list[dict[str, Any]] = Field(default_factory=list)
+    paragraph_count: int = 0
 
 
 class ReportRequest(BaseModel):
@@ -63,5 +68,6 @@ class DashboardSnapshot(BaseModel):
     document_count: int
     topic_count: int = 0
     chunk_count: int
+    paragraph_count: int = 0
     top_documents: list[dict[str, Any]]
     created_at: datetime

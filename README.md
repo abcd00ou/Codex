@@ -74,10 +74,22 @@ MONGODB_DB=agentic_ai
 `gpt-oss-120B` OpenAI-compatible endpoint:
 
 ```env
+LLM_PROVIDER=openai
 OPENAI_API_KEY=local-key
 OPENAI_BASE_URL=http://localhost:8001/v1
 OPENAI_MODEL=gpt-oss-120b
 ```
+
+Grok/xAI endpoint:
+
+```env
+LLM_PROVIDER=grok
+XAI_API_KEY=your-xai-key
+XAI_BASE_URL=https://api.x.ai/v1
+XAI_MODEL=grok-4.20-reasoning
+```
+
+Switching providers only requires changing `LLM_PROVIDER` and the matching provider credentials. Both paths use the `openai` Python package with an OpenAI-compatible API.
 
 Keep the model server on a different port from this API. This FastAPI app uses port `8000`; a local model server should use something like `8001`.
 
@@ -158,17 +170,17 @@ Example report body:
 `documents`
 
 - One record per uploaded PDF
-- Stores filename, path, page count, upload time, chunk count, topic count
+- Stores filename, path, page count, upload time, chunk count, paragraph count, topic count
 
 `document_topics`
 
 - One record per agent-generated topic
-- Stores topic name, summary, keywords, page range, related chunk IDs
+- Stores topic name, summary, keywords, page range, related chunk IDs, and source paragraphs
 
 `document_chunks`
 
 - Searchable parsed PDF text
-- Stores chunk text, page range, topic metadata, keywords
+- Stores chunk text, page range, topic metadata, keywords, paragraph IDs, and paragraph text
 
 `reports`
 
@@ -178,17 +190,20 @@ Example report body:
 `dashboard_snapshots`
 
 - Aggregated dashboard state
-- Stores document count, topic count, chunk count, recent documents
+- Stores document count, topic count, chunk count, paragraph count, recent documents
 
 ## Agent Strategy For gpt-oss-120B
 
 Do not ask the model to do everything in one pass. Use small jobs:
 
 - Parser extracts text deterministically.
-- Chunker limits input size.
+- Parser preserves page-level paragraphs from PDF blocks before chunking.
+- Parsing agent can ask the configured API to reconstruct paragraphs from extracted page blocks.
+- Chunker limits input size while carrying paragraph IDs forward.
 - Topic agent only returns structured JSON.
-- Normalizer validates topic output.
+- Normalizer validates topic output, keyword grounding, chunk coverage, and summary quality.
 - Fallback topic splitter runs when JSON is invalid or the model is unavailable.
+- Low-quality model topic output is replaced by deterministic fallback topics.
 - Report agent summarizes only retrieved chunks.
 - Dashboard logic uses database aggregation, not free-form model output.
 
@@ -197,10 +212,13 @@ This keeps the system useful even when `gpt-oss-120B` is weaker than frontier cl
 ## Quality Controls
 
 - Always preserve source page ranges.
+- Always preserve source paragraph IDs where extraction succeeds.
 - Always store raw chunk text.
+- Let the parsing agent repair layout and paragraph boundaries, not create new facts.
 - Never overwrite parser output with model output.
 - Treat model-generated topics as metadata, not ground truth.
 - Validate model JSON before storing.
+- Reject ungrounded model keywords before storing.
 - Store source chunk IDs in every topic.
 - Include source chunks in every report response.
 - Keep a local fallback path for development and outages.

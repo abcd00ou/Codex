@@ -8,7 +8,7 @@ from pymongo.database import Database
 from app.config import Settings, get_settings
 from app.database import get_database
 from app.schemas import DocumentRecord
-from app.services.llm import analyze_topics_with_agent
+from app.services.llm import analyze_topics_with_agent, enhance_pages_with_parsing_agent
 from app.services.pdf_parser import chunk_pages, extract_pdf_pages
 
 router = APIRouter(prefix="/documents", tags=["documents"])
@@ -32,6 +32,18 @@ async def upload_document(
         pages = extract_pdf_pages(storage_path)
     except Exception as exc:
         raise HTTPException(status_code=422, detail=f"PDF 파싱 실패: {exc}") from exc
+    parsing_metadata = {
+        "agent_used": "disabled",
+        "reason": "PARSING_AGENT_ENABLED is false",
+        "pages_attempted": 0,
+        "pages_enhanced": 0,
+    }
+    if settings.parsing_agent_enabled:
+        pages, parsing_metadata = enhance_pages_with_parsing_agent(
+            pages,
+            max_pages=settings.parsing_agent_max_pages,
+            max_chars_per_page=settings.parsing_agent_max_chars_per_page,
+        )
 
     chunks = chunk_pages(
         pages,
@@ -52,8 +64,12 @@ async def upload_document(
             "uploaded_at": now,
         },
         "chunk_count": len(chunks),
+        "paragraph_count": sum(len(chunk.get("paragraphs", [])) for chunk in chunks),
         "topic_count": len(topic_analysis["topics"]),
-        "agent": topic_analysis.get("metadata", {}),
+        "agent": {
+            "parsing": parsing_metadata,
+            "topics": topic_analysis.get("metadata", {}),
+        },
     }
 
     chunk_records = []
@@ -64,6 +80,7 @@ async def upload_document(
         topic_id = f"topic_{document_id}_{topic_index:03d}"
         chunk_indexes = topic["chunk_indexes"]
         topic_chunk_ids = []
+        topic_paragraphs = []
 
         for chunk_index in chunk_indexes:
             chunk = chunks[chunk_index]
@@ -81,6 +98,8 @@ async def upload_document(
                     "page_start": chunk["page_start"],
                     "page_end": chunk["page_end"],
                     "text": chunk["text"],
+                    "paragraphs": chunk.get("paragraphs", []),
+                    "paragraph_count": len(chunk.get("paragraphs", [])),
                     "metadata": {
                         "title": record["metadata"]["title"],
                         "source_filename": file.filename,
@@ -89,6 +108,7 @@ async def upload_document(
                     "created_at": now,
                 }
             )
+            topic_paragraphs.extend(chunk.get("paragraphs", []))
 
         page_starts = [chunks[index]["page_start"] for index in chunk_indexes]
         page_ends = [chunks[index]["page_end"] for index in chunk_indexes]
@@ -102,6 +122,8 @@ async def upload_document(
                 "page_start": min(page_starts),
                 "page_end": max(page_ends),
                 "chunk_ids": topic_chunk_ids,
+                "paragraphs": topic_paragraphs,
+                "paragraph_count": len(topic_paragraphs),
                 "created_at": now,
             }
         )

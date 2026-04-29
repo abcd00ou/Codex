@@ -55,6 +55,7 @@ def main() -> None:
 def init_state() -> None:
     st.session_state.setdefault("document_id", None)
     st.session_state.setdefault("document", None)
+    st.session_state.setdefault("document_details", None)
     st.session_state.setdefault("topics", [])
     st.session_state.setdefault("messages", [])
     st.session_state.setdefault("ai_status", None)
@@ -91,6 +92,18 @@ def render_dashboard() -> None:
     st.metric("Documents", dashboard.get("document_count", 0))
     st.metric("Topics", dashboard.get("topic_count", 0))
     st.metric("Chunks", dashboard.get("chunk_count", 0))
+    st.metric("Paragraphs", dashboard.get("paragraph_count", 0))
+
+    recent_documents = dashboard.get("top_documents") or []
+    if recent_documents:
+        options = {
+            f"{doc.get('filename')} · {doc.get('document_id')}": doc.get("document_id")
+            for doc in recent_documents
+            if doc.get("document_id")
+        }
+        selected = st.selectbox("Open recent document", [""] + list(options.keys()))
+        if selected and st.button("Load selected document", use_container_width=True):
+            load_document(options[selected])
 
 
 def render_upload() -> None:
@@ -105,14 +118,22 @@ def render_upload() -> None:
                 result = upload_document(uploaded_file.name, uploaded_file.getvalue())
                 st.session_state.document = result
                 st.session_state.document_id = result["document_id"]
-                load_topics(result["document_id"])
+                load_document(result["document_id"])
                 refresh_status()
                 refresh_dashboard()
                 agent = result.get("agent", {})
-                if agent.get("agent_used") == "llm":
-                    st.success("Uploaded and parsed with LLM.")
+                parsing_agent = agent.get("parsing", agent)
+                topic_agent = agent.get("topics", {})
+                if parsing_agent.get("agent_used") == "llm":
+                    st.success(
+                        "Uploaded with LLM parsing "
+                        f"({parsing_agent.get('pages_enhanced', 0)} pages enhanced)."
+                    )
+                elif topic_agent.get("agent_used") == "llm":
+                    st.success("Uploaded with LLM topic extraction.")
                 else:
-                    st.warning(f"Uploaded with fallback: {agent.get('reason') or 'unknown reason'}")
+                    reason = parsing_agent.get("reason") or topic_agent.get("reason") or "unknown reason"
+                    st.warning(f"Uploaded with fallback: {reason}")
             except requests.HTTPError as exc:
                 st.error(api_error_message(exc))
             except requests.RequestException as exc:
@@ -125,22 +146,41 @@ def render_upload() -> None:
 
 
 def render_topics() -> None:
-    st.subheader("Topics")
+    st.subheader("Topic, keyword, and paragraph explorer")
+    details = st.session_state.document_details
     topics = st.session_state.topics
 
     if not topics:
-        st.write("Upload a PDF to inspect extracted topics.")
+        st.write("Upload or load a PDF to inspect topics, keywords, and paragraphs.")
         return
 
-    for topic in topics:
-        title = f"{topic.get('topic', 'Untitled')} · pages {topic.get('page_start')}-{topic.get('page_end')}"
-        with st.expander(title, expanded=True):
-            st.write(topic.get("summary") or "No summary")
-            keywords = topic.get("keywords") or []
-            if keywords:
-                st.caption("Keywords")
-                st.write(", ".join(f"`{keyword}`" for keyword in keywords))
-            st.caption(f"Topic ID: {topic.get('topic_id')}")
+    topic_options = {
+        f"{topic.get('topic', 'Untitled')} · pages {topic.get('page_start')}-{topic.get('page_end')}": topic
+        for topic in topics
+    }
+    selected_topic_label = st.selectbox("Topic", list(topic_options.keys()))
+    selected_topic = topic_options[selected_topic_label]
+
+    st.write(selected_topic.get("summary") or "No summary")
+    st.caption(f"Topic ID: {selected_topic.get('topic_id')}")
+
+    keywords = selected_topic.get("keywords") or []
+    selected_keywords = st.multiselect("Keywords", keywords, default=keywords[: min(3, len(keywords))])
+
+    paragraphs = selected_topic.get("paragraphs") or []
+    if not paragraphs and details:
+        topic_chunk_ids = set(selected_topic.get("chunk_ids") or [])
+        for chunk in details.get("chunks", []):
+            if chunk.get("chunk_id") in topic_chunk_ids:
+                paragraphs.extend(chunk.get("paragraphs") or [])
+
+    filtered = filter_paragraphs(paragraphs, selected_keywords)
+    st.caption(f"{len(filtered)} of {len(paragraphs)} paragraphs")
+
+    for paragraph in filtered:
+        label = f"Page {paragraph.get('page')} · {paragraph.get('paragraph_id')}"
+        with st.expander(label, expanded=len(filtered) <= 3):
+            st.write(paragraph.get("text") or "")
 
 
 def render_chat() -> None:
@@ -298,6 +338,14 @@ def load_topics(document_id: str) -> None:
     st.session_state.topics = data.get("topics", [])
 
 
+def load_document(document_id: str) -> None:
+    data = get_json(f"/v1/documents/{document_id}")
+    st.session_state.document_details = data
+    st.session_state.document = data.get("document")
+    st.session_state.document_id = document_id
+    st.session_state.topics = data.get("topics", [])
+
+
 def create_report(query: str) -> dict[str, Any]:
     return post_json("/v1/reports", {"query": query, "limit": 8})
 
@@ -321,6 +369,17 @@ def api_error_message(exc: requests.HTTPError) -> str:
     except ValueError:
         detail = response.text
     return f"{response.status_code}: {detail}"
+
+
+def filter_paragraphs(paragraphs: list[dict[str, Any]], keywords: list[str]) -> list[dict[str, Any]]:
+    if not keywords:
+        return paragraphs
+    lowered = [keyword.lower() for keyword in keywords]
+    return [
+        paragraph
+        for paragraph in paragraphs
+        if any(keyword in str(paragraph.get("text", "")).lower() for keyword in lowered)
+    ]
 
 
 def parse_extra_files(value: str) -> list[str]:

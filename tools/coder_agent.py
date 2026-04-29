@@ -134,29 +134,58 @@ def main() -> int:
 
 
 def make_client() -> OpenAI:
-    api_key = os.getenv("OPENAI_API_KEY")
+    config = get_provider_config()
+    api_key = config["api_key"]
     if not api_key:
-        raise SystemExit("OPENAI_API_KEY is required. Set it in .env or the environment.")
+        raise SystemExit(
+            f"{config['provider']} API key is required. Set it in .env or the environment."
+        )
 
     kwargs = {"api_key": api_key}
-    base_url = os.getenv("OPENAI_BASE_URL")
-    if base_url:
-        kwargs["base_url"] = base_url
-    dep_ticket = os.getenv("OPENAI_DEP_TICKET")
-    if dep_ticket:
-        kwargs["default_headers"] = {"x-dep-ticket": dep_ticket}
+    if config["base_url"]:
+        kwargs["base_url"] = config["base_url"]
+    if config["dep_ticket"]:
+        kwargs["default_headers"] = {"x-dep-ticket": config["dep_ticket"]}
     return OpenAI(**kwargs)
 
 
+def get_provider_config() -> dict[str, str | None]:
+    provider = os.getenv("LLM_PROVIDER", "groq").lower().strip()
+    if provider == "openai":
+        return {
+            "provider": "openai",
+            "api_key": os.getenv("OPENAI_API_KEY"),
+            "base_url": os.getenv("OPENAI_BASE_URL"),
+            "model": os.getenv("OPENAI_MODEL", "gpt-oss-120b"),
+            "dep_ticket": os.getenv("OPENAI_DEP_TICKET"),
+        }
+    if provider in {"xai", "xai-grok", "grok"}:
+        return {
+            "provider": "xai",
+            "api_key": os.getenv("XAI_API_KEY"),
+            "base_url": os.getenv("XAI_BASE_URL", "https://api.x.ai/v1"),
+            "model": os.getenv("XAI_MODEL", "grok-4.20-reasoning"),
+            "dep_ticket": None,
+        }
+    return {
+        "provider": "groq",
+        "api_key": os.getenv("GROQ_API_KEY"),
+        "base_url": os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1"),
+        "model": os.getenv("GROQ_MODEL", "openai/gpt-oss-120b"),
+        "dep_ticket": None,
+    }
+
+
 def print_config() -> None:
-    base_url = os.getenv("OPENAI_BASE_URL")
-    model = os.getenv("OPENAI_MODEL", "gpt-oss-120b")
+    config = get_provider_config()
+    base_url = config["base_url"]
     print(
         {
-            "has_openai_api_key": bool(os.getenv("OPENAI_API_KEY")),
-            "openai_base_url": base_url,
-            "openai_model": model,
-            "has_openai_dep_ticket": bool(os.getenv("OPENAI_DEP_TICKET")),
+            "provider": config["provider"],
+            "has_api_key": bool(config["api_key"]),
+            "base_url": base_url,
+            "model": config["model"],
+            "has_dep_ticket": bool(config["dep_ticket"]),
         }
     )
     if base_url and "127.0.0.1:8000" in base_url:
@@ -207,7 +236,7 @@ def load_prompt(repo: Path, mode: str) -> str:
 
 def call_model(client: OpenAI, context: str, prompt: str) -> str:
     system = Path("prompts/coding_system.md").read_text(encoding="utf-8")
-    model = os.getenv("OPENAI_MODEL", "gpt-oss-120b")
+    model = get_provider_config()["model"]
     messages = [
         {"role": "system", "content": system},
         {
@@ -234,12 +263,12 @@ def call_model(client: OpenAI, context: str, prompt: str) -> str:
 
 
 def endpoint_not_found_message(responses_exc: Exception, chat_exc: Exception) -> str:
-    base_url = os.getenv("OPENAI_BASE_URL")
+    base_url = get_provider_config()["base_url"]
     return (
         "The configured OpenAI-compatible endpoint returned 404 for both "
         "/responses and /chat/completions.\n"
-        f"OPENAI_BASE_URL={base_url!r}\n"
-        "Check that OPENAI_BASE_URL points to your gpt-oss model server, not this "
+        f"base_url={base_url!r}\n"
+        "Check that the base URL points to your model provider, not this "
         "FastAPI app at http://127.0.0.1:8000/v1.\n"
         f"Responses error: {responses_exc}\n"
         f"Chat Completions error: {chat_exc}"
