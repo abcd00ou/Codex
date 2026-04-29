@@ -91,6 +91,7 @@ uvicorn app.main:app --host 127.0.0.1 --port 8000
 Open:
 
 - API health: http://127.0.0.1:8000/v1
+- AI status: http://127.0.0.1:8000/v1/ai/status
 - Swagger: http://127.0.0.1:8000/docs
 
 ## API Test Flow
@@ -103,6 +104,25 @@ Open:
 6. Run `GET /v1/documents/{document_id}/topics`
 7. Run `POST /v1/reports`
 8. Run `POST /v1/dashboard/refresh`
+
+Check whether AI or fallback was used:
+
+```bash
+curl -s http://127.0.0.1:8000/v1/ai/status
+```
+
+PDF upload responses also include:
+
+```json
+{
+  "agent": {
+    "agent_used": "llm",
+    "reason": null
+  }
+}
+```
+
+If `agent_used` is `fallback`, the model was not used for that step. The `reason` field explains why.
 
 Example report body:
 
@@ -236,6 +256,26 @@ Add extra files to context:
   "report source citation 품질을 개선해줘" \
   --file app/routes/reports.py \
   --file app/services/llm.py
+```
+
+Check which files are sent to the model:
+
+```bash
+.venv/bin/python tools/coder_agent.py \
+  "README.md와 SKILL.md를 읽었는지 확인해줘" \
+  --mode plan \
+  --show-context-files
+```
+
+Write the exact repository context to a debug file without calling the model:
+
+```bash
+.venv/bin/python tools/coder_agent.py \
+  "README.md와 SKILL.md를 읽었는지 확인해줘" \
+  --mode plan \
+  --show-context-files \
+  --debug-context debug_context.txt \
+  --dry-context
 ```
 
 Recommended workflow:

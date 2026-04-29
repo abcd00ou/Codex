@@ -18,6 +18,7 @@ class DocumentRecord(BaseModel):
     metadata: DocumentMetadata
     chunk_count: int
     topic_count: int = 0
+    agent: dict[str, Any] = Field(default_factory=dict)
 
 
 class ChunkRecord(BaseModel):

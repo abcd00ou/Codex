@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     openai_api_key: str | None = Field(default=None, alias="OPENAI_API_KEY")
     openai_base_url: str | None = Field(default=None, alias="OPENAI_BASE_URL")
     openai_model: str = Field(default="gpt-oss-120b", alias="OPENAI_MODEL")
+    openai_dep_ticket: str | None = Field(default=None, alias="OPENAI_DEP_TICKET")
 
     mongodb_uri: str = Field(default="local://dev", alias="MONGODB_URI")
     mongodb_db: str = Field(default="agentic_ai", alias="MONGODB_DB")

@@ -53,6 +53,7 @@ async def upload_document(
         },
         "chunk_count": len(chunks),
         "topic_count": len(topic_analysis["topics"]),
+        "agent": topic_analysis.get("metadata", {}),
     }
 
     chunk_records = []

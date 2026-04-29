@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from app.config import get_settings
 from app.routes import dashboard, documents, reports
+from app.services.llm import get_llm_status
 
 app = FastAPI(
     title="Agentic AI PDF API",
@@ -24,4 +25,10 @@ def health() -> dict:
         "openai_base_url": settings.openai_base_url,
         "mongodb_db": settings.mongodb_db,
         "storage_backend": "local_json" if settings.mongodb_uri == "local://dev" else "mongodb",
+        "ai": get_llm_status(),
     }
+
+
+@app.get("/v1/ai/status")
+def ai_status() -> dict:
+    return get_llm_status()

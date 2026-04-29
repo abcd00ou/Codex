@@ -66,14 +66,43 @@ def main() -> int:
         type=Path,
         help="Write the generated plan or patch to this file.",
     )
+    parser.add_argument(
+        "--show-context-files",
+        action="store_true",
+        help="Print the repository files included in model context.",
+    )
+    parser.add_argument(
+        "--debug-context",
+        type=Path,
+        help="Write the exact repository context sent to the model to this file.",
+    )
+    parser.add_argument(
+        "--dry-context",
+        action="store_true",
+        help="Build/debug context and exit without calling the model.",
+    )
     args = parser.parse_args()
 
     repo = Path.cwd()
     load_dotenv(repo / ".env")
 
-    client = make_client()
-    context = build_context(repo, args.files, args.max_file_chars)
+    context, context_files = build_context(repo, args.files, args.max_file_chars)
+    if args.show_context_files:
+        print("Context files:", file=sys.stderr)
+        for relative in context_files:
+            print(f"- {relative}", file=sys.stderr)
+
+    if args.debug_context:
+        args.debug_context.write_text(context, encoding="utf-8")
+        print(f"Wrote debug context to {args.debug_context}", file=sys.stderr)
+
     prompt = load_prompt(repo, args.mode).replace("{{TASK}}", args.task)
+    if args.dry_context:
+        if not args.show_context_files and not args.debug_context:
+            print(context)
+        return 0
+
+    client = make_client()
 
     result = call_model(client, context, prompt)
     if args.mode == "patch":
@@ -107,9 +136,14 @@ def make_client() -> OpenAI:
     return OpenAI(**kwargs)
 
 
-def build_context(repo: Path, extra_files: list[str], max_file_chars: int) -> str:
+def build_context(
+    repo: Path,
+    extra_files: list[str],
+    max_file_chars: int,
+) -> tuple[str, list[str]]:
     files = list(dict.fromkeys(DEFAULT_CONTEXT_FILES + extra_files))
     sections = [file_tree(repo)]
+    included_files = []
 
     for relative in files:
         path = repo / relative
@@ -119,8 +153,9 @@ def build_context(repo: Path, extra_files: list[str], max_file_chars: int) -> st
         if len(text) > max_file_chars:
             text = text[:max_file_chars] + "\n...[truncated]\n"
         sections.append(f"--- FILE: {relative} ---\n{text}")
+        included_files.append(relative)
 
-    return "\n\n".join(sections)
+    return "\n\n".join(sections), included_files
 
 
 def file_tree(repo: Path) -> str:

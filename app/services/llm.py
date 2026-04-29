@@ -1,21 +1,45 @@
 import json
+import logging
 import re
 from collections import Counter
+from datetime import UTC, datetime
 from typing import Any
 
 from openai import OpenAI
 
 from app.config import get_settings
 
+logger = logging.getLogger(__name__)
+
+LLM_STATUS: dict[str, Any] = {
+    "configured": False,
+    "last_call": None,
+}
+
 
 def get_openai_client() -> OpenAI | None:
     settings = get_settings()
     if not settings.openai_api_key:
+        LLM_STATUS["configured"] = False
         return None
     kwargs = {"api_key": settings.openai_api_key}
     if settings.openai_base_url:
         kwargs["base_url"] = settings.openai_base_url
+    if settings.openai_dep_ticket:
+        kwargs["default_headers"] = {"x-dep-ticket": settings.openai_dep_ticket}
+    LLM_STATUS["configured"] = True
     return OpenAI(**kwargs)
+
+
+def get_llm_status() -> dict[str, Any]:
+    settings = get_settings()
+    return {
+        "configured": bool(settings.openai_api_key),
+        "model": settings.openai_model,
+        "base_url": settings.openai_base_url,
+        "has_dep_ticket": bool(settings.openai_dep_ticket),
+        "last_call": LLM_STATUS.get("last_call"),
+    }
 
 
 def summarize_with_llm(query: str, chunks: list[dict]) -> str:
@@ -28,6 +52,7 @@ def summarize_with_llm(query: str, chunks: list[dict]) -> str:
     )
 
     if client is None:
+        record_llm_call("report", "fallback", "OPENAI_API_KEY is not configured")
         return fallback_summary(query, chunks)
 
     messages = [
@@ -45,7 +70,8 @@ def summarize_with_llm(query: str, chunks: list[dict]) -> str:
     ]
     try:
         return generate_text(client, messages)
-    except Exception:
+    except Exception as exc:
+        record_llm_call("report", "fallback", str(exc))
         return fallback_summary(query, chunks)
 
 
@@ -69,7 +95,13 @@ def fallback_summary(query: str, chunks: list[dict]) -> str:
 def analyze_topics_with_agent(chunks: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
     client = get_openai_client()
     if client is None:
-        return fallback_topic_analysis(chunks)
+        result = fallback_topic_analysis(chunks)
+        result["metadata"] = {
+            "agent_used": "fallback",
+            "reason": "OPENAI_API_KEY is not configured",
+        }
+        record_llm_call("topic_extraction", "fallback", "OPENAI_API_KEY is not configured")
+        return result
 
     numbered_chunks = "\n\n".join(
         (
@@ -99,9 +131,15 @@ def analyze_topics_with_agent(chunks: list[dict[str, Any]]) -> dict[str, list[di
     try:
         response_text = generate_text(client, messages)
         data = _load_json_object(response_text)
-        return normalize_topic_analysis(data, chunks)
-    except Exception:
-        return fallback_topic_analysis(chunks)
+        result = normalize_topic_analysis(data, chunks)
+        result["metadata"] = {"agent_used": "llm", "reason": None}
+        record_llm_call("topic_extraction", "llm", None)
+        return result
+    except Exception as exc:
+        result = fallback_topic_analysis(chunks)
+        result["metadata"] = {"agent_used": "fallback", "reason": str(exc)}
+        record_llm_call("topic_extraction", "fallback", str(exc))
+        return result
 
 
 def generate_text(client: OpenAI, messages: list[dict[str, str]]) -> str:
@@ -111,13 +149,29 @@ def generate_text(client: OpenAI, messages: list[dict[str, str]]) -> str:
             model=settings.openai_model,
             input=messages,
         )
+        logger.info("LLM call succeeded through Responses API")
         return response.output_text
-    except Exception:
+    except Exception as responses_exc:
+        logger.warning("Responses API call failed; trying Chat Completions: %s", responses_exc)
         response = client.chat.completions.create(
             model=settings.openai_model,
             messages=messages,
         )
+        logger.info("LLM call succeeded through Chat Completions API")
         return response.choices[0].message.content or ""
+
+
+def record_llm_call(task: str, mode: str, error: str | None) -> None:
+    LLM_STATUS["last_call"] = {
+        "task": task,
+        "mode": mode,
+        "error": error,
+        "at": datetime.now(UTC).isoformat(),
+    }
+    if mode == "llm":
+        logger.info("AI task=%s completed with gpt-oss", task)
+    else:
+        logger.warning("AI task=%s used fallback: %s", task, error)
 
 
 def normalize_topic_analysis(
