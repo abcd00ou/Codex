@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Agentic PDF AI</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">AI</div>
+          <div>
+            <h1>Agentic PDF AI</h1>
+            <p>PDF ingestion and reporting</p>
+          </div>
+        </div>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Upload</h2>
+            <span id="uploadState" class="state">Idle</span>
+          </div>
+          <label class="file-drop" for="pdfInput">
+            <span class="file-icon">PDF</span>
+            <span id="fileName">Choose a PDF file</span>
+          </label>
+          <input id="pdfInput" type="file" accept="application/pdf" />
+          <button id="uploadButton" class="primary-button" type="button">Upload and parse</button>
+        </section>
+
+        <section class="panel metrics">
+          <div>
+            <span>Documents</span>
+            <strong id="documentCount">0</strong>
+          </div>
+          <div>
+            <span>Topics</span>
+            <strong id="topicCount">0</strong>
+          </div>
+          <div>
+            <span>Chunks</span>
+            <strong id="chunkCount">0</strong>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>AI Status</h2>
+            <span id="aiConfigured" class="state">Checking</span>
+          </div>
+          <dl class="status-list">
+            <div>
+              <dt>Model</dt>
+              <dd id="aiModel">-</dd>
+            </div>
+            <div>
+              <dt>Endpoint</dt>
+              <dd id="aiBaseUrl">-</dd>
+            </div>
+            <div>
+              <dt>Last call</dt>
+              <dd id="aiLastCall">-</dd>
+            </div>
+          </dl>
+        </section>
+      </aside>
+
+      <main class="workspace">
+        <section class="document-strip">
+          <div>
+            <p class="eyebrow">Current document</p>
+            <h2 id="currentDocument">No document selected</h2>
+          </div>
+          <button id="refreshButton" class="ghost-button" type="button">Refresh dashboard</button>
+        </section>
+
+        <section class="topics-section">
+          <div class="section-heading">
+            <h2>Topics</h2>
+            <span id="topicState">Upload a PDF to inspect topics.</span>
+          </div>
+          <div id="topicsList" class="topics-list"></div>
+        </section>
+
+        <section class="chat-section">
+          <div class="section-heading">
+            <h2>Report chat</h2>
+            <span>Ask from stored chunks only</span>
+          </div>
+          <div id="chatLog" class="chat-log">
+            <div class="message assistant">
+              <p>PDF를 업로드한 뒤 문서의 리스크, 지표, 요약을 질문하세요.</p>
+            </div>
+          </div>
+          <form id="reportForm" class="chat-form">
+            <input
+              id="queryInput"
+              type="text"
+              autocomplete="off"
+              placeholder="예: 이 문서의 핵심 리스크를 소주제별로 요약해줘"
+            />
+            <button class="primary-button" type="submit">Ask</button>
+          </form>
+        </section>
+      </main>
+    </div>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

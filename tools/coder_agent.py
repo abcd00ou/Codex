@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
-from openai import OpenAI
+from openai import NotFoundError, OpenAI
 
 
 DEFAULT_CONTEXT_FILES = [
@@ -81,10 +81,19 @@ def main() -> int:
         action="store_true",
         help="Build/debug context and exit without calling the model.",
     )
+    parser.add_argument(
+        "--check-config",
+        action="store_true",
+        help="Print OpenAI-compatible endpoint configuration and exit.",
+    )
     args = parser.parse_args()
 
     repo = Path.cwd()
     load_dotenv(repo / ".env")
+
+    if args.check_config:
+        print_config()
+        return 0
 
     context, context_files = build_context(repo, args.files, args.max_file_chars)
     if args.show_context_files:
@@ -133,7 +142,28 @@ def make_client() -> OpenAI:
     base_url = os.getenv("OPENAI_BASE_URL")
     if base_url:
         kwargs["base_url"] = base_url
+    dep_ticket = os.getenv("OPENAI_DEP_TICKET")
+    if dep_ticket:
+        kwargs["default_headers"] = {"x-dep-ticket": dep_ticket}
     return OpenAI(**kwargs)
+
+
+def print_config() -> None:
+    base_url = os.getenv("OPENAI_BASE_URL")
+    model = os.getenv("OPENAI_MODEL", "gpt-oss-120b")
+    print(
+        {
+            "has_openai_api_key": bool(os.getenv("OPENAI_API_KEY")),
+            "openai_base_url": base_url,
+            "openai_model": model,
+            "has_openai_dep_ticket": bool(os.getenv("OPENAI_DEP_TICKET")),
+        }
+    )
+    if base_url and "127.0.0.1:8000" in base_url:
+        print(
+            "Warning: OPENAI_BASE_URL points to this FastAPI app, not a gpt-oss model server.",
+            file=sys.stderr,
+        )
 
 
 def build_context(
@@ -192,9 +222,28 @@ def call_model(client: OpenAI, context: str, prompt: str) -> str:
     try:
         response = client.responses.create(model=model, input=messages)
         return response.output_text.strip()
+    except NotFoundError as responses_exc:
+        try:
+            response = client.chat.completions.create(model=model, messages=messages)
+            return (response.choices[0].message.content or "").strip()
+        except NotFoundError as chat_exc:
+            raise SystemExit(endpoint_not_found_message(responses_exc, chat_exc)) from chat_exc
     except Exception:
         response = client.chat.completions.create(model=model, messages=messages)
         return (response.choices[0].message.content or "").strip()
+
+
+def endpoint_not_found_message(responses_exc: Exception, chat_exc: Exception) -> str:
+    base_url = os.getenv("OPENAI_BASE_URL")
+    return (
+        "The configured OpenAI-compatible endpoint returned 404 for both "
+        "/responses and /chat/completions.\n"
+        f"OPENAI_BASE_URL={base_url!r}\n"
+        "Check that OPENAI_BASE_URL points to your gpt-oss model server, not this "
+        "FastAPI app at http://127.0.0.1:8000/v1.\n"
+        f"Responses error: {responses_exc}\n"
+        f"Chat Completions error: {chat_exc}"
+    )
 
 
 def extract_diff(text: str) -> str:

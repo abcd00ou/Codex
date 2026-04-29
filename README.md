@@ -90,9 +90,29 @@ uvicorn app.main:app --host 127.0.0.1 --port 8000
 
 Open:
 
+- Web UI: http://127.0.0.1:8000/
+- Streamlit UI: http://127.0.0.1:8501/
 - API health: http://127.0.0.1:8000/v1
 - AI status: http://127.0.0.1:8000/v1/ai/status
 - Swagger: http://127.0.0.1:8000/docs
+
+Run the Streamlit UI in a second terminal while FastAPI is running:
+
+```bash
+source .venv/bin/activate
+streamlit run streamlit_app.py
+```
+
+If the API server is not on `http://127.0.0.1:8000`, set:
+
+```bash
+AGENTIC_PDF_API_URL=http://host:port streamlit run streamlit_app.py
+```
+
+The Streamlit app has two tabs:
+
+- `PDF Chat`: upload PDFs, inspect topics, and ask report questions.
+- `Coding Agent`: run `tools/coder_agent.py` from the UI to generate plans or patches. Patch application is a separate review step.
 
 ## API Test Flow
 

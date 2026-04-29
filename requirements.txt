@@ -6,3 +6,5 @@ pymongo>=4.10
 pydantic-settings>=2.7
 PyMuPDF>=1.25
 python-dotenv>=1.0
+requests>=2.32
+streamlit>=1.40
