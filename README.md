@@ -93,6 +93,12 @@ Switching providers only requires changing `LLM_PROVIDER` and the matching provi
 
 Keep the model server on a different port from this API. This FastAPI app uses port `8000`; a local model server should use something like `8001`.
 
+For larger PDFs, increase the Streamlit-to-API read timeout:
+
+```env
+AGENTIC_PDF_API_READ_TIMEOUT_SECONDS=600
+```
+
 ## Run
 
 ```bash
@@ -121,10 +127,11 @@ If the API server is not on `http://127.0.0.1:8000`, set:
 AGENTIC_PDF_API_URL=http://host:port streamlit run streamlit_app.py
 ```
 
-The Streamlit app has two tabs:
+The Streamlit app has three tabs:
 
 - `PDF Chat`: upload PDFs, inspect topics, and ask report questions.
-- `Coding Agent`: run `tools/coder_agent.py` from the UI to generate plans or patches. Patch application is a separate review step.
+- `Data Browser`: search existing documents and saved reports, then load a document into PDF Chat.
+- `Coding Agent`: run `tools/coder_agent.py` from the UI to generate plans, review patches, or generate/apply/verify a patch in one step.
 
 ## API Test Flow
 
@@ -132,10 +139,12 @@ The Streamlit app has two tabs:
 2. Run `POST /v1/documents`
 3. Upload a PDF file
 4. Copy the returned `document_id`
-5. Run `GET /v1/documents/{document_id}`
-6. Run `GET /v1/documents/{document_id}/topics`
-7. Run `POST /v1/reports`
-8. Run `POST /v1/dashboard/refresh`
+5. Run `GET /v1/documents` to list stored documents
+6. Run `GET /v1/documents/{document_id}`
+7. Run `GET /v1/documents/{document_id}/topics`
+8. Run `POST /v1/reports`
+9. Run `GET /v1/reports` to list saved reports
+10. Run `POST /v1/dashboard/refresh`
 
 Check whether AI or fallback was used:
 
@@ -321,7 +330,7 @@ Recommended workflow:
 1. Run `--mode plan` first.
 2. Generate a patch without `--apply`.
 3. Read the patch.
-4. Re-run with `--apply --verify` only if the patch is acceptable.
+4. Re-run with `--apply --verify` only if the patch is acceptable, or use the Streamlit `Generate, apply, verify` button for the same flow.
 5. Test through Swagger.
 
 This tool is intentionally narrow. It is not a general coding assistant; it is tuned for this PDF ingestion API and the `gpt-oss-120B` reliability constraints.

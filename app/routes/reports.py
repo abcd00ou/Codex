@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from pymongo.database import Database
 
 from app.database import get_database
@@ -9,6 +9,41 @@ from app.schemas import ReportRequest, ReportResponse
 from app.services.llm import summarize_with_llm
 
 router = APIRouter(prefix="/reports", tags=["reports"])
+
+
+@router.get("")
+def list_reports(
+    db: Database = Depends(get_database),
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    search: str | None = Query(default=None, description="Case-insensitive query/answer search."),
+) -> dict:
+    reports = list(
+        db.reports.find(
+            {},
+            {
+                "_id": 0,
+                "report_id": 1,
+                "query": 1,
+                "answer": 1,
+                "source_chunks": 1,
+                "created_at": 1,
+            },
+        ).sort("created_at", -1)
+    )
+    if search:
+        needle = search.lower().strip()
+        reports = [
+            report
+            for report in reports
+            if needle in str(report.get("query", "")).lower()
+            or needle in str(report.get("answer", "")).lower()
+            or needle in str(report.get("report_id", "")).lower()
+        ]
+
+    total = len(reports)
+    items = reports[offset : offset + limit]
+    return {"total": total, "limit": limit, "offset": offset, "reports": items}
 
 
 @router.post("", response_model=ReportResponse)

@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from pymongo.database import Database
 
 from app.config import Settings, get_settings
@@ -12,6 +12,45 @@ from app.services.llm import analyze_topics_with_agent, enhance_pages_with_parsi
 from app.services.pdf_parser import chunk_pages, extract_pdf_pages
 
 router = APIRouter(prefix="/documents", tags=["documents"])
+
+
+@router.get("")
+def list_documents(
+    db: Database = Depends(get_database),
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    search: str | None = Query(default=None, description="Case-insensitive filename/title search."),
+) -> dict:
+    documents = list(
+        db.documents.find(
+            {},
+            {
+                "_id": 0,
+                "document_id": 1,
+                "filename": 1,
+                "metadata.title": 1,
+                "metadata.page_count": 1,
+                "metadata.uploaded_at": 1,
+                "chunk_count": 1,
+                "paragraph_count": 1,
+                "topic_count": 1,
+                "agent": 1,
+            },
+        ).sort("metadata.uploaded_at", -1)
+    )
+    if search:
+        needle = search.lower().strip()
+        documents = [
+            document
+            for document in documents
+            if needle in str(document.get("filename", "")).lower()
+            or needle in str(document.get("metadata", {}).get("title", "")).lower()
+            or needle in str(document.get("document_id", "")).lower()
+        ]
+
+    total = len(documents)
+    items = documents[offset : offset + limit]
+    return {"total": total, "limit": limit, "offset": offset, "documents": items}
 
 
 @router.post("", response_model=DocumentRecord)

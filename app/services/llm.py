@@ -201,11 +201,13 @@ def parse_page_with_agent(
             "content": (
                 "You are a PDF parsing agent. Reconstruct readable paragraphs from extracted PDF text blocks. "
                 "Fix broken line wraps and hyphenation. Keep the original language. Do not summarize. "
+                "Preserve all meaningful source content, including definitions, examples, numbers, citations, "
+                "tables converted to readable text, and section headings. Do not shorten the page. "
                 "Do not invent content. Return only valid JSON with this shape: "
                 '{"paragraphs":[{"text":"string","kind":"heading|paragraph|list|table|footer",'
                 '"source_ids":["p1_1"]}]}. '
-                "Merge blocks only when they are clearly one paragraph. Remove repeated headers/footers only "
-                "when they do not contain document content."
+                "Merge blocks only when they are clearly one paragraph. Keep repeated headers/footers as footer "
+                "paragraphs unless you are certain they contain no document content."
             ),
         },
         {
@@ -280,7 +282,8 @@ def evaluate_parsed_page(
     term_ratio = len(source_terms & enhanced_terms) / len(source_terms) if source_terms else 1.0
     paragraph_count = len(enhanced_page.get("paragraphs") or [])
     paragraph_score = 1.0 if paragraph_count else 0.0
-    score = (text_ratio * 0.35) + (term_ratio * 0.45) + (paragraph_score * 0.2)
+    length_penalty = 0.25 if text_ratio < 0.8 else 0.0
+    score = max((text_ratio * 0.4) + (term_ratio * 0.45) + (paragraph_score * 0.15) - length_penalty, 0)
     return {
         "score": round(score, 3),
         "text_ratio": round(text_ratio, 3),

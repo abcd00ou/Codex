@@ -9,6 +9,8 @@ import streamlit as st
 
 
 API_BASE_URL = os.getenv("AGENTIC_PDF_API_URL", "http://127.0.0.1:8000")
+API_READ_TIMEOUT_SECONDS = int(os.getenv("AGENTIC_PDF_API_READ_TIMEOUT_SECONDS", "600"))
+API_STATUS_TIMEOUT_SECONDS = int(os.getenv("AGENTIC_PDF_API_STATUS_TIMEOUT_SECONDS", "30"))
 REPO_DIR = os.path.dirname(os.path.abspath(__file__))
 PYTHON_BIN = os.path.join(REPO_DIR, ".venv", "bin", "python")
 
@@ -36,7 +38,7 @@ def main() -> None:
         render_ai_status()
         render_dashboard()
 
-    pdf_tab, coding_tab = st.tabs(["PDF Chat", "Coding Agent"])
+    pdf_tab, data_tab, coding_tab = st.tabs(["PDF Chat", "Data Browser", "Coding Agent"])
 
     with pdf_tab:
         upload_col, topic_col = st.columns([0.42, 0.58], gap="large")
@@ -47,6 +49,9 @@ def main() -> None:
 
         st.divider()
         render_chat()
+
+    with data_tab:
+        render_data_browser()
 
     with coding_tab:
         render_coding_agent()
@@ -60,11 +65,14 @@ def init_state() -> None:
     st.session_state.setdefault("messages", [])
     st.session_state.setdefault("ai_status", None)
     st.session_state.setdefault("dashboard", None)
+    st.session_state.setdefault("documents_list", None)
+    st.session_state.setdefault("reports_list", None)
     st.session_state.setdefault("coder_result", "")
     st.session_state.setdefault("coder_patch", "")
     st.session_state.setdefault("coder_context_files", "")
     st.session_state.setdefault("coder_apply_log", "")
     st.session_state.setdefault("coder_verify_log", "")
+    st.session_state.setdefault("coder_direct_apply_log", "")
 
     if st.session_state.ai_status is None:
         refresh_status()
@@ -165,7 +173,12 @@ def render_topics() -> None:
     st.caption(f"Topic ID: {selected_topic.get('topic_id')}")
 
     keywords = selected_topic.get("keywords") or []
-    selected_keywords = st.multiselect("Keywords", keywords, default=keywords[: min(3, len(keywords))])
+    selected_keywords = st.multiselect(
+        "Filter by keywords",
+        keywords,
+        default=[],
+        help="Leave empty to show every paragraph in the selected topic.",
+    )
 
     paragraphs = selected_topic.get("paragraphs") or []
     if not paragraphs and details:
@@ -175,7 +188,8 @@ def render_topics() -> None:
                 paragraphs.extend(chunk.get("paragraphs") or [])
 
     filtered = filter_paragraphs(paragraphs, selected_keywords)
-    st.caption(f"{len(filtered)} of {len(paragraphs)} paragraphs")
+    filter_label = "all paragraphs" if not selected_keywords else "keyword-matched paragraphs"
+    st.caption(f"Showing {len(filtered)} of {len(paragraphs)} {filter_label}")
 
     for paragraph in filtered:
         label = f"Page {paragraph.get('page')} · {paragraph.get('paragraph_id')}"
@@ -236,9 +250,66 @@ def render_sources(sources: list[dict[str, Any]]) -> None:
         )
 
 
+def render_data_browser() -> None:
+    st.subheader("Existing data")
+    document_section, report_section = st.columns(2, gap="large")
+
+    with document_section:
+        st.markdown("#### Documents")
+        document_search = st.text_input("Search documents", key="document_search")
+        if st.button("Load documents", type="primary", use_container_width=True):
+            try:
+                st.session_state.documents_list = list_documents(document_search)
+            except requests.HTTPError as exc:
+                st.error(api_error_message(exc))
+            except requests.RequestException as exc:
+                st.error(f"Backend request failed: {exc}")
+
+        documents_data = st.session_state.documents_list
+        if documents_data:
+            documents = documents_data.get("documents", [])
+            st.caption(f"{len(documents)} of {documents_data.get('total', 0)} documents")
+            st.dataframe(document_rows(documents), use_container_width=True, hide_index=True)
+            document_options = {
+                f"{document.get('filename')} · {document.get('document_id')}": document.get("document_id")
+                for document in documents
+                if document.get("document_id")
+            }
+            selected_document = st.selectbox("Open document", [""] + list(document_options.keys()))
+            if selected_document and st.button("Load document into PDF Chat", use_container_width=True):
+                load_document(document_options[selected_document])
+                st.success("Document loaded. Open the PDF Chat tab to inspect topics and paragraphs.")
+
+    with report_section:
+        st.markdown("#### Reports")
+        report_search = st.text_input("Search reports", key="report_search")
+        if st.button("Load reports", type="primary", use_container_width=True):
+            try:
+                st.session_state.reports_list = list_reports(report_search)
+            except requests.HTTPError as exc:
+                st.error(api_error_message(exc))
+            except requests.RequestException as exc:
+                st.error(f"Backend request failed: {exc}")
+
+        reports_data = st.session_state.reports_list
+        if reports_data:
+            reports = reports_data.get("reports", [])
+            st.caption(f"{len(reports)} of {reports_data.get('total', 0)} reports")
+            st.dataframe(report_rows(reports), use_container_width=True, hide_index=True)
+            report_options = {
+                f"{report.get('created_at')} · {report.get('query', '')[:60]}": report
+                for report in reports
+            }
+            selected_report = st.selectbox("Open report", [""] + list(report_options.keys()))
+            if selected_report:
+                report = report_options[selected_report]
+                st.write(report.get("answer") or "")
+                render_sources(report.get("source_chunks", []))
+
+
 def render_coding_agent() -> None:
     st.subheader("Coding Agent")
-    st.caption("Generate plans or patches with tools/coder_agent.py. Apply only after reviewing the patch.")
+    st.caption("Generate plans, review patches, or let tools/coder_agent.py apply and verify a patch.")
 
     config = run_command([PYTHON_BIN, "tools/coder_agent.py", "test", "--check-config"])
     if config.returncode == 0:
@@ -260,13 +331,15 @@ def render_coding_agent() -> None:
         help="Comma-separated repository-relative paths.",
     )
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
         plan_clicked = st.button("Generate plan", use_container_width=True)
     with col2:
         patch_clicked = st.button("Generate patch", type="primary", use_container_width=True)
     with col3:
         context_clicked = st.button("Show context files", use_container_width=True)
+    with col4:
+        direct_apply_clicked = st.button("Generate, apply, verify", use_container_width=True)
 
     extra_files = parse_extra_files(extra_files_text)
 
@@ -283,6 +356,14 @@ def render_coding_agent() -> None:
     if patch_clicked:
         with st.spinner("Generating patch..."):
             result = run_coder_agent(task, "patch", extra_files, [])
+            st.session_state.coder_result = command_output(result)
+            st.session_state.coder_patch = result.stdout if result.returncode == 0 else ""
+
+    if direct_apply_clicked:
+        st.warning("This will modify repository files by running coder_agent.py with --apply --verify.")
+        with st.spinner("Generating, applying, and verifying patch..."):
+            result = run_coder_agent(task, "patch", extra_files, ["--apply", "--verify"])
+            st.session_state.coder_direct_apply_log = command_output(result)
             st.session_state.coder_result = command_output(result)
             st.session_state.coder_patch = result.stdout if result.returncode == 0 else ""
 
@@ -314,6 +395,10 @@ def render_coding_agent() -> None:
         st.subheader("Verification log")
         st.code(st.session_state.coder_verify_log, language="text")
 
+    if st.session_state.coder_direct_apply_log:
+        st.subheader("Direct apply log")
+        st.code(st.session_state.coder_direct_apply_log, language="text")
+
 
 def refresh_status() -> None:
     st.session_state.ai_status = get_json("/v1/ai/status")
@@ -327,7 +412,7 @@ def upload_document(filename: str, content: bytes) -> dict[str, Any]:
     response = requests.post(
         f"{API_BASE_URL}/v1/documents",
         files={"file": (filename, content, "application/pdf")},
-        timeout=120,
+        timeout=API_READ_TIMEOUT_SECONDS,
     )
     response.raise_for_status()
     return response.json()
@@ -346,18 +431,36 @@ def load_document(document_id: str) -> None:
     st.session_state.topics = data.get("topics", [])
 
 
+def list_documents(search: str | None = None) -> dict[str, Any]:
+    params = {"limit": 100}
+    if search:
+        params["search"] = search
+    response = requests.get(f"{API_BASE_URL}/v1/documents", params=params, timeout=API_STATUS_TIMEOUT_SECONDS)
+    response.raise_for_status()
+    return response.json()
+
+
+def list_reports(search: str | None = None) -> dict[str, Any]:
+    params = {"limit": 100}
+    if search:
+        params["search"] = search
+    response = requests.get(f"{API_BASE_URL}/v1/reports", params=params, timeout=API_STATUS_TIMEOUT_SECONDS)
+    response.raise_for_status()
+    return response.json()
+
+
 def create_report(query: str) -> dict[str, Any]:
     return post_json("/v1/reports", {"query": query, "limit": 8})
 
 
 def get_json(path: str) -> dict[str, Any]:
-    response = requests.get(f"{API_BASE_URL}{path}", timeout=30)
+    response = requests.get(f"{API_BASE_URL}{path}", timeout=API_STATUS_TIMEOUT_SECONDS)
     response.raise_for_status()
     return response.json()
 
 
 def post_json(path: str, body: dict[str, Any] | None = None) -> dict[str, Any]:
-    response = requests.post(f"{API_BASE_URL}{path}", json=body, timeout=120)
+    response = requests.post(f"{API_BASE_URL}{path}", json=body, timeout=API_READ_TIMEOUT_SECONDS)
     response.raise_for_status()
     return response.json()
 
@@ -379,6 +482,33 @@ def filter_paragraphs(paragraphs: list[dict[str, Any]], keywords: list[str]) -> 
         paragraph
         for paragraph in paragraphs
         if any(keyword in str(paragraph.get("text", "")).lower() for keyword in lowered)
+    ]
+
+
+def document_rows(documents: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [
+        {
+            "filename": document.get("filename"),
+            "document_id": document.get("document_id"),
+            "pages": document.get("metadata", {}).get("page_count"),
+            "topics": document.get("topic_count", 0),
+            "chunks": document.get("chunk_count", 0),
+            "paragraphs": document.get("paragraph_count", 0),
+            "uploaded_at": document.get("metadata", {}).get("uploaded_at"),
+        }
+        for document in documents
+    ]
+
+
+def report_rows(reports: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [
+        {
+            "report_id": report.get("report_id"),
+            "query": report.get("query"),
+            "sources": len(report.get("source_chunks", [])),
+            "created_at": report.get("created_at"),
+        }
+        for report in reports
     ]
 
 
