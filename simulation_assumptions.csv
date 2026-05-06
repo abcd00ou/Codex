@@ -1,0 +1,7 @@
+Parameter,Definition,Rationale,Typical_Range
+Contracted_Capacity,계약된 총 용량(GPU 또는 MW),회사 공시/리서치 기반 입력. 훈련+추론 혼합 가능성 고려,-
+Inference_Allocation,총 계약 용량 중 추론 할당 비율,훈련/추론 전환이 빈번하므로 추론용 환산 필요,0.30~0.90
+Model_Mix_Weighted_tok_per_s_per_unit,하드웨어/모델/서빙스택 가중평균 tok/s,InferenceX 하드웨어별 tok/s를 트래픽 비중으로 가중,환경별 상이
+Utilization_U,평균 가동률,피크 대비 평균 부하 + 장애/유휴 포함,0.50~0.85
+Decode_Factor_D,prefill/디코드/출력길이 보정,실서비스 prompt/output 길이 분포로 인해 유효 처리량 감소,0.55~0.90
+SLO_Headroom,P95/P99 지연 목표를 위한 여유율,최대 처리량 풀가동 시 tail latency 급증 방지,0.75~0.95
