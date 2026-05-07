@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agentic Coding Workflow"
+  short_description: "Plan, verify, and simplify agent coding."
+  default_prompt: "Use the agentic-coding-workflow skill to plan, implement, verify, and simplify this project change."

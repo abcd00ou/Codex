@@ -41,21 +41,24 @@ def get_active_provider() -> dict[str, str | None]:
             "base_url": settings.openai_base_url,
             "model": settings.openai_model,
             "dep_ticket": settings.openai_dep_ticket,
+            "api_style": "responses",
         }
-    if provider in {"xai", "xai-grok", "grok"}:
+    if provider == "deepseek":
         return {
-            "provider": "xai",
-            "api_key": settings.xai_api_key,
-            "base_url": settings.xai_base_url,
-            "model": settings.xai_model,
+            "provider": "deepseek",
+            "api_key": settings.deepseek_api_key,
+            "base_url": settings.deepseek_base_url,
+            "model": settings.deepseek_model,
             "dep_ticket": None,
+            "api_style": "chat",
         }
     return {
-        "provider": "groq",
-        "api_key": settings.groq_api_key,
-        "base_url": settings.groq_base_url,
-        "model": settings.groq_model,
+        "provider": "deepseek",
+        "api_key": settings.deepseek_api_key,
+        "base_url": settings.deepseek_base_url,
+        "model": settings.deepseek_model,
         "dep_ticket": None,
+        "api_style": "chat",
     }
 
 
@@ -141,6 +144,8 @@ def enhance_pages_with_parsing_agent(
     pages_attempted = 0
     pages_enhanced = 0
     errors = []
+    repeated_artifacts = detect_repeated_artifacts(pages)
+    previous_tail = ""
 
     for page in pages:
         page_number = int(page.get("page", 0))
@@ -156,7 +161,13 @@ def enhance_pages_with_parsing_agent(
 
         pages_attempted += 1
         try:
-            enhanced = parse_page_with_agent(client, page, max_chars_per_page)
+            enhanced = parse_page_with_agent(
+                client,
+                page,
+                max_chars_per_page,
+                repeated_artifacts,
+                previous_tail,
+            )
             quality = evaluate_parsed_page(enhanced, page)
             if quality["score"] >= 0.55:
                 enhanced_pages.append(enhanced)
@@ -167,6 +178,7 @@ def enhance_pages_with_parsing_agent(
         except Exception as exc:
             enhanced_pages.append(page)
             errors.append(f"page {page_number}: {exc}")
+        previous_tail = page_tail_text(enhanced_pages[-1])
 
     for page in pages[len(enhanced_pages) :]:
         enhanced_pages.append(page)
@@ -187,32 +199,74 @@ def parse_page_with_agent(
     client: OpenAI,
     page: dict[str, Any],
     max_chars_per_page: int,
+    repeated_artifacts: set[str],
+    previous_tail: str,
 ) -> dict[str, Any]:
     page_number = int(page.get("page", 0))
     source_paragraphs = page.get("paragraphs") or []
+    layout_objects = page.get("layout_objects") or []
     raw_blocks = "\n\n".join(
-        f"source_id={paragraph.get('paragraph_id')}\ntext={paragraph.get('text')}"
+        (
+            f"source_id={paragraph.get('paragraph_id')}\n"
+            f"bbox={paragraph.get('bbox', [])}\n"
+            f"repeated_artifact={normalize_artifact_text(str(paragraph.get('text', ''))) in repeated_artifacts}\n"
+            f"text={paragraph.get('text')}"
+        )
         for paragraph in source_paragraphs
     )[:max_chars_per_page]
+    raw_layout_objects = "\n".join(
+        f"object_id={item.get('object_id')}, kind={item.get('kind')}, bbox={item.get('bbox')}"
+        for item in layout_objects
+    )
 
+    page_layout = (
+        f"page={page_number}, width={page.get('width')}, height={page.get('height')}. "
+        "bbox format is [x0, y0, x1, y1] in PDF points. Use y position to distinguish "
+        "top headers, bottom footers, columns, and content flow."
+    )
     messages = [
         {
             "role": "system",
             "content": (
-                "You are a PDF parsing agent. Reconstruct readable paragraphs from extracted PDF text blocks. "
+                "You are a layout-aware PDF parsing agent. Reconstruct only the real document content "
+                "from extracted PDF text blocks and their coordinates. "
                 "Fix broken line wraps and hyphenation. Keep the original language. Do not summarize. "
-                "Preserve all meaningful source content, including definitions, examples, numbers, citations, "
-                "tables converted to readable text, and section headings. Do not shorten the page. "
+                "Preserve meaningful narrative content, including definitions, examples, numbers, citations, "
+                "and section headings. Do not shorten narrative paragraphs. Exclude tables from paragraph storage. "
+                "Remove non-content artifacts such as repeated page headers, page numbers, journal footers, "
+                "ISSN lines, website footers, copyright banners, and navigation text. "
+                "Use bbox and repeated_artifact hints to identify headers, footers, side labels, and multi-column flow. "
+                "If a paragraph starts on this page but clearly continues the previous page's unfinished paragraph, "
+                "set merge_with_previous=true on that paragraph. Use the previous page tail context for this decision. "
+                "Do not split one semantic paragraph into sentences. "
+                "Do not split a paragraph just because a line starts with a number, quarter label, percentage, price, "
+                "or enumerated point such as '1.' or '2.'; keep numbered facts in the same paragraph when they continue "
+                "the same key takeaway or bullet block. "
+                "If an image or graph interrupts a paragraph, keep the paragraph semantic unit intact and preserve "
+                "nearby figure captions as kind=figure_caption when they contain meaningful text. "
+                "Calibration rules from this repository's sample PDFs: "
+                "standalone report headers such as 'Analog Semiconductor Insights', standalone dates such as "
+                "'October 30, 2023', volume/issue mastheads, APPENDIX/disclosure blocks, analyst contact blocks, "
+                "and 'Note: This is not the full Insights report...' are artifacts, not paragraphs. "
+                "For academic papers, prefer the real article title over volume/issue text as kind=title. "
+                "For market digest PDFs, keep the headline and Key Takeaways narrative, but exclude monthly price tables, "
+                "forecast tables, source estimate rows, and isolated percentage rows. "
                 "Do not invent content. Return only valid JSON with this shape: "
-                '{"paragraphs":[{"text":"string","kind":"heading|paragraph|list|table|footer",'
-                '"source_ids":["p1_1"]}]}. '
-                "Merge blocks only when they are clearly one paragraph. Keep repeated headers/footers as footer "
-                "paragraphs unless you are certain they contain no document content."
+                '{"paragraphs":[{"text":"string","kind":"title|heading|paragraph|list|table|figure_caption|artifact",'
+                '"source_ids":["p1_1"],"merge_with_previous":false}]}. '
+                "Use kind=title only for the document title, not ordinary headings. "
+                "Use kind=table for table-like content that should be excluded from stored paragraphs. "
+                "Use kind=artifact only for removed non-content. The stored document will keep title, heading, paragraph, list, and figure_caption."
             ),
         },
         {
             "role": "user",
-            "content": f"Page {page_number} extracted blocks:\n\n{raw_blocks}",
+            "content": (
+                f"Page layout:\n{page_layout}\n\n"
+                f"Previous page tail context for cross-page continuation:\n{previous_tail or 'none'}\n\n"
+                f"Non-text layout objects such as images or graphs:\n{raw_layout_objects or 'none'}\n\n"
+                f"Extracted text blocks:\n\n{raw_blocks}"
+            ),
         },
     ]
     response_text = generate_text(client, messages)
@@ -245,8 +299,10 @@ def normalize_parsed_paragraphs(
         if not text or not parsed_text_is_grounded(text, source_text):
             continue
         kind = str(raw.get("kind") or "paragraph").strip().lower()
-        if kind not in {"heading", "paragraph", "list", "table", "footer"}:
+        if kind not in {"title", "heading", "paragraph", "list", "table", "figure_caption", "footer", "artifact"}:
             kind = "paragraph"
+        if kind in {"footer", "artifact", "table"} or looks_like_non_content_text(text):
+            continue
         source_ids = [
             str(source_id).strip()
             for source_id in raw.get("source_ids", [])
@@ -259,12 +315,83 @@ def normalize_parsed_paragraphs(
                 "paragraph_index": paragraph_index,
                 "kind": kind,
                 "source_ids": source_ids,
+                "merge_with_previous": bool(raw.get("merge_with_previous")),
                 "text": text,
             }
         )
         paragraph_index += 1
 
-    return paragraphs or source_paragraphs
+    fallback_paragraphs = [
+        paragraph
+        for paragraph in source_paragraphs
+        if not looks_like_non_content_text(str(paragraph.get("text", "")))
+    ]
+    return paragraphs or fallback_paragraphs or source_paragraphs
+
+
+def page_tail_text(page: dict[str, Any], limit: int = 700) -> str:
+    paragraphs = page.get("paragraphs") or []
+    if not paragraphs:
+        return ""
+    text = "\n\n".join(str(paragraph.get("text", "")) for paragraph in paragraphs[-2:])
+    return text[-limit:]
+
+
+def detect_repeated_artifacts(pages: list[dict[str, Any]]) -> set[str]:
+    counts: Counter[str] = Counter()
+    page_count = len(pages)
+    if page_count < 2:
+        return set()
+
+    for page in pages:
+        height = float(page.get("height") or 0)
+        for paragraph in page.get("paragraphs") or []:
+            text = str(paragraph.get("text", ""))
+            normalized = normalize_artifact_text(text)
+            if not normalized or len(normalized) > 120:
+                continue
+            bbox = paragraph.get("bbox") or []
+            y0 = float(bbox[1]) if len(bbox) >= 2 else 0.0
+            y1 = float(bbox[3]) if len(bbox) >= 4 else 0.0
+            in_margin = height and (y0 < height * 0.12 or y1 > height * 0.88)
+            if in_margin or looks_like_non_content_text(text):
+                counts[normalized] += 1
+
+    threshold = max(2, int(page_count * 0.3))
+    return {text for text, count in counts.items() if count >= threshold}
+
+
+def normalize_artifact_text(text: str) -> str:
+    normalized = " ".join(text.lower().split())
+    normalized = re.sub(r"\d+", "#", normalized)
+    return normalized.strip(" -_|")
+
+
+def looks_like_non_content_text(text: str) -> bool:
+    clean = " ".join(text.split()).strip()
+    lowered = clean.lower()
+    if not clean:
+        return True
+    patterns = [
+        r"^page\s+\d+(\s+of\s+\d+)?$",
+        r"^\d+\s*/\s*\d+$",
+        r"^\d+$",
+        r"^issn[:\s-]*[\d-]+",
+        r"^www\.[^\s]+$",
+        r"^https?://[^\s]+$",
+        r"^volume\s+\d+\s+issue\s+\d+",
+    ]
+    if any(re.search(pattern, lowered) for pattern in patterns):
+        return True
+    footer_terms = (
+        "copyright",
+        "all rights reserved",
+        "jsr.org",
+        "confidential",
+        "solely intended for use",
+        "not for redistribution",
+    )
+    return len(clean) <= 120 and any(term in lowered for term in footer_terms)
 
 
 def evaluate_parsed_page(
@@ -370,6 +497,14 @@ def analyze_topics_with_agent(chunks: list[dict[str, Any]]) -> dict[str, list[di
 
 def generate_text(client: OpenAI, messages: list[dict[str, str]]) -> str:
     provider = get_active_provider()
+    if provider.get("api_style") == "chat":
+        response = client.chat.completions.create(
+            model=provider["model"],
+            messages=messages,
+        )
+        logger.info("LLM call succeeded through Chat Completions API")
+        return response.choices[0].message.content or ""
+
     try:
         response = client.responses.create(
             model=provider["model"],

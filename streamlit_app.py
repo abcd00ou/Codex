@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 import subprocess
+import sys
 from typing import Any
 
 import requests
@@ -11,8 +13,8 @@ import streamlit as st
 API_BASE_URL = os.getenv("AGENTIC_PDF_API_URL", "http://127.0.0.1:8000")
 API_READ_TIMEOUT_SECONDS = int(os.getenv("AGENTIC_PDF_API_READ_TIMEOUT_SECONDS", "600"))
 API_STATUS_TIMEOUT_SECONDS = int(os.getenv("AGENTIC_PDF_API_STATUS_TIMEOUT_SECONDS", "30"))
-REPO_DIR = os.path.dirname(os.path.abspath(__file__))
-PYTHON_BIN = os.path.join(REPO_DIR, ".venv", "bin", "python")
+REPO_DIR = Path(__file__).resolve().parent
+PYTHON_BIN = os.getenv("AGENTIC_PDF_PYTHON_BIN") or ""
 
 
 st.set_page_config(
@@ -75,9 +77,9 @@ def init_state() -> None:
     st.session_state.setdefault("coder_direct_apply_log", "")
 
     if st.session_state.ai_status is None:
-        refresh_status()
+        safe_refresh_status()
     if st.session_state.dashboard is None:
-        refresh_dashboard()
+        safe_refresh_dashboard()
 
 
 def render_ai_status() -> None:
@@ -162,14 +164,15 @@ def render_topics() -> None:
         st.write("Upload or load a PDF to inspect topics, keywords, and paragraphs.")
         return
 
-    topic_options = {
-        f"{topic.get('topic', 'Untitled')} · pages {topic.get('page_start')}-{topic.get('page_end')}": topic
-        for topic in topics
-    }
+    topic_options = {topic.get("topic", "Untitled"): topic for topic in topics}
     selected_topic_label = st.selectbox("Topic", list(topic_options.keys()))
     selected_topic = topic_options[selected_topic_label]
 
-    st.write(selected_topic.get("summary") or "No summary")
+    st.markdown(f"### {extract_document_title(details)}")
+    st.write(extract_document_summary(details, topics))
+    st.divider()
+
+    st.write(selected_topic.get("summary") or "No topic summary")
     st.caption(f"Topic ID: {selected_topic.get('topic_id')}")
 
     keywords = selected_topic.get("keywords") or []
@@ -187,12 +190,13 @@ def render_topics() -> None:
             if chunk.get("chunk_id") in topic_chunk_ids:
                 paragraphs.extend(chunk.get("paragraphs") or [])
 
-    filtered = filter_paragraphs(paragraphs, selected_keywords)
+    body_paragraphs = visible_body_paragraphs(paragraphs)
+    filtered = filter_paragraphs(body_paragraphs, selected_keywords)
     filter_label = "all paragraphs" if not selected_keywords else "keyword-matched paragraphs"
-    st.caption(f"Showing {len(filtered)} of {len(paragraphs)} {filter_label}")
+    st.caption(f"Showing {len(filtered)} of {len(body_paragraphs)} {filter_label}")
 
     for paragraph in filtered:
-        label = f"Page {paragraph.get('page')} · {paragraph.get('paragraph_id')}"
+        label = f"Paragraph {paragraph.get('document_paragraph_index') or paragraph.get('paragraph_index')}"
         with st.expander(label, expanded=len(filtered) <= 3):
             st.write(paragraph.get("text") or "")
 
@@ -310,8 +314,9 @@ def render_data_browser() -> None:
 def render_coding_agent() -> None:
     st.subheader("Coding Agent")
     st.caption("Generate plans, review patches, or let tools/coder_agent.py apply and verify a patch.")
+    st.caption(f"Python: `{resolve_python_bin()}`")
 
-    config = run_command([PYTHON_BIN, "tools/coder_agent.py", "test", "--check-config"])
+    config = run_command([resolve_python_bin(), "tools/coder_agent.py", "test", "--check-config"])
     if config.returncode == 0:
         st.code(config.stdout.strip() or "No config output", language="text")
     else:
@@ -404,8 +409,37 @@ def refresh_status() -> None:
     st.session_state.ai_status = get_json("/v1/ai/status")
 
 
+def safe_refresh_status() -> None:
+    try:
+        refresh_status()
+    except requests.RequestException as exc:
+        st.session_state.ai_status = {
+            "configured": False,
+            "model": None,
+            "base_url": None,
+            "last_call": {
+                "task": "status",
+                "mode": "unavailable",
+                "error": f"Backend unavailable: {exc}",
+            },
+        }
+
+
 def refresh_dashboard() -> None:
     st.session_state.dashboard = post_json("/v1/dashboard/refresh")
+
+
+def safe_refresh_dashboard() -> None:
+    try:
+        refresh_dashboard()
+    except requests.RequestException:
+        st.session_state.dashboard = {
+            "document_count": 0,
+            "topic_count": 0,
+            "chunk_count": 0,
+            "paragraph_count": 0,
+            "top_documents": [],
+        }
 
 
 def upload_document(filename: str, content: bytes) -> dict[str, Any]:
@@ -485,6 +519,47 @@ def filter_paragraphs(paragraphs: list[dict[str, Any]], keywords: list[str]) -> 
     ]
 
 
+def visible_body_paragraphs(paragraphs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    hidden_kinds = {"title", "artifact", "footer", "table"}
+    return [
+        paragraph
+        for paragraph in paragraphs
+        if str(paragraph.get("kind") or "paragraph").lower() not in hidden_kinds
+    ]
+
+
+def extract_document_title(details: dict[str, Any] | None) -> str:
+    details = details or {}
+    document = details.get("document") or {}
+    topics = details.get("topics") or []
+    metadata_title = document.get("metadata", {}).get("title")
+
+    for topic in topics:
+        for paragraph in topic.get("paragraphs") or []:
+            if str(paragraph.get("kind", "")).lower() == "title":
+                return str(paragraph.get("text", "")).strip()
+
+    return str(metadata_title or document.get("filename") or "Untitled document")
+
+
+def extract_document_summary(details: dict[str, Any] | None, topics: list[dict[str, Any]]) -> str:
+    summaries = []
+    for topic in topics:
+        summary = str(topic.get("summary") or "").strip()
+        if summary and summary not in summaries:
+            summaries.append(summary)
+    if summaries:
+        return " ".join(summaries[:3])[:900]
+
+    details = details or {}
+    for topic in details.get("topics") or []:
+        for paragraph in visible_body_paragraphs(topic.get("paragraphs") or []):
+            text = str(paragraph.get("text") or "").strip()
+            if text:
+                return text[:900]
+    return "No document summary available yet."
+
+
 def document_rows(documents: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [
         {
@@ -516,13 +591,29 @@ def parse_extra_files(value: str) -> list[str]:
     return [part.strip() for part in value.split(",") if part.strip()]
 
 
+def resolve_python_bin() -> str:
+    if PYTHON_BIN:
+        return PYTHON_BIN
+
+    candidates = [
+        REPO_DIR / ".venv" / "bin" / "python",
+        REPO_DIR / ".venv" / "bin" / "python3",
+        REPO_DIR / ".venv" / "Scripts" / "python.exe",
+        REPO_DIR / ".venv" / "Scripts" / "python",
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return str(candidate)
+    return sys.executable
+
+
 def run_coder_agent(
     task: str,
     mode: str,
     extra_files: list[str],
     extra_args: list[str],
 ) -> subprocess.CompletedProcess[str]:
-    command = [PYTHON_BIN, "tools/coder_agent.py", task, "--mode", mode]
+    command = [resolve_python_bin(), "tools/coder_agent.py", task, "--mode", mode]
     for file_path in extra_files:
         command.extend(["--file", file_path])
     command.extend(extra_args)
@@ -534,14 +625,29 @@ def run_command(
     timeout: int = 60,
     input_text: str | None = None,
 ) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        command,
-        cwd=REPO_DIR,
-        input=input_text,
-        text=True,
-        capture_output=True,
-        timeout=timeout,
-    )
+    try:
+        return subprocess.run(
+            command,
+            cwd=str(REPO_DIR),
+            input=input_text,
+            text=True,
+            capture_output=True,
+            timeout=timeout,
+        )
+    except FileNotFoundError as exc:
+        return subprocess.CompletedProcess(
+            command,
+            127,
+            "",
+            f"Command file not found: {exc.filename}. Set AGENTIC_PDF_PYTHON_BIN if needed.",
+        )
+    except subprocess.TimeoutExpired as exc:
+        return subprocess.CompletedProcess(
+            command,
+            124,
+            exc.stdout or "",
+            exc.stderr or f"Command timed out after {timeout} seconds.",
+        )
 
 
 def apply_patch_text(patch: str) -> subprocess.CompletedProcess[str]:
@@ -552,7 +658,7 @@ def apply_patch_text(patch: str) -> subprocess.CompletedProcess[str]:
 
 
 def verify_code() -> subprocess.CompletedProcess[str]:
-    return run_command([PYTHON_BIN, "-m", "compileall", "app"], timeout=60)
+    return run_command([resolve_python_bin(), "-m", "compileall", "app"], timeout=60)
 
 
 def command_output(result: subprocess.CompletedProcess[str]) -> str:

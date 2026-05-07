@@ -2,7 +2,7 @@
 
 PDF를 업로드하면 내용을 파싱하고, 소주제별로 나누어 저장한 뒤, 저장된 자료를 검색/요약/대시보드 데이터로 제공하는 FastAPI 기반 agentic AI API입니다.
 
-이 프로젝트는 `gpt-oss-120B`만 사용할 수 있는 환경을 전제로 합니다. 모델 성능이 항상 안정적이라고 가정하지 않고, 파서, schema 검증, fallback 로직, 짧은 agent 역할 분리로 품질을 보완합니다.
+이 프로젝트는 OpenAI 또는 DeepSeek API를 바꿔가며 쓸 수 있는 환경을 전제로 합니다. 모델 성능이 항상 안정적이라고 가정하지 않고, 파서, schema 검증, fallback 로직, 짧은 agent 역할 분리로 품질을 보완합니다.
 
 ## What It Does
 
@@ -32,7 +32,7 @@ Client / Swagger
 ## Requirements
 
 - Python 3.13+
-- `gpt-oss-120B` OpenAI-compatible API endpoint, or OpenAI API endpoint that supports your configured model
+- OpenAI API endpoint or DeepSeek OpenAI-compatible API endpoint
 - MongoDB or MongoDB Atlas for production
 
 For local development, MongoDB is optional because `MONGODB_URI=local://dev` stores data in `.storage/local_db.json`.
@@ -71,27 +71,27 @@ MONGODB_URI=mongodb+srv://USER:PASSWORD@CLUSTER.mongodb.net/?retryWrites=true&w=
 MONGODB_DB=agentic_ai
 ```
 
-`gpt-oss-120B` OpenAI-compatible endpoint:
+OpenAI endpoint:
 
 ```env
 LLM_PROVIDER=openai
-OPENAI_API_KEY=local-key
-OPENAI_BASE_URL=http://localhost:8001/v1
-OPENAI_MODEL=gpt-oss-120b
+OPENAI_API_KEY=your-openai-key
+OPENAI_BASE_URL=
+OPENAI_MODEL=gpt-4.1-mini
 ```
 
-Grok/xAI endpoint:
+DeepSeek OpenAI-compatible endpoint:
 
 ```env
-LLM_PROVIDER=grok
-XAI_API_KEY=your-xai-key
-XAI_BASE_URL=https://api.x.ai/v1
-XAI_MODEL=grok-4.20-reasoning
+LLM_PROVIDER=deepseek
+DEEPSEEK_API_KEY=your-deepseek-key
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-chat
 ```
 
-Switching providers only requires changing `LLM_PROVIDER` and the matching provider credentials. Both paths use the `openai` Python package with an OpenAI-compatible API.
+Switching providers only requires changing `LLM_PROVIDER` and the matching provider credentials. Supported values are `openai` and `deepseek`. Both paths use the `openai` Python package; DeepSeek uses its OpenAI-compatible Chat Completions API.
 
-Keep the model server on a different port from this API. This FastAPI app uses port `8000`; a local model server should use something like `8001`.
+If you use a custom OpenAI-compatible `OPENAI_BASE_URL`, keep that model server on a different port from this API. This FastAPI app uses port `8000`; a local model server should use something like `8001`.
 
 For larger PDFs, increase the Streamlit-to-API read timeout:
 
@@ -101,8 +101,17 @@ AGENTIC_PDF_API_READ_TIMEOUT_SECONDS=600
 
 ## Run
 
+macOS/Linux:
+
 ```bash
 source .venv/bin/activate
+uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+Windows PowerShell:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
 uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
@@ -116,8 +125,17 @@ Open:
 
 Run the Streamlit UI in a second terminal while FastAPI is running:
 
+macOS/Linux:
+
 ```bash
 source .venv/bin/activate
+streamlit run streamlit_app.py
+```
+
+Windows PowerShell:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
 streamlit run streamlit_app.py
 ```
 
@@ -125,6 +143,19 @@ If the API server is not on `http://127.0.0.1:8000`, set:
 
 ```bash
 AGENTIC_PDF_API_URL=http://host:port streamlit run streamlit_app.py
+```
+
+The Streamlit coding agent automatically tries these Python paths:
+
+- `.venv/bin/python`
+- `.venv/bin/python3`
+- `.venv\Scripts\python.exe`
+- the Python that launched Streamlit
+
+If a different interpreter is required, set:
+
+```env
+AGENTIC_PDF_PYTHON_BIN=/absolute/path/to/python
 ```
 
 The Streamlit app has three tabs:
@@ -201,7 +232,7 @@ Example report body:
 - Aggregated dashboard state
 - Stores document count, topic count, chunk count, paragraph count, recent documents
 
-## Agent Strategy For gpt-oss-120B
+## Agent Strategy For Lower-Cost Models
 
 Do not ask the model to do everything in one pass. Use small jobs:
 
@@ -216,7 +247,7 @@ Do not ask the model to do everything in one pass. Use small jobs:
 - Report agent summarizes only retrieved chunks.
 - Dashboard logic uses database aggregation, not free-form model output.
 
-This keeps the system useful even when `gpt-oss-120B` is weaker than frontier closed models.
+This keeps the system useful even when the configured model is weaker than frontier closed models.
 
 ## Quality Controls
 
@@ -259,10 +290,10 @@ This repository includes a small project-specific coding agent CLI:
 tools/coder_agent.py
 ```
 
-It reads the repository README, the project skill, and selected source files, then asks `gpt-oss-120B` for either an implementation plan or a unified diff patch.
+It reads the repository README, the project skill, and selected source files, then asks the configured provider for either an implementation plan or a unified diff patch.
 
 The default mode is safe: it prints the generated patch but does not apply it.
-The CLI tries the Responses API first and falls back to Chat Completions for local OpenAI-compatible `gpt-oss-120B` servers.
+The CLI uses Responses API for OpenAI and Chat Completions for DeepSeek.
 
 Generate a plan:
 
@@ -333,7 +364,7 @@ Recommended workflow:
 4. Re-run with `--apply --verify` only if the patch is acceptable, or use the Streamlit `Generate, apply, verify` button for the same flow.
 5. Test through Swagger.
 
-This tool is intentionally narrow. It is not a general coding assistant; it is tuned for this PDF ingestion API and the `gpt-oss-120B` reliability constraints.
+This tool is intentionally narrow. It is not a general coding assistant; it is tuned for this PDF ingestion API and lower-cost model reliability constraints.
 
 ## Useful Commands
 

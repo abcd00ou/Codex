@@ -1,0 +1,256 @@
+{
+  "generated_at": "2026-04-30",
+  "period": "2026",
+  "layers": {
+    "HBM": {
+      "layer": "HBM",
+      "supply_pb": 571,
+      "supply_confidence": 0.8,
+      "supply_basis": "SK Hynix + Samsung + Micron 분기 출하량 × 4 (연간 환산)",
+      "demand_pb": 1805.59,
+      "demand_confidence": 0.74,
+      "demand_basis": "하이퍼스케일러 CapEx 역산 + 소버린 AI 공시",
+      "gap_ratio": 3.162,
+      "gap_status": "critical",
+      "priority_structure": {
+        "SK_Hynix": [
+          {
+            "rank": 1,
+            "customer": "NVIDIA",
+            "basis": "장기 독점 공급계약 (GB200 NVL72 전용)",
+            "alloc_pct": 70
+          },
+          {
+            "rank": 2,
+            "customer": "AMD",
+            "basis": "MI300X/MI350 공급계약",
+            "alloc_pct": 15
+          },
+          {
+            "rank": 3,
+            "customer": "Intel",
+            "basis": "Gaudi 소량 공급",
+            "alloc_pct": 5
+          },
+          {
+            "rank": 4,
+            "customer": "기타",
+            "basis": "잔여 물량 — 납기 불확실",
+            "alloc_pct": 10
+          }
+        ],
+        "Samsung": [
+          {
+            "rank": 1,
+            "customer": "자체 GPU",
+            "basis": "삼성 자체 소비 (Mach-1 등)",
+            "alloc_pct": 30
+          },
+          {
+            "rank": 2,
+            "customer": "기타 팹리스",
+            "basis": "NVIDIA 외 고객",
+            "alloc_pct": 70
+          }
+        ],
+        "Micron": [
+          {
+            "rank": 1,
+            "customer": "NVIDIA",
+            "basis": "HBM3e 10% 점유율 계약",
+            "alloc_pct": 60
+          },
+          {
+            "rank": 2,
+            "customer": "기타",
+            "basis": "잔여",
+            "alloc_pct": 40
+          }
+        ]
+      },
+      "resolution_months": "2026Q3",
+      "vulnerable_customers": [
+        {
+          "tier": "소버린 AI / 국가 프로젝트",
+          "risk_level": "high",
+          "reason": "장기계약 없음 + 우선순위 3순위",
+          "hbm_demand_pb": 20.4,
+          "implication": "HBM 수급 갭 316.2% 상황에서 높음 — 장기계약 없음, 공급 타이트 시 후순위 배치 리스크"
+        },
+        {
+          "tier": "엣지 / 기업",
+          "risk_level": "high",
+          "reason": "장기계약 없음 + 우선순위 4순위",
+          "hbm_demand_pb": 0.08,
+          "implication": "HBM 수급 갭 316.2% 상황에서 낮음 — HBM 의존도 낮아 공급 타이트 영향 제한적"
+        }
+      ],
+      "narrative": "HBM 연간 공급 571.00PB 대비 수요 1805.59PB — 수급갭 3.16x. SK Hynix 출하량의 70%는 NVIDIA 장기계약으로 선점. 장기계약 없는 Tier 3(소버린 AI) 고객은 12~18개월 납기 리스크. Samsung HBM3e NVIDIA 퀄 미완료로 실질 공급 집중도 심화."
+    },
+    "CoWoS": {
+      "layer": "CoWoS",
+      "supply_wpm": 105000,
+      "supply_confidence": 0.95,
+      "supply_basis": "TSMC IR 발표 (2026 목표 120K wpm, 현재 105K wpm)",
+      "demand_wpm": 128453,
+      "demand_confidence": 0.75,
+      "demand_basis": "Tier 1 HBM 수요 역산 → CoWoS 환산",
+      "gap_ratio": 1.223,
+      "gap_status": "tight",
+      "priority_structure": {
+        "TSMC": [
+          {
+            "rank": 1,
+            "customer": "NVIDIA",
+            "basis": "B200/GB200 CoWoS 독점 의존 (100%)",
+            "alloc_pct": 65
+          },
+          {
+            "rank": 2,
+            "customer": "AMD",
+            "basis": "MI300X/MI350 CoWoS",
+            "alloc_pct": 15
+          },
+          {
+            "rank": 3,
+            "customer": "Google",
+            "basis": "TPU v5/v6 CoWoS",
+            "alloc_pct": 10
+          },
+          {
+            "rank": 4,
+            "customer": "기타",
+            "basis": "Marvell, Broadcom ASIC 등",
+            "alloc_pct": 10
+          }
+        ]
+      },
+      "resolution_months": 18,
+      "vulnerable_customers": [
+        {
+          "tier": "소버린 AI / 국가 프로젝트",
+          "risk_level": "high",
+          "reason": "장기계약 없음 + 우선순위 3순위",
+          "hbm_demand_pb": 20.4,
+          "implication": "HBM 수급 갭 122.3% 상황에서 높음 — 장기계약 없음, 공급 타이트 시 후순위 배치 리스크"
+        },
+        {
+          "tier": "엣지 / 기업",
+          "risk_level": "high",
+          "reason": "장기계약 없음 + 우선순위 4순위",
+          "hbm_demand_pb": 0.08,
+          "implication": "HBM 수급 갭 122.3% 상황에서 낮음 — HBM 의존도 낮아 공급 타이트 영향 제한적"
+        }
+      ],
+      "narrative": "TSMC CoWoS 현재 캐파 105,000wpm, 추정 수요 128,453wpm — 갭 1.22x. NVIDIA GB200 전량이 CoWoS 의존 (100%). 2026 Q4 120K wpm 달성 전까지 후발 고객 패키징 큐 대기 불가피. 대안: Panel-level 패키징(2027~), 칩렛 분산 구성."
+    },
+    "Power_DC": {
+      "layer": "Power_DC",
+      "supply_indicator": "backlog_driven",
+      "backlog_usd_bn": 8.2,
+      "lead_time_months": 18,
+      "supply_confidence": 0.95,
+      "gap_ratio": 1.15,
+      "gap_status": "tight",
+      "resolution_months": 24,
+      "narrative": "Vertiv 수주잔고 $8.2B, 납기 18개월. GE Vernova 변압기 납기 30개월. DC 전력 제약이 GPU 클러스터 배포를 지연시키는 2차 병목."
+    }
+  },
+  "cascade_analysis": {
+    "active_cascades": [
+      {
+        "layer": "HBM",
+        "gap_ratio": 3.162,
+        "effect": "NVIDIA GB200 생산 제약 → 출하 지연",
+        "downstream_layers": [
+          "CoWoS",
+          "Power_DC"
+        ],
+        "lag_months": 2,
+        "status": "active"
+      },
+      {
+        "layer": "CoWoS",
+        "gap_ratio": 1.223,
+        "effect": "첨단 AI 칩 패키징 큐 경합 심화 → TSMC N3 추가 압박",
+        "downstream_layers": [
+          "GPU",
+          "Foundry"
+        ],
+        "lag_months": 3,
+        "status": "active"
+      },
+      {
+        "layer": "Power_DC",
+        "gap_ratio": 1.15,
+        "effect": "DC 전력 제약으로 GPU 클러스터 배포 지연 → 수요 누적 가속",
+        "downstream_layers": [
+          "Networking"
+        ],
+        "lag_months": 6,
+        "status": "active"
+      }
+    ],
+    "cascade_count": 3,
+    "summary": "3개 레이어에서 병목 cascade 활성. HBM → CoWoS → 전력 순서로 연쇄."
+  },
+  "opportunities": [
+    {
+      "layer": "HBM",
+      "gap_ratio": 3.162,
+      "opportunity_type": "대안 메모리 솔루션 (GDDR7, CXL 확장), 재고 최적화 컨설팅",
+      "target_customers": [
+        {
+          "tier": "소버린 AI / 국가 프로젝트",
+          "risk_level": "high",
+          "reason": "장기계약 없음 + 우선순위 3순위",
+          "hbm_demand_pb": 20.4,
+          "implication": "HBM 수급 갭 316.2% 상황에서 높음 — 장기계약 없음, 공급 타이트 시 후순위 배치 리스크"
+        },
+        {
+          "tier": "엣지 / 기업",
+          "risk_level": "high",
+          "reason": "장기계약 없음 + 우선순위 4순위",
+          "hbm_demand_pb": 0.08,
+          "implication": "HBM 수급 갭 316.2% 상황에서 낮음 — HBM 의존도 낮아 공급 타이트 영향 제한적"
+        }
+      ],
+      "timeframe": "2026Q3"
+    },
+    {
+      "layer": "CoWoS",
+      "gap_ratio": 1.223,
+      "opportunity_type": "Panel-level 패키징 대안 소싱, 패키징 멀티소싱 전략",
+      "target_customers": [
+        {
+          "tier": "소버린 AI / 국가 프로젝트",
+          "risk_level": "high",
+          "reason": "장기계약 없음 + 우선순위 3순위",
+          "hbm_demand_pb": 20.4,
+          "implication": "HBM 수급 갭 122.3% 상황에서 높음 — 장기계약 없음, 공급 타이트 시 후순위 배치 리스크"
+        },
+        {
+          "tier": "엣지 / 기업",
+          "risk_level": "high",
+          "reason": "장기계약 없음 + 우선순위 4순위",
+          "hbm_demand_pb": 0.08,
+          "implication": "HBM 수급 갭 122.3% 상황에서 낮음 — HBM 의존도 낮아 공급 타이트 영향 제한적"
+        }
+      ],
+      "timeframe": 18
+    },
+    {
+      "layer": "Power_DC",
+      "gap_ratio": 1.15,
+      "opportunity_type": "모듈형 전력 솔루션, 전력 효율화 컨설팅, 에너지 계약 중개",
+      "target_customers": [],
+      "timeframe": 24
+    }
+  ],
+  "executive_summary": "[HBM] 수급갭 3.16x (critical) — 공급 571PB vs 수요 1805.59PB. SK Hynix 70% NVIDIA 선점. 장기계약 없는 고객 납기 불확실. | [CoWoS] 수급갭 1.22x (tight) — TSMC 105,000wpm vs 수요 128,453wpm. 120K wpm 달성은 2026 Q4. 후발 발주 고객 2027 Q1 납기 리스크. | [전력] 납기 18~30개월 (tight) — Vertiv 수주잔고 $8.2B. DC 배포 속도 제약, GPU 클러스터 가동 지연 유발. | Cascade: 3개 병목 연쇄 활성. HBM 타이트 → CoWoS 큐 경합 → 전력 병목 순서로 파급.",
+  "data_sources": {
+    "supply": "earnings_agent (실적발표 파싱 / seed 하드코딩)",
+    "demand": "demand_mapper (CapEx 역산 + 공시)",
+    "confidence_note": "수치 옆 confidence는 데이터 품질 지표. 1.0=공식 공시, 0.6=seed 추정, 0.4 미만=간접 시그널."
+  }
+}

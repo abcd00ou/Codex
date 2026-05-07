@@ -1,0 +1,164 @@
+{
+  "fetched_at": "2026-04-30",
+  "period": "2026",
+  "tiers": {
+    "1": {
+      "tier": 1,
+      "tier_name": "하이퍼스케일러",
+      "companies": {
+        "Microsoft": {
+          "company": "Microsoft",
+          "capex_usd_bn": 190,
+          "ai_infra_share": 0.6,
+          "ai_budget_usd_bn": 114.0,
+          "gb200_racks_est": 26600,
+          "hbm_demand_gb": 433380864,
+          "hbm_demand_pb": 433.38,
+          "basis": "CapEx $190B × AI비중 60% → GB200 역산",
+          "confidence": 0.44999999999999996,
+          "period": "2026"
+        },
+        "Amazon": {
+          "company": "Amazon",
+          "capex_usd_bn": 200,
+          "ai_infra_share": 0.5,
+          "ai_budget_usd_bn": 100.0,
+          "gb200_racks_est": 23333,
+          "hbm_demand_gb": 380155392,
+          "hbm_demand_pb": 380.16,
+          "basis": "CapEx $200B × AI비중 50% → GB200 역산",
+          "confidence": 0.375,
+          "period": "2026"
+        },
+        "Google": {
+          "company": "Google",
+          "capex_usd_bn": 190,
+          "ai_infra_share": 0.55,
+          "ai_budget_usd_bn": 104.5,
+          "gb200_racks_est": 24383,
+          "hbm_demand_gb": 397261824,
+          "hbm_demand_pb": 397.26,
+          "basis": "CapEx $190B × AI비중 55% → GB200 역산",
+          "confidence": 0.41250000000000003,
+          "period": "2026"
+        },
+        "Meta": {
+          "company": "Meta",
+          "capex_usd_bn": 135,
+          "ai_infra_share": 0.7,
+          "ai_budget_usd_bn": 94.5,
+          "gb200_racks_est": 22049,
+          "hbm_demand_gb": 359236608,
+          "hbm_demand_pb": 359.24,
+          "basis": "CapEx $135B × AI비중 70% → GB200 역산",
+          "confidence": 0.5249999999999999,
+          "period": "2026"
+        },
+        "xAI": {
+          "company": "xAI",
+          "capex_usd_bn": 30,
+          "ai_infra_share": 0.9,
+          "ai_budget_usd_bn": 27.0,
+          "gb200_racks_est": 6299,
+          "hbm_demand_gb": 102629376,
+          "hbm_demand_pb": 102.63,
+          "basis": "CapEx $30B × AI비중 90% → GB200 역산",
+          "confidence": 0.675,
+          "period": "2026"
+        },
+        "Oracle": {
+          "company": "Oracle",
+          "capex_usd_bn": 20,
+          "ai_infra_share": 0.75,
+          "ai_budget_usd_bn": 15.0,
+          "gb200_racks_est": 3500,
+          "hbm_demand_gb": 57024000,
+          "hbm_demand_pb": 57.02,
+          "basis": "CapEx $20B × AI비중 75% → GB200 역산",
+          "confidence": 0.5625,
+          "period": "2026"
+        }
+      },
+      "total_hbm_demand_pb": 1729.69,
+      "total_cowos_demand_wpm": 128453,
+      "confidence": 0.75,
+      "priority_rank": 1,
+      "has_long_term_contract": true,
+      "vulnerability": "낮음 — 장기 공급계약 보유, 우선 배분"
+    },
+    "2": {
+      "tier": 2,
+      "tier_name": "대형 클라우드/ODM",
+      "companies": {
+        "CoreWeave": {
+          "hbm_demand_pb": 55.3,
+          "basis": "NVIDIA GPU $12B 계약 역산"
+        },
+        "ByteDance": {
+          "hbm_demand_pb": 0.12,
+          "basis": "H20 기반 추정 (수출 통제)"
+        }
+      },
+      "total_hbm_demand_pb": 55.42,
+      "confidence": 0.5,
+      "priority_rank": 2,
+      "has_long_term_contract": false,
+      "vulnerability": "중간 — 일부만 장기계약, 공급 타이트 시 후순위 가능성"
+    },
+    "3": {
+      "tier": 3,
+      "tier_name": "소버린 AI / 국가 프로젝트",
+      "countries": {
+        "UAE": {
+          "gpu_units_est": 50000,
+          "hbm_demand_pb": 6.8,
+          "investment_usd_bn": 100,
+          "basis": "국가 AI 예산 공시 + GPU 수량 역산"
+        },
+        "Saudi_Arabia": {
+          "gpu_units_est": 30000,
+          "hbm_demand_pb": 4.08,
+          "investment_usd_bn": 40,
+          "basis": "국가 AI 예산 공시 + GPU 수량 역산"
+        },
+        "EU": {
+          "gpu_units_est": 40000,
+          "hbm_demand_pb": 5.44,
+          "investment_usd_bn": 20,
+          "basis": "국가 AI 예산 공시 + GPU 수량 역산"
+        },
+        "Japan": {
+          "gpu_units_est": 20000,
+          "hbm_demand_pb": 2.72,
+          "investment_usd_bn": 7,
+          "basis": "국가 AI 예산 공시 + GPU 수량 역산"
+        },
+        "India": {
+          "gpu_units_est": 10000,
+          "hbm_demand_pb": 1.36,
+          "investment_usd_bn": 1.25,
+          "basis": "국가 AI 예산 공시 + GPU 수량 역산"
+        }
+      },
+      "total_hbm_demand_pb": 20.4,
+      "confidence": 0.4,
+      "priority_rank": 3,
+      "has_long_term_contract": false,
+      "vulnerability": "높음 — 장기계약 없음, 공급 타이트 시 후순위 배치 리스크"
+    },
+    "4": {
+      "tier": 4,
+      "tier_name": "엣지 / 기업",
+      "total_hbm_demand_pb": 0.08,
+      "confidence": 0.35,
+      "priority_rank": 4,
+      "has_long_term_contract": false,
+      "vulnerability": "낮음 — HBM 의존도 낮아 공급 타이트 영향 제한적",
+      "notes": "엣지/기업은 주로 LPDDR5X, GDDR7 사용. HBM 수요 미미."
+    }
+  },
+  "total_hbm_demand_pb": 1805.59,
+  "total_cowos_demand_wpm": 128453,
+  "demand_confidence": 0.74,
+  "notes": "Tier 1은 CapEx 공시 역산 (신뢰도 0.75). Tier 2~4는 간접 시그널 기반 (신뢰도 0.35~0.50). 전체 수치는 하한 추정값 — 실제 수요는 10~20% 높을 수 있음."
+}

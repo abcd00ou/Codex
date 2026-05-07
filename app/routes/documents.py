@@ -9,7 +9,7 @@ from app.config import Settings, get_settings
 from app.database import get_database
 from app.schemas import DocumentRecord
 from app.services.llm import analyze_topics_with_agent, enhance_pages_with_parsing_agent
-from app.services.pdf_parser import chunk_pages, extract_pdf_pages
+from app.services.pdf_parser import chunk_pages, extract_pdf_pages, merge_document_paragraphs
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 
@@ -83,6 +83,7 @@ async def upload_document(
             max_pages=settings.parsing_agent_max_pages,
             max_chars_per_page=settings.parsing_agent_max_chars_per_page,
         )
+    pages = merge_document_paragraphs(pages)
 
     chunks = chunk_pages(
         pages,

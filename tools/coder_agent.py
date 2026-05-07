@@ -29,7 +29,7 @@ DEFAULT_CONTEXT_FILES = [
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Repository-specific coding agent powered by gpt-oss-120B."
+        description="Repository-specific coding agent powered by the configured OpenAI-compatible provider."
     )
     parser.add_argument("task", help="Coding task to plan or patch.")
     parser.add_argument(
@@ -150,29 +150,23 @@ def make_client() -> OpenAI:
 
 
 def get_provider_config() -> dict[str, str | None]:
-    provider = os.getenv("LLM_PROVIDER", "groq").lower().strip()
+    provider = os.getenv("LLM_PROVIDER", "deepseek").lower().strip()
     if provider == "openai":
         return {
             "provider": "openai",
             "api_key": os.getenv("OPENAI_API_KEY"),
             "base_url": os.getenv("OPENAI_BASE_URL"),
-            "model": os.getenv("OPENAI_MODEL", "gpt-oss-120b"),
+            "model": os.getenv("OPENAI_MODEL", "gpt-4.1-mini"),
             "dep_ticket": os.getenv("OPENAI_DEP_TICKET"),
-        }
-    if provider in {"xai", "xai-grok", "grok"}:
-        return {
-            "provider": "xai",
-            "api_key": os.getenv("XAI_API_KEY"),
-            "base_url": os.getenv("XAI_BASE_URL", "https://api.x.ai/v1"),
-            "model": os.getenv("XAI_MODEL", "grok-4.20-reasoning"),
-            "dep_ticket": None,
+            "api_style": "responses",
         }
     return {
-        "provider": "groq",
-        "api_key": os.getenv("GROQ_API_KEY"),
-        "base_url": os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1"),
-        "model": os.getenv("GROQ_MODEL", "openai/gpt-oss-120b"),
+        "provider": "deepseek",
+        "api_key": os.getenv("DEEPSEEK_API_KEY"),
+        "base_url": os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
+        "model": os.getenv("DEEPSEEK_MODEL", "deepseek-chat"),
         "dep_ticket": None,
+        "api_style": "chat",
     }
 
 
@@ -190,7 +184,7 @@ def print_config() -> None:
     )
     if base_url and "127.0.0.1:8000" in base_url:
         print(
-            "Warning: OPENAI_BASE_URL points to this FastAPI app, not a gpt-oss model server.",
+            "Warning: OPENAI_BASE_URL points to this FastAPI app, not a model provider.",
             file=sys.stderr,
         )
 
@@ -236,7 +230,8 @@ def load_prompt(repo: Path, mode: str) -> str:
 
 def call_model(client: OpenAI, context: str, prompt: str) -> str:
     system = Path("prompts/coding_system.md").read_text(encoding="utf-8")
-    model = get_provider_config()["model"]
+    config = get_provider_config()
+    model = config["model"]
     messages = [
         {"role": "system", "content": system},
         {
@@ -248,6 +243,10 @@ def call_model(client: OpenAI, context: str, prompt: str) -> str:
             ),
         },
     ]
+    if config.get("api_style") == "chat":
+        response = client.chat.completions.create(model=model, messages=messages)
+        return (response.choices[0].message.content or "").strip()
+
     try:
         response = client.responses.create(model=model, input=messages)
         return response.output_text.strip()

@@ -1,0 +1,154 @@
+{
+  "generated_at": "2026-05-04T09:44:40",
+  "summary": {
+    "total_coefficients": 6,
+    "investment_grade_candidate": 0,
+    "scenario_grade": 1,
+    "research_only": 5,
+    "critical_audit_items": [
+      "COEF_CAPEX_ACCELERATOR_SHARE",
+      "COEF_AVG_ACCELERATOR_ASP_USD",
+      "COEF_COWOS_WPM_PER_ACCELERATOR"
+    ],
+    "issue_count": 10,
+    "blocking_error_count": 0
+  },
+  "coefficient_audit": [
+    {
+      "coefficient_id": "COEF_CAPEX_AI_INFRA_SHARE",
+      "confidence": 0.55,
+      "trust_label": "scenario_grade",
+      "validation_status": "partially_supported",
+      "audit_priority": "high",
+      "missing_fields": [],
+      "missing_sources": [],
+      "sensitivity_range": [
+        0.45,
+        0.7
+      ],
+      "replacement_path": "Replace with company-quarter server/GPU/data-center/networking capex split from earnings transcripts and 10-Q cash-flow notes. Next: parse `data/sec_filings.json` filing URLs into company-quarter CapEx, segment revenue, PP&E, lease, inventory, and backlog line items."
+    },
+    {
+      "coefficient_id": "COEF_CAPEX_ACCELERATOR_SHARE",
+      "confidence": 0.45,
+      "trust_label": "research_only",
+      "validation_status": "derived_proxy",
+      "audit_priority": "critical",
+      "missing_fields": [],
+      "missing_sources": [],
+      "sensitivity_range": [
+        0.3,
+        0.6
+      ],
+      "replacement_path": "Infer from NVIDIA data center revenue, AMD data center GPU revenue, cloud capex timing, and estimated accelerator ASP mix. Next: parse `data/sec_filings.json` filing URLs into company-quarter CapEx, segment revenue, PP&E, lease, inventory, and backlog line items."
+    },
+    {
+      "coefficient_id": "COEF_AVG_ACCELERATOR_ASP_USD",
+      "confidence": 0.4,
+      "trust_label": "research_only",
+      "validation_status": "derived_proxy",
+      "audit_priority": "critical",
+      "missing_fields": [],
+      "missing_sources": [],
+      "sensitivity_range": [
+        35000,
+        90000
+      ],
+      "replacement_path": "Build explicit H100/H200/B200/GB200 shipment mix and ASP ranges, then calculate weighted average. Next: parse `data/sec_filings.json` filing URLs into company-quarter CapEx, segment revenue, PP&E, lease, inventory, and backlog line items."
+    },
+    {
+      "coefficient_id": "COEF_COWOS_WPM_PER_ACCELERATOR",
+      "confidence": 0.35,
+      "trust_label": "research_only",
+      "validation_status": "calibrated_placeholder",
+      "audit_priority": "critical",
+      "missing_fields": [],
+      "missing_sources": [],
+      "sensitivity_range": [
+        0.01,
+        0.03
+      ],
+      "replacement_path": "Replace with package-area model: accelerator_die_area_mm2, reticle/yield, interposer area, HBM stack count, CoWoS wafer throughput. Next: parse `data/sec_filings.json` filing URLs into company-quarter CapEx, segment revenue, PP&E, lease, inventory, and backlog line items."
+    },
+    {
+      "coefficient_id": "COEF_NETWORK_TBPS_PER_ACCELERATOR",
+      "confidence": 0.45,
+      "trust_label": "research_only",
+      "validation_status": "derived_proxy",
+      "audit_priority": "high",
+      "missing_fields": [],
+      "missing_sources": [],
+      "sensitivity_range": [
+        0.002,
+        0.008
+      ],
+      "replacement_path": "Split scale-up NVLink, scale-out InfiniBand/Ethernet, NIC radix, and oversubscription by cluster topology. Next: parse `data/sec_filings.json` filing URLs into company-quarter CapEx, segment revenue, PP&E, lease, inventory, and backlog line items."
+    },
+    {
+      "coefficient_id": "COEF_RAG_STORAGE_RATIO",
+      "confidence": 0.3,
+      "trust_label": "research_only",
+      "validation_status": "assumption",
+      "audit_priority": "medium",
+      "missing_fields": [],
+      "missing_sources": [],
+      "sensitivity_range": [
+        0.1,
+        0.6
+      ],
+      "replacement_path": "Replace with workload telemetry: RAG query share, documents retrieved per query, embedding refresh rate, KV-cache spill rate. Next: parse `data/sec_filings.json` filing URLs into company-quarter CapEx, segment revenue, PP&E, lease, inventory, and backlog line items."
+    }
+  ],
+  "issues": [
+    {
+      "severity": "warning",
+      "coefficient_id": "COEF_CAPEX_ACCELERATOR_SHARE",
+      "issue": "low confidence; use for scenario exploration only"
+    },
+    {
+      "severity": "notice",
+      "coefficient_id": "COEF_CAPEX_ACCELERATOR_SHARE",
+      "issue": "validation status is derived_proxy"
+    },
+    {
+      "severity": "warning",
+      "coefficient_id": "COEF_AVG_ACCELERATOR_ASP_USD",
+      "issue": "low confidence; use for scenario exploration only"
+    },
+    {
+      "severity": "notice",
+      "coefficient_id": "COEF_AVG_ACCELERATOR_ASP_USD",
+      "issue": "validation status is derived_proxy"
+    },
+    {
+      "severity": "warning",
+      "coefficient_id": "COEF_COWOS_WPM_PER_ACCELERATOR",
+      "issue": "low confidence; use for scenario exploration only"
+    },
+    {
+      "severity": "notice",
+      "coefficient_id": "COEF_COWOS_WPM_PER_ACCELERATOR",
+      "issue": "validation status is calibrated_placeholder"
+    },
+    {
+      "severity": "warning",
+      "coefficient_id": "COEF_NETWORK_TBPS_PER_ACCELERATOR",
+      "issue": "low confidence; use for scenario exploration only"
+    },
+    {
+      "severity": "notice",
+      "coefficient_id": "COEF_NETWORK_TBPS_PER_ACCELERATOR",
+      "issue": "validation status is derived_proxy"
+    },
+    {
+      "severity": "warning",
+      "coefficient_id": "COEF_RAG_STORAGE_RATIO",
+      "issue": "low confidence; use for scenario exploration only"
+    },
+    {
+      "severity": "notice",
+      "coefficient_id": "COEF_RAG_STORAGE_RATIO",
+      "issue": "validation status is assumption"
+    }
+  ]
+}

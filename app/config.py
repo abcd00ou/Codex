@@ -6,22 +6,18 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-    llm_provider: str = Field(default="groq", alias="LLM_PROVIDER")
-
-    groq_api_key: str | None = Field(default=None, alias="GROQ_API_KEY")
-    groq_base_url: str = Field(default="https://api.groq.com/openai/v1", alias="GROQ_BASE_URL")
-    groq_model: str = Field(default="openai/gpt-oss-120b", alias="GROQ_MODEL")
-
-    xai_api_key: str | None = Field(default=None, alias="XAI_API_KEY")
-    xai_base_url: str = Field(default="https://api.x.ai/v1", alias="XAI_BASE_URL")
-    xai_model: str = Field(default="grok-4.20-reasoning", alias="XAI_MODEL")
+    llm_provider: str = Field(default="deepseek", alias="LLM_PROVIDER")
 
     openai_api_key: str | None = Field(default=None, alias="OPENAI_API_KEY")
     openai_base_url: str | None = Field(default=None, alias="OPENAI_BASE_URL")
-    openai_model: str = Field(default="gpt-oss-120b", alias="OPENAI_MODEL")
+    openai_model: str = Field(default="gpt-4.1-mini", alias="OPENAI_MODEL")
     openai_dep_ticket: str | None = Field(default=None, alias="OPENAI_DEP_TICKET")
+
+    deepseek_api_key: str | None = Field(default=None, alias="DEEPSEEK_API_KEY")
+    deepseek_base_url: str = Field(default="https://api.deepseek.com", alias="DEEPSEEK_BASE_URL")
+    deepseek_model: str = Field(default="deepseek-chat", alias="DEEPSEEK_MODEL")
 
     mongodb_uri: str = Field(default="local://dev", alias="MONGODB_URI")
     mongodb_db: str = Field(default="agentic_ai", alias="MONGODB_DB")
