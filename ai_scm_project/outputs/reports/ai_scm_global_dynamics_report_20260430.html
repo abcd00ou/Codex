@@ -1,0 +1,664 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>AI SCM Global Dynamics Model</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 42px; color: #182026; line-height: 1.55; }
+h1 { color: #102A43; font-size: 30px; }
+h2 { color: #243B53; border-top: 1px solid #D9E2EC; padding-top: 22px; margin-top: 30px; }
+h3 { color: #334E68; }
+table { border-collapse: collapse; width: 100%; margin: 16px 0 24px; font-size: 13px; }
+th { background: #243B53; color: white; text-align: left; padding: 8px; }
+td { border: 1px solid #D9E2EC; padding: 7px; vertical-align: top; }
+pre { background: #F0F4F8; padding: 14px; overflow-x: auto; border-left: 4px solid #486581; }
+code { font-family: "SFMono-Regular", Consolas, monospace; }
+p { margin: 8px 0; }
+.chain-graph { margin: 18px 0 30px; overflow-x: auto; padding-bottom: 8px; }
+.chain-graph svg { width: 1120px; max-width: none; height: auto; }
+.chain-graph .node-title { fill: #FFFFFF; font-weight: 700; font-size: 15px; }
+.chain-graph .node-subtitle { fill: #F8FAFC; font-size: 12px; }
+.chain-graph .node-company { fill: #F8FAFC; font-size: 10.5px; }
+.chain-graph .edge line { stroke: #486581; stroke-width: 1.7; }
+.chain-graph .edge text { fill: #334E68; font-size: 11px; paint-order: stroke; stroke: #F8FAFC; stroke-width: 4px; }
+.chain-graph .company-edge line { stroke-width: 1.4; opacity: 0.62; }
+.chain-graph .company-edge text { fill: #334E68; font-size: 9.5px; paint-order: stroke; stroke: #F8FAFC; stroke-width: 4px; }
+.chain-graph .company-node rect { opacity: 0.94; }
+.chain-graph .company-node text { fill: #FFFFFF; font-weight: 700; font-size: 12px; }
+.chain-graph .company-column { fill: #334E68; font-weight: 700; font-size: 13px; }
+.chain-graph .graph-title { fill: #102A43; font-weight: 700; font-size: 18px; }
+.chain-graph .graph-note { fill: #52606D; font-size: 12px; }
+</style>
+</head>
+<body>
+<h1>AI Supply Chain Global Dynamics Model</h1>
+
+<p>Report date: 2026-04-30  </p>
+<p>Model as-of date: 2026-04-28  </p>
+<p>Status: Research model, evidence-linked, not affiliated with Oxford Economics.</p>
+
+<h2>Executive View</h2>
+
+<p>This report applies a macro-scenario style framework to the AI infrastructure supply chain. It is inspired by the public description of globally integrated scenario models, where shocks propagate through linked demand, supply, price, capacity, and investment channels. It does not reproduce Oxford Economics&#x27; proprietary Global Economic Model.</p>
+
+<p>The base case shows a near-balanced 2026 HBM market: base HBM gap is 0.99x, with full modeled fulfillment because no layer exceeds 1.0x. The bull case crosses into shortage: 2026 HBM gap rises to 1.27x, fulfillment falls to 79%, and unserved accelerator demand reaches 1,038,363 H100-equivalent units.</p>
+
+<h2>1. Declared Model Structure</h2>
+
+<p>The model is a linked system:</p>
+
+<pre><code>
+AI workload demand
+  -&gt; token volume
+  -&gt; accelerator utilization demand
+  -&gt; hyperscaler CapEx procurement demand
+  -&gt; effective accelerator demand
+  -&gt; HBM, CoWoS, power, networking, and storage demand
+  -&gt; supply gap ratios
+  -&gt; fulfillment, backlog, and price-pressure indexes
+</code></pre>
+
+<p>All variables below are annual unless stated otherwise.</p>
+
+<h2>1A. Chain Graph</h2>
+
+
+<figure id="chain-graph" class="chain-graph">
+<svg viewBox="0 0 1160 560" role="img" aria-label="AI supply chain formula graph with companies">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#486581"/>
+    </marker>
+  </defs>
+  <rect x="18" y="12" width="1124" height="532" rx="10" fill="#F8FAFC" stroke="#BCCCDC"/>
+  <text x="42" y="46" class="graph-title">Formula Chain: AI Demand to Supply Bottlenecks</text>
+  
+  <g class="edge">
+    <line x1="265" y1="125" x2="320" y2="125" marker-end="url(#arrow)"/>
+    <text x="292.5" y="117.0" text-anchor="middle">tokens / throughput</text>
+  </g>
+  <g class="edge">
+    <line x1="265" y1="265" x2="590" y2="195" marker-end="url(#arrow)"/>
+    <text x="427.5" y="222.0" text-anchor="middle">CapEx * shares / ASP</text>
+  </g>
+  <g class="edge">
+    <line x1="525" y1="125" x2="590" y2="195" marker-end="url(#arrow)"/>
+    <text x="557.5" y="152.0" text-anchor="middle">max(util, procurement)</text>
+  </g>
+  <g class="edge">
+    <line x1="810" y1="195" x2="900" y2="63" marker-end="url(#arrow)"/>
+    <text x="855.0" y="121.0" text-anchor="middle">* HBM GB</text>
+  </g>
+  <g class="edge">
+    <line x1="810" y1="195" x2="900" y2="161" marker-end="url(#arrow)"/>
+    <text x="855.0" y="170.0" text-anchor="middle">* CoWoS coef</text>
+  </g>
+  <g class="edge">
+    <line x1="810" y1="195" x2="900" y2="259" marker-end="url(#arrow)"/>
+    <text x="855.0" y="219.0" text-anchor="middle">* TDP * overhead * PUE</text>
+  </g>
+  <g class="edge">
+    <line x1="810" y1="195" x2="900" y2="357" marker-end="url(#arrow)"/>
+    <text x="855.0" y="268.0" text-anchor="middle">* fabric coef</text>
+  </g>
+  <g class="edge">
+    <line x1="265" y1="125" x2="900" y2="455" marker-end="url(#arrow)"/>
+    <text x="582.5" y="282.0" text-anchor="middle">* RAG ratio</text>
+  </g>
+  <g class="edge">
+    <line x1="900" y1="63" x2="810" y2="420" marker-end="url(#arrow)"/>
+    <text x="855.0" y="233.5" text-anchor="middle">demand / supply</text>
+  </g>
+  <g class="edge">
+    <line x1="900" y1="161" x2="810" y2="420" marker-end="url(#arrow)"/>
+    <text x="855.0" y="282.5" text-anchor="middle">demand / supply</text>
+  </g>
+  <g class="edge">
+    <line x1="900" y1="259" x2="810" y2="420" marker-end="url(#arrow)"/>
+    <text x="855.0" y="331.5" text-anchor="middle">demand / supply</text>
+  </g>
+  <g class="edge">
+    <line x1="900" y1="357" x2="810" y2="420" marker-end="url(#arrow)"/>
+    <text x="855.0" y="380.5" text-anchor="middle">demand / supply</text>
+  </g>
+  <g class="edge">
+    <line x1="900" y1="455" x2="810" y2="420" marker-end="url(#arrow)"/>
+    <text x="855.0" y="429.5" text-anchor="middle">demand / supply</text>
+  </g>
+  
+  <g class="node">
+    <rect x="60" y="82" width="205" height="86" rx="8" fill="#1C7ED6" opacity="0.94"/>
+    <text x="162.5" y="107" text-anchor="middle" class="node-title">Token Demand</text>
+    <text x="162.5" y="130" text-anchor="middle" class="node-subtitle">tokens/day</text>
+    <text x="162.5" y="151" text-anchor="middle" class="node-company">OpenAI, Anthropic, Meta, xAI</text>
+  </g>
+  <g class="node">
+    <rect x="60" y="222" width="205" height="86" rx="8" fill="#5F3DC4" opacity="0.94"/>
+    <text x="162.5" y="247" text-anchor="middle" class="node-title">CapEx Procurement</text>
+    <text x="162.5" y="270" text-anchor="middle" class="node-subtitle">prebuild demand</text>
+    <text x="162.5" y="291" text-anchor="middle" class="node-company">MSFT, AWS, Google, Oracle</text>
+  </g>
+  <g class="node">
+    <rect x="320" y="82" width="205" height="86" rx="8" fill="#1971C2" opacity="0.94"/>
+    <text x="422.5" y="107" text-anchor="middle" class="node-title">Utilization Demand</text>
+    <text x="422.5" y="130" text-anchor="middle" class="node-subtitle">tokens -&gt; GPUs</text>
+    <text x="422.5" y="151" text-anchor="middle" class="node-company">AI services + cloud GPUs</text>
+  </g>
+  <g class="node">
+    <rect x="590" y="148" width="220" height="94" rx="8" fill="#2B8A3E" opacity="0.94"/>
+    <text x="700.0" y="173" text-anchor="middle" class="node-title">Accelerator Demand</text>
+    <text x="700.0" y="196" text-anchor="middle" class="node-subtitle">gap 0.85x</text>
+    <text x="700.0" y="217" text-anchor="middle" class="node-company">NVIDIA, AMD, ASICs</text>
+  </g>
+  <g class="node">
+    <rect x="900" y="24" width="190" height="78" rx="8" fill="#F08C00" opacity="0.94"/>
+    <text x="995.0" y="49" text-anchor="middle" class="node-title">HBM</text>
+    <text x="995.0" y="72" text-anchor="middle" class="node-subtitle">gap 0.99x</text>
+    <text x="995.0" y="93" text-anchor="middle" class="node-company">SK Hynix, Samsung, Micron</text>
+  </g>
+  <g class="node">
+    <rect x="900" y="122" width="190" height="78" rx="8" fill="#2B8A3E" opacity="0.94"/>
+    <text x="995.0" y="147" text-anchor="middle" class="node-title">CoWoS / Foundry</text>
+    <text x="995.0" y="170" text-anchor="middle" class="node-subtitle">gap 0.66x</text>
+    <text x="995.0" y="191" text-anchor="middle" class="node-company">TSMC, ASE, Amkor</text>
+  </g>
+  <g class="node">
+    <rect x="900" y="220" width="190" height="78" rx="8" fill="#2B8A3E" opacity="0.94"/>
+    <text x="995.0" y="245" text-anchor="middle" class="node-title">Power</text>
+    <text x="995.0" y="268" text-anchor="middle" class="node-subtitle">gap 0.87x</text>
+    <text x="995.0" y="289" text-anchor="middle" class="node-company">Vertiv, Eaton, Schneider</text>
+  </g>
+  <g class="node">
+    <rect x="900" y="318" width="190" height="78" rx="8" fill="#2B8A3E" opacity="0.94"/>
+    <text x="995.0" y="343" text-anchor="middle" class="node-title">Networking</text>
+    <text x="995.0" y="366" text-anchor="middle" class="node-subtitle">gap 0.80x</text>
+    <text x="995.0" y="387" text-anchor="middle" class="node-company">Broadcom, Marvell, Arista</text>
+  </g>
+  <g class="node">
+    <rect x="900" y="416" width="190" height="78" rx="8" fill="#2B8A3E" opacity="0.94"/>
+    <text x="995.0" y="441" text-anchor="middle" class="node-title">Storage Flow</text>
+    <text x="995.0" y="464" text-anchor="middle" class="node-subtitle">gap 0.00x</text>
+    <text x="995.0" y="485" text-anchor="middle" class="node-company">Solidigm, Samsung SSD</text>
+  </g>
+  <g class="node">
+    <rect x="590" y="372" width="220" height="96" rx="8" fill="#364FC7" opacity="0.94"/>
+    <text x="700.0" y="397" text-anchor="middle" class="node-title">Fulfillment / Backlog</text>
+    <text x="700.0" y="420" text-anchor="middle" class="node-subtitle">100% fulfilled; 0 unserved</text>
+    <text x="700.0" y="441" text-anchor="middle" class="node-company">Customer allocation risk</text>
+  </g>
+  <text x="42" y="526" class="graph-note">Color key: green = surplus, orange = near/tight, red = shortage. Company labels are representative exposure points, not exhaustive coverage.</text>
+</svg>
+<svg viewBox="0 0 1240 520" role="img" aria-label="Representative company relationship graph">
+  <defs>
+    <marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#486581"/>
+    </marker>
+  </defs>
+  <rect x="18" y="12" width="1204" height="488" rx="10" fill="#F8FAFC" stroke="#BCCCDC"/>
+  <text x="42" y="46" class="graph-title">Representative Company Links: Demand, Cloud, Accelerators, and Bottlenecks</text>
+  <text x="155" y="74" text-anchor="middle" class="company-column">AI demand</text>
+  <text x="395" y="54" text-anchor="middle" class="company-column">Cloud / GPU procurement</text>
+  <text x="640" y="82" text-anchor="middle" class="company-column">Accelerators</text>
+  <text x="890" y="40" text-anchor="middle" class="company-column">HBM / Foundry / Packaging</text>
+  <text x="1130" y="90" text-anchor="middle" class="company-column">Infrastructure</text>
+  
+  <g class="company-edge">
+    <line x1="155" y1="120" x2="395" y2="100" marker-end="url(#arrow2)" stroke="#6741D9"/>
+    <text x="275.0" y="106.0" text-anchor="middle">strategic cloud</text>
+  </g>
+  <g class="company-edge">
+    <line x1="155" y1="120" x2="395" y2="340" marker-end="url(#arrow2)" stroke="#6741D9"/>
+    <text x="275.0" y="226.0" text-anchor="middle">$30B cloud</text>
+  </g>
+  <g class="company-edge">
+    <line x1="155" y1="120" x2="395" y2="420" marker-end="url(#arrow2)" stroke="#6741D9"/>
+    <text x="275.0" y="266.0" text-anchor="middle">GPU cloud</text>
+  </g>
+  <g class="company-edge">
+    <line x1="155" y1="200" x2="395" y2="180" marker-end="url(#arrow2)" stroke="#6741D9"/>
+    <text x="275.0" y="186.0" text-anchor="middle">strategic compute</text>
+  </g>
+  <g class="company-edge">
+    <line x1="155" y1="200" x2="395" y2="260" marker-end="url(#arrow2)" stroke="#6741D9"/>
+    <text x="275.0" y="226.0" text-anchor="middle">cloud compute</text>
+  </g>
+  <g class="company-edge">
+    <line x1="155" y1="280" x2="640" y2="140" marker-end="url(#arrow2)" stroke="#C92A2A"/>
+    <text x="397.5" y="206.0" text-anchor="middle">GPU purchase</text>
+  </g>
+  <g class="company-edge">
+    <line x1="155" y1="360" x2="640" y2="140" marker-end="url(#arrow2)" stroke="#C92A2A"/>
+    <text x="397.5" y="246.0" text-anchor="middle">Colossus GPUs</text>
+  </g>
+  <g class="company-edge">
+    <line x1="395" y1="100" x2="640" y2="140" marker-end="url(#arrow2)" stroke="#C92A2A"/>
+    <text x="517.5" y="116.0" text-anchor="middle">GPU supply</text>
+  </g>
+  <g class="company-edge">
+    <line x1="395" y1="180" x2="640" y2="140" marker-end="url(#arrow2)" stroke="#C92A2A"/>
+    <text x="517.5" y="156.0" text-anchor="middle">GPU supply</text>
+  </g>
+  <g class="company-edge">
+    <line x1="395" y1="260" x2="640" y2="140" marker-end="url(#arrow2)" stroke="#C92A2A"/>
+    <text x="517.5" y="196.0" text-anchor="middle">GPU supply</text>
+  </g>
+  <g class="company-edge">
+    <line x1="395" y1="340" x2="640" y2="140" marker-end="url(#arrow2)" stroke="#C92A2A"/>
+    <text x="517.5" y="236.0" text-anchor="middle">GPU supply</text>
+  </g>
+  <g class="company-edge">
+    <line x1="395" y1="420" x2="640" y2="140" marker-end="url(#arrow2)" stroke="#C92A2A"/>
+    <text x="517.5" y="276.0" text-anchor="middle">GPU supply</text>
+  </g>
+  <g class="company-edge">
+    <line x1="395" y1="100" x2="640" y2="250" marker-end="url(#arrow2)" stroke="#E8590C"/>
+    <text x="517.5" y="171.0" text-anchor="middle">MI300/MI325</text>
+  </g>
+  <g class="company-edge">
+    <line x1="395" y1="180" x2="640" y2="250" marker-end="url(#arrow2)" stroke="#E8590C"/>
+    <text x="517.5" y="211.0" text-anchor="middle">GPU/ASIC mix</text>
+  </g>
+  <g class="company-edge">
+    <line x1="395" y1="260" x2="640" y2="360" marker-end="url(#arrow2)" stroke="#E8590C"/>
+    <text x="517.5" y="306.0" text-anchor="middle">TPU demand</text>
+  </g>
+  <g class="company-edge">
+    <line x1="395" y1="180" x2="640" y2="360" marker-end="url(#arrow2)" stroke="#E8590C"/>
+    <text x="517.5" y="266.0" text-anchor="middle">Trainium</text>
+  </g>
+  <g class="company-edge">
+    <line x1="640" y1="140" x2="890" y2="80" marker-end="url(#arrow2)" stroke="#F08C00"/>
+    <text x="765.0" y="106.0" text-anchor="middle">HBM3e/HBM4</text>
+  </g>
+  <g class="company-edge">
+    <line x1="640" y1="140" x2="890" y2="220" marker-end="url(#arrow2)" stroke="#F08C00"/>
+    <text x="765.0" y="176.0" text-anchor="middle">HBM3e</text>
+  </g>
+  <g class="company-edge">
+    <line x1="640" y1="140" x2="890" y2="150" marker-end="url(#arrow2)" stroke="#F08C00"/>
+    <text x="765.0" y="141.0" text-anchor="middle">qualification</text>
+  </g>
+  <g class="company-edge">
+    <line x1="640" y1="250" x2="890" y2="80" marker-end="url(#arrow2)" stroke="#F08C00"/>
+    <text x="765.0" y="161.0" text-anchor="middle">HBM supply</text>
+  </g>
+  <g class="company-edge">
+    <line x1="640" y1="250" x2="890" y2="150" marker-end="url(#arrow2)" stroke="#F08C00"/>
+    <text x="765.0" y="196.0" text-anchor="middle">HBM supply</text>
+  </g>
+  <g class="company-edge">
+    <line x1="640" y1="140" x2="890" y2="320" marker-end="url(#arrow2)" stroke="#2B8A3E"/>
+    <text x="765.0" y="226.0" text-anchor="middle">foundry</text>
+  </g>
+  <g class="company-edge">
+    <line x1="640" y1="250" x2="890" y2="320" marker-end="url(#arrow2)" stroke="#2B8A3E"/>
+    <text x="765.0" y="281.0" text-anchor="middle">foundry</text>
+  </g>
+  <g class="company-edge">
+    <line x1="640" y1="140" x2="890" y2="390" marker-end="url(#arrow2)" stroke="#2B8A3E"/>
+    <text x="765.0" y="261.0" text-anchor="middle">advanced package</text>
+  </g>
+  <g class="company-edge">
+    <line x1="640" y1="250" x2="890" y2="390" marker-end="url(#arrow2)" stroke="#2B8A3E"/>
+    <text x="765.0" y="316.0" text-anchor="middle">advanced package</text>
+  </g>
+  <g class="company-edge">
+    <line x1="395" y1="100" x2="1130" y2="160" marker-end="url(#arrow2)" stroke="#0B7285"/>
+    <text x="762.5" y="126.0" text-anchor="middle">fabric</text>
+  </g>
+  <g class="company-edge">
+    <line x1="395" y1="180" x2="1130" y2="160" marker-end="url(#arrow2)" stroke="#0B7285"/>
+    <text x="762.5" y="166.0" text-anchor="middle">fabric</text>
+  </g>
+  <g class="company-edge">
+    <line x1="395" y1="260" x2="1130" y2="160" marker-end="url(#arrow2)" stroke="#0B7285"/>
+    <text x="762.5" y="206.0" text-anchor="middle">fabric</text>
+  </g>
+  <g class="company-edge">
+    <line x1="395" y1="100" x2="1130" y2="310" marker-end="url(#arrow2)" stroke="#495057"/>
+    <text x="762.5" y="201.0" text-anchor="middle">power chain</text>
+  </g>
+  <g class="company-edge">
+    <line x1="395" y1="180" x2="1130" y2="310" marker-end="url(#arrow2)" stroke="#495057"/>
+    <text x="762.5" y="241.0" text-anchor="middle">power chain</text>
+  </g>
+  <g class="company-edge">
+    <line x1="395" y1="260" x2="1130" y2="310" marker-end="url(#arrow2)" stroke="#495057"/>
+    <text x="762.5" y="281.0" text-anchor="middle">power chain</text>
+  </g>
+  <g class="company-edge">
+    <line x1="155" y1="120" x2="1130" y2="440" marker-end="url(#arrow2)" stroke="#1971C2"/>
+    <text x="642.5" y="276.0" text-anchor="middle">RAG/storage pull</text>
+  </g>
+  
+  <g class="company-node">
+    <rect x="70" y="92" width="170" height="56" rx="8" fill="#1C7ED6"/>
+    <text x="155" y="126" text-anchor="middle">OpenAI</text>
+  </g>
+  <g class="company-node">
+    <rect x="70" y="172" width="170" height="56" rx="8" fill="#1C7ED6"/>
+    <text x="155" y="206" text-anchor="middle">Anthropic</text>
+  </g>
+  <g class="company-node">
+    <rect x="70" y="252" width="170" height="56" rx="8" fill="#1C7ED6"/>
+    <text x="155" y="286" text-anchor="middle">Meta AI</text>
+  </g>
+  <g class="company-node">
+    <rect x="70" y="332" width="170" height="56" rx="8" fill="#1C7ED6"/>
+    <text x="155" y="366" text-anchor="middle">xAI</text>
+  </g>
+  <g class="company-node">
+    <rect x="310" y="72" width="170" height="56" rx="8" fill="#5F3DC4"/>
+    <text x="395" y="106" text-anchor="middle">Microsoft Azure</text>
+  </g>
+  <g class="company-node">
+    <rect x="310" y="152" width="170" height="56" rx="8" fill="#5F3DC4"/>
+    <text x="395" y="186" text-anchor="middle">AWS</text>
+  </g>
+  <g class="company-node">
+    <rect x="310" y="232" width="170" height="56" rx="8" fill="#5F3DC4"/>
+    <text x="395" y="266" text-anchor="middle">Google Cloud</text>
+  </g>
+  <g class="company-node">
+    <rect x="310" y="312" width="170" height="56" rx="8" fill="#5F3DC4"/>
+    <text x="395" y="346" text-anchor="middle">Oracle Cloud</text>
+  </g>
+  <g class="company-node">
+    <rect x="310" y="392" width="170" height="56" rx="8" fill="#5F3DC4"/>
+    <text x="395" y="426" text-anchor="middle">CoreWeave</text>
+  </g>
+  <g class="company-node">
+    <rect x="555" y="112" width="170" height="56" rx="8" fill="#C92A2A"/>
+    <text x="640" y="146" text-anchor="middle">NVIDIA</text>
+  </g>
+  <g class="company-node">
+    <rect x="555" y="222" width="170" height="56" rx="8" fill="#C92A2A"/>
+    <text x="640" y="256" text-anchor="middle">AMD</text>
+  </g>
+  <g class="company-node">
+    <rect x="555" y="332" width="170" height="56" rx="8" fill="#C92A2A"/>
+    <text x="640" y="366" text-anchor="middle">ASICs</text>
+  </g>
+  <g class="company-node">
+    <rect x="805" y="52" width="170" height="56" rx="8" fill="#F08C00"/>
+    <text x="890" y="86" text-anchor="middle">SK Hynix</text>
+  </g>
+  <g class="company-node">
+    <rect x="805" y="122" width="170" height="56" rx="8" fill="#F08C00"/>
+    <text x="890" y="156" text-anchor="middle">Samsung</text>
+  </g>
+  <g class="company-node">
+    <rect x="805" y="192" width="170" height="56" rx="8" fill="#F08C00"/>
+    <text x="890" y="226" text-anchor="middle">Micron</text>
+  </g>
+  <g class="company-node">
+    <rect x="805" y="292" width="170" height="56" rx="8" fill="#2B8A3E"/>
+    <text x="890" y="326" text-anchor="middle">TSMC</text>
+  </g>
+  <g class="company-node">
+    <rect x="805" y="362" width="170" height="56" rx="8" fill="#2B8A3E"/>
+    <text x="890" y="396" text-anchor="middle">TSMC CoWoS</text>
+  </g>
+  <g class="company-node">
+    <rect x="1045" y="132" width="170" height="56" rx="8" fill="#0B7285"/>
+    <text x="1130" y="166" text-anchor="middle">Broadcom / Marvell / Arista</text>
+  </g>
+  <g class="company-node">
+    <rect x="1045" y="282" width="170" height="56" rx="8" fill="#495057"/>
+    <text x="1130" y="316" text-anchor="middle">Vertiv / Eaton / Schneider</text>
+  </g>
+  <g class="company-node">
+    <rect x="1045" y="412" width="170" height="56" rx="8" fill="#1971C2"/>
+    <text x="1130" y="446" text-anchor="middle">Solidigm / Samsung SSD</text>
+  </g>
+  <text x="42" y="484" class="graph-note">Edges are representative links from the project relationship map; labels are simplified for readability and should be read with the evidence table.</text>
+</svg>
+</figure>
+
+
+<h2>1B. Company Exposure Map</h2>
+
+<p>The model treats companies as exposure points along the transmission chain. Demand-side companies create token and CapEx pull; upstream suppliers determine whether that demand can become deployed compute.</p>
+
+<table>
+<tr><th>Layer / Role</th><th>Representative Companies</th><th>Model Variables</th><th>Transmission Logic</th></tr>
+<tr><td>AI demand owners</td><td>OpenAI, Anthropic, Google DeepMind, Meta AI, xAI</td><td>`tokens_per_day`</td><td>End-user and model-training demand expands token volume and raises accelerator utilization demand.</td></tr>
+<tr><td>Cloud procurement</td><td>Microsoft Azure, AWS, Google Cloud, Oracle Cloud, CoreWeave</td><td>`total_capex_usd, accelerators_procured`</td><td>Cloud CapEx converts expected AI demand into forward accelerator procurement before utilization fully materializes.</td></tr>
+<tr><td>Accelerators</td><td>NVIDIA, AMD, Intel Gaudi; internal ASICs: Google TPU, AWS Trainium, Microsoft Maia, Meta MTIA</td><td>`accelerator_demand, accelerator_supply`</td><td>Accelerator availability sets the starting point for HBM, CoWoS, power, and networking demand.</td></tr>
+<tr><td>HBM</td><td>SK Hynix, Samsung, Micron</td><td>`hbm_demand_pb, hbm_supply_pb, hbm_gap`</td><td>HBM content per accelerator converts GPU demand into memory bit and stack allocation pressure.</td></tr>
+<tr><td>Advanced packaging / foundry</td><td>TSMC CoWoS, TSMC, ASE, Amkor, Samsung Foundry</td><td>`cowos_demand_wpm, cowos_supply_wpm, cowos_gap`</td><td>Advanced package slots and foundry flow determine how many high-end AI accelerators can ship.</td></tr>
+<tr><td>Power infrastructure</td><td>Vertiv, Eaton, Schneider Electric, GE Vernova, ABB</td><td>`power_demand_gw, power_supply_gw, power_gap`</td><td>Power and cooling determine whether purchased accelerators can be energized and deployed.</td></tr>
+<tr><td>Networking</td><td>Broadcom, Marvell, Arista, Cisco, Mellanox/NVIDIA</td><td>`network_demand_tbps, network_supply_tbps, network_gap`</td><td>Scale-up and scale-out cluster fabric demand rises with accelerator count and cluster complexity.</td></tr>
+<tr><td>Storage</td><td>Solidigm, Samsung SSD, Kioxia, WD/SanDisk, Seagate</td><td>`storage_demand_pb_per_day`</td><td>Agentic and RAG workloads create retrieval, context, and storage-flow pressure.</td></tr>
+</table>
+
+<h2>2. Formula Book</h2>
+
+<h3>2.1 Token Demand to Accelerator Utilization</h3>
+
+<pre><code>
+accelerators_required =
+  tokens_per_day
+  / 86,400
+  / (tokens_per_second_per_accelerator * utilization)
+</code></pre>
+
+<p>Interpretation: actual AI workload volume becomes required accelerator service capacity.</p>
+
+<h3>2.2 CapEx to Accelerator Procurement</h3>
+
+<pre><code>
+accelerators_procured =
+  total_capex_usd
+  * ai_infra_share
+  * accelerator_share
+  / avg_accelerator_asp_usd
+</code></pre>
+
+<p>Interpretation: hyperscalers buy ahead of realized token demand for training runs, reserve capacity, future inference demand, redundancy, and scarce-component allocation.</p>
+
+<h3>2.3 Effective Accelerator Demand</h3>
+
+<pre><code>
+accelerator_demand =
+  max(accelerators_required, accelerators_procured)
+  + prior_period_backlog
+</code></pre>
+
+<p>Interpretation: procurement demand dominates when cloud providers prebuild capacity ahead of utilization.</p>
+
+<h3>2.4 Accelerator to HBM</h3>
+
+<pre><code>
+hbm_demand_pb =
+  accelerator_demand
+  * hbm_gb_per_accelerator
+  / 1,000,000
+</code></pre>
+
+<p>Unit: PB/year.</p>
+
+<h3>2.5 Accelerator to CoWoS</h3>
+
+<pre><code>
+cowos_demand_wpm =
+  accelerator_demand
+  * cowos_wpm_per_accelerator
+</code></pre>
+
+<p>Unit: wafer starts per month.  </p>
+<p>Caveat: this is currently a low-confidence normalized coefficient. The replacement model should use die area, interposer area, package yield, HBM stack count, and wafer throughput.</p>
+
+<h3>2.6 Accelerator to Power</h3>
+
+<pre><code>
+power_demand_gw =
+  accelerator_demand
+  * accelerator_tdp_w
+  * server_overhead
+  * pue
+  / 1,000,000,000
+</code></pre>
+
+<h3>2.7 Accelerator to Networking</h3>
+
+<pre><code>
+network_demand_tbps =
+  accelerator_demand
+  * network_tbps_per_accelerator
+  * (1 + network_complexity_growth * years_after_2026)
+</code></pre>
+
+<h3>2.8 Tokens to Storage Flow</h3>
+
+<pre><code>
+storage_demand_pb_per_day =
+  tokens_per_day
+  * rag_storage_ratio
+  * bytes_per_token
+  / 1,000
+  / 1,000,000,000
+</code></pre>
+
+<h3>2.9 Gap, Fulfillment, Backlog</h3>
+
+<pre><code>
+gap_ratio[layer] = demand[layer] / supply[layer]
+
+limiting_gap = max(gap_ratio[accelerator],
+                   gap_ratio[hbm],
+                   gap_ratio[cowos],
+                   gap_ratio[power],
+                   gap_ratio[networking])
+
+fulfillment_rate = min(1, 1 / limiting_gap)
+
+unserved_accelerators =
+  accelerator_demand * (1 - fulfillment_rate)
+
+next_period_backlog =
+  unserved_accelerators * backlog_carryover
+</code></pre>
+
+<h3>2.10 Price Pressure Index</h3>
+
+<pre><code>
+shortage = max(gap_ratio - 1, 0)
+surplus = max(1 - gap_ratio, 0)
+
+price_pressure_index =
+  max(80,
+      100 * (1
+             + price_beta * (exp(shortage) - 1)
+             - 0.25 * surplus))
+</code></pre>
+
+<p>Interpretation: 100 is neutral; shortage pressure is convex because scarce components are rationed by allocation and price.</p>
+
+<h2>3. Evidence-Linked Coefficients</h2>
+
+<table>
+<tr><th>Coefficient</th><th>Value</th><th>Unit</th><th>Confidence</th><th>Status</th><th>Sensitivity Range</th><th>Evidence IDs</th></tr>
+<tr><td>`COEF_CAPEX_AI_INFRA_SHARE`</td><td>0.58</td><td>share_of_total_capex</td><td>55%</td><td>partially_supported</td><td>[0.45, 0.7]</td><td>SRC_MICROSOFT_FY2026_Q1_CALL, SRC_ALPHABET_Q1_2026_SEC_8K, SRC_META_Q1_2026_RESULTS</td></tr>
+<tr><td>`COEF_CAPEX_ACCELERATOR_SHARE`</td><td>0.46</td><td>share_of_ai_infra_capex</td><td>45%</td><td>derived_proxy</td><td>[0.3, 0.6]</td><td>SRC_MICROSOFT_FY2026_Q1_CALL, SRC_NVIDIA_FY2026_Q4_RESULTS</td></tr>
+<tr><td>`COEF_AVG_ACCELERATOR_ASP_USD`</td><td>55000</td><td>usd_per_h100_equivalent</td><td>40%</td><td>derived_proxy</td><td>[35000, 90000]</td><td>SRC_NVIDIA_H100_SPEC, SRC_NVIDIA_H200_SPEC, SRC_NVIDIA_GB200_NVL72_SPEC, SRC_NVIDIA_FY2026_Q4_RESULTS</td></tr>
+<tr><td>`COEF_COWOS_WPM_PER_ACCELERATOR`</td><td>0.018</td><td>wafers_per_month_per_accelerator_unit</td><td>35%</td><td>calibrated_placeholder</td><td>[0.01, 0.03]</td><td>SRC_NVIDIA_H100_SPEC, SRC_NVIDIA_H200_SPEC, SRC_NVIDIA_GB200_NVL72_SPEC, SRC_LOCAL_GAP_ENGINE_ANCHORS</td></tr>
+<tr><td>`COEF_NETWORK_TBPS_PER_ACCELERATOR`</td><td>0.0035</td><td>tbps_per_accelerator</td><td>45%</td><td>derived_proxy</td><td>[0.002, 0.008]</td><td>SRC_NVIDIA_GB200_NVL72_SPEC</td></tr>
+<tr><td>`COEF_RAG_STORAGE_RATIO`</td><td>0.34</td><td>share_of_tokens_touching_retrieval_or_context_storage</td><td>30%</td><td>assumption</td><td>[0.1, 0.6]</td><td>SRC_NVIDIA_GB200_NVL72_SPEC</td></tr>
+</table>
+
+<h2>3A. Formula Reliability Matrix</h2>
+
+<p>Current model use label: scenario_analysis_only. Research-only coefficients: COEF_CAPEX_ACCELERATOR_SHARE, COEF_AVG_ACCELERATOR_ASP_USD, COEF_COWOS_WPM_PER_ACCELERATOR, COEF_NETWORK_TBPS_PER_ACCELERATOR, COEF_RAG_STORAGE_RATIO. Critical audit items: COEF_CAPEX_ACCELERATOR_SHARE, COEF_AVG_ACCELERATOR_ASP_USD, COEF_COWOS_WPM_PER_ACCELERATOR.</p>
+
+<table>
+<tr><th>Formula Block</th><th>Current Reliability</th><th>Why</th><th>Upgrade Needed</th></tr>
+<tr><td>tokens_to_accelerators</td><td>High structure / medium calibration</td><td>Throughput equation is mechanically valid, but tokens/sec depends on workload mix.</td><td>Replace H100-equivalent throughput with measured model/workload benchmarks.</td></tr>
+<tr><td>capex_to_accelerators</td><td>Medium-low</td><td>CapEx split and blended accelerator ASP are derived proxies.</td><td>Company-quarter CapEx split plus NVIDIA/AMD shipment and ASP bridge.</td></tr>
+<tr><td>accelerators_to_hbm</td><td>High structure / medium mix</td><td>HBM per accelerator is product-spec based, but GPU mix is simplified.</td><td>Explicit H100/H200/B200/GB200/MI300 mix and HBM stack count.</td></tr>
+<tr><td>accelerators_to_cowos</td><td>Low / placeholder</td><td>Current coefficient is calibrated, not package-physics based.</td><td>Die area, interposer area, package yield, wafer starts, and package throughput.</td></tr>
+<tr><td>accelerators_to_power</td><td>High structure / medium facility calibration</td><td>TDP and PUE structure is sound; server overhead and energization timing need site data.</td><td>Rack-level power, cooling overhead, interconnection queue, and PUE by facility.</td></tr>
+<tr><td>accelerators_to_networking</td><td>Medium-low</td><td>GB200 NVL72 scale-up bandwidth is direct, but external scale-out fabric is proxied.</td><td>Topology split: NVLink, InfiniBand/Ethernet, NIC count, radix, oversubscription.</td></tr>
+<tr><td>price_pressure_index</td><td>Research-only</td><td>Convex shortage response is useful for scenario comparison, not a transaction price model.</td><td>Historical component price elasticity by utilization and lead time.</td></tr>
+</table>
+
+<h2>4. Baseline and Scenario Results</h2>
+
+<table>
+<tr><th>Scenario</th><th>Year</th><th>Limiting Layer</th><th>Fulfillment</th><th>Unserved Accels</th><th>Accelerator Gap</th><th>HBM Gap</th><th>CoWoS Gap</th><th>Power Gap</th><th>Network Gap</th></tr>
+<tr><td>bear</td><td>2026</td><td>accelerator</td><td>100%</td><td>0</td><td>0.69x</td><td>0.80x</td><td>0.54x</td><td>0.71x</td><td>0.65x</td></tr>
+<tr><td>bear</td><td>2027</td><td>accelerator</td><td>100%</td><td>0</td><td>0.58x</td><td>0.63x</td><td>0.44x</td><td>0.54x</td><td>0.52x</td></tr>
+<tr><td>bear</td><td>2028</td><td>accelerator</td><td>100%</td><td>0</td><td>0.48x</td><td>0.49x</td><td>0.36x</td><td>0.42x</td><td>0.42x</td></tr>
+<tr><td>base</td><td>2026</td><td>accelerator</td><td>100%</td><td>0</td><td>0.85x</td><td>0.99x</td><td>0.66x</td><td>0.87x</td><td>0.80x</td></tr>
+<tr><td>base</td><td>2027</td><td>accelerator</td><td>100%</td><td>0</td><td>0.71x</td><td>0.77x</td><td>0.54x</td><td>0.67x</td><td>0.65x</td></tr>
+<tr><td>base</td><td>2028</td><td>accelerator</td><td>100%</td><td>0</td><td>0.59x</td><td>0.60x</td><td>0.44x</td><td>0.52x</td><td>0.52x</td></tr>
+<tr><td>bull</td><td>2026</td><td>hbm</td><td>79%</td><td>1,038,363</td><td>1.09x</td><td>1.27x</td><td>0.85x</td><td>1.11x</td><td>1.02x</td></tr>
+<tr><td>bull</td><td>2027</td><td>hbm</td><td>89%</td><td>794,159</td><td>1.03x</td><td>1.13x</td><td>0.79x</td><td>0.98x</td><td>0.83x</td></tr>
+<tr><td>bull</td><td>2028</td><td>hbm</td><td>86%</td><td>1,237,978</td><td>1.13x</td><td>1.16x</td><td>0.85x</td><td>0.98x</td><td>0.92x</td></tr>
+</table>
+
+<h2>5. Stress Scenarios</h2>
+
+<p>These stress scenarios are formula-defined overlays on the base case. They are deliberately simple so the shock transmission can be audited.</p>
+
+<table>
+<tr><th>Stress Scenario</th><th>Shock</th><th>Declared Formula</th><th>Peak 2026 Gap</th><th>Implied Fulfillment</th><th>Transmission Channel</th></tr>
+<tr><td>HBM4 qualification delay</td><td>HBM supply -15%</td><td>`hbm_gap_stress = hbm_gap / (1 - 0.15)`</td><td>1.16x</td><td>86%</td><td>Memory allocation tightens first; accelerator deployment is capped by HBM availability.</td></tr>
+<tr><td>Power interconnection delay</td><td>AI-ready power supply -20%</td><td>`power_gap_stress = power_gap / (1 - 0.20)`</td><td>1.09x</td><td>92%</td><td>GPU delivery can continue, but energized deployment lags and backlog shifts to data-center operators.</td></tr>
+<tr><td>CoWoS ramp slippage</td><td>CoWoS supply -20%</td><td>`cowos_gap_stress = cowos_gap / (1 - 0.20)`</td><td>0.82x</td><td>100%</td><td>Advanced packaging queue lengthens; second-tier accelerator and ASIC customers face allocation risk.</td></tr>
+<tr><td>CapEx air pocket</td><td>AI infrastructure demand -22%</td><td>`gap_stress = gap * (1 - 0.22)`</td><td>0.77x</td><td>100%</td><td>Supplier pricing pressure eases; backlog drawdown improves near-term fulfillment but reduces order visibility.</td></tr>
+<tr><td>AI demand boom</td><td>Demand +32%, supply ramp +6%</td><td>`gap_stress = gap * 1.32 / 1.06`</td><td>1.23x</td><td>81%</td><td>HBM becomes the binding constraint; power and networking become second-order constraints.</td></tr>
+</table>
+
+<h2>6. Scenario Interpretation</h2>
+
+<h3>Base Case</h3>
+
+<p>The 2026 base case is close to balance. HBM is the tightest layer, but the modeled HBM gap remains just below shortage at 0.99x. This means the system can fulfill modeled accelerator demand, but has limited buffer if demand or qualification timing moves adversely.</p>
+
+<h3>Bull AI CapEx Cycle</h3>
+
+<p>The bull case is the first true shortage scenario. HBM reaches 1.27x, making it the binding constraint. Accelerator, power, and networking also tighten, but HBM caps deployment first. The implication is that memory allocation, not only GPU supply, determines who can deploy AI clusters on time.</p>
+
+<h3>HBM4 Qualification Delay</h3>
+
+<p>If HBM supply is delayed by 15%, the base-case 2026 HBM gap moves above 1.0x. This shifts the system from “tight but fulfillable” to “allocation-constrained,” especially for customers without long-term priority contracts.</p>
+
+<h3>Power Interconnection Delay</h3>
+
+<p>Power is a slower-moving constraint. A power supply shock does not necessarily prevent GPU shipments, but it prevents energized deployment. The economic symptom is stranded or delayed compute capacity, higher data-center lease premiums, and longer backlog realization.</p>
+
+<h3>CapEx Air Pocket</h3>
+
+<p>A CapEx pullback improves near-term fulfillment but weakens order visibility for upstream suppliers. Under this scenario, pricing pressure eases first in accelerators and networking, while HBM remains more resilient because memory content per accelerator continues to rise.</p>
+
+<h2>7. Strategic Implications</h2>
+
+<p>1. HBM is the highest-leverage variable in the current model.</p>
+<p>2. CapEx-driven procurement demand matters more than current token utilization in near-term supply-chain stress.</p>
+<p>3. Power and networking are second-wave bottlenecks: they bind after accelerator procurement has already happened.</p>
+<p>4. CoWoS must be rebuilt with package-area math before the model is investment-grade.</p>
+<p>5. The model should be refreshed whenever company CapEx guidance, NVIDIA data-center revenue, HBM bit supply, or TSMC advanced packaging capacity changes.</p>
+
+<h2>8. Evidence Register</h2>
+
+<table>
+<tr><th>Source ID</th><th>Publisher</th><th>Evidence Type</th><th>Confidence</th><th>Link</th></tr>
+<tr><td>`SRC_NVIDIA_H100_SPEC`</td><td>NVIDIA</td><td>direct_product_spec</td><td>95%</td><td>[NVIDIA H100 GPU product specifications](https://www.nvidia.com/en-gb/data-center/h100/)</td></tr>
+<tr><td>`SRC_NVIDIA_H200_SPEC`</td><td>NVIDIA</td><td>direct_product_spec</td><td>95%</td><td>[NVIDIA H200 GPU product specifications](https://www.nvidia.com/en-in/data-center/h200/)</td></tr>
+<tr><td>`SRC_NVIDIA_GB200_NVL72_SPEC`</td><td>NVIDIA</td><td>direct_product_spec</td><td>95%</td><td>[NVIDIA GB200 NVL72 specifications](https://www.nvidia.com/en-us/data-center/gb200-nvl72/)</td></tr>
+<tr><td>`SRC_NVIDIA_FY2026_Q4_RESULTS`</td><td>NVIDIA</td><td>direct_company_result</td><td>95%</td><td>[NVIDIA Announces Financial Results for Fourth Quarter and Fiscal 2026](https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-fourth-quarter-and-fiscal-2026)</td></tr>
+<tr><td>`SRC_MICROSOFT_FY2026_Q1_CALL`</td><td>Microsoft</td><td>direct_company_commentary</td><td>90%</td><td>[Microsoft Fiscal Year 2026 First Quarter Earnings Conference Call](https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q1)</td></tr>
+<tr><td>`SRC_ALPHABET_Q1_2026_SEC_8K`</td><td>Alphabet / SEC</td><td>direct_company_result</td><td>95%</td><td>[Alphabet Announces First Quarter 2026 Results](https://www.sec.gov/Archives/edgar/data/1652044/000165204426000043/googexhibit991q12026.htm)</td></tr>
+<tr><td>`SRC_META_Q1_2026_RESULTS`</td><td>Meta</td><td>direct_company_result</td><td>95%</td><td>[Meta Reports First Quarter 2026 Results](https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-First-Quarter-2026-Results/default.aspx)</td></tr>
+<tr><td>`SRC_LOCAL_GAP_ENGINE_ANCHORS`</td><td>Local model</td><td>internal_synthesis</td><td>65%</td><td>[Current capacity utilization anchors from config.py and gap_engine.py](config.py::CURRENT_CAPACITY_UTILIZATION)</td></tr>
+</table>
+
+<h2>9. Validation Notes</h2>
+
+<p>• Direct product specs and company filings are treated as high-confidence inputs.</p>
+<p>• CapEx split, accelerator ASP, CoWoS coefficient, networking coefficient, and RAG storage ratio remain derived or provisional.</p>
+<p>• Low-confidence coefficients are retained only because they are explicit, traceable, and have a replacement path in `data/model_evidence.json`.</p>
+<p>• The companion Excel model is formula-driven: `outputs/excel/ai_scm_supply_demand_simulator.xlsx`.</p>
+</body>
+</html>

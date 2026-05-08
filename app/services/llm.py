@@ -522,6 +522,15 @@ def generate_text(client: OpenAI, messages: list[dict[str, str]]) -> str:
         return response.choices[0].message.content or ""
 
 
+def generate_json(client: OpenAI, messages: list[dict[str, str]], task: str) -> dict[str, Any]:
+    response_text = generate_text(client, messages)
+    if not response_text.strip():
+        raise ValueError("LLM returned an empty response")
+    data = _load_json_object(response_text)
+    record_llm_call(task, "llm", None)
+    return data
+
+
 def record_llm_call(task: str, mode: str, error: str | None) -> None:
     LLM_STATUS["last_call"] = {
         "task": task,

@@ -45,3 +45,4 @@ def ensure_indexes(db: Database) -> None:
     )
     db.reports.create_index("report_id", unique=True)
     db.dashboard_snapshots.create_index("snapshot_id", unique=True)
+    db.workflow_runs.create_index("run_id", unique=True)

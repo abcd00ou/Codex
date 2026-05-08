@@ -52,6 +52,16 @@ class LocalCollection:
         self.records.extend(_json_safe(document) for document in documents)
         self.database.save()
 
+    def replace_one(self, query: dict[str, Any], document: dict[str, Any], upsert: bool = False) -> None:
+        for index, record in enumerate(self.records):
+            if _matches(record, query):
+                self.records[index] = _json_safe(document)
+                self.database.save()
+                return
+        if upsert:
+            self.records.append(_json_safe(document))
+            self.database.save()
+
     def find_one(
         self,
         query: dict[str, Any],

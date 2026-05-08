@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -71,3 +71,55 @@ class DashboardSnapshot(BaseModel):
     paragraph_count: int = 0
     top_documents: list[dict[str, Any]]
     created_at: datetime
+
+
+WorkflowStatus = Literal["pending", "running", "needs_input", "succeeded", "failed"]
+WorkflowStepStatus = Literal["pending", "running", "succeeded", "failed", "skipped"]
+WorkflowStepKind = Literal[
+    "llm_plan",
+    "llm_extract",
+    "llm_summarize",
+    "llm_review",
+    "internal_search_documents",
+    "internal_create_report",
+]
+
+
+class WorkflowRunRequest(BaseModel):
+    goal: str = Field(min_length=1, max_length=2000)
+    input_data: dict[str, Any] = Field(default_factory=dict)
+
+
+class WorkflowResumeRequest(BaseModel):
+    input_data: dict[str, Any] = Field(default_factory=dict)
+
+
+class WorkflowStep(BaseModel):
+    step_id: str
+    name: str
+    kind: WorkflowStepKind
+    input: dict[str, Any] = Field(default_factory=dict)
+    output: dict[str, Any] = Field(default_factory=dict)
+    status: WorkflowStepStatus = "pending"
+    error: str | None = None
+    attempts: int = 0
+
+
+class AgentDecision(BaseModel):
+    next_action: str
+    reason: str
+    step_updates: list[dict[str, Any]] = Field(default_factory=list)
+    final_answer: str | None = None
+
+
+class WorkflowRun(BaseModel):
+    run_id: str
+    goal: str
+    status: WorkflowStatus
+    steps: list[WorkflowStep] = Field(default_factory=list)
+    result: dict[str, Any] = Field(default_factory=dict)
+    input_data: dict[str, Any] = Field(default_factory=dict)
+    questions: list[str] = Field(default_factory=list)
+    error: str | None = None
+    created_at: datetime
+    updated_at: datetime

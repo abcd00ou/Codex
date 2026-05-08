@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Supply Chain Intelligence Dashboard - 2026-03-25</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a1628;
+    color: #e0e6ef;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .header {
+    background: linear-gradient(135deg, #0d1b35 0%, #1a2f5a 50%, #0d1b35 100%);
+    border-bottom: 2px solid #1e88e5;
+    padding: 24px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+  }
+  .header .subtitle {
+    color: #00bcd4;
+    font-size: 13px;
+    margin-top: 4px;
+  }
+  .header .date-badge {
+    background: #1e88e5;
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 24px 40px;
+  }
+  .section {
+    margin-bottom: 36px;
+  }
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #00bcd4;
+    border-left: 4px solid #1e88e5;
+    padding-left: 12px;
+    margin-bottom: 16px;
+    letter-spacing: 0.3px;
+  }
+  .card {
+    background: #0f1f3d;
+    border: 1px solid #1e3a5f;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 12px;
+  }
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .metric-card {
+    background: #0f1f3d;
+    border: 1px solid #1e3a5f;
+    border-radius: 8px;
+    padding: 16px 20px;
+  }
+  .metric-card .label {
+    color: #8fa3c0;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+  }
+  .metric-card .value {
+    font-size: 26px;
+    font-weight: 700;
+    color: #00bcd4;
+  }
+  .metric-card .sub {
+    color: #8fa3c0;
+    font-size: 12px;
+    margin-top: 4px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th {
+    background: #0d47a1;
+    color: white;
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #1e3a5f;
+    font-size: 13px;
+  }
+  tr:hover td {
+    background: rgba(30, 136, 229, 0.08);
+  }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-critical { background: #f44336; color: white; }
+  .badge-high { background: #ff9800; color: white; }
+  .badge-medium { background: #ffeb3b; color: #000; }
+  .badge-low { background: #4caf50; color: white; }
+  .badge-sb { background: #00e676; color: #000; }
+  .badge-buy { background: #4caf50; color: white; }
+  .badge-hold { background: #ffeb3b; color: #000; }
+  .badge-watch { background: #ff9800; color: white; }
+  .chain-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+  .chain-card {
+    border-radius: 6px;
+    padding: 12px 16px;
+    border-left: 4px solid;
+  }
+  .chain-card .layer-name {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .chain-card .company-list {
+    font-size: 11px;
+    opacity: 0.8;
+  }
+  .progress-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .progress-bar-bg {
+    flex: 1;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    height: 8px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s;
+  }
+  .progress-label {
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 40px;
+  }
+  .ascii-bar {
+    font-family: monospace;
+    font-size: 13px;
+    color: #00bcd4;
+  }
+  .capex-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #1e3a5f;
+    gap: 12px;
+  }
+  .capex-company {
+    width: 100px;
+    font-weight: 600;
+  }
+  .footer {
+    background: #0f1f3d;
+    border-top: 1px solid #1e3a5f;
+    padding: 16px 40px;
+    text-align: center;
+    color: #8fa3c0;
+    font-size: 12px;
+  }
+  .scenario-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .scenario-tab {
+    padding: 6px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .scenario-bear { background: rgba(244,67,54,0.2); border: 1px solid #f44336; color: #f44336; }
+  .scenario-base { background: rgba(30,136,229,0.2); border: 1px solid #1e88e5; color: #1e88e5; }
+  .scenario-bull { background: rgba(0,230,118,0.2); border: 1px solid #00e676; color: #00e676; }
+  .phase-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .phase-card {
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid #1e3a5f;
+    text-align: center;
+  }
+  .phase-card.active {
+    border-color: #00bcd4;
+    background: rgba(0,188,212,0.08);
+  }
+  .phase-number {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .risk-card {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    border: 1px solid #1e3a5f;
+    background: #152848;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>AI Supply Chain Intelligence Dashboard</h1>
+    <div class="subtitle">Token Demand → Hardware Demand Quantification | Bottleneck Detection | Investment Signals</div>
+  </div>
+  <div class="date-badge">Updated: 2026-03-25</div>
+</div>
+
+<div class="container">
+
+  <!-- SECTION 1: VALUE CHAIN -->
+  <div class="section">
+    <div class="section-title">Section 1 &nbsp;|&nbsp; AI Supply Chain Value Chain</div>
+    <div class="chain-grid">
+        <div class="chain-card" style="background: rgba(10,22,40,0.9); border-left-color: #4caf50;">
+          <div class="layer-name" style="color: #4caf50;">End Customer</div>
+          <div style="margin: 4px 0;">
+            <span class="badge badge-low">LOW</span>
+          </div>
+          <div class="company-list" style="color: #8fa3c0;">OpenAI, Anthropic, Google DeepMind +2</div>
+        </div>
+        <div class="chain-card" style="background: rgba(10,22,40,0.9); border-left-color: #ffeb3b;">
+          <div class="layer-name" style="color: #ffeb3b;">AI Service</div>
+          <div style="margin: 4px 0;">
+            <span class="badge badge-medium">MEDIUM</span>
+          </div>
+          <div class="company-list" style="color: #8fa3c0;">OpenAI API, Anthropic API, Cohere +2</div>
+        </div>
+        <div class="chain-card" style="background: rgba(10,22,40,0.9); border-left-color: #ff9800;">
+          <div class="layer-name" style="color: #ff9800;">Cloud / DC</div>
+          <div style="margin: 4px 0;">
+            <span class="badge badge-high">HIGH</span>
+          </div>
+          <div class="company-list" style="color: #8fa3c0;">Microsoft Azure, AWS, Google Cloud +2</div>
+        </div>
+        <div class="chain-card" style="background: rgba(10,22,40,0.9); border-left-color: #ff9800;">
+          <div class="layer-name" style="color: #ff9800;">GPU Server</div>
+          <div style="margin: 4px 0;">
+            <span class="badge badge-high">82%</span>
+          </div>
+          <div class="company-list" style="color: #8fa3c0;">NVIDIA, AMD, Intel Gaudi</div>
+        </div>
+        <div class="chain-card" style="background: rgba(10,22,40,0.9); border-left-color: #ff9800;">
+          <div class="layer-name" style="color: #ff9800;">ASIC</div>
+          <div style="margin: 4px 0;">
+            <span class="badge badge-high">78%</span>
+          </div>
+          <div class="company-list" style="color: #8fa3c0;">Google TPU, AWS Trainium, Microsoft Maia +2</div>
+        </div>
+        <div class="chain-card" style="background: rgba(10,22,40,0.9); border-left-color: #f44336;">
+          <div class="layer-name" style="color: #f44336;">HBM</div>
+          <div style="margin: 4px 0;">
+            <span class="badge badge-critical">92%</span>
+          </div>
+          <div class="company-list" style="color: #8fa3c0;">SK Hynix, Samsung, Micron</div>
+        </div>
+        <div class="chain-card" style="background: rgba(10,22,40,0.9); border-left-color: #ffeb3b;">
+          <div class="layer-name" style="color: #ffeb3b;">DRAM</div>
+          <div style="margin: 4px 0;">
+            <span class="badge badge-medium">62%</span>
+          </div>
+          <div class="company-list" style="color: #8fa3c0;">Samsung, SK Hynix, Micron</div>
+        </div>
+        <div class="chain-card" style="background: rgba(10,22,40,0.9); border-left-color: #4caf50;">
+          <div class="layer-name" style="color: #4caf50;">SSD Storage</div>
+          <div style="margin: 4px 0;">
+            <span class="badge badge-low">42%</span>
+          </div>
+          <div class="company-list" style="color: #8fa3c0;">Solidigm, Samsung SSD, Kioxia +2</div>
+        </div>
+        <div class="chain-card" style="background: rgba(10,22,40,0.9); border-left-color: #ff9800;">
+          <div class="layer-name" style="color: #ff9800;">Networking</div>
+          <div style="margin: 4px 0;">
+            <span class="badge badge-high">78%</span>
+          </div>
+          <div class="company-list" style="color: #8fa3c0;">Broadcom, Marvell, Arista +2</div>
+        </div>
+        <div class="chain-card" style="background: rgba(10,22,40,0.9); border-left-color: #f44336;">
+          <div class="layer-name" style="color: #f44336;">Packaging</div>
+          <div style="margin: 4px 0;">
+            <span class="badge badge-critical">88%</span>
+          </div>
+          <div class="company-list" style="color: #8fa3c0;">TSMC CoWoS, ASE, Amkor +1</div>
+        </div>
+        <div class="chain-card" style="background: rgba(10,22,40,0.9); border-left-color: #f44336;">
+          <div class="layer-name" style="color: #f44336;">Power</div>
+          <div style="margin: 4px 0;">
+            <span class="badge badge-critical">85%</span>
+          </div>
+          <div class="company-list" style="color: #8fa3c0;">Vertiv, Eaton, Schneider Electric +2</div>
+        </div>
+        <div class="chain-card" style="background: rgba(10,22,40,0.9); border-left-color: #ff9800;">
+          <div class="layer-name" style="color: #ff9800;">Foundry</div>
+          <div style="margin: 4px 0;">
+            <span class="badge badge-high">HIGH</span>
+          </div>
+          <div class="company-list" style="color: #8fa3c0;">TSMC, Samsung Foundry, SMIC +1</div>
+        </div>
+        <div class="chain-card" style="background: rgba(10,22,40,0.9); border-left-color: #ffeb3b;">
+          <div class="layer-name" style="color: #ffeb3b;">Edge AI</div>
+          <div style="margin: 4px 0;">
+            <span class="badge badge-medium">60%</span>
+          </div>
+          <div class="company-list" style="color: #8fa3c0;">Qualcomm, Apple, Samsung LSI +2</div>
+        </div>
+        <div class="chain-card" style="background: rgba(10,22,40,0.9); border-left-color: #ffeb3b;">
+          <div class="layer-name" style="color: #ffeb3b;">Sovereign AI</div>
+          <div style="margin: 4px 0;">
+            <span class="badge badge-medium">MEDIUM</span>
+          </div>
+          <div class="company-list" style="color: #8fa3c0;">G42 (UAE), ARAMCO AI (Saudi), GENCI (France) +2</div>
+        </div></div>
+    <div style="display: flex; gap: 16px; margin-top: 12px; font-size: 12px;">
+      <span style="color: #f44336;">■ Critical (&gt;85%)</span>
+      <span style="color: #ff9800;">■ High (&gt;70%)</span>
+      <span style="color: #ffeb3b;">■ Medium (&gt;50%)</span>
+      <span style="color: #4caf50;">■ Low (&lt;50%)</span>
+    </div>
+  </div>
+
+  <!-- SECTION 2: TOKEN -> HARDWARE DEMAND -->
+  <div class="section">
+    <div class="section-title">Section 2 &nbsp;|&nbsp; Token Demand → Hardware Demand</div>
+    <div class="card-grid">
+        <div class="metric-card">
+          <div class="label">Total Tokens/Day</div>
+          <div class="value">328.8T</div>
+          <div class="sub">2026년 Q1 현재 (Base)</div>
+        </div>
+        <div class="metric-card">
+          <div class="label">GPU Required</div>
+          <div class="value">2.24M</div>
+          <div class="sub">H100-equivalent</div>
+        </div>
+        <div class="metric-card">
+          <div class="label">HBM Demand</div>
+          <div class="value">179.1PB</div>
+          <div class="sub">Total installed</div>
+        </div>
+        <div class="metric-card">
+          <div class="label">Power Required</div>
+          <div class="value">2851MW</div>
+          <div class="sub">Data center MW</div>
+        </div>
+        <div class="metric-card">
+          <div class="label">SSD Access/Day</div>
+          <div class="value">0.2PB/day</div>
+          <div class="sub">RAG + Vector DB</div>
+        </div>
+        <div class="metric-card">
+          <div class="label">GPU CapEx</div>
+          <div class="value">$0.1T</div>
+          <div class="sub">Hardware procurement</div>
+        </div></div>
+    <div class="card" style="margin-top: 16px;">
+      <table>
+        <thead>
+          <tr>
+            <th>AI Service</th>
+            <th>Tokens/Day (2024)</th>
+            <th>H100 Equivalent</th>
+            <th>B200 Equivalent</th>
+            <th>HBM (GB)</th>
+            <th>Power (MW)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-weight: 600;">ChatGPT</td>
+            <td>10.0T</td>
+            <td style="color: #00bcd4;">68,083</td>
+            <td style="color: #00e676;">30,259</td>
+            <td>5.4M</td>
+            <td>86.7</td>
+          </tr>
+          <tr>
+            <td style="font-weight: 600;">Claude</td>
+            <td>2.0T</td>
+            <td style="color: #00bcd4;">13,617</td>
+            <td style="color: #00e676;">6,052</td>
+            <td>1.1M</td>
+            <td>17.3</td>
+          </tr>
+          <tr>
+            <td style="font-weight: 600;">Gemini</td>
+            <td>3.0T</td>
+            <td style="color: #00bcd4;">20,425</td>
+            <td style="color: #00e676;">9,078</td>
+            <td>1.6M</td>
+            <td>26.0</td>
+          </tr>
+          <tr>
+            <td style="font-weight: 600;">Llama_OSS</td>
+            <td>5.0T</td>
+            <td style="color: #00bcd4;">34,041</td>
+            <td style="color: #00e676;">15,130</td>
+            <td>2.7M</td>
+            <td>43.4</td>
+          </tr>
+          <tr>
+            <td style="font-weight: 600;">Other</td>
+            <td>5.0T</td>
+            <td style="color: #00bcd4;">34,041</td>
+            <td style="color: #00e676;">15,130</td>
+            <td>2.7M</td>
+            <td>43.4</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card" style="margin-top: 12px; background: #152848;">
+      <div style="font-size: 13px; color: #8fa3c0; font-style: italic;">
+        <strong style="color: #00bcd4;">Model:</strong>
+        GPU_needed = Tokens_per_day / (86400 × GPU_tokens_per_sec × utilization) |
+        H100: 2,000 tok/s | B200: 4,500 tok/s | Utilization: 85% |
+        HBM: 80GB/H100 | Power: TDP×1.3×PUE/1e6 (MW)
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: BOTTLENECK ANALYSIS -->
+  <div class="section">
+    <div class="section-title">Section 3 &nbsp;|&nbsp; Bottleneck Analysis</div>
+    
+    <div class="card-grid">
+      <div class="metric-card" style="border-color: #f44336;">
+        <div class="label">Current Bottleneck</div>
+        <div class="value" style="color: #f44336; font-size: 32px;">HBM</div>
+        <div style="margin: 8px 0;">
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" style="width: 92%; background: #f44336;"></div>
+            </div>
+            <span class="progress-label" style="color: #f44336;">92%</span>
+          </div>
+        </div>
+        <div class="sub">Resolution: ~18 months | Window: 2024~2025 (이미 진입) → 2026 H1 핵심 구간</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Next Bottleneck</div>
+        <div class="value" style="color: #ff9800; font-size: 28px;">CoWoS</div>
+        <div class="sub">As HBM capacity is added, pressure shifts here</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">After Next</div>
+        <div class="value" style="color: #ffeb3b; font-size: 28px;">Power_DC</div>
+        <div class="sub">Long-term structural constraint</div>
+      </div>
+    </div><div class="card" style="margin-top: 16px;"><table><thead><tr><th>Component</th><th>Utilization</th><th>Severity</th><th>Resolution</th><th>Investment Window</th></tr></thead><tbody>
+        <tr>
+          <td style="font-weight: 600;">HBM</td>
+          <td>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-bg" style="width: 120px;">
+                <div class="progress-bar-fill" style="width: 92%; background: #f44336;"></div>
+              </div>
+              <span style="color: #f44336; font-size: 12px; font-weight: 600;">92%</span>
+            </div>
+          </td>
+          <td><span class="badge badge-critical">critical</span></td>
+          <td style="color: #8fa3c0;">18mo</td>
+          <td style="color: #8fa3c0; font-size: 12px;">2024~2025 (이미 진입) → 2026 H1 핵심 구간</td>
+        </tr>
+        <tr>
+          <td style="font-weight: 600;">CoWoS</td>
+          <td>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-bg" style="width: 120px;">
+                <div class="progress-bar-fill" style="width: 88%; background: #f44336;"></div>
+              </div>
+              <span style="color: #f44336; font-size: 12px; font-weight: 600;">88%</span>
+            </div>
+          </td>
+          <td><span class="badge badge-critical">critical</span></td>
+          <td style="color: #8fa3c0;">12mo</td>
+          <td style="color: #8fa3c0; font-size: 12px;">2024~2025 (이미 진입) → 2026 H1 핵심 구간</td>
+        </tr>
+        <tr>
+          <td style="font-weight: 600;">Power_DC</td>
+          <td>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-bg" style="width: 120px;">
+                <div class="progress-bar-fill" style="width: 85%; background: #f44336;"></div>
+              </div>
+              <span style="color: #f44336; font-size: 12px; font-weight: 600;">85%</span>
+            </div>
+          </td>
+          <td><span class="badge badge-critical">critical</span></td>
+          <td style="color: #8fa3c0;">24mo</td>
+          <td style="color: #8fa3c0; font-size: 12px;">2026 H1 ~ 2027 H1 ★현재 진입 중 (2차 병목)</td>
+        </tr>
+        <tr>
+          <td style="font-weight: 600;">Foundry</td>
+          <td>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-bg" style="width: 120px;">
+                <div class="progress-bar-fill" style="width: 84%; background: #ff9800;"></div>
+              </div>
+              <span style="color: #ff9800; font-size: 12px; font-weight: 600;">84%</span>
+            </div>
+          </td>
+          <td><span class="badge badge-high">high</span></td>
+          <td style="color: #8fa3c0;">unknownmo</td>
+          <td style="color: #8fa3c0; font-size: 12px;">N/A</td>
+        </tr>
+        <tr>
+          <td style="font-weight: 600;">GPU</td>
+          <td>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-bg" style="width: 120px;">
+                <div class="progress-bar-fill" style="width: 82%; background: #ff9800;"></div>
+              </div>
+              <span style="color: #ff9800; font-size: 12px; font-weight: 600;">82%</span>
+            </div>
+          </td>
+          <td><span class="badge badge-high">high</span></td>
+          <td style="color: #8fa3c0;">9mo</td>
+          <td style="color: #8fa3c0; font-size: 12px;">2023~ 지속 / B200 전환 수혜 2026</td>
+        </tr>
+        <tr>
+          <td style="font-weight: 600;">Networking</td>
+          <td>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-bg" style="width: 120px;">
+                <div class="progress-bar-fill" style="width: 78%; background: #ff9800;"></div>
+              </div>
+              <span style="color: #ff9800; font-size: 12px; font-weight: 600;">78%</span>
+            </div>
+          </td>
+          <td><span class="badge badge-high">high</span></td>
+          <td style="color: #8fa3c0;">6mo</td>
+          <td style="color: #8fa3c0; font-size: 12px;">2026 H1 ~ 2027 H1 ★현재 진입 중 (3차 병목)</td>
+        </tr>
+        <tr>
+          <td style="font-weight: 600;">ASIC</td>
+          <td>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-bg" style="width: 120px;">
+                <div class="progress-bar-fill" style="width: 78%; background: #ff9800;"></div>
+              </div>
+              <span style="color: #ff9800; font-size: 12px; font-weight: 600;">78%</span>
+            </div>
+          </td>
+          <td><span class="badge badge-high">high</span></td>
+          <td style="color: #8fa3c0;">12mo</td>
+          <td style="color: #8fa3c0; font-size: 12px;">2026 ~ 2027 (TPU v5, Trainium2, Maia 본격화)</td>
+        </tr>
+        <tr>
+          <td style="font-weight: 600;">DRAM</td>
+          <td>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-bg" style="width: 120px;">
+                <div class="progress-bar-fill" style="width: 62%; background: #ffeb3b;"></div>
+              </div>
+              <span style="color: #ffeb3b; font-size: 12px; font-weight: 600;">62%</span>
+            </div>
+          </td>
+          <td><span class="badge badge-medium">medium</span></td>
+          <td style="color: #8fa3c0;">6mo</td>
+          <td style="color: #8fa3c0; font-size: 12px;">N/A</td>
+        </tr>
+        <tr>
+          <td style="font-weight: 600;">Edge_AI</td>
+          <td>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-bg" style="width: 120px;">
+                <div class="progress-bar-fill" style="width: 60%; background: #ffeb3b;"></div>
+              </div>
+              <span style="color: #ffeb3b; font-size: 12px; font-weight: 600;">60%</span>
+            </div>
+          </td>
+          <td><span class="badge badge-medium">medium</span></td>
+          <td style="color: #8fa3c0;">6mo</td>
+          <td style="color: #8fa3c0; font-size: 12px;">N/A</td>
+        </tr>
+        <tr>
+          <td style="font-weight: 600;">CPU</td>
+          <td>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-bg" style="width: 120px;">
+                <div class="progress-bar-fill" style="width: 48%; background: #4caf50;"></div>
+              </div>
+              <span style="color: #4caf50; font-size: 12px; font-weight: 600;">48%</span>
+            </div>
+          </td>
+          <td><span class="badge badge-low">low</span></td>
+          <td style="color: #8fa3c0;">6mo</td>
+          <td style="color: #8fa3c0; font-size: 12px;">N/A</td>
+        </tr>
+        <tr>
+          <td style="font-weight: 600;">SSD</td>
+          <td>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-bg" style="width: 120px;">
+                <div class="progress-bar-fill" style="width: 42%; background: #4caf50;"></div>
+              </div>
+              <span style="color: #4caf50; font-size: 12px; font-weight: 600;">42%</span>
+            </div>
+          </td>
+          <td><span class="badge badge-low">low</span></td>
+          <td style="color: #8fa3c0;">3mo</td>
+          <td style="color: #8fa3c0; font-size: 12px;">N/A</td>
+        </tr></tbody></table></div><div style="margin-top: 16px;"><div style="font-size: 14px; font-weight: 600; color: #00bcd4; margin-bottom: 8px;">Cascade Risk Chains</div>
+            <div class="risk-card">
+              <span class="badge badge-critical" style="flex-shrink: 0;">CRITICAL</span>
+              <div>
+                <div style="font-weight: 600; color: #f44336;">CoWoS -> HBM -> GPU</div>
+                <div style="font-size: 12px; color: #8fa3c0;">Packaging bottleneck constrains HBM supply, limiting GPU shipments</div>
+              </div>
+            </div>
+            <div class="risk-card">
+              <span class="badge badge-high" style="flex-shrink: 0;">HIGH</span>
+              <div>
+                <div style="font-weight: 600; color: #ff9800;">Power Grid -> Data Center -> GPU Utilization</div>
+                <div style="font-size: 12px; color: #8fa3c0;">Grid capacity limits new DC deployments, slowing GPU absorption</div>
+              </div>
+            </div></div>
+  </div>
+
+  <!-- SECTION 4: HYPERSCALER CAPEX -->
+  <div class="section">
+    <div class="section-title">Section 4 &nbsp;|&nbsp; Hyperscaler CapEx Trends</div>
+    <div class="card"><table><thead><tr><th>Company</th><th style="text-align: center;">2022</th><th style="text-align: center;">2023</th><th style="text-align: center;">2024</th><th style="text-align: center;">2025</th><th style="text-align: center;">2026</th><th>Bar (2026)</th></tr></thead><tbody><tr><td style="font-weight: 600; color: #ff9900;">Amazon</td><td style="text-align: center;">$38B</td><td style="text-align: center;">$48B</td><td style="text-align: center;">$75B</td><td style="text-align: center;">$105B</td><td style="text-align: center;">$120B</td><td style="font-family: monospace; color: #ff9900; font-size: 12px;">████████████████████</td></tr><tr><td style="font-weight: 600; color: #00a4ef;">Microsoft</td><td style="text-align: center;">$23B</td><td style="text-align: center;">$28B</td><td style="text-align: center;">$55B</td><td style="text-align: center;">$80B</td><td style="text-align: center;">$90B</td><td style="font-family: monospace; color: #00a4ef; font-size: 12px;">███████████████░░░░░</td></tr><tr><td style="font-weight: 600; color: #4285f4;">Google</td><td style="text-align: center;">$32B</td><td style="text-align: center;">$32B</td><td style="text-align: center;">$52B</td><td style="text-align: center;">$75B</td><td style="text-align: center;">$85B</td><td style="font-family: monospace; color: #4285f4; font-size: 12px;">██████████████░░░░░░</td></tr><tr><td style="font-weight: 600; color: #0668e1;">Meta</td><td style="text-align: center;">$31B</td><td style="text-align: center;">$28B</td><td style="text-align: center;">$37B</td><td style="text-align: center;">$65B</td><td style="text-align: center;">$72B</td><td style="font-family: monospace; color: #0668e1; font-size: 12px;">████████████░░░░░░░░</td></tr><tr><td style="font-weight: 600; color: #ffffff;">xAI</td><td style="text-align: center;">$0B</td><td style="text-align: center;">$0B</td><td style="text-align: center;">$6B</td><td style="text-align: center;">$15B</td><td style="text-align: center;">$25B</td><td style="font-family: monospace; color: #ffffff; font-size: 12px;">████░░░░░░░░░░░░░░░░</td></tr><tr style="font-weight: 700; border-top: 2px solid #1e88e5;"><td style="color: #00bcd4;">TOTAL</td><td style="text-align: center; color: #00bcd4;">$124B</td><td style="text-align: center; color: #00bcd4;">$136B</td><td style="text-align: center; color: #00bcd4;">$225B</td><td style="text-align: center; color: #00bcd4;">$340B</td><td style="text-align: center; color: #00bcd4;">$392B</td><td style="font-family: monospace; color: #00bcd4; font-size: 12px;">█████████████░░░░░░░</td></tr></tbody></table></div>
+    <div class="card" style="margin-top: 12px; background: #152848;">
+      <div style="font-size: 13px; color: #8fa3c0;">
+        <strong style="color: #00bcd4;">Key Insight:</strong>
+        Big 5 합산 CapEx: 2022 ~$154B → 2025 ~$340B(실적) → 2026 ~$407B(가이던스).
+        2-year CAGR: ~30%. AI infrastructure spending has become the largest single CapEx category in tech history.
+        Amazon 최대 $105B(2025실적) → $120B(2026가이던스). AWS + AI 인프라 주도.
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5: INVESTMENT SIGNALS -->
+  <div class="section">
+    <div class="section-title">Section 5 &nbsp;|&nbsp; Investment Signals</div>
+    
+    <div class="card-grid">
+      <div class="metric-card">
+        <div class="label">Investment Phase</div>
+        <div class="value" style="font-size: 20px;">Phase 2 (HBM & Packaging)</div>
+        <div class="sub">Current cycle position</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Strong Buy</div>
+        <div class="value" style="color: #00e676;">7</div>
+        <div class="sub">companies</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Buy</div>
+        <div class="value" style="color: #4caf50;">10</div>
+        <div class="sub">companies</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Hold</div>
+        <div class="value" style="color: #ffeb3b;">7</div>
+        <div class="sub">companies</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Watch</div>
+        <div class="value" style="color: #ff9800;">1</div>
+        <div class="sub">companies</div>
+      </div></div><div class="card" style="margin-top: 16px;"><div style="font-size: 13px; font-weight: 600; color: #00bcd4; margin-bottom: 8px;">Key Investment Themes</div><div style="display: flex; flex-wrap: wrap; gap: 8px;"><span style="background: rgba(30,136,229,0.15); border: 1px solid #1e88e5; border-radius: 16px; padding: 4px 12px; font-size: 12px;">Memory Upcycle (HBM shortage persists through 2025)</span><span style="background: rgba(30,136,229,0.15); border: 1px solid #1e88e5; border-radius: 16px; padding: 4px 12px; font-size: 12px;">Power Infrastructure Scarcity (transformer/grid bottleneck)</span><span style="background: rgba(30,136,229,0.15); border: 1px solid #1e88e5; border-radius: 16px; padding: 4px 12px; font-size: 12px;">Sovereign AI Wave (UAE, Saudi, EU $150B+ government investment)</span><span style="background: rgba(30,136,229,0.15); border: 1px solid #1e88e5; border-radius: 16px; padding: 4px 12px; font-size: 12px;">Custom Silicon Efficiency Race (Google TPU, AWS Trainium, MSFT Maia)</span><span style="background: rgba(30,136,229,0.15); border: 1px solid #1e88e5; border-radius: 16px; padding: 4px 12px; font-size: 12px;">Physical AI / Robotics (Inference at edge 2026-2027)</span><span style="background: rgba(30,136,229,0.15); border: 1px solid #1e88e5; border-radius: 16px; padding: 4px 12px; font-size: 12px;">Hyperscaler CapEx Super-Cycle ($500B+ in 2026)</span></div></div><div class="card" style="margin-top: 12px;"><table><thead><tr><th>Company</th><th>Layer</th><th>Signal</th><th>Thesis</th><th>Catalyst</th><th>Risk</th><th>Timeframe</th></tr></thead><tbody>
+        <tr>
+          <td style="font-weight: 700; color: #00e676;">SK Hynix</td>
+          <td><span style="color: #00bcd4; font-size: 11px;">HBM</span></td>
+          <td><span class="badge badge-sb">Strong Buy</span></td>
+          <td style="font-size: 12px; max-width: 200px;">HBM3e dominant supplier (50% share), 95% utilization, 2.5x demand growth YoY, GB200 key beneficiary</td>
+          <td style="font-size: 12px; color: #00e676; max-width: 150px;">GB200 NVL72 rack ramp H2 2025; HBM4 qualification 2026</td>
+          <td style="font-size: 12px; color: #ff9800; max-width: 150px;">Samsung HBM capacity catch-up; CoWoS yield risk; US export control escalation</td>
+          <td style="font-size: 12px; color: #8fa3c0;">6-18 months</td>
+        </tr>
+        <tr>
+          <td style="font-weight: 700; color: #00e676;">TSMC CoWoS</td>
+          <td><span style="color: #00bcd4; font-size: 11px;">CoWoS</span></td>
+          <td><span class="badge badge-sb">Strong Buy</span></td>
+          <td style="font-size: 12px; max-width: 200px;">CoWoS at 88% utilization (critical bottleneck)</td>
+          <td style="font-size: 12px; color: #00e676; max-width: 150px;">Resolution in ~12 months</td>
+          <td style="font-size: 12px; color: #ff9800; max-width: 150px;">TSMC CoWoS expansion underway, 12-18 months</td>
+          <td style="font-size: 12px; color: #8fa3c0;">0-12 months</td>
+        </tr>
+        <tr>
+          <td style="font-weight: 700; color: #00e676;">ASE</td>
+          <td><span style="color: #00bcd4; font-size: 11px;">CoWoS</span></td>
+          <td><span class="badge badge-sb">Strong Buy</span></td>
+          <td style="font-size: 12px; max-width: 200px;">CoWoS at 88% utilization (critical bottleneck)</td>
+          <td style="font-size: 12px; color: #00e676; max-width: 150px;">Resolution in ~12 months</td>
+          <td style="font-size: 12px; color: #ff9800; max-width: 150px;">TSMC CoWoS expansion underway, 12-18 months</td>
+          <td style="font-size: 12px; color: #8fa3c0;">0-12 months</td>
+        </tr>
+        <tr>
+          <td style="font-weight: 700; color: #00e676;">Amkor</td>
+          <td><span style="color: #00bcd4; font-size: 11px;">CoWoS</span></td>
+          <td><span class="badge badge-sb">Strong Buy</span></td>
+          <td style="font-size: 12px; max-width: 200px;">CoWoS at 88% utilization (critical bottleneck)</td>
+          <td style="font-size: 12px; color: #00e676; max-width: 150px;">Resolution in ~12 months</td>
+          <td style="font-size: 12px; color: #ff9800; max-width: 150px;">TSMC CoWoS expansion underway, 12-18 months</td>
+          <td style="font-size: 12px; color: #8fa3c0;">0-12 months</td>
+        </tr>
+        <tr>
+          <td style="font-weight: 700; color: #00e676;">Vertiv</td>
+          <td><span style="color: #00bcd4; font-size: 11px;">Power_DC</span></td>
+          <td><span class="badge badge-sb">Strong Buy</span></td>
+          <td style="font-size: 12px; max-width: 200px;">Power_DC at 85% utilization (critical bottleneck)</td>
+          <td style="font-size: 12px; color: #00e676; max-width: 150px;">Resolution in ~24 months</td>
+          <td style="font-size: 12px; color: #ff9800; max-width: 150px;">Transformer shortage + grid permitting 2-3 years</td>
+          <td style="font-size: 12px; color: #8fa3c0;">0-24 months</td>
+        </tr>
+        <tr>
+          <td style="font-weight: 700; color: #00e676;">Eaton</td>
+          <td><span style="color: #00bcd4; font-size: 11px;">Power_DC</span></td>
+          <td><span class="badge badge-sb">Strong Buy</span></td>
+          <td style="font-size: 12px; max-width: 200px;">Power_DC at 85% utilization (critical bottleneck)</td>
+          <td style="font-size: 12px; color: #00e676; max-width: 150px;">Resolution in ~24 months</td>
+          <td style="font-size: 12px; color: #ff9800; max-width: 150px;">Transformer shortage + grid permitting 2-3 years</td>
+          <td style="font-size: 12px; color: #8fa3c0;">0-24 months</td>
+        </tr>
+        <tr>
+          <td style="font-weight: 700; color: #00e676;">Schneider Electric</td>
+          <td><span style="color: #00bcd4; font-size: 11px;">Power_DC</span></td>
+          <td><span class="badge badge-sb">Strong Buy</span></td>
+          <td style="font-size: 12px; max-width: 200px;">Power_DC at 85% utilization (critical bottleneck)</td>
+          <td style="font-size: 12px; color: #00e676; max-width: 150px;">Resolution in ~24 months</td>
+          <td style="font-size: 12px; color: #ff9800; max-width: 150px;">Transformer shortage + grid permitting 2-3 years</td>
+          <td style="font-size: 12px; color: #8fa3c0;">0-24 months</td>
+        </tr>
+        <tr>
+          <td style="font-weight: 700; color: #4caf50;">Micron</td>
+          <td><span style="color: #00bcd4; font-size: 11px;">HBM</span></td>
+          <td><span class="badge badge-buy">Buy</span></td>
+          <td style="font-size: 12px; max-width: 200px;">HBM3e market share gain 10% -> 20%+; CHIPS Act domestic fab beneficiary; NVIDIA supply diversificati...</td>
+          <td style="font-size: 12px; color: #00e676; max-width: 150px;">NVIDIA HBM3e dual-source approval; 1-beta node transition</td>
+          <td style="font-size: 12px; color: #ff9800; max-width: 150px;">Execution risk; SK Hynix yield/performance gap</td>
+          <td style="font-size: 12px; color: #8fa3c0;">12-24 months</td>
+        </tr>
+        <tr>
+          <td style="font-weight: 700; color: #4caf50;">TSMC</td>
+          <td><span style="color: #00bcd4; font-size: 11px;">Packaging/Foundry</span></td>
+          <td><span class="badge badge-buy">Buy</span></td>
+          <td style="font-size: 12px; max-width: 200px;">CoWoS monopoly for AI packaging (92% util); N3/N2 pricing power; AI chips 20%+ of revenue</td>
+          <td style="font-size: 12px; color: #00e676; max-width: 150px;">CoWoS 50K->80K wpm expansion 2025; N2 ramp 2025</td>
+          <td style="font-size: 12px; color: #ff9800; max-width: 150px;">Taiwan geopolitical risk; Intel Foundry Services competition; SMIC gap closing</td>
+          <td style="font-size: 12px; color: #8fa3c0;">12-36 months</td>
+        </tr>
+        <tr>
+          <td style="font-weight: 700; color: #4caf50;">Vertiv</td>
+          <td><span style="color: #00bcd4; font-size: 11px;">Power</span></td>
+          <td><span class="badge badge-buy">Buy</span></td>
+          <td style="font-size: 12px; max-width: 200px;">DC power infrastructure bottleneck; sold out through 2026; AI-driven thermal mgmt demand</td>
+          <td style="font-size: 12px; color: #00e676; max-width: 150px;">Hyperscaler DC buildout $500B+ 2026; liquid cooling adoption</td>
+          <td style="font-size: 12px; color: #ff9800; max-width: 150px;">Execution risk at scale; margin pressure; new entrants (Eaton, Schneider)</td>
+          <td style="font-size: 12px; color: #8fa3c0;">6-18 months</td>
+        </tr>
+        <tr>
+          <td style="font-weight: 700; color: #4caf50;">GE Vernova</td>
+          <td><span style="color: #00bcd4; font-size: 11px;">Power</span></td>
+          <td><span class="badge badge-buy">Buy</span></td>
+          <td style="font-size: 12px; max-width: 200px;">Gas turbine + grid equipment; transformer shortage 30mo lead time; nuclear AI data center deals</td>
+          <td style="font-size: 12px; color: #00e676; max-width: 150px;">Hyperscaler nuclear/gas power deals; grid modernization IRA spending</td>
+          <td style="font-size: 12px; color: #ff9800; max-width: 150px;">Regulatory/permitting; commodity input costs</td>
+          <td style="font-size: 12px; color: #8fa3c0;">12-24 months</td>
+        </tr>
+        <tr>
+          <td style="font-weight: 700; color: #4caf50;">Broadcom</td>
+          <td><span style="color: #00bcd4; font-size: 11px;">Networking</span></td>
+          <td><span class="badge badge-buy">Buy</span></td>
+          <td style="font-size: 12px; max-width: 200px;">InfiniBand/Ethernet dominance; custom ASIC design wins at Google, Meta, Apple; 400G/800G cycle</td>
+          <td style="font-size: 12px; color: #00e676; max-width: 150px;">800G switch ramp 2025; hyperscaler custom ASIC revenue $10B+ by 2026</td>
+          <td style="font-size: 12px; color: #ff9800; max-width: 150px;">NVIDIA NVLink competitive; high valuation; customer concentration</td>
+          <td style="font-size: 12px; color: #8fa3c0;">12-24 months</td>
+        </tr></tbody></table></div><div class="card" style="margin-top: 12px;"><div style="font-size: 14px; font-weight: 600; color: #00bcd4; margin-bottom: 12px;">Investment Phase Roadmap</div><div class="phase-grid">
+        <div class="phase-card " style="">
+          <div class="phase-number" style="color: #8fa3c0;">Phase 1</div>
+          <div style="font-weight: 700; margin-bottom: 4px;">GPU Compute</div>
+          <div style="font-size: 11px; color: #8fa3c0; margin-bottom: 8px;">2023-2024</div>
+          <span style="font-size: 11px; color: #8fa3c0;">Peak</span>
+          <div style="font-size: 11px; color: #8fa3c0; margin-top: 8px;">NVIDIA, AMD, TSMC</div>
+        </div>
+        <div class="phase-card active" style="border-color: #00bcd4;">
+          <div class="phase-number" style="color: #00bcd4;">Phase 2</div>
+          <div style="font-weight: 700; margin-bottom: 4px;">HBM & Memory</div>
+          <div style="font-size: 11px; color: #8fa3c0; margin-bottom: 8px;">2024-2025</div>
+          <span class="badge" style="background: #00bcd4; color: #000;">CURRENT</span>
+          <div style="font-size: 11px; color: #8fa3c0; margin-top: 8px;">SK Hynix, Micron, Samsung</div>
+        </div>
+        <div class="phase-card " style="">
+          <div class="phase-number" style="color: #8fa3c0;">Phase 3</div>
+          <div style="font-weight: 700; margin-bottom: 4px;">Power Infrastructure</div>
+          <div style="font-size: 11px; color: #8fa3c0; margin-bottom: 8px;">2025-2026</div>
+          <span style="font-size: 11px; color: #8fa3c0;">Emerging</span>
+          <div style="font-size: 11px; color: #8fa3c0; margin-top: 8px;">Vertiv, Schneider Electric, GE Vernova, Eaton</div>
+        </div>
+        <div class="phase-card " style="">
+          <div class="phase-number" style="color: #8fa3c0;">Phase 4</div>
+          <div style="font-weight: 700; margin-bottom: 4px;">Edge & Physical AI</div>
+          <div style="font-size: 11px; color: #8fa3c0; margin-bottom: 8px;">2026-2027</div>
+          <span style="font-size: 11px; color: #8fa3c0;">Early</span>
+          <div style="font-size: 11px; color: #8fa3c0; margin-top: 8px;">Qualcomm, Arm, ASML, Applied Materials</div>
+        </div></div></div>
+  </div>
+
+  <!-- SECTION 6: SCENARIO FORECAST -->
+  <div class="section">
+    <div class="section-title">섹션 6 &nbsp;|&nbsp; 2025-2028 수요 예측 시나리오 (기준일: 2026-03-24)</div>
+    <div class="card"><table><thead><tr><th>Scenario</th><th>Metric</th><th style="text-align: center;">2025</th><th style="text-align: center;">2026</th><th style="text-align: center;">2027</th><th style="text-align: center;">2028</th></tr></thead><tbody><tr style="border-top: 2px solid #f44336;"><td rowspan="5" style="font-weight: 700; color: #f44336; vertical-align: middle; text-align: center; font-size: 18px;">Bear</td><td style="color: #8fa3c0; font-size: 12px;">Tokens/Day</td><td style="text-align: center; color: #f44336;">62.0T</td><td style="text-align: center; color: #f44336;">161.1T</td><td style="text-align: center; color: #f44336;">441.3T</td><td style="text-align: center; color: #f44336;">1273.1T</td></tr><tr style=""><td style="color: #8fa3c0; font-size: 12px;">GPU Required</td><td style="text-align: center; color: #f44336;">0.42M</td><td style="text-align: center; color: #f44336;">1.10M</td><td style="text-align: center; color: #f44336;">3.00M</td><td style="text-align: center; color: #f44336;">8.67M</td></tr><tr style=""><td style="color: #8fa3c0; font-size: 12px;">HBM Demand</td><td style="text-align: center; color: #f44336;">33.7PB</td><td style="text-align: center; color: #f44336;">87.7PB</td><td style="text-align: center; color: #f44336;">240.4PB</td><td style="text-align: center; color: #f44336;">693.4PB</td></tr><tr style=""><td style="color: #8fa3c0; font-size: 12px;">Power (MW)</td><td style="text-align: center; color: #f44336;">537MW</td><td style="text-align: center; color: #f44336;">1397MW</td><td style="text-align: center; color: #f44336;">3828MW</td><td style="text-align: center; color: #f44336;">11042MW</td></tr><tr style=""><td style="color: #8fa3c0; font-size: 12px;">SSD Access/Day</td><td style="text-align: center; color: #f44336;">0.0PB/day</td><td style="text-align: center; color: #f44336;">0.1PB/day</td><td style="text-align: center; color: #f44336;">0.3PB/day</td><td style="text-align: center; color: #f44336;">0.8PB/day</td></tr><tr style="border-top: 2px solid #1e88e5;"><td rowspan="5" style="font-weight: 700; color: #1e88e5; vertical-align: middle; text-align: center; font-size: 18px;">Base</td><td style="color: #8fa3c0; font-size: 12px;">Tokens/Day</td><td style="text-align: center; color: #1e88e5;">88.5T</td><td style="text-align: center; color: #1e88e5;">328.8T</td><td style="text-align: center; color: #1e88e5;">1286.6T</td><td style="text-align: center; color: #1e88e5;">5302.2T</td></tr><tr style=""><td style="color: #8fa3c0; font-size: 12px;">GPU Required</td><td style="text-align: center; color: #1e88e5;">0.60M</td><td style="text-align: center; color: #1e88e5;">2.24M</td><td style="text-align: center; color: #1e88e5;">8.76M</td><td style="text-align: center; color: #1e88e5;">36.10M</td></tr><tr style=""><td style="color: #8fa3c0; font-size: 12px;">HBM Demand</td><td style="text-align: center; color: #1e88e5;">48.2PB</td><td style="text-align: center; color: #1e88e5;">179.1PB</td><td style="text-align: center; color: #1e88e5;">700.8PB</td><td style="text-align: center; color: #1e88e5;">2887.9PB</td></tr><tr style=""><td style="color: #8fa3c0; font-size: 12px;">Power (MW)</td><td style="text-align: center; color: #1e88e5;">768MW</td><td style="text-align: center; color: #1e88e5;">2851MW</td><td style="text-align: center; color: #1e88e5;">11160MW</td><td style="text-align: center; color: #1e88e5;">45990MW</td></tr><tr style=""><td style="color: #8fa3c0; font-size: 12px;">SSD Access/Day</td><td style="text-align: center; color: #1e88e5;">0.1PB/day</td><td style="text-align: center; color: #1e88e5;">0.2PB/day</td><td style="text-align: center; color: #1e88e5;">0.8PB/day</td><td style="text-align: center; color: #1e88e5;">3.2PB/day</td></tr><tr style="border-top: 2px solid #4caf50;"><td rowspan="5" style="font-weight: 700; color: #4caf50; vertical-align: middle; text-align: center; font-size: 18px;">Bull</td><td style="color: #8fa3c0; font-size: 12px;">Tokens/Day</td><td style="text-align: center; color: #4caf50;">132.8T</td><td style="text-align: center; color: #4caf50;">739.7T</td><td style="text-align: center; color: #4caf50;">4342.4T</td><td style="text-align: center; color: #4caf50;">26842.3T</td></tr><tr style=""><td style="color: #8fa3c0; font-size: 12px;">GPU Required</td><td style="text-align: center; color: #4caf50;">0.90M</td><td style="text-align: center; color: #4caf50;">5.04M</td><td style="text-align: center; color: #4caf50;">29.56M</td><td style="text-align: center; color: #4caf50;">182.75M</td></tr><tr style=""><td style="color: #8fa3c0; font-size: 12px;">HBM Demand</td><td style="text-align: center; color: #4caf50;">72.3PB</td><td style="text-align: center; color: #4caf50;">402.9PB</td><td style="text-align: center; color: #4caf50;">2365.1PB</td><td style="text-align: center; color: #4caf50;">14620.0PB</td></tr><tr style=""><td style="color: #8fa3c0; font-size: 12px;">Power (MW)</td><td style="text-align: center; color: #4caf50;">1151MW</td><td style="text-align: center; color: #4caf50;">6416MW</td><td style="text-align: center; color: #4caf50;">37665MW</td><td style="text-align: center; color: #4caf50;">232824MW</td></tr><tr style=""><td style="color: #8fa3c0; font-size: 12px;">SSD Access/Day</td><td style="text-align: center; color: #4caf50;">0.1PB/day</td><td style="text-align: center; color: #4caf50;">0.4PB/day</td><td style="text-align: center; color: #4caf50;">2.6PB/day</td><td style="text-align: center; color: #4caf50;">16.1PB/day</td></tr></tbody></table></div>
+    <div class="card" style="margin-top: 12px; background: #152848;">
+      <div style="font-size: 14px; font-weight: 700; color: #00bcd4; margin-bottom: 10px;">2027 Forecast Summary</div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+        <div style="text-align: center;">
+          <div style="color: #f44336; font-size: 12px; font-weight: 700; text-transform: uppercase;">Bear Case</div>
+          <div style="font-size: 16px; font-weight: 700; margin-top: 4px;">441.3T/day</div>
+          <div style="font-size: 12px; color: #8fa3c0;">GPU: 3.00M</div>
+        </div>
+        <div style="text-align: center; border-left: 1px solid #1e3a5f; border-right: 1px solid #1e3a5f;">
+          <div style="color: #1e88e5; font-size: 12px; font-weight: 700; text-transform: uppercase;">Base Case</div>
+          <div style="font-size: 16px; font-weight: 700; margin-top: 4px;">1286.6T/day</div>
+          <div style="font-size: 12px; color: #8fa3c0;">GPU: 8.76M</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="color: #4caf50; font-size: 12px; font-weight: 700; text-transform: uppercase;">Bull Case</div>
+          <div style="font-size: 16px; font-weight: 700; margin-top: 4px;">4342.4T/day</div>
+          <div style="font-size: 12px; color: #8fa3c0;">GPU: 29.56M</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 7: INVESTMENT NETWORK GRAPH -->
+  <div class="section">
+    <div class="section-title">섹션 7 &nbsp;|&nbsp; AI 공급망 투자 관계 네트워크</div>
+    
+<div style="background:#111827;border-radius:16px;padding:32px;margin:24px 0;">
+  <h2 style="color:#f9fafb;font-size:1.4rem;margin-bottom:8px;">AI 공급망 투자 관계 네트워크</h2>
+  <p style="color:#9ca3af;font-size:0.85rem;margin-bottom:16px;">
+    노드 크기 = 시가총액 | 출처: Bloomberg, 각사 IR, Reuters
+  </p>
+  <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">
+    <span style="color:#d1d5db;font-size:0.8rem;margin-right:8px;">노드:</span>
+    <span style="display:inline-flex;align-items:center;margin:4px 8px;"><span style="width:12px;height:12px;border-radius:50%;background:#E53E3E;display:inline-block;margin-right:5px;"></span>GPU 서버</span><span style="display:inline-flex;align-items:center;margin:4px 8px;"><span style="width:12px;height:12px;border-radius:50%;background:#3182CE;display:inline-block;margin-right:5px;"></span>HBM 메모리</span><span style="display:inline-flex;align-items:center;margin:4px 8px;"><span style="width:12px;height:12px;border-radius:50%;background:#38A169;display:inline-block;margin-right:5px;"></span>클라우드/DC</span><span style="display:inline-flex;align-items:center;margin:4px 8px;"><span style="width:12px;height:12px;border-radius:50%;background:#805AD5;display:inline-block;margin-right:5px;"></span>최종 사용자</span><span style="display:inline-flex;align-items:center;margin:4px 8px;"><span style="width:12px;height:12px;border-radius:50%;background:#805AD5;display:inline-block;margin-right:5px;"></span>AI 서비스</span><span style="display:inline-flex;align-items:center;margin:4px 8px;"><span style="width:12px;height:12px;border-radius:50%;background:#D69E2E;display:inline-block;margin-right:5px;"></span>패키징</span><span style="display:inline-flex;align-items:center;margin:4px 8px;"><span style="width:12px;height:12px;border-radius:50%;background:#D69E2E;display:inline-block;margin-right:5px;"></span>파운드리</span><span style="display:inline-flex;align-items:center;margin:4px 8px;"><span style="width:12px;height:12px;border-radius:50%;background:#DD6B20;display:inline-block;margin-right:5px;"></span>네트워킹</span>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:16px;">
+    <span style="color:#d1d5db;font-size:0.8rem;margin-right:8px;">관계:</span>
+    <span style="display:inline-flex;align-items:center;margin:4px 8px;"><span style="width:24px;height:3px;background:#FF69B4;display:inline-block;margin-right:5px;"></span>투자</span><span style="display:inline-flex;align-items:center;margin:4px 8px;"><span style="width:24px;height:3px;background:#00CED1;display:inline-block;margin-right:5px;"></span>하드웨어 공급</span><span style="display:inline-flex;align-items:center;margin:4px 8px;"><span style="width:24px;height:3px;background:#4169E1;display:inline-block;margin-right:5px;"></span>서비스 계약</span><span style="display:inline-flex;align-items:center;margin:4px 8px;"><span style="width:24px;height:3px;background:#32CD32;display:inline-block;margin-right:5px;"></span>VC 투자</span><span style="display:inline-flex;align-items:center;margin:4px 8px;"><span style="width:24px;height:3px;background:#FFD700;display:inline-block;margin-right:5px;"></span>파트너십</span>
+  </div>
+  <svg id="ai-network-svg" style="width:100%;height:700px;background:#0f1923;border-radius:12px;display:block;"></svg>
+  <div id="network-tooltip" style="position:fixed;background:rgba(15,25,36,0.95);color:#f9fafb;
+    padding:10px 14px;border-radius:8px;font-size:0.8rem;pointer-events:none;
+    border:1px solid #374151;max-width:280px;display:none;z-index:9999;line-height:1.6;"></div>
+</div>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+(function() {
+  const graphNodes = [{"id": "AMD", "label": "AMD", "market_cap_b": 300, "layer": "gpu_server", "color": "#E53E3E", "size": 57.5, "tier": 1}, {"id": "AWS", "label": "AWS", "market_cap_b": 500, "layer": "cloud_dc", "color": "#38A169", "size": 61.7, "tier": 1}, {"id": "Amazon", "label": "Amazon", "market_cap_b": 2100, "layer": "cloud_dc", "color": "#38A169", "size": 73.7, "tier": 1}, {"id": "Ambience Healthcare", "label": "Ambience Healthcare", "market_cap_b": 2, "layer": "ai_service", "color": "#805AD5", "size": 15.8, "tier": 1}, {"id": "Anthropic", "label": "Anthropic", "market_cap_b": 60, "layer": "end_customer", "color": "#805AD5", "size": 44.1, "tier": 1}, {"id": "Anysphere", "label": "Anysphere", "market_cap_b": 10, "layer": "ai_service", "color": "#805AD5", "size": 29.2, "tier": 1}, {"id": "Apple", "label": "Apple", "market_cap_b": 3500, "layer": "edge_ai", "color": "#48BB78", "size": 77.9, "tier": 1}, {"id": "CoreWeave", "label": "CoreWeave", "market_cap_b": 35, "layer": "cloud_dc", "color": "#38A169", "size": 39.6, "tier": 1}, {"id": "Figure AI", "label": "Figure AI", "market_cap_b": 3, "layer": "edge_ai", "color": "#48BB78", "size": 19.1, "tier": 1}, {"id": "Google", "label": "Google", "market_cap_b": 2200, "layer": "cloud_dc", "color": "#38A169", "size": 74.0, "tier": 1}, {"id": "Harvey AI", "label": "Harvey AI", "market_cap_b": 3, "layer": "ai_service", "color": "#805AD5", "size": 19.1, "tier": 1}, {"id": "Intel", "label": "Intel", "market_cap_b": 100, "layer": "cpu", "color": "#E53E3E", "size": 48.3, "tier": 1}, {"id": "Meta", "label": "Meta", "market_cap_b": 1600, "layer": "end_customer", "color": "#805AD5", "size": 71.4, "tier": 1}, {"id": "Microsoft", "label": "Microsoft", "market_cap_b": 3900, "layer": "cloud_dc", "color": "#38A169", "size": 78.8, "tier": 1}, {"id": "Mistral", "label": "Mistral", "market_cap_b": 6, "layer": "ai_service", "color": "#805AD5", "size": 24.9, "tier": 1}, {"id": "NVIDIA", "label": "NVIDIA", "market_cap_b": 4500, "layer": "gpu_server", "color": "#E53E3E", "size": 80.0, "tier": 1}, {"id": "Nebius", "label": "Nebius", "market_cap_b": 5, "layer": "cloud_dc", "color": "#38A169", "size": 23.4, "tier": 1}, {"id": "Nscale", "label": "Nscale", "market_cap_b": 1, "layer": "cloud_dc", "color": "#38A169", "size": 10.0, "tier": 1}, {"id": "OpenAI", "label": "OpenAI", "market_cap_b": 500, "layer": "end_customer", "color": "#805AD5", "size": 61.7, "tier": 1}, {"id": "Oracle", "label": "Oracle", "market_cap_b": 500, "layer": "cloud_dc", "color": "#38A169", "size": 61.7, "tier": 1}, {"id": "SK Hynix", "label": "SK Hynix", "market_cap_b": 100, "layer": "hbm", "color": "#3182CE", "size": 48.3, "tier": 1}, {"id": "Samsung", "label": "Samsung", "market_cap_b": 280, "layer": "hbm", "color": "#3182CE", "size": 56.9, "tier": 1}, {"id": "TSMC", "label": "TSMC", "market_cap_b": 900, "layer": "foundry", "color": "#D69E2E", "size": 66.6, "tier": 2}, {"id": "xAI", "label": "xAI", "market_cap_b": 80, "layer": "end_customer", "color": "#805AD5", "size": 46.5, "tier": 1}];
+  const graphEdges = [{"source": "NVIDIA", "target": "OpenAI", "type": "investment", "color": "#FF69B4", "description": "NVIDIA, OpenAI에 최대 $1,000억 투자 합의", "value": "$100B", "source_url": ""}, {"source": "NVIDIA", "target": "Microsoft", "type": "hardware_supply", "color": "#00CED1", "description": "H100/B200 대량 공급", "value": "~$20B/yr", "source_url": ""}, {"source": "NVIDIA", "target": "AWS", "type": "hardware_supply", "color": "#00CED1", "description": "AWS GPU 인스턴스 핵심 공급", "value": "~$15B/yr", "source_url": ""}, {"source": "NVIDIA", "target": "Google", "type": "hardware_supply", "color": "#00CED1", "description": "GCP GPU 클러스터 공급", "value": "~$10B/yr", "source_url": ""}, {"source": "NVIDIA", "target": "xAI", "type": "hardware_supply", "color": "#00CED1", "description": "Colossus 클러스터 10만개+ 공급", "value": "~$5B", "source_url": ""}, {"source": "NVIDIA", "target": "Oracle", "type": "hardware_supply", "color": "#00CED1", "description": "Oracle Cloud GPU 공급", "value": "~$8B", "source_url": ""}, {"source": "NVIDIA", "target": "CoreWeave", "type": "hardware_supply", "color": "#00CED1", "description": "GPU 클라우드 핵심 인프라", "value": "~$12B", "source_url": ""}, {"source": "Microsoft", "target": "OpenAI", "type": "investment", "color": "#FF69B4", "description": "OpenAI 누적 투자 $130억+", "value": "$13B+", "source_url": ""}, {"source": "Microsoft", "target": "NVIDIA", "type": "investment", "color": "#FF69B4", "description": "NVIDIA 지분 보유", "value": "지분", "source_url": ""}, {"source": "Microsoft", "target": "Mistral", "type": "investment", "color": "#FF69B4", "description": "Mistral AI Series A 투자", "value": "$16M", "source_url": ""}, {"source": "OpenAI", "target": "Oracle", "type": "service", "color": "#4169E1", "description": "OpenAI-Oracle $300억 클라우드 계약", "value": "$30B", "source_url": ""}, {"source": "OpenAI", "target": "CoreWeave", "type": "service", "color": "#4169E1", "description": "OpenAI CoreWeave 클라우드 $115억 계약", "value": "$11.5B", "source_url": ""}, {"source": "OpenAI", "target": "Ambience Healthcare", "type": "vc", "color": "#32CD32", "description": "헬스케어 AI 투자", "value": "미공개", "source_url": ""}, {"source": "OpenAI", "target": "Harvey AI", "type": "vc", "color": "#32CD32", "description": "리걸 AI 투자", "value": "미공개", "source_url": ""}, {"source": "OpenAI", "target": "Anysphere", "type": "vc", "color": "#32CD32", "description": "Cursor IDE 투자", "value": "미공개", "source_url": ""}, {"source": "OpenAI", "target": "Figure AI", "type": "vc", "color": "#32CD32", "description": "피지컬 AI 로봇 투자", "value": "$675M", "source_url": ""}, {"source": "AMD", "target": "OpenAI", "type": "hardware_supply", "color": "#00CED1", "description": "AMD GPU 6 gigawatt 배포 합의, 주식 1.6억주 옵션", "value": "6GW", "source_url": ""}, {"source": "AMD", "target": "Microsoft", "type": "hardware_supply", "color": "#00CED1", "description": "Azure MI300X 공급", "value": "~$3B", "source_url": ""}, {"source": "Oracle", "target": "NVIDIA", "type": "hardware_supply", "color": "#00CED1", "description": "수십억달러 규모 NVIDIA 칩 구매", "value": "수십 $B", "source_url": ""}, {"source": "Oracle", "target": "OpenAI", "type": "service", "color": "#4169E1", "description": "클라우드 서비스 제공", "value": "$30B", "source_url": ""}, {"source": "Google", "target": "Anthropic", "type": "investment", "color": "#FF69B4", "description": "Google Anthropic 최대 $20억 투자", "value": "$2B", "source_url": ""}, {"source": "Google", "target": "xAI", "type": "service", "color": "#4169E1", "description": "Google Cloud xAI 파트너십", "value": "미공개", "source_url": ""}, {"source": "Google", "target": "Mistral", "type": "investment", "color": "#FF69B4", "description": "Mistral 투자 참여", "value": "미공개", "source_url": ""}, {"source": "Amazon", "target": "Anthropic", "type": "investment", "color": "#FF69B4", "description": "Amazon Anthropic 최대 $40억 투자", "value": "$4B", "source_url": ""}, {"source": "Amazon", "target": "Mistral", "type": "investment", "color": "#FF69B4", "description": "Mistral 투자 참여", "value": "미공개", "source_url": ""}, {"source": "Meta", "target": "NVIDIA", "type": "hardware_supply", "color": "#00CED1", "description": "H100/B200 대규모 구매", "value": "~$10B/yr", "source_url": ""}, {"source": "Meta", "target": "AMD", "type": "hardware_supply", "color": "#00CED1", "description": "AI 인프라 다양화", "value": "미공개", "source_url": ""}, {"source": "Intel", "target": "Microsoft", "type": "hardware_supply", "color": "#00CED1", "description": "Gaudi3 Azure 공급", "value": "미공개", "source_url": ""}, {"source": "Intel", "target": "AWS", "type": "hardware_supply", "color": "#00CED1", "description": "Gaudi3 AWS 공급", "value": "미공개", "source_url": ""}, {"source": "xAI", "target": "NVIDIA", "type": "hardware_supply", "color": "#00CED1", "description": "Colossus 100K GPU 클러스터", "value": "~$5B", "source_url": ""}, {"source": "xAI", "target": "CoreWeave", "type": "service", "color": "#4169E1", "description": "추가 클라우드 인프라", "value": "미공개", "source_url": ""}, {"source": "SK Hynix", "target": "NVIDIA", "type": "hardware_supply", "color": "#00CED1", "description": "HBM3e 50%+ 공급, H200/B200 전용 공급", "value": "독점적", "source_url": ""}, {"source": "SK Hynix", "target": "AMD", "type": "hardware_supply", "color": "#00CED1", "description": "MI300X HBM3 공급", "value": "미공개", "source_url": ""}, {"source": "Samsung", "target": "NVIDIA", "type": "hardware_supply", "color": "#00CED1", "description": "HBM3 공급 (HBM3e 인증 중)", "value": "미공개", "source_url": ""}, {"source": "Samsung", "target": "AMD", "type": "hardware_supply", "color": "#00CED1", "description": "HBM3 공급", "value": "미공개", "source_url": ""}, {"source": "TSMC", "target": "NVIDIA", "type": "hardware_supply", "color": "#00CED1", "description": "4nm CoWoS 패키징, 칩 제조", "value": "독점", "source_url": ""}, {"source": "TSMC", "target": "AMD", "type": "hardware_supply", "color": "#00CED1", "description": "5nm 칩 제조", "value": "미공개", "source_url": ""}, {"source": "TSMC", "target": "Apple", "type": "hardware_supply", "color": "#00CED1", "description": "M-시리즈 칩 제조", "value": "미공개", "source_url": ""}, {"source": "TSMC", "target": "Google", "type": "hardware_supply", "color": "#00CED1", "description": "TPU 제조", "value": "미공개", "source_url": ""}, {"source": "Nebius", "target": "NVIDIA", "type": "hardware_supply", "color": "#00CED1", "description": "GPU 클라우드 인프라", "value": "미공개", "source_url": ""}, {"source": "Microsoft", "target": "Nebius", "type": "investment", "color": "#FF69B4", "description": "Microsoft Nebius 투자", "value": "미공개", "source_url": ""}, {"source": "NVIDIA", "target": "Nscale", "type": "investment", "color": "#FF69B4", "description": "NVIDIA Nscale 투자", "value": "미공개", "source_url": ""}];
+
+  const svg = d3.select("#ai-network-svg");
+  const tooltip = document.getElementById("network-tooltip");
+  const rect = svg.node().getBoundingClientRect();
+  const W = rect.width || 900, H = 700;
+
+  const defs = svg.append("defs");
+  const edgeColors = {};
+  graphEdges.forEach(e => edgeColors[e.type] = e.color);
+  Object.entries(edgeColors).forEach(([type, color]) => {
+    defs.append("marker")
+      .attr("id", "arrow-" + type)
+      .attr("viewBox", "0 -5 10 10")
+      .attr("refX", 22).attr("refY", 0)
+      .attr("markerWidth", 6).attr("markerHeight", 6)
+      .attr("orient", "auto")
+      .append("path").attr("d", "M0,-5L10,0L0,5").attr("fill", color);
+  });
+
+  const g = svg.append("g");
+
+  svg.call(d3.zoom().scaleExtent([0.3, 4])
+    .on("zoom", e => g.attr("transform", e.transform)));
+
+  const link = g.selectAll(".link")
+    .data(graphEdges).enter().append("line")
+    .attr("class", "link")
+    .attr("stroke", d => d.color)
+    .attr("stroke-width", 1.5)
+    .attr("stroke-opacity", 0.7)
+    .attr("marker-end", d => "url(#arrow-" + d.type + ")")
+    .on("mouseover", (event, d) => {
+      tooltip.style.display = "block";
+      tooltip.innerHTML = "<b>" + (d.source.id || d.source) + " → " + (d.target.id || d.target) + "</b><br>"
+        + "유형: " + d.type + "<br>" + d.description + "<br>"
+        + "규모: " + (d.value || "미공개")
+        + (d.source_url ? "<br><a href='" + d.source_url + "' style='color:#60a5fa' target='_blank'>출처 ↗</a>" : "");
+      tooltip.style.left = (event.clientX + 12) + "px";
+      tooltip.style.top  = (event.clientY - 28) + "px";
+    })
+    .on("mouseout", () => tooltip.style.display = "none");
+
+  const node = g.selectAll(".node")
+    .data(graphNodes).enter().append("g")
+    .attr("class", "node")
+    .call(d3.drag()
+      .on("start", (event, d) => { if (!event.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
+      .on("drag",  (event, d) => { d.fx=event.x; d.fy=event.y; })
+      .on("end",   (event, d) => { if (!event.active) sim.alphaTarget(0); d.fx=null; d.fy=null; }));
+
+  node.append("circle")
+    .attr("r", d => d.size / 2)
+    .attr("fill", d => d.color + "cc")
+    .attr("stroke", d => d.color)
+    .attr("stroke-width", 2)
+    .on("mouseover", (event, d) => {
+      link.attr("stroke-opacity", l =>
+        (l.source.id === d.id || l.target.id === d.id) ? 1 : 0.15);
+      tooltip.style.display = "block";
+      tooltip.innerHTML = "<b>" + d.id + "</b><br>레이어: " + d.layer + "<br>시가총액: $" + d.market_cap_b + "B";
+      tooltip.style.left = (event.clientX + 12) + "px";
+      tooltip.style.top  = (event.clientY - 28) + "px";
+    })
+    .on("mouseout", () => {
+      link.attr("stroke-opacity", 0.7);
+      tooltip.style.display = "none";
+    });
+
+  node.append("text")
+    .attr("dy", d => d.size / 2 + 12)
+    .attr("text-anchor", "middle")
+    .attr("fill", "#e5e7eb")
+    .attr("font-size", d => Math.max(9, Math.min(13, d.size / 3)))
+    .text(d => d.id);
+
+  const sim = d3.forceSimulation(graphNodes)
+    .force("link", d3.forceLink(graphEdges)
+      .id(d => d.id).distance(100).strength(0.3))
+    .force("charge", d3.forceManyBody().strength(-300))
+    .force("center", d3.forceCenter(W/2, H/2))
+    .force("collision", d3.forceCollide().radius(d => d.size/2 + 8))
+    .on("tick", () => {
+      link
+        .attr("x1", d => d.source.x).attr("y1", d => d.source.y)
+        .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+      node.attr("transform", d => "translate(" + d.x + "," + d.y + ")");
+    });
+})();
+</script>
+
+  </div>
+
+</div>
+
+<div class="footer">
+  AI Supply Chain Intelligence System v1.0 &nbsp;|&nbsp;
+  데이터: Seed data + 애널리스트 추정 + 공개 공시 &nbsp;|&nbsp;
+  생성일: 2026-03-25 &nbsp;|&nbsp;
+  본 자료는 정보 제공 목적이며 투자 권유가 아닙니다
+</div>
+
+</body>
+</html>

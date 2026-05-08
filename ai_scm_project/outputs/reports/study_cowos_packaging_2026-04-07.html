@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:20px 0;background:#f0f2f5;font-family:'Apple SD Gothic Neo',Arial,sans-serif;">
+<div style="max-width:700px;margin:0 auto;background:white;border-radius:10px;
+            overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.10);">
+
+  <!-- Header -->
+  <div style="background:#d69e2e;padding:28px 36px 24px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <span style="background:#38a169;color:white;font-size:11px;font-weight:700;
+                   padding:3px 10px;border-radius:12px;">Lv.1 기초</span>
+      <span style="color:rgba(255,255,255,.7);font-size:12px;">
+        2026년 04월 07일 &nbsp;·&nbsp; 2/24번째 학습
+      </span>
+    </div>
+    <div style="color:white;font-size:24px;font-weight:800;line-height:1.3;">CoWoS & 첨단 패키징 기술</div>
+    <div style="color:rgba(255,255,255,.75);font-size:12px;margin-top:6px;">
+      개념·용어·시장 구조 &nbsp;·&nbsp; 기준: 2026년 4월 현재
+    </div>
+  </div>
+
+  <div style="padding:32px 36px;">
+
+    
+
+    <div style="margin-bottom:24px;"><div style="font-size:12px;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">📰 관련 뉴스</div><ul style="padding-left:0;list-style:none;margin:0;"><li style="margin-bottom:10px;font-size:13px;"><span style="background:#d69e2e;color:white;font-size:10px;padding:1px 6px;border-radius:3px;margin-right:6px;white-space:nowrap;">Packaging</span><a href="https://ir.tsmc.com/" style="color:#2d3748;text-decoration:none;">TSMC CoWoS 2026년 캐파 120K wpm 달성 — 그래도 수요 충족 못해 GB300 시대 위기</a><span style="color:#a0aec0;font-size:11px;display:block;margin-left:14px;margin-top:2px;">TSMC 투자자 행사 / 업계 추정 · 2026-03-25 → TSMC 패키징 독점 지속 → CoWoS 리드타임 18개월 유지. 2027년 160K wpm 목표.</span></li></ul></div>
+
+    <div style="font-size:14px;line-height:1.8;color:#2d3748;">
+      
+<h3 style="color:#d69e2e; border-bottom:2px solid #d69e2e; padding-bottom:6px;">⚙️ 기술 핵심</h3>
+<p><strong>CoWoS(Chip-on-Wafer-on-Substrate)</strong>는 TSMC의 2.5D 고급 패키징 기술입니다.
+GPU 다이와 HBM 다이를 <strong>실리콘 인터포저(중간 기판)</strong> 위에 나란히 배치하고,
+수만 개의 마이크로 범프(직경 ~10μm)로 연결합니다. 이를 통해 GPU↔HBM 간
+수 TB/s 대역폭의 고속 데이터 전송이 가능합니다.</p>
+<p><strong>왜 CoWoS가 필요한가?</strong> GPU+HBM 패키지의 총 면적이 단일 다이 최대치(800~900mm²)를
+초과하므로, 별도의 인터포저 위에 분리 배치 후 연결하는 방식을 사용합니다.
+일반 OSAT(ASE, Amkor) 패키징 대비 비용이 20-30배이지만 대역폭이 압도적입니다.</p>
+
+<table style="border-collapse:collapse; width:100%; font-size:13px; margin:10px 0;">
+  <thead><tr style="background:#fefcbf;">
+    <th style="padding:6px 10px;">CoWoS 유형</th>
+    <th style="padding:6px 10px;">인터포저</th>
+    <th style="padding:6px 10px;">적용</th>
+    <th style="padding:6px 10px;">특징</th>
+  </tr></thead>
+  <tbody>
+    <tr><td style="padding:5px 10px;"><strong>CoWoS-S</strong></td>
+        <td>실리콘 인터포저</td>
+        <td>H100, H200, B200, MI300X</td>
+        <td>표준형. 현재 주력 생산</td></tr>
+    <tr style="background:#faf7e6;"><td style="padding:5px 10px;"><strong>CoWoS-R</strong></td>
+        <td>RDL 인터포저</td>
+        <td>더 큰 패키지 사이즈</td>
+        <td>비용↓ 크기↑</td></tr>
+    <tr><td style="padding:5px 10px;"><strong>CoWoS-L</strong></td>
+        <td>Local Si Interconnect</td>
+        <td>Rubin(2027E), GB300</td>
+        <td>최대 크기, HBM4 연동</td></tr>
+  </tbody>
+</table>
+
+<h3 style="color:#d69e2e; border-bottom:2px solid #d69e2e; padding-bottom:6px; margin-top:20px;">📊 캐파 추이 (2026년 4월 현재)</h3>
+<table style="border-collapse:collapse; width:100%; font-size:13px; margin:10px 0;">
+  <thead><tr style="background:#fefcbf;">
+    <th style="padding:6px 10px;">연도</th>
+    <th style="padding:6px 10px;">캐파 (WPM)</th>
+    <th style="padding:6px 10px;">YoY 성장</th>
+    <th style="padding:6px 10px;">비고</th>
+  </tr></thead>
+  <tbody>
+    <tr><td style="padding:5px 10px;">2023</td><td>35,000</td><td>—</td><td>GB200 이전 기준</td></tr>
+    <tr style="background:#faf7e6;"><td style="padding:5px 10px;">2024</td><td>50,000</td><td>+43%</td><td>H100→H200 전환 수요 급증</td></tr>
+    <tr><td style="padding:5px 10px;">2025</td><td>85,000</td><td>+70%</td><td>목표 80K 초과 달성</td></tr>
+    <tr style="background:#fefcbf;"><td style="padding:5px 10px;"><strong>2026E</strong></td><td><strong>120,000</strong></td><td><strong>+41%</strong></td><td>현재 진행 중</td></tr>
+    <tr><td style="padding:5px 10px;">2027E</td><td>160,000</td><td>+33%</td><td>CoWoS-L 전환</td></tr>
+  </tbody>
+</table>
+<p>가동률: <span style="display:inline-flex; align-items:center; gap:6px;"><span style="display:inline-block; background:#e53e3e; width:176px; height:8px; border-radius:2px;"></span><strong style="color:#e53e3e;">88%</strong></span> &nbsp; 리드타임: <strong>18개월</strong> &nbsp; Yield: <strong>78%</strong></p>
+<p>웨이퍼 1장당 가격: <strong>$20,000~30,000</strong> (표준 패키징 $500~1,000 대비 20-60배)</p>
+<p>TSMC CoWoS <strong>사실상 독점</strong>: Samsung FoCoS(5~10% 점유), Amkor InFO는 HBM 연결 미지원.</p>
+<p style="font-weight:700; color:#2d3748; margin:14px 0 6px;">TSMC → 공급처</p><table style="border-collapse:collapse; width:100%; font-size:13px; border:1px solid #e2e8f0; border-radius:4px;"><thead><tr style="background:#f7f8fa;"><th style="padding:6px 10px; text-align:left; color:#4a5568;">기업</th><th style="padding:6px 10px; text-align:left; color:#4a5568;">관계</th><th style="padding:6px 10px; text-align:left; color:#4a5568;">내용</th><th style="padding:6px 10px; text-align:left; color:#4a5568;">규모</th></tr></thead><tbody><tr style="background:#e6fffa;"><td style="padding:5px 10px; font-weight:600; white-space:nowrap;">NVIDIA</td><td style="padding:5px 10px; color:#718096; font-size:12px;"><span style="background:#e2e8f0; padding:1px 6px; border-radius:3px;">공급</span></td><td style="padding:5px 10px; font-size:13px;">4nm CoWoS 패키징 + 칩 제조 (독점)</td><td style="padding:5px 10px; color:#2d3748; font-weight:600; white-space:nowrap;">독점</td></tr><tr style="background:#e6fffa;"><td style="padding:5px 10px; font-weight:600; white-space:nowrap;">AMD</td><td style="padding:5px 10px; color:#718096; font-size:12px;"><span style="background:#e2e8f0; padding:1px 6px; border-radius:3px;">공급</span></td><td style="padding:5px 10px; font-size:13px;">5nm 칩 제조</td><td style="padding:5px 10px; color:#2d3748; font-weight:600; white-space:nowrap;">미공개</td></tr><tr style="background:#e6fffa;"><td style="padding:5px 10px; font-weight:600; white-space:nowrap;">Google</td><td style="padding:5px 10px; color:#718096; font-size:12px;"><span style="background:#e2e8f0; padding:1px 6px; border-radius:3px;">공급</span></td><td style="padding:5px 10px; font-size:13px;">TPU v5 제조</td><td style="padding:5px 10px; color:#2d3748; font-weight:600; white-space:nowrap;">미공개</td></tr></tbody></table>
+
+<h3 style="color:#d69e2e; border-bottom:2px solid #d69e2e; padding-bottom:6px; margin-top:20px;">🚨 병목 메커니즘</h3>
+<p>CoWoS는 HBM 생산의 '병목 위의 병목'입니다:</p>
+<div style="background:#fefcbf; border-radius:6px; padding:12px 16px; font-size:13px; line-height:2;">
+① HBM 다이 생산(SK Hynix/Samsung/Micron)<br>
+② <strong>→ TSMC CoWoS 패키징 (병목 구간)</strong> ← GPU 다이와 결합<br>
+③ → 완성 GPU 모듈(B200, MI300X 등)<br>
+④ → NVIDIA/AMD OEM → 하이퍼스케일러
+</div>
+<p style="margin-top:10px;">캐파 부족 시 증설에 <strong>18개월</strong> 소요(장비 발주 → 클린룸 건설 → 공정 인증).
+즉, 지금 주문해도 2027 H2에나 실제 캐파 추가 가능.</p>
+
+<h3 style="color:#d69e2e; border-bottom:2px solid #d69e2e; padding-bottom:6px; margin-top:20px;">🎯 마케터 핵심 포인트</h3>
+<ul style="font-size:13px; line-height:2; color:#2d3748;">
+  <li><strong>대안 없음:</strong> CoWoS 없이 HBM 탑재 AI GPU 불가. TSMC 독점 == 가격 결정력.</li>
+  <li><strong>리드타임 논거:</strong> 18개월 캐파 리드타임 → 고객의 서버 도입 계획과 역산해 발주 시점 제시.</li>
+  <li><strong>2026 캐파 한계:</strong> 120K wpm이 GB200 수요 전부 충족 못함 → 배분 우선권 확보 필요성 강조.</li>
+  <li><strong>ASIC 차별화:</strong> Google TPU, AWS Trainium도 CoWoS 사용 → TSMC 레버리지 동일하게 받음.</li>
+</ul>
+
+      
+    </div>
+
+  </div>
+
+  <div style="background:#f7f8fa;padding:14px 36px;font-size:11px;color:#a0aec0;">
+    AI SCM Learning &nbsp;·&nbsp; 2026년 04월 07일 &nbsp;·&nbsp; Lv.1 기초 — 개념·용어·시장 구조
+  </div>
+</div>
+</body>
+</html>

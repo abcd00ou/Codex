@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+</head>
+<body style="margin:0; padding:20px 0; background:#f0f2f5; font-family:'Apple SD Gothic Neo',Arial,sans-serif;">
+<div style="max-width:700px; margin:0 auto; background:white; border-radius:10px;
+            overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.10);">
+
+  <!-- Header -->
+  <div style="background:#3182ce; padding:28px 36px 24px;">
+    <div style="color:rgba(255,255,255,.75); font-size:12px; margin-bottom:8px;">
+      2026년 04월 06일 &nbsp;·&nbsp; AI SCM 학습 1/8
+    </div>
+    <div style="color:white; font-size:24px; font-weight:800; line-height:1.3;">HBM (High Bandwidth Memory) 심층 분석</div>
+    <div style="color:rgba(255,255,255,.8); font-size:13px; margin-top:6px;">
+      기준: 2026년 4월 현재 | AI 반도체 공급망 마케터 학습 시스템
+    </div>
+  </div>
+
+  <div style="padding:32px 36px;">
+
+    <!-- 뉴스 -->
+    <div style="margin-bottom:28px;"><div style="font-size:12px; font-weight:700; color:#4a5568; text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px;">📰 관련 뉴스</div><ul style="padding-left:0; list-style:none; margin:0;"><li style="margin-bottom:10px; font-size:13px;"><span style="background:#3182ce; color:white; font-size:10px; padding:1px 6px; border-radius:3px; margin-right:6px; white-space:nowrap;">HBM</span><a href="https://news.skhynix.com/" style="color:#2d3748; text-decoration:none;">SK Hynix HBM3e 2026년 생산 점유율 52% 유지 — HBM4 12단 적층 2026 H2 양산 목표</a><span style="color:#a0aec0; font-size:11px; display:block; margin-left:14px; margin-top:2px;">SK Hynix 실적 발표 2025 및 업계 추정 · 2026-03-15 &nbsp;→ Strong Buy 유지. HBM4 ASP 40% 프리미엄 예상 (vs HBM3e $18/GB)</span></li><li style="margin-bottom:10px; font-size:13px;"><span style="background:#3182ce; color:white; font-size:10px; padding:1px 6px; border-radius:3px; margin-right:6px; white-space:nowrap;">HBM</span><a href="https://news.samsung.com/" style="color:#2d3748; text-decoration:none;">Samsung HBM3e NVIDIA 퀄리피케이션 2025 H2 통과 — 2026 공급 비중 35%로 회복 중</a><span style="color:#a0aec0; font-size:11px; display:block; margin-left:14px; margin-top:2px;">업계 소식통 / DigiTimes 추정 · 2026-01-20 &nbsp;→ 경쟁 심화 → SK Hynix 프리미엄 유지 여부 관건. Micron은 10% 유지.</span></li><li style="margin-bottom:10px; font-size:13px;"><span style="background:#3182ce; color:white; font-size:10px; padding:1px 6px; border-radius:3px; margin-right:6px; white-space:nowrap;">HBM</span><a href="https://investors.micron.com/" style="color:#2d3748; text-decoration:none;">Micron HBM3e 양산 가속 — 2026년 점유율 13%로 확대, 미국 생산 보조금 활용</a><span style="color:#a0aec0; font-size:11px; display:block; margin-left:14px; margin-top:2px;">Micron IR / CHIPS Act 보조금 공시 · 2026-02-28 &nbsp;→ CHIPS Act $6.1B 보조금 → Idaho 공장 HBM 라인 증설. 미국 내 HBM 생산 다변화.</span></li></ul></div>
+
+    <!-- 본문 -->
+    <div style="font-size:14px; line-height:1.8; color:#2d3748;">
+      
+<h3 style="color:#3182ce; border-bottom:2px solid #3182ce; padding-bottom:6px;">⚙️ 기술 핵심</h3>
+<p>HBM(High Bandwidth Memory)은 여러 DRAM 다이를 수직으로 적층하고
+<strong>TSV(Through-Silicon Via, 실리콘 관통 전극)</strong>로 연결한 고대역폭 메모리입니다.
+AI 모델 추론 시 대규모 행렬 연산에서 데이터를 빠르게 공급해야 하므로,
+일반 GDDR6(~$960GB/s) 대비 <strong>HBM3e는 ~5TB/s 대역폭</strong>을 제공합니다.</p>
+
+<table style="border-collapse:collapse; width:100%; font-size:13px; margin:10px 0;">
+  <thead><tr style="background:#ebf8ff;">
+    <th style="padding:6px 10px; text-align:left;">규격</th>
+    <th style="padding:6px 10px; text-align:left;">대역폭</th>
+    <th style="padding:6px 10px; text-align:left;">용량/GPU</th>
+    <th style="padding:6px 10px; text-align:left;">주요 탑재</th>
+  </tr></thead>
+  <tbody>
+    <tr><td style="padding:5px 10px;">HBM2e</td><td>1.6 TB/s</td><td>80 GB</td><td>A100</td></tr>
+    <tr style="background:#f7f8fa;"><td style="padding:5px 10px;">HBM3</td><td>3.35 TB/s</td><td>80 GB</td><td>H100 SXM5</td></tr>
+    <tr><td style="padding:5px 10px;"><strong>HBM3e</strong></td><td><strong>4.8–8.0 TB/s</strong></td><td><strong>141–192 GB</strong></td><td><strong>H200, B200, MI300X</strong></td></tr>
+    <tr style="background:#f7f8fa;"><td style="padding:5px 10px;">HBM4 (2026H2E)</td><td>~12 TB/s</td><td>256+ GB</td><td>Rubin (2027E)</td></tr>
+  </tbody>
+</table>
+<p>B200 GPU 1개 = HBM3e <strong>8 스택 × 24GB = 192GB</strong>, 대역폭 <strong>8.0 TB/s</strong>.
+GB200 NVL72 랙 = B200 72개 = HBM3e <strong>13,824GB</strong> 탑재.</p>
+<p>HBM은 반드시 <strong>CoWoS 패키징</strong>을 통해 GPU 다이와 동일 인터포저에 물리적으로 결합됩니다.
+이 때문에 HBM 생산량은 <strong>TSMC CoWoS 캐파에 의해 상한이 결정</strong>됩니다.</p>
+
+<h3 style="color:#3182ce; border-bottom:2px solid #3182ce; padding-bottom:6px; margin-top:20px;">📊 시장 현황 (2026년 4월 현재)</h3>
+<table style="border-collapse:collapse; width:100%; font-size:13px; margin:10px 0;">
+  <thead><tr style="background:#ebf8ff;">
+    <th style="padding:6px 10px; text-align:left;">연도</th>
+    <th style="padding:6px 10px; text-align:left;">HBM 시장 규모</th>
+    <th style="padding:6px 10px; text-align:left;">비고</th>
+  </tr></thead>
+  <tbody>
+    <tr style=background:#f7f8fa;><td style=padding:5px_10px;>2023</td><td style=padding:5px_10px;><strong>$14B</strong></td><td style=padding:5px_10px;color:#718096;>actual</td></tr><tr><td style=padding:5px_10px;>2024</td><td style=padding:5px_10px;><strong>$22B</strong></td><td style=padding:5px_10px;color:#718096;>actual</td></tr><tr style=background:#f7f8fa;><td style=padding:5px_10px;>2025</td><td style=padding:5px_10px;><strong>$35B</strong></td><td style=padding:5px_10px;color:#718096;>actual</td></tr><tr><td style=padding:5px_10px;>2026 (진행 중)</td><td style=padding:5px_10px;><strong>$55B</strong></td><td style=padding:5px_10px;color:#718096;>추정</td></tr><tr style=background:#f7f8fa;><td style=padding:5px_10px;>2027_est</td><td style=padding:5px_10px;><strong>$80B</strong></td><td style=padding:5px_10px;color:#718096;>추정</td></tr>
+  </tbody>
+</table>
+<p>가동률: <span style="display:inline-flex; align-items:center; gap:6px;"><span style="display:inline-block; background:#e53e3e; width:184px; height:8px; border-radius:2px;"></span><strong style="color:#e53e3e;">92%</strong></span> &nbsp;→&nbsp; CoWoS 병목에 의한 구조적 공급 제약</p>
+<p>가격: HBM2e <strong>$8/GB</strong> → HBM3 <strong>$14/GB</strong> → HBM3e <strong>$18/GB</strong>.
+HBM4 출시 시 40% ASP 프리미엄 예상 (~$25/GB).</p>
+
+<h3 style="color:#3182ce; border-bottom:2px solid #3182ce; padding-bottom:6px; margin-top:20px;">🏭 공급망 구조</h3>
+<table style="border-collapse:collapse; width:100%; font-size:13px; margin:10px 0;">
+  <thead><tr style="background:#ebf8ff;">
+    <th style="padding:6px 10px;">제조사</th>
+    <th style="padding:6px 10px;">점유율</th>
+    <th style="padding:6px 10px;">WPM (2026E)</th>
+    <th style="padding:6px 10px;">NVIDIA 납품 현황</th>
+  </tr></thead>
+  <tbody>
+    <tr><td style="padding:5px 10px; font-weight:700;">SK Hynix</td>
+        <td style="padding:5px 10px;"><strong>50%</strong></td>
+        <td style="padding:5px 10px;">50,000</td>
+        <td style="padding:5px 10px;">HBM3e 독점 공급 (H200, B200, GB200)</td></tr>
+    <tr style="background:#f7f8fa;">
+        <td style="padding:5px 10px;">Samsung</td>
+        <td style="padding:5px 10px;">38%</td>
+        <td style="padding:5px 10px;">40,000</td>
+        <td style="padding:5px 10px;">HBM3e 재인증 후 공급 재개 (2025 H2)</td></tr>
+    <tr><td style="padding:5px 10px;">Micron</td>
+        <td style="padding:5px 10px;">12%</td>
+        <td style="padding:5px 10px;">20,000</td>
+        <td style="padding:5px 10px;">HBM3e 10% 공급, CHIPS Act 보조금 증설</td></tr>
+  </tbody>
+</table>
+<p style="font-weight:700; color:#2d3748; margin:14px 0 6px;">SK Hynix → 공급처</p><table style="border-collapse:collapse; width:100%; font-size:13px; border:1px solid #e2e8f0; border-radius:4px;"><thead><tr style="background:#f7f8fa;"><th style="padding:6px 10px; text-align:left; color:#4a5568;">기업</th><th style="padding:6px 10px; text-align:left; color:#4a5568;">관계</th><th style="padding:6px 10px; text-align:left; color:#4a5568;">내용</th><th style="padding:6px 10px; text-align:left; color:#4a5568;">규모</th></tr></thead><tbody><tr style="background:#e6fffa;"><td style="padding:5px 10px; font-weight:600; white-space:nowrap;">NVIDIA</td><td style="padding:5px 10px; color:#718096; font-size:12px;"><span style="background:#e2e8f0; padding:1px 6px; border-radius:3px;">공급</span></td><td style="padding:5px 10px; font-size:13px;">HBM3e 50%+ 독점 공급, H200/B200 전용</td><td style="padding:5px 10px; color:#2d3748; font-weight:600; white-space:nowrap;">독점적</td></tr><tr style="background:#e6fffa;"><td style="padding:5px 10px; font-weight:600; white-space:nowrap;">AMD</td><td style="padding:5px 10px; color:#718096; font-size:12px;"><span style="background:#e2e8f0; padding:1px 6px; border-radius:3px;">공급</span></td><td style="padding:5px 10px; font-size:13px;">MI300X HBM3 공급</td><td style="padding:5px 10px; color:#2d3748; font-weight:600; white-space:nowrap;">미공개</td></tr></tbody></table>
+<p style="margin-top:10px;"><strong>Samsung 이슈:</strong> 2024년 HBM3e 발열·소비전력 문제로 NVIDIA 퀄리피케이션 탈락.
+2025 H2 재인증 성공했으나, SK Hynix 독점적 지위는 단기간 유지될 전망.</p>
+
+<h3 style="color:#3182ce; border-bottom:2px solid #3182ce; padding-bottom:6px; margin-top:20px;">💡 핵심 수식</h3>
+<div style="background:#ebf8ff; border-radius:6px; padding:12px 16px; font-family:monospace; font-size:13px; line-height:2;">
+HBM_demand_GB = GPU_count × HBM_per_GPU_GB<br>
+&nbsp;&nbsp;예) GB200 NVL72 1랙 = 72 × 192GB = 13,824GB HBM3e<br>
+<br>
+KV_Cache_GB = (context_length × concurrent_users × 2B × 2) / 1e9<br>
+&nbsp;&nbsp;예) 128K ctx × 10만 사용자 × 4B = 51.2TB 상시 메모리 필요<br>
+<br>
+HBM 공급 상한 = TSMC CoWoS 캐파 × CoWoS yield(75%)
+</div>
+
+<h3 style="color:#3182ce; border-bottom:2px solid #3182ce; padding-bottom:6px; margin-top:20px;">🎯 마케터 핵심 포인트</h3>
+<ul style="font-size:13px; line-height:2; color:#2d3748;">
+  <li><strong>리드타임:</strong> HBM3e 주문 → 납품 12-16주. 선발주 필수 논거.</li>
+  <li><strong>병목 가시화:</strong> CoWoS 가동률 88% → HBM 증산에 구조적 한계 존재.</li>
+  <li><strong>가격 논거:</strong> HBM3e $18/GB vs GDDR6X $0.5/GB — 38배 ASP 프리미엄, 대역폭 10배.</li>
+  <li><strong>Micron 차별화:</strong> 미국산 HBM (Idaho 공장) → 데이터 주권·보안 강조 고객에 유효.</li>
+  <li><strong>HBM4 선수 포지셔닝:</strong> 2026 H2 양산, 2027 Rubin GPU 탑재 확정 → 조기 기술 로드맵 공유.</li>
+</ul>
+
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div style="background:#f7f8fa; padding:16px 36px; font-size:11px; color:#a0aec0;">
+    AI SCM Learning System &nbsp;·&nbsp; 2026년 04월 06일 &nbsp;·&nbsp; 데이터 기준: config.py + 공개 IR/보고서
+  </div>
+</div>
+</body>
+</html>

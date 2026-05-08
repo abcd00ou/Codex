@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-04T09:44:47",
+  "generated_at": "2026-05-08T13:55:33",
   "as_of_date": "2026-04-28",
   "model_version": "0.1",
   "layer_order": [
@@ -1226,7 +1226,7 @@
         "title": "AI SCM company filing metadata database",
         "url": "data/sec_filings.json",
         "observations": {
-          "generated_at": "2026-05-04T00:39:54+00:00",
+          "generated_at": "2026-05-08T04:54:58+00:00",
           "company_count": 19,
           "filing_count": 356,
           "form_counts": {
@@ -1365,18 +1365,18 @@
       },
       "SRC_SEC_AMD_LATEST_PRIMARY": {
         "publisher": "SEC EDGAR",
-        "title": "AMD 10-K filing for FY2025",
-        "url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000018/amd-20251227.htm",
+        "title": "AMD 10-Q filing for 2026 Q1",
+        "url": "https://www.sec.gov/Archives/edgar/data/2488/000000248826000076/amd-20260328.htm",
         "observations": {
           "company": "AMD",
           "ticker": "AMD",
           "cik": "0000002488",
-          "form": "10-K",
-          "filing_date": "2026-02-04",
-          "report_date": "2025-12-27",
-          "period": "FY2025",
-          "accession_number": "0000002488-26-000018",
-          "primary_document": "amd-20251227.htm",
+          "form": "10-Q",
+          "filing_date": "2026-05-06",
+          "report_date": "2026-03-28",
+          "period": "2026 Q1",
+          "accession_number": "0000002488-26-000076",
+          "primary_document": "amd-20260328.htm",
           "source_id": "SRC_SEC_AMD_LATEST_PRIMARY"
         },
         "derivation_type": "direct_company_filing_metadata",
@@ -1441,18 +1441,18 @@
       },
       "SRC_SEC_ANET_LATEST_PRIMARY": {
         "publisher": "SEC EDGAR",
-        "title": "Arista Networks 10-K filing for FY2025",
-        "url": "https://www.sec.gov/Archives/edgar/data/1596532/000159653226000013/anet-20251231.htm",
+        "title": "Arista Networks 10-Q filing for 2026 Q1",
+        "url": "https://www.sec.gov/Archives/edgar/data/1596532/000159653226000078/anet-20260331.htm",
         "observations": {
           "company": "Arista Networks",
           "ticker": "ANET",
           "cik": "0001596532",
-          "form": "10-K",
-          "filing_date": "2026-02-17",
-          "report_date": "2025-12-31",
-          "period": "FY2025",
-          "accession_number": "0001596532-26-000013",
-          "primary_document": "anet-20251231.htm",
+          "form": "10-Q",
+          "filing_date": "2026-05-06",
+          "report_date": "2026-03-31",
+          "period": "2026 Q1",
+          "accession_number": "0001596532-26-000078",
+          "primary_document": "anet-20260331.htm",
           "source_id": "SRC_SEC_ANET_LATEST_PRIMARY"
         },
         "derivation_type": "direct_company_filing_metadata",
@@ -1498,18 +1498,18 @@
       },
       "SRC_SEC_ETN_LATEST_PRIMARY": {
         "publisher": "SEC EDGAR",
-        "title": "Eaton 10-K filing for FY2025",
-        "url": "https://www.sec.gov/Archives/edgar/data/1551182/000155118226000007/etn-20251231.htm",
+        "title": "Eaton 10-Q filing for 2026 Q1",
+        "url": "https://www.sec.gov/Archives/edgar/data/1551182/000155118226000013/etn-20260331.htm",
         "observations": {
           "company": "Eaton",
           "ticker": "ETN",
           "cik": "0001551182",
-          "form": "10-K",
-          "filing_date": "2026-02-26",
-          "report_date": "2025-12-31",
-          "period": "FY2025",
-          "accession_number": "0001551182-26-000007",
-          "primary_document": "etn-20251231.htm",
+          "form": "10-Q",
+          "filing_date": "2026-05-05",
+          "report_date": "2026-03-31",
+          "period": "2026 Q1",
+          "accession_number": "0001551182-26-000013",
+          "primary_document": "etn-20260331.htm",
           "source_id": "SRC_SEC_ETN_LATEST_PRIMARY"
         },
         "derivation_type": "direct_company_filing_metadata",
@@ -1558,7 +1558,7 @@
         "title": "AI SCM company financial statement facts database",
         "url": "data/sec_financials.json",
         "observations": {
-          "generated_at": "2026-05-04T00:43:56+00:00",
+          "generated_at": "2026-05-08T04:55:18+00:00",
           "company_count": 17,
           "record_count": 1366,
           "metrics": [

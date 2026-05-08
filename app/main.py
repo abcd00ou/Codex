@@ -5,7 +5,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.config import get_settings
-from app.routes import dashboard, documents, reports
+from app.routes import dashboard, documents, reports, workflows
 from app.services.llm import get_llm_status
 
 app = FastAPI(
@@ -17,6 +17,7 @@ app = FastAPI(
 app.include_router(documents.router, prefix="/v1")
 app.include_router(reports.router, prefix="/v1")
 app.include_router(dashboard.router, prefix="/v1")
+app.include_router(workflows.router, prefix="/v1")
 
 STATIC_DIR = Path(__file__).parent / "static"
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
