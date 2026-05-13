@@ -1,7 +1,7 @@
 # 상용 LLM 업체별 전력·GPU·토큰 생성량 시뮬레이션 (2026–2030)
 
 - 생성일: 2026-05-14
-- 목적: 상용 LLM owner 기준으로 전력 capacity, inference/training split, GPU/ASIC mix, tokens/sec/MW, token 생성량을 연결한 임원 보고용 base case 작성
+- 목적: 상용 LLM owner 기준으로 전력 capacity, 추론/학습 split, GPU/ASIC mix, tokens/sec/MW, token 생성량을 연결한 임원 보고용 기준 시나리오 작성
 - 주의: 이 문서는 투자 조언이 아니라 supply-chain / token-capacity intelligence simulation입니다.
 
 ## 핵심 결론
@@ -9,9 +9,9 @@
 - **2030 inference AI IT load**: 20.05 GW inference load - PUE와 AI workload share 차감 후 inference에 배정된 IT load.
 - **2030 US vs China split**: US 79% / China 21% - 회사 owner 기준 split이며 AWS/Oracle/CoreWeave 같은 host는 core row가 아님.
 
-## 2030 Base Case Ranking
+## 2030 기준 시나리오 순위
 
-| Rank | Company | Region | Inference GW | Tokens/day | Confidence |
+| 순위 | 업체 | 지역 | 추론 GW | 토큰/일 | 신뢰도 |
 |---:|---|---|---:|---:|---|
 | 1 | OpenAI | US | 4.86 | 0.59Q | Medium |
 | 2 | Google | US | 3.65 | 0.54Q | Medium-High |
@@ -43,9 +43,9 @@ joules_per_token = 1,000,000 / tokens_per_second_per_mw
 | Energy sanity check | `joules_per_token = 1,000,000 / tokens_per_second_per_mw` | MW를 J/s로 환산해 tokens/sec/MW와 에너지/token이 상호 일관되는지 확인. | SRC_ARXIV_INFERENCE_ENERGY |
 | MoE optimization | `scenario_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier * moe_optimization_multiplier` | DeepSeek/Qwen 같은 MoE 모델은 active parameter가 낮아 serving efficiency scenario에 별도 multiplier를 적용. | SRC_DEEPSEEK_V3; SRC_QWEN3_GITHUB; ASSUMP_MOE_EFFICIENCY |
 
-## Fact Anchors
+## Fact Anchor
 
-| Anchor | Company | Metric | Value | Date | Source | Model use |
+| Anchor | 업체 | 지표 | 값 | 날짜 | Source | 모델 반영 방식 |
 |---|---|---|---|---|---|---|
 | FACT_OPENAI_ORACLE_4_5GW | OpenAI | Additional Oracle datacenter capacity | 4.5 GW | 2025-07-22 | SRC_OPENAI_STARGATE_ORACLE | OpenAI 2030 contracted_power_gw 상향 anchor. active_power_gw는 energization/GPU delivery 때문에 별도 multiplier 적용. |
 | FACT_OPENAI_STARGATE_10GW | OpenAI | Stargate planned capacity commitment | Nearly 7 GW announced across new sites; over 10 GW commitment stated | 2025-09-23 | SRC_OPENAI_STARGATE_PROGRESS | 2030 OpenAI contracted_power_gw 12GW는 공개 commitment를 약간 상회하지 않도록 점검하는 ceiling 역할. |
@@ -63,32 +63,32 @@ joules_per_token = 1,000,000 / tokens_per_second_per_mw
 | FACT_DELOITTE_2026_INFERENCE | Cross-company | 2026 inference compute share outlook | Inference cited as roughly two-thirds of compute in 2026 outlook | 2025-12 | SRC_DELOITTE_AI_POWER | 2026 base/bull inference share가 60%를 넘을 수 있는 상향 전망 anchor지만, 공식 fact로는 표시하지 않음. |
 | FACT_EPOCH_TRAINING_POWER_RISK | Cross-company | Frontier training power can remain material | Individual frontier training runs may require large power blocks by 2030 | 2025-08 | SRC_EPRI_EPOCH_AI_POWER | Bear/base에서 training share를 남기는 보수 anchor. |
 
-## Scenario Design
+## 시나리오 설계
 
-| Scenario | Deploy 2030 | Inference delta 2030 | Tokens/MW | MoE optimization | 설명 |
+| 시나리오 | 2030 가동률 배수 | 2030 추론 비중 변화 | Tokens/MW | MoE 최적화 | 설명 |
 |---|---:|---:|---:|---:|---|
 | Bear | 82% | -10%p | 82% | 92% | 전력 인허가/장비 조달 지연, MoE 최적화 둔화, inference 전환이 느린 경우 |
 | Base | 100% | +0%p | 100% | 100% | 현재 공식 발표와 시장전망을 기준으로 한 staged deployment, MoE 효율 개선, inference mix 상승 |
 | Bull | 118% | +8%p | 118% | 118% | 전력 energization이 빠르고, MoE/serving stack 최적화가 강하며, commercial inference 비중이 빠르게 상승 |
 | Grid-Constrained / Efficiency-Upside | 72% | +4%p | 118% | 122% | 전력 투입은 지연되지만 MoE·quantization·batching 효율이 개선되어 token capacity 하락을 일부 상쇄 |
 
-## Inference 60%+ Fact Check
+## 추론 60%+ Fact Check
 
 - 2026년에 이미 전체 AI GW의 60% 이상이 inference라는 주장은 공식 company-level fact로 단정하지 않습니다.
 - McKinsey/Deloitte는 inference 비중 상승 전망을 제공하지만, 업체별 active GW split disclosure가 아닙니다.
 - EPRI/Epoch AI는 현재 AI power가 training, experiments, inference로 대략 나뉜다는 보수적 anchor를 제공합니다.
 - 따라서 본 모델의 inference share는 `Scenario assumption`이며, source transparency에 맞춰 confidence를 별도 표기합니다.
 
-## 2030 Scenario Envelope
+## 2030 시나리오 범위
 
-| Scenario | Active power GW | Inference GW | Weighted inference share | Tokens/day | Delta vs Base 2030 |
+| 시나리오 | 가동 전력 GW | 추론 GW | 가중 추론 비중 | 토큰/일 | 기준 대비 변화 |
 |---|---:|---:|---:|---:|---:|
 | Bear | 30.01 | 14.29 | 66% | 1.33Q | -48.0% |
 | Base | 36.60 | 20.05 | 76% | 2.55Q | 0.0% |
 | Bull | 43.16 | 26.14 | 84% | 4.27Q | 67.2% |
 | Grid-Constrained / Efficiency-Upside | 26.35 | 15.20 | 80% | 2.40Q | -5.9% |
 
-## Attribution Rules
+## 귀속 기준
 - **Microsoft**: Microsoft-owned token은 Phi/MAI/Copilot serving으로, OpenAI model output은 OpenAI row에도 별도 표기
 - **Google**: Google-owned Gemini token generation, Anthropic hosted capacity excluded from core
 - **Meta**: Meta-owned consumer and open model serving; third-party hosted Llama not counted in Meta owner tokens
@@ -98,11 +98,11 @@ joules_per_token = 1,000,000 / tokens_per_second_per_mw
 - **Alibaba**: Alibaba-operated Qwen serving counted; open-source third-party self-hosting excluded
 - **Tencent**: Tencent-operated Hunyuan/Yuanbao tokens counted; embedded non-LLM media generation separated
 
-## Evidence Rules
+## 근거 관리 원칙
 
 - Fact: official model docs/cards, company announcements, technical reports.
-- Estimate: active power, inference/training share, utilization, company-level tokens/sec/MW.
-- Scenario: 2027–2030 ramp, software efficiency CAGR, commercial token absorption.
+- Estimate: active power, 추론/학습 share, utilization, company-level tokens/sec/MW.
+- Scenario: 2027–2030 ramp, software efficiency CAGR, 상용 token absorption.
 - Closed model parameter는 official disclosure가 없으면 단일 숫자가 아니라 band로만 표기.
 - MoE는 total parameter와 active parameter를 분리.
 
@@ -133,7 +133,7 @@ joules_per_token = 1,000,000 / tokens_per_second_per_mw
 | SRC_DELOITTE_AI_POWER | Tier 2 | Deloitte | 2025-12 | Inference compute share outlook, used only as scenario cross-check | https://www.deloitte.com/us/en/insights/industry/technology/technology-media-and-telecom-predictions/2026/compute-power-ai.html |
 | SRC_EPRI_EPOCH_AI_POWER | Tier 2 | EPRI / Epoch AI | 2025-08 | Current AI power allocation sanity check across training, experiments, and inference | https://epoch.ai/blog/power-demands-of-frontier-ai-training |
 
-## Validation
+## 검증
 
 - Status: **PASS**
 - closed_parameter_precision: PASS - closed model rows use bands/undisclosed labels, not single precise parameter values.

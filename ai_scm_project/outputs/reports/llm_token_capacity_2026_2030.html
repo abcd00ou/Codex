@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>상용 LLM 토큰 Capacity Dashboard</title>
+  <title>상용 LLM 토큰 Capacity 대시보드</title>
   <style>
     :root {
       --ink:#162033; --muted:#667085; --line:#d8e0ea; --bg:#f6f8fb;
@@ -42,7 +42,7 @@
 <body>
   <header>
     <h1>상용 LLM 업체별 전력·GPU·토큰 생성량 시뮬레이션</h1>
-    <div class="sub">2026–2030 base case. Core company는 Microsoft, Google, Meta, xAI, OpenAI, DeepSeek, Alibaba, Tencent입니다. 숫자는 Fact/Estimate/Scenario와 confidence를 함께 읽어야 합니다.</div>
+    <div class="sub">2026–2030 기준 시나리오. Core company는 Microsoft, Google, Meta, xAI, OpenAI, DeepSeek, Alibaba, Tencent입니다. 숫자는 Fact/Estimate/Scenario와 신뢰도를 함께 읽어야 합니다.</div>
   </header>
   <main>
     <div class="controls">
@@ -54,7 +54,7 @@
     </div>
     <div class="grid" id="kpis"></div>
     <section>
-      <h2>업체별 token forecast</h2>
+      <h2>업체별 토큰 forecast</h2>
       <div class="chart" id="tokenChart"></div>
       <div class="note">단위: quadrillion tokens/day. slider는 tokens/sec/MW와 utilization에만 적용합니다.</div>
     </section>
@@ -72,15 +72,15 @@
       <div class="chart" id="gwChart"></div>
     </section>
     <section>
-      <h2>Confidence heatmap & source audit</h2>
+      <h2>신뢰도 heatmap & source audit</h2>
       <table id="audit"></table>
     </section>
     <section>
-      <h2>Fact anchors</h2>
+      <h2>Fact anchor</h2>
       <table id="facts"></table>
     </section>
     <section>
-      <h2>Model owner attribution</h2>
+      <h2>Model owner 귀속 기준</h2>
       <table id="models"></table>
     </section>
   </main>
@@ -116,8 +116,8 @@
       const avgJ = rows.reduce((a,d)=>a+d.joules_per_token,0)/Math.max(rows.length,1);
       const items = [
         ["토큰/day", (totalTokens/1e15).toFixed(2)+"Q"],
-        ["Inference GW", infGw.toFixed(2)+" GW"],
-        ["Training GW", trainGw.toFixed(2)+" GW"],
+        ["추론 GW", infGw.toFixed(2)+" GW"],
+        ["학습 GW", trainGw.toFixed(2)+" GW"],
         ["평균 J/token", avgJ.toFixed(3)]
       ];
       $("kpis").innerHTML = items.map(i=>`<div class="kpi"><div class="label">${i[0]}</div><div class="value">${i[1]}</div></div>`).join('');
@@ -135,16 +135,16 @@
       }).join('');
     }
     function renderTables(rows) {
-      $("audit").innerHTML = `<tr><th>업체</th><th>Confidence</th><th>Derivation</th><th>Sources</th><th>Assumptions</th></tr>` +
+      $("audit").innerHTML = `<tr><th>업체</th><th>신뢰도</th><th>산출 유형</th><th>Sources</th><th>Assumptions</th></tr>` +
         rows.map(d=>`<tr><td>${d.company}</td><td><span class="pill">${d.confidence}</span></td><td>${d.derivation_type}</td><td>${d.source_ids}</td><td>${d.assumption_ids}</td></tr>`).join('');
       $("models").innerHTML = `<tr><th>업체</th><th>모델 family</th><th>상용 표면</th><th>Attribution rule</th></tr>` +
         DATA.company_models.filter(m => $("company").value === "ALL" || m.company === $("company").value)
           .map(m=>`<tr><td>${m.company}</td><td>${m.model_family}</td><td>${m.commercial_surface}</td><td>${m.attribution_rule}</td></tr>`).join('');
-      $("formulas").innerHTML = `<tr><th>Block</th><th>Formula</th><th>해석</th><th>Sources</th></tr>` +
+      $("formulas").innerHTML = `<tr><th>구분</th><th>계산식</th><th>해석</th><th>Sources</th></tr>` +
         DATA.formula_assumptions.map(f=>`<tr><td>${f.category}</td><td><code>${f.formula}</code></td><td>${f.meaning_kr}</td><td>${f.source_ids}</td></tr>`).join('');
-      $("scenarioDefs").innerHTML = `<tr><th>Scenario</th><th>Deploy 2030</th><th>Inference delta 2030</th><th>Tokens/MW</th><th>설명</th></tr>` +
+      $("scenarioDefs").innerHTML = `<tr><th>시나리오</th><th>2030 가동률 배수</th><th>2030 추론 비중 변화</th><th>Tokens/MW</th><th>설명</th></tr>` +
         DATA.scenario_definitions.map(s=>`<tr><td>${s.scenario}</td><td>${Math.round(s.operational_deploy_multiplier_2030*100)}%</td><td>${Math.round(s.inference_share_delta_2030*100)}%p</td><td>${Math.round(s.tokens_per_mw_multiplier*100)}%</td><td>${s.description_kr}</td></tr>`).join('');
-      $("facts").innerHTML = `<tr><th>Company</th><th>Metric</th><th>Value</th><th>Source</th><th>모델 반영 방식</th></tr>` +
+      $("facts").innerHTML = `<tr><th>업체</th><th>지표</th><th>값</th><th>Source</th><th>모델 반영 방식</th></tr>` +
         DATA.fact_anchors.map(f=>`<tr><td>${f.company}</td><td>${f.metric}</td><td>${f.value}</td><td>${f.source_id}</td><td>${f.derivation_impact_kr}</td></tr>`).join('');
     }
     function render() {

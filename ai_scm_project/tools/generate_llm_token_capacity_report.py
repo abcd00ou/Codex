@@ -1271,7 +1271,7 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
             ]
         )
     scenario_line = LineChart()
-    scenario_line.title = "Scenario token capacity: Bull/Base/Bear plus grid-constrained case"
+    scenario_line.title = "시나리오별 토큰 capacity: 낙관/기준/보수/전력제약"
     scenario_line.y_axis.title = "Q tokens/day"
     scenario_line.x_axis.title = "Year"
     scenario_line.add_data(Reference(chart_ws, min_col=2, max_col=1 + len(SCENARIO_CASES), min_row=scen_start, max_row=scen_start + len(YEARS)), titles_from_data=True)
@@ -1607,7 +1607,7 @@ def write_html(data: dict[str, Any], path: Path) -> None:
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>상용 LLM 토큰 Capacity Dashboard</title>
+  <title>상용 LLM 토큰 Capacity 대시보드</title>
   <style>
     :root {{
       --ink:#162033; --muted:#667085; --line:#d8e0ea; --bg:#f6f8fb;
@@ -1646,7 +1646,7 @@ def write_html(data: dict[str, Any], path: Path) -> None:
 <body>
   <header>
     <h1>상용 LLM 업체별 전력·GPU·토큰 생성량 시뮬레이션</h1>
-    <div class="sub">2026–2030 base case. Core company는 Microsoft, Google, Meta, xAI, OpenAI, DeepSeek, Alibaba, Tencent입니다. 숫자는 Fact/Estimate/Scenario와 confidence를 함께 읽어야 합니다.</div>
+    <div class="sub">2026–2030 기준 시나리오. Core company는 Microsoft, Google, Meta, xAI, OpenAI, DeepSeek, Alibaba, Tencent입니다. 숫자는 Fact/Estimate/Scenario와 신뢰도를 함께 읽어야 합니다.</div>
   </header>
   <main>
     <div class="controls">
@@ -1658,7 +1658,7 @@ def write_html(data: dict[str, Any], path: Path) -> None:
     </div>
     <div class="grid" id="kpis"></div>
     <section>
-      <h2>업체별 token forecast</h2>
+      <h2>업체별 토큰 forecast</h2>
       <div class="chart" id="tokenChart"></div>
       <div class="note">단위: quadrillion tokens/day. slider는 tokens/sec/MW와 utilization에만 적용합니다.</div>
     </section>
@@ -1676,15 +1676,15 @@ def write_html(data: dict[str, Any], path: Path) -> None:
       <div class="chart" id="gwChart"></div>
     </section>
     <section>
-      <h2>Confidence heatmap & source audit</h2>
+      <h2>신뢰도 heatmap & source audit</h2>
       <table id="audit"></table>
     </section>
     <section>
-      <h2>Fact anchors</h2>
+      <h2>Fact anchor</h2>
       <table id="facts"></table>
     </section>
     <section>
-      <h2>Model owner attribution</h2>
+      <h2>Model owner 귀속 기준</h2>
       <table id="models"></table>
     </section>
   </main>
@@ -1720,8 +1720,8 @@ def write_html(data: dict[str, Any], path: Path) -> None:
       const avgJ = rows.reduce((a,d)=>a+d.joules_per_token,0)/Math.max(rows.length,1);
       const items = [
         ["토큰/day", (totalTokens/1e15).toFixed(2)+"Q"],
-        ["Inference GW", infGw.toFixed(2)+" GW"],
-        ["Training GW", trainGw.toFixed(2)+" GW"],
+        ["추론 GW", infGw.toFixed(2)+" GW"],
+        ["학습 GW", trainGw.toFixed(2)+" GW"],
         ["평균 J/token", avgJ.toFixed(3)]
       ];
       $("kpis").innerHTML = items.map(i=>`<div class="kpi"><div class="label">${{i[0]}}</div><div class="value">${{i[1]}}</div></div>`).join('');
@@ -1739,16 +1739,16 @@ def write_html(data: dict[str, Any], path: Path) -> None:
       }}).join('');
     }}
     function renderTables(rows) {{
-      $("audit").innerHTML = `<tr><th>업체</th><th>Confidence</th><th>Derivation</th><th>Sources</th><th>Assumptions</th></tr>` +
+      $("audit").innerHTML = `<tr><th>업체</th><th>신뢰도</th><th>산출 유형</th><th>Sources</th><th>Assumptions</th></tr>` +
         rows.map(d=>`<tr><td>${{d.company}}</td><td><span class="pill">${{d.confidence}}</span></td><td>${{d.derivation_type}}</td><td>${{d.source_ids}}</td><td>${{d.assumption_ids}}</td></tr>`).join('');
       $("models").innerHTML = `<tr><th>업체</th><th>모델 family</th><th>상용 표면</th><th>Attribution rule</th></tr>` +
         DATA.company_models.filter(m => $("company").value === "ALL" || m.company === $("company").value)
           .map(m=>`<tr><td>${{m.company}}</td><td>${{m.model_family}}</td><td>${{m.commercial_surface}}</td><td>${{m.attribution_rule}}</td></tr>`).join('');
-      $("formulas").innerHTML = `<tr><th>Block</th><th>Formula</th><th>해석</th><th>Sources</th></tr>` +
+      $("formulas").innerHTML = `<tr><th>구분</th><th>계산식</th><th>해석</th><th>Sources</th></tr>` +
         DATA.formula_assumptions.map(f=>`<tr><td>${{f.category}}</td><td><code>${{f.formula}}</code></td><td>${{f.meaning_kr}}</td><td>${{f.source_ids}}</td></tr>`).join('');
-      $("scenarioDefs").innerHTML = `<tr><th>Scenario</th><th>Deploy 2030</th><th>Inference delta 2030</th><th>Tokens/MW</th><th>설명</th></tr>` +
+      $("scenarioDefs").innerHTML = `<tr><th>시나리오</th><th>2030 가동률 배수</th><th>2030 추론 비중 변화</th><th>Tokens/MW</th><th>설명</th></tr>` +
         DATA.scenario_definitions.map(s=>`<tr><td>${{s.scenario}}</td><td>${{Math.round(s.operational_deploy_multiplier_2030*100)}}%</td><td>${{Math.round(s.inference_share_delta_2030*100)}}%p</td><td>${{Math.round(s.tokens_per_mw_multiplier*100)}}%</td><td>${{s.description_kr}}</td></tr>`).join('');
-      $("facts").innerHTML = `<tr><th>Company</th><th>Metric</th><th>Value</th><th>Source</th><th>모델 반영 방식</th></tr>` +
+      $("facts").innerHTML = `<tr><th>업체</th><th>지표</th><th>값</th><th>Source</th><th>모델 반영 방식</th></tr>` +
         DATA.fact_anchors.map(f=>`<tr><td>${{f.company}}</td><td>${{f.metric}}</td><td>${{f.value}}</td><td>${{f.source_id}}</td><td>${{f.derivation_impact_kr}}</td></tr>`).join('');
     }}
     function render() {{
@@ -1770,7 +1770,7 @@ def write_markdown(data: dict[str, Any], path: Path) -> None:
         "# 상용 LLM 업체별 전력·GPU·토큰 생성량 시뮬레이션 (2026–2030)",
         "",
         f"- 생성일: {RUN_DATE}",
-        "- 목적: 상용 LLM owner 기준으로 전력 capacity, inference/training split, GPU/ASIC mix, tokens/sec/MW, token 생성량을 연결한 임원 보고용 base case 작성",
+        "- 목적: 상용 LLM owner 기준으로 전력 capacity, 추론/학습 split, GPU/ASIC mix, tokens/sec/MW, token 생성량을 연결한 임원 보고용 기준 시나리오 작성",
         "- 주의: 이 문서는 투자 조언이 아니라 supply-chain / token-capacity intelligence simulation입니다.",
         "",
         "## 핵심 결론",
@@ -1779,9 +1779,9 @@ def write_markdown(data: dict[str, Any], path: Path) -> None:
         lines.append(f"- **{item['metric']}**: {item['display']} - {item['interpretation_kr']}")
     lines += [
         "",
-        "## 2030 Base Case Ranking",
+        "## 2030 기준 시나리오 순위",
         "",
-        "| Rank | Company | Region | Inference GW | Tokens/day | Confidence |",
+        "| 순위 | 업체 | 지역 | 추론 GW | 토큰/일 | 신뢰도 |",
         "|---:|---|---|---:|---:|---|",
     ]
     for idx, row in enumerate(rows_2030, start=1):
@@ -1809,18 +1809,18 @@ def write_markdown(data: dict[str, Any], path: Path) -> None:
         lines.append(f"| {item['category']} | `{item['formula']}` | {item['meaning_kr']} | {item['source_ids']} |")
     lines += [
         "",
-        "## Fact Anchors",
+        "## Fact Anchor",
         "",
-        "| Anchor | Company | Metric | Value | Date | Source | Model use |",
+        "| Anchor | 업체 | 지표 | 값 | 날짜 | Source | 모델 반영 방식 |",
         "|---|---|---|---|---|---|---|",
     ]
     for f in data["fact_anchors"]:
         lines.append(f"| {f['anchor_id']} | {f['company']} | {f['metric']} | {f['value']} | {f['fact_date']} | {f['source_id']} | {f['derivation_impact_kr']} |")
     lines += [
         "",
-        "## Scenario Design",
+        "## 시나리오 설계",
         "",
-        "| Scenario | Deploy 2030 | Inference delta 2030 | Tokens/MW | MoE optimization | 설명 |",
+        "| 시나리오 | 2030 가동률 배수 | 2030 추론 비중 변화 | Tokens/MW | MoE 최적화 | 설명 |",
         "|---|---:|---:|---:|---:|---|",
     ]
     for item in data["scenario_definitions"]:
@@ -1829,16 +1829,16 @@ def write_markdown(data: dict[str, Any], path: Path) -> None:
         )
     lines += [
         "",
-        "## Inference 60%+ Fact Check",
+        "## 추론 60%+ Fact Check",
         "",
         "- 2026년에 이미 전체 AI GW의 60% 이상이 inference라는 주장은 공식 company-level fact로 단정하지 않습니다.",
         "- McKinsey/Deloitte는 inference 비중 상승 전망을 제공하지만, 업체별 active GW split disclosure가 아닙니다.",
         "- EPRI/Epoch AI는 현재 AI power가 training, experiments, inference로 대략 나뉜다는 보수적 anchor를 제공합니다.",
         "- 따라서 본 모델의 inference share는 `Scenario assumption`이며, source transparency에 맞춰 confidence를 별도 표기합니다.",
         "",
-        "## 2030 Scenario Envelope",
+        "## 2030 시나리오 범위",
         "",
-        "| Scenario | Active power GW | Inference GW | Weighted inference share | Tokens/day | Delta vs Base 2030 |",
+        "| 시나리오 | 가동 전력 GW | 추론 GW | 가중 추론 비중 | 토큰/일 | 기준 대비 변화 |",
         "|---|---:|---:|---:|---:|---:|",
     ]
     for row in [r for r in data["scenario_summary"] if r["year"] == 2030]:
@@ -1847,17 +1847,17 @@ def write_markdown(data: dict[str, Any], path: Path) -> None:
         )
     lines += [
         "",
-        "## Attribution Rules",
+        "## 귀속 기준",
     ]
     for m in company_models():
         lines.append(f"- **{m.company}**: {m.attribution_rule}")
     lines += [
         "",
-        "## Evidence Rules",
+        "## 근거 관리 원칙",
         "",
         "- Fact: official model docs/cards, company announcements, technical reports.",
-        "- Estimate: active power, inference/training share, utilization, company-level tokens/sec/MW.",
-        "- Scenario: 2027–2030 ramp, software efficiency CAGR, commercial token absorption.",
+        "- Estimate: active power, 추론/학습 share, utilization, company-level tokens/sec/MW.",
+        "- Scenario: 2027–2030 ramp, software efficiency CAGR, 상용 token absorption.",
         "- Closed model parameter는 official disclosure가 없으면 단일 숫자가 아니라 band로만 표기.",
         "- MoE는 total parameter와 active parameter를 분리.",
         "",
@@ -1870,7 +1870,7 @@ def write_markdown(data: dict[str, Any], path: Path) -> None:
         lines.append(f"| {s.source_id} | {s.tier} | {s.publisher} | {s.date} | {s.use_in_model} | {s.url_or_report} |")
     lines += [
         "",
-        "## Validation",
+        "## 검증",
         "",
         f"- Status: **{data['validation']['status']}**",
     ]
@@ -1914,10 +1914,17 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
         fill.solid()
         fill.fore_color.rgb = color
 
-    def add_footer(slide, note: str = "Source-backed simulation | Fact / Estimate / Scenario separated"):
+    scenario_label_kr = {
+        "Bear": "보수",
+        "Base": "기준",
+        "Bull": "낙관",
+        "Grid-Constrained / Efficiency-Upside": "전력제약·효율상승",
+    }
+
+    def add_footer(slide, note: str = "출처 기반 시뮬레이션 | Fact / Estimate / Scenario 분리"):
         tx = slide.shapes.add_textbox(Inches(0.55), Inches(7.05), Inches(12.25), Inches(0.24))
         p = tx.text_frame.paragraphs[0]
-        p.text = f"{note} | generated {RUN_DATE}"
+        p.text = f"{note} | 생성일 {RUN_DATE}"
         p.font.size = Pt(7.5)
         p.font.color.rgb = muted
 
@@ -2003,46 +2010,46 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
     # 1. Cover
     slide = prs.slides.add_slide(blank)
     set_bg(slide, RGBColor(245, 248, 252))
-    add_label(slide, 0.72, 0.62, 3.2, 0.28, "EXECUTIVE SIMULATION", 8, blue, True)
+    add_label(slide, 0.72, 0.62, 3.2, 0.28, "임원 보고용 시뮬레이션", 8, blue, True)
     add_label(slide, 0.72, 1.15, 7.4, 2.25, "상용 LLM 업체별\n전력·GPU·토큰 Capacity\n2026–2030", 34, navy, True)
-    add_label(slide, 0.78, 3.55, 7.0, 0.65, "Model-owner 기준으로 OpenAI, Google, Meta, Microsoft, xAI, DeepSeek, Alibaba, Tencent의 inference capacity를 추정", 14, muted)
-    metric_card(slide, 8.35, 1.03, 3.95, 1.05, "2030 Base tokens/day", f"{total_tokens_2030/1e15:.2f}Q", "8개 상용 LLM owner 합산", pale_blue)
-    metric_card(slide, 8.35, 2.32, 3.95, 1.05, "2030 Base inference GW", f"{total_inf_2030:.1f} GW", "AI IT load 중 inference 배정", pale_green)
-    metric_card(slide, 8.35, 3.61, 3.95, 1.05, "Base inference share", f"{base_summary_2026['weighted_inference_share']:.0%} → {base_summary_2030['weighted_inference_share']:.0%}", "2026은 fact가 아닌 scenario", pale_amber)
-    add_label(slide, 0.78, 6.45, 7.5, 0.35, "핵심: 공개 fact는 capacity/model 규모를 제한하고, active GW·inference split·tokens/MW는 명시적 scenario로 둔다.", 10, ink, True)
+    add_label(slide, 0.78, 3.55, 7.0, 0.65, "모델 보유 업체 기준으로 OpenAI, Google, Meta, Microsoft, xAI, DeepSeek, Alibaba, Tencent의 추론 capacity를 추정", 14, muted)
+    metric_card(slide, 8.35, 1.03, 3.95, 1.05, "2030 기준 토큰/일", f"{total_tokens_2030/1e15:.2f}Q", "8개 상용 LLM owner 합산", pale_blue)
+    metric_card(slide, 8.35, 2.32, 3.95, 1.05, "2030 기준 추론 GW", f"{total_inf_2030:.1f} GW", "AI IT load 중 추론 배정", pale_green)
+    metric_card(slide, 8.35, 3.61, 3.95, 1.05, "기준 추론 비중", f"{base_summary_2026['weighted_inference_share']:.0%} → {base_summary_2030['weighted_inference_share']:.0%}", "2026은 fact가 아닌 시나리오", pale_amber)
+    add_label(slide, 0.78, 6.45, 7.5, 0.35, "핵심: 공개 fact는 capacity/model 규모를 제한하고, active GW·추론 비중·tokens/MW는 명시적 시나리오로 둔다.", 10, ink, True)
     add_footer(slide)
 
     # 2. Executive conclusion
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
-    add_title(slide, "Executive conclusion", "Base case는 2026 0.19Q/day에서 2030 2.55Q/day로 확대되지만, 신뢰도는 capacity activation과 serving efficiency에 좌우됩니다.")
+    add_title(slide, "임원 요약 결론", "기준 시나리오는 2026년 0.19Q/day에서 2030년 2.55Q/day로 확대되지만, 신뢰도는 전력 가동과 serving 효율에 좌우됩니다.")
     bullets = [
-        "OpenAI·Google·Meta가 2030 Base token capacity의 상위권을 형성한다.",
-        "2026 inference 60%+는 공식 fact가 아니므로 Base는 56%, Bull만 61%로 제한했다.",
-        "2030 Base inference share 76%는 commercial serving 확대를 반영하되, training GW를 계속 남긴다.",
-        "MoE 공개 모델 DeepSeek/Qwen은 parameter evidence가 강하지만, active capacity transparency는 낮다.",
+        "OpenAI·Google·Meta가 2030년 기준 토큰 capacity의 상위권을 형성한다.",
+        "2026년 추론 60%+는 공식 fact가 아니므로 기준은 56%, 낙관만 61%로 제한했다.",
+        "2030년 기준 추론 비중 76%는 상용 serving 확대를 반영하되, 학습 GW를 계속 남긴다.",
+        "MoE 공개 모델 DeepSeek/Qwen은 파라미터 근거가 강하지만, active capacity 투명성은 낮다.",
     ]
     bullet_list(slide, 0.75, 1.35, 6.1, 3.6, bullets, 15)
     chart_data = CategoryChartData()
     chart_data.categories = [r["company"] for r in ranked_2030[:5]]
-    chart_data.add_series("2030 tokens/day (Q)", [r["inference_tokens_per_day"] / 1e15 for r in ranked_2030[:5]])
+    chart_data.add_series("2030 토큰/일 (Q)", [r["inference_tokens_per_day"] / 1e15 for r in ranked_2030[:5]])
     chart = slide.shapes.add_chart(XL_CHART_TYPE.BAR_CLUSTERED, Inches(7.0), Inches(1.35), Inches(5.65), Inches(3.75), chart_data).chart
     chart.has_legend = False
     chart.value_axis.tick_labels.font.size = Pt(8)
     chart.category_axis.tick_labels.font.size = Pt(9)
-    add_label(slide, 7.02, 5.35, 5.4, 0.48, "2030 Base company ranking, quadrillion tokens/day", 9, muted)
+    add_label(slide, 7.02, 5.35, 5.4, 0.48, "2030 기준 업체 순위, quadrillion tokens/day", 9, muted)
     add_footer(slide)
 
     # 3. Calculation logic
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
-    add_title(slide, "계산 로직은 전력 funnel과 serving efficiency의 곱", "계약 전력은 token capacity가 아니며, active power와 AI IT load를 거쳐 inference GW로 내려옵니다.")
+    add_title(slide, "계산 로직은 전력 funnel과 serving 효율의 곱", "계약 전력은 token capacity가 아니며, 가동 전력과 AI IT load를 거쳐 추론 GW로 내려옵니다.")
     steps = [
-        ("1", "Contracted power", "계약/계획 GW\nsource anchor"),
-        ("2", "Active power", "operational deploy\nscenario"),
+        ("1", "계약 전력", "계약/계획 GW\nsource anchor"),
+        ("2", "가동 전력", "operational deploy\n시나리오"),
         ("3", "AI IT load", "PUE·AI workload\n차감"),
-        ("4", "Inference GW", "training/inference\nsplit"),
-        ("5", "Tokens/day", "tokens/sec/MW ×\nutilization"),
+        ("4", "추론 GW", "학습/추론\nsplit"),
+        ("5", "토큰/일", "tokens/sec/MW ×\nutilization"),
     ]
     x0 = 0.75
     for i, (num, title, desc) in enumerate(steps):
@@ -2066,7 +2073,7 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
         p2.font.color.rgb = muted
         if i < len(steps) - 1:
             add_label(slide, x + 2.06, 2.08, 0.36, 0.3, "→", 18, muted, True, PP_ALIGN.CENTER)
-    formula = "inference_tokens_per_day = inference_gw × 1,000 × tokens_per_second_per_mw × utilization × 86,400"
+    formula = "추론 토큰/일 = 추론 GW × 1,000 × tokens/sec/MW × utilization × 86,400"
     add_label(slide, 1.15, 4.05, 11.0, 0.45, formula, 16, navy, True, PP_ALIGN.CENTER)
     bullet_list(
         slide,
@@ -2075,7 +2082,7 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
         11.0,
         1.15,
         [
-            "Excel/JSON 표시값 기준 재계산도 일치하도록 rounding 후 token 산식을 적용했다.",
+            "Excel/JSON 표시값 기준 재계산도 일치하도록 rounding 후 토큰 산식을 적용했다.",
             "Closed model parameter는 단일 숫자가 아니라 band만 사용하며, MoE는 total/active parameter를 분리한다.",
         ],
         11,
@@ -2086,12 +2093,12 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
     # 4. Scenario envelope
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
-    add_title(slide, "시나리오별 token capacity envelope", "Bull/Base/Bear는 deployment speed, inference mix, MoE/serving efficiency를 동시에 움직입니다.")
+    add_title(slide, "시나리오별 토큰 capacity 범위", "낙관/기준/보수 시나리오는 전력 가동 속도, 추론 비중, MoE·serving 효율을 동시에 움직입니다.")
     chart_data = CategoryChartData()
     chart_data.categories = [str(y) for y in YEARS]
     for scen in SCENARIO_CASES:
         chart_data.add_series(
-            scen,
+            scenario_label_kr.get(scen, scen),
             [next(r["inference_tokens_per_day_q"] for r in data["scenario_summary"] if r["scenario"] == scen and r["year"] == y) for y in YEARS],
         )
     chart = slide.shapes.add_chart(XL_CHART_TYPE.LINE_MARKERS, Inches(0.75), Inches(1.25), Inches(8.15), Inches(4.95), chart_data).chart
@@ -2100,19 +2107,19 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
     chart.value_axis.tick_labels.font.size = Pt(8)
     chart.category_axis.tick_labels.font.size = Pt(8)
     for i, r in enumerate(scenario_2030):
-        metric_card(slide, 9.25, 1.2 + i * 1.2, 3.15, 0.88, r["scenario"], f"{r['inference_tokens_per_day_q']:.2f}Q/day", f"2030 share {r['weighted_inference_share']:.0%}", [pale_blue, pale_green, pale_amber, RGBColor(240, 244, 248)][i % 4])
+        metric_card(slide, 9.25, 1.2 + i * 1.2, 3.15, 0.88, scenario_label_kr.get(r["scenario"], r["scenario"]), f"{r['inference_tokens_per_day_q']:.2f}Q/일", f"2030 비중 {r['weighted_inference_share']:.0%}", [pale_blue, pale_green, pale_amber, RGBColor(240, 244, 248)][i % 4])
     add_footer(slide)
 
     # 5. Power funnel
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
-    add_title(slide, "2030 Base power funnel", "Token capacity는 contracted power가 아니라 inference GW에서 나온다.")
+    add_title(slide, "2030 기준 전력 전환 구조", "토큰 capacity는 계약 전력이 아니라 실제 추론 GW에서 나온다.")
     funnel = [
-        ("Contracted", sum(r["contracted_power_gw"] for r in base_2030)),
-        ("Active", total_active_2030),
+        ("계약", sum(r["contracted_power_gw"] for r in base_2030)),
+        ("가동", total_active_2030),
         ("AI IT load", total_ai_2030),
-        ("Inference", total_inf_2030),
-        ("Training", total_train_2030),
+        ("추론", total_inf_2030),
+        ("학습", total_train_2030),
     ]
     chart_data = CategoryChartData()
     chart_data.categories = [x[0] for x in funnel]
@@ -2121,38 +2128,38 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
     chart.has_legend = False
     chart.value_axis.tick_labels.font.size = Pt(8)
     chart.category_axis.tick_labels.font.size = Pt(9)
-    metric_card(slide, 9.0, 1.35, 3.35, 1.0, "Contracted → Active", f"{total_active_2030 / sum(r['contracted_power_gw'] for r in base_2030):.0%}", "operational deployment ratio", pale_blue)
-    metric_card(slide, 9.0, 2.65, 3.35, 1.0, "AI IT → Inference", f"{total_inf_2030 / total_ai_2030:.0%}", "Base 2030 split", pale_green)
-    metric_card(slide, 9.0, 3.95, 3.35, 1.0, "Training remains", f"{total_train_2030:.1f} GW", "not assumed to vanish", pale_amber)
+    metric_card(slide, 9.0, 1.35, 3.35, 1.0, "계약 → 가동", f"{total_active_2030 / sum(r['contracted_power_gw'] for r in base_2030):.0%}", "operational deployment ratio", pale_blue)
+    metric_card(slide, 9.0, 2.65, 3.35, 1.0, "AI IT → 추론", f"{total_inf_2030 / total_ai_2030:.0%}", "2030 기준 split", pale_green)
+    metric_card(slide, 9.0, 3.95, 3.35, 1.0, "학습 잔존", f"{total_train_2030:.1f} GW", "0으로 가정하지 않음", pale_amber)
     add_footer(slide)
 
     # 6. Company ranking
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
-    add_title(slide, "2030 Base token capacity by model owner", "Host capacity is attributed back to the model owner where model ownership is clear.")
+    add_title(slide, "2030 기준 모델 보유 업체별 토큰 capacity", "호스팅 capacity는 모델 소유권이 명확한 경우 model owner 기준으로 귀속한다.")
     chart_data = CategoryChartData()
     chart_data.categories = [r["company"] for r in ranked_2030]
-    chart_data.add_series("Q tokens/day", [r["inference_tokens_per_day"] / 1e15 for r in ranked_2030])
+    chart_data.add_series("Q tokens/일", [r["inference_tokens_per_day"] / 1e15 for r in ranked_2030])
     chart = slide.shapes.add_chart(XL_CHART_TYPE.COLUMN_CLUSTERED, Inches(0.65), Inches(1.2), Inches(12.0), Inches(4.8), chart_data).chart
     chart.has_legend = False
     chart.value_axis.tick_labels.font.size = Pt(8)
     chart.category_axis.tick_labels.font.size = Pt(9)
-    add_label(slide, 0.8, 6.25, 11.6, 0.45, "Microsoft/OpenAI overlap: OpenAI model output is counted under OpenAI model-owner logic; Microsoft row captures Microsoft-owned/serving burden assumptions.", 9, muted)
+    add_label(slide, 0.8, 6.25, 11.6, 0.45, "Microsoft/OpenAI 중복 처리: OpenAI 모델 output은 OpenAI model-owner로 귀속하고, Microsoft row는 Microsoft-owned/serving burden 가정을 반영한다.", 9, muted)
     add_footer(slide)
 
     # 7. Fact anchors
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
-    add_title(slide, "Fact anchors tighten the model, but do not replace telemetry", "Public facts constrain model size and capacity ceilings; active GW and utilization remain estimates.")
+    add_title(slide, "Fact anchor는 모델을 조여주지만 telemetry를 대체하지 않는다", "공개 fact는 모델 규모와 capacity 상한을 제한하고, active GW와 utilization은 여전히 추정치다.")
     curated = [
-        ("OpenAI", "4.5GW Oracle + 10GW Stargate", "capacity ceiling"),
+        ("OpenAI", "Oracle 4.5GW + Stargate 10GW", "capacity 상한"),
         ("Google", "Ironwood 9,216 chips / 42.5 exaflops", "tokens/MW premium"),
-        ("DeepSeek", "671B total / 37B active", "MoE efficiency"),
-        ("Alibaba", "Qwen3 235B / 22B active", "MoE efficiency"),
+        ("DeepSeek", "671B total / 37B active", "MoE 효율"),
+        ("Alibaba", "Qwen3 235B / 22B active", "MoE 효율"),
         ("xAI", "Colossus 100k Hopper GPU", "cluster scale"),
         ("Microsoft", "Phi-4 14B", "owned model anchor"),
         ("Tencent", "Hunyuan 100B+ / 2T+ tokens", "model scale"),
-        ("Meta", "Llama 4 109B/400B with 17B active", "open model band"),
+        ("Meta", "Llama 4 109B/400B, 17B active", "open model band"),
     ]
     for i, (company, fact, use) in enumerate(curated):
         row = i // 2
@@ -2160,14 +2167,14 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
         x = 0.75 + col * 6.2
         y = 1.25 + row * 1.22
         metric_card(slide, x, y, 5.65, 0.9, company, fact, use, [pale_blue, pale_green, pale_amber, RGBColor(240, 244, 248)][i % 4])
-    add_footer(slide, "Sources listed in Excel 01_sources and 02a_fact_anchors")
+    add_footer(slide, "상세 출처는 Excel 01_sources 및 02a_fact_anchors에 수록")
 
     # 8. Inference share audit
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
-    add_title(slide, "Inference share fact-check", "The model no longer treats 2026 60%+ inference GW as a fact.")
+    add_title(slide, "추론 비중 fact-check", "이 모델은 2026년 60%+ 추론 GW를 fact로 취급하지 않는다.")
     chart_data = CategoryChartData()
-    chart_data.categories = ["Bear", "Base", "Bull", "Grid-constrained"]
+    chart_data.categories = ["보수", "기준", "낙관", "전력제약"]
     chart_data.add_series("2026", [next(r for r in data["scenario_summary"] if r["scenario"] == s and r["year"] == 2026)["weighted_inference_share"] for s in SCENARIO_CASES])
     chart_data.add_series("2030", [next(r for r in data["scenario_summary"] if r["scenario"] == s and r["year"] == 2030)["weighted_inference_share"] for s in SCENARIO_CASES])
     chart = slide.shapes.add_chart(XL_CHART_TYPE.COLUMN_CLUSTERED, Inches(0.8), Inches(1.35), Inches(7.2), Inches(4.55), chart_data).chart
@@ -2181,10 +2188,10 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
         3.95,
         4.0,
         [
-            "Base 2026: 56%, below 60%.",
-            "Bull 2026: 61%, allowed as upside scenario only.",
-            "Base 2030: 76%, reflecting commercial serving growth.",
-            "Training capacity remains material in every case.",
+            "기준 2026: 56%, 60% 미만.",
+            "낙관 2026: 61%, upside scenario에서만 허용.",
+            "기준 2030: 76%, 상용 serving 확대 반영.",
+            "모든 case에서 학습 capacity는 계속 유의미하게 남김.",
         ],
         13,
     )
@@ -2193,11 +2200,11 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
     # 9. Model owner landscape
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
-    add_title(slide, "Model-owner landscape", "Core rows are commercial LLM owners, not datacenter hosts.")
+    add_title(slide, "모델 보유 업체 landscape", "Core row는 데이터센터 host가 아니라 상용 LLM owner다.")
     groups = [
-        ("US scaled platforms", ["OpenAI", "Google", "Meta", "Microsoft"], pale_blue),
-        ("US challenger", ["xAI"], pale_green),
-        ("China model owners", ["DeepSeek", "Alibaba", "Tencent"], pale_amber),
+        ("미국 대형 플랫폼", ["OpenAI", "Google", "Meta", "Microsoft"], pale_blue),
+        ("미국 challenger", ["xAI"], pale_green),
+        ("중국 model owner", ["DeepSeek", "Alibaba", "Tencent"], pale_amber),
     ]
     for i, (label, companies, fill) in enumerate(groups):
         x = 0.8 + i * 4.15
@@ -2215,40 +2222,40 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
     # 10. Memory implications
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
-    add_title(slide, "Memory marketing implications", "Token capacity growth converts into allocation, qualification, and attach-rate motions.")
+    add_title(slide, "메모리 마케팅 시사점", "토큰 capacity 성장은 allocation, qualification, attach-rate 영업 motion으로 전환된다.")
     motions = [
         ("HBM", "OpenAI/Google/Meta/xAI ramp → LTA, HBM4 roadmap lock-in, second-source qualification"),
-        ("DDR5 / MRDIMM", "Inference fleet growth → CPU-side memory density and bandwidth attach story"),
+        ("DDR5 / MRDIMM", "추론 fleet 확대 → CPU-side memory density와 bandwidth attach story"),
         ("Enterprise SSD / QLC", "RAG, checkpointing, vector retrieval → TCO, endurance, retrieval latency"),
-        ("CXL", "High-utilization inference clusters → memory expansion and utilization recovery"),
+        ("CXL", "고가동률 추론 cluster → memory expansion과 utilization recovery"),
     ]
     for i, (title, desc) in enumerate(motions):
         metric_card(slide, 0.8 + (i % 2) * 6.05, 1.45 + (i // 2) * 1.75, 5.55, 1.18, title, "", desc, [pale_blue, pale_green, pale_amber, RGBColor(240, 244, 248)][i])
-    add_label(slide, 0.85, 5.45, 11.7, 0.55, "Recommended sales motion: account brief by model owner, proof pack by memory product, and pricing/mix argument tied to scenario envelope.", 13, navy, True)
+    add_label(slide, 0.85, 5.45, 11.7, 0.55, "권장 sales motion: model owner별 account brief, 제품별 proof pack, scenario envelope에 연결된 pricing/mix 논리.", 13, navy, True)
     add_footer(slide)
 
     # 11. Evidence confidence
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
-    add_title(slide, "Evidence confidence audit", "Strongest evidence is model size and announced capacity; weakest is active serving utilization.")
+    add_title(slide, "근거 신뢰도 감사", "가장 강한 근거는 모델 크기와 발표 capacity이며, 가장 약한 부분은 active serving utilization이다.")
     audit_rows = [
-        ("High", "Official model cards / technical reports", "DeepSeek 671B/37B, Qwen3 235B/22B, Phi-4 14B"),
-        ("Medium", "Official capacity or hardware announcements", "OpenAI/Stargate GW, Google Ironwood, xAI Colossus"),
-        ("Low-Medium", "Active GW and inference/training split", "requires telemetry or site-level disclosure"),
-        ("Sensitivity", "tokens/sec/MW and utilization", "benchmarked as scenario, not company fact"),
+        ("높음", "공식 model card / technical report", "DeepSeek 671B/37B, Qwen3 235B/22B, Phi-4 14B"),
+        ("중간", "공식 capacity 또는 hardware 발표", "OpenAI/Stargate GW, Google Ironwood, xAI Colossus"),
+        ("낮음-중간", "Active GW와 추론/학습 split", "telemetry 또는 site-level disclosure 필요"),
+        ("민감도", "tokens/sec/MW와 utilization", "company fact가 아니라 scenario benchmark"),
     ]
     for i, (level, evidence, example) in enumerate(audit_rows):
         y = 1.35 + i * 1.05
         add_label(slide, 0.9, y, 1.45, 0.35, level, 14, [green, blue, amber, red][i], True)
         add_label(slide, 2.45, y, 4.2, 0.35, evidence, 13, ink, True)
         add_label(slide, 6.7, y, 5.6, 0.35, example, 11, muted)
-    add_label(slide, 0.9, 6.1, 11.5, 0.45, "Replacement path: site-level MW activation, model routing mix, production API traffic, and measured tokens/sec/MW by model/context.", 11, navy, True)
+    add_label(slide, 0.9, 6.1, 11.5, 0.45, "Replacement path: site-level MW activation, model routing mix, production API traffic, 모델/context별 실측 tokens/sec/MW.", 11, navy, True)
     add_footer(slide)
 
     # 12. Appendix
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
-    add_title(slide, "Appendix: exact calculation controls", "The workbook contains the full auditable model.")
+    add_title(slide, "부록: 계산 검증 컨트롤", "전체 감사 가능한 모델은 workbook에 수록되어 있다.")
     bullet_list(
         slide,
         0.9,
@@ -2256,10 +2263,10 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
         11.5,
         4.4,
         [
-            "00_formula_assumptions: every equation and how it should be interpreted.",
-            "02a_fact_anchors: checked public numeric anchors, confidence, and replacement path.",
-            "08a/08b/08c: scenario definitions, company-year scenario forecast, and aggregate scenario summary.",
-            "Validation: active power does not exceed contracted power; training+inference equals 100%; displayed values recalculate token/day exactly.",
+            "00_formula_assumptions: 모든 계산식과 해석 방식.",
+            "02a_fact_anchors: 확인된 공개 numeric anchor, confidence, replacement path.",
+            "08a/08b/08c: 시나리오 정의, 업체-연도별 forecast, aggregate scenario summary.",
+            "Validation: active power는 contracted power 이하, 학습+추론=100%, 표시값으로 token/day 재계산 일치.",
         ],
         15,
     )
