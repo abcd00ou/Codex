@@ -346,6 +346,28 @@ def sources() -> list[Source]:
             "Ironwood와 함께 Google TPU-heavy serving platform의 factual hardware lineage.",
         ),
         Source(
+            "SRC_ANTHROPIC_AMAZON_COMPUTE",
+            "Anthropic and AWS expand partnership with Project Rainier",
+            "Anthropic / Amazon",
+            "2025-2026",
+            "https://www.anthropic.com/news/anthropic-amazon-compute",
+            "Tier 1",
+            "Anthropic contracted/hosted capacity anchor; capacity attributed to Anthropic model owner",
+            0.84,
+            "AWS Trainium/Rainier capacity는 Anthropic 모델 serving/training capacity anchor로 사용하되 active GW는 시나리오.",
+        ),
+        Source(
+            "SRC_ANTHROPIC_CLAUDE_DOCS",
+            "Claude model documentation",
+            "Anthropic",
+            "2026-05-14 accessed",
+            "https://docs.anthropic.com/en/docs/about-claude/models/overview",
+            "Tier 1",
+            "Claude commercial model family and closed-model disclosure boundary",
+            0.86,
+            "Claude 모델 family 확인. 파라미터는 비공개이므로 band/benchmark proxy만 사용.",
+        ),
+        Source(
             "SRC_SEMIANALYSIS_INFERENCEX",
             "InferenceX / InferenceMAX benchmark methodology",
             "SemiAnalysis",
@@ -476,6 +498,20 @@ def company_models() -> list[CompanyModel]:
             "사용량은 가장 크지만 parameter와 active capacity 공개성이 낮아 band/scenario 중심.",
         ),
         CompanyModel(
+            "Anthropic",
+            "Claude Opus / Sonnet / Haiku",
+            "Claude app/API, Amazon Bedrock, Google Cloud Vertex AI",
+            "Closed frontier band only",
+            "Closed active band only; benchmark proxy uses effective active band",
+            "Closed frontier reasoning/coding/multimodal model family",
+            "AWS Trainium/Rainier + Google Cloud TPU/GPU hosted capacity",
+            "Anthropic model output counted under Anthropic, even when served through AWS/Google host capacity",
+            "AWS Trainium-heavy hosted capacity, Google TPU/GPU partner capacity",
+            "SRC_ANTHROPIC_CLAUDE_DOCS; SRC_ANTHROPIC_AMAZON_COMPUTE",
+            "Medium for capacity anchor, Low for parameters",
+            "Anthropic은 이번 통합 버전부터 core model owner로 포함. 파라미터는 closed band로만 처리.",
+        ),
+        CompanyModel(
             "DeepSeek",
             "DeepSeek-V3 / R1",
             "DeepSeek app/API, open model derivatives, enterprise deployments",
@@ -527,6 +563,7 @@ def scenarios() -> list[CompanyScenario]:
         CompanyScenario("Meta", "US", "Llama / Meta AI", "Meta AI + family apps", 3.5, 7.0, 1.6, 5.8, 0.58, 0.78, 1_120_000, 0.16, 0.55, 0.70, 1.20, 0.87, "Medium", "Estimate+Scenario", "SRC_META_LLAMA; SRC_META_LLAMA4_NVIDIA", "ASSUMP_CONSUMER_AI_UTILIZATION; ASSUMP_POWER_RAMP"),
         CompanyScenario("xAI", "US", "Grok", "Grok + X + API", 1.0, 3.0, 0.35, 2.5, 0.45, 0.70, 950_000, 0.17, 0.50, 0.67, 1.22, 0.85, "Medium-Low", "Estimate+Scenario", "SRC_XAI_MODELS; SRC_XAI_NVIDIA_COLOSSUS", "ASSUMP_CLUSTER_RAMP; ASSUMP_CLOSED_MODEL_BAND"),
         CompanyScenario("OpenAI", "US", "GPT / o-series / ChatGPT", "ChatGPT + API + enterprise", 5.0, 12.0, 1.4, 8.5, 0.58, 0.78, 1_050_000, 0.17, 0.57, 0.71, 1.20, 0.88, "Medium", "Estimate+Scenario", "SRC_OPENAI_GPT41_DOCS; SRC_OPENAI_STARGATE_ORACLE; SRC_OPENAI_STARGATE_PROGRESS", "ASSUMP_STARGATE_RAMP; ASSUMP_MS_OPENAI_ATTRIBUTION"),
+        CompanyScenario("Anthropic", "US", "Claude Opus / Sonnet / Haiku", "Claude + Bedrock + Vertex", 3.5, 7.0, 1.0, 5.5, 0.52, 0.74, 980_000, 0.16, 0.55, 0.70, 1.18, 0.86, "Medium", "Estimate+Scenario", "SRC_ANTHROPIC_CLAUDE_DOCS; SRC_ANTHROPIC_AMAZON_COMPUTE", "ASSUMP_POWER_RAMP; ASSUMP_CLOSED_MODEL_BAND"),
         CompanyScenario("DeepSeek", "China", "DeepSeek-V3 / R1", "DeepSeek app/API", 0.5, 1.8, 0.15, 1.2, 0.62, 0.82, 1_450_000, 0.18, 0.48, 0.66, 1.24, 0.82, "Parameter High / Capacity Low-Medium", "Fact+Scenario", "SRC_DEEPSEEK_V3; SRC_DEEPSEEK_R1", "ASSUMP_MOE_EFFICIENCY; ASSUMP_CN_CAPACITY_TRANSPARENCY"),
         CompanyScenario("Alibaba", "China", "Qwen / Qwen3", "Model Studio + Qwen API", 1.8, 4.0, 0.65, 3.2, 0.60, 0.80, 1_350_000, 0.17, 0.52, 0.68, 1.23, 0.84, "Medium", "Fact+Scenario", "SRC_QWEN3_GITHUB", "ASSUMP_MOE_EFFICIENCY; ASSUMP_CN_CAPACITY_TRANSPARENCY"),
         CompanyScenario("Tencent", "China", "Hunyuan / Yuanbao", "Yuanbao + WeChat/Tencent Cloud", 1.2, 3.0, 0.45, 2.4, 0.60, 0.80, 1_200_000, 0.16, 0.52, 0.68, 1.23, 0.84, "Medium-Low", "Estimate+Scenario", "SRC_TENCENT_HUNYUAN; SRC_TENCENT_HY3", "ASSUMP_CN_CAPACITY_TRANSPARENCY; ASSUMP_APP_EMBEDDING"),
@@ -741,6 +778,20 @@ def fact_anchors() -> list[FactAnchor]:
             "Microsoft model row에서 Phi/MAI owned와 OpenAI model-owner output을 분리하는 근거.",
             0.82,
             "MAI model public card and Copilot routing share.",
+        ),
+        FactAnchor(
+            "FACT_ANTHROPIC_AWS_5GW",
+            "Anthropic",
+            "Capacity",
+            "AWS/Project Rainier hosted capacity direction",
+            "Up to 5GW-class AI compute capacity cited for Anthropic/AWS buildout",
+            "2025-2026",
+            "SRC_ANTHROPIC_AMAZON_COMPUTE",
+            "Tier 1",
+            "Sets Anthropic contracted/hosted capacity ceiling; active power remains scenario.",
+            "Anthropic contracted_power_2030_gw와 active_power_2030_gw의 상한 anchor. AWS는 host이며 model-owner attribution은 Anthropic.",
+            0.84,
+            "AWS site-level energization, Trainium delivery, Anthropic serving/training split.",
         ),
         FactAnchor(
             "FACT_TENCENT_HUNYUAN_100B",
@@ -1000,6 +1051,218 @@ def scenario_summary_rows(scenario_rows: list[dict[str, Any]]) -> list[dict[str,
     return rows
 
 
+def benchmark_assumptions() -> list[dict[str, Any]]:
+    """GPU/effective-parameter benchmark layer adapted from the comparison workbook."""
+    return [
+        {"company": "OpenAI", "proxy_model": "gpt-oss/frontier mix proxy", "effective_active_params_b": 92.0, "benchmark_tps_per_gpu": 60000, "benchmark_effective_active_b": 5.1, "accelerator_kw": 7.0, "serving_efficiency": 0.72, "benchmark_source": "SRC_SEMIANALYSIS_INFERENCEX; SRC_ARXIV_INFERENCE_ENERGY", "calc_use": "Proxy", "caveat_kr": "closed GPT 실제 serving benchmark가 아니므로 sanity check로만 사용"},
+        {"company": "Anthropic", "proxy_model": "Claude closed frontier proxy", "effective_active_params_b": 110.0, "benchmark_tps_per_gpu": 60000, "benchmark_effective_active_b": 5.1, "accelerator_kw": 7.5, "serving_efficiency": 0.74, "benchmark_source": "SRC_ANTHROPIC_CLAUDE_DOCS; SRC_SEMIANALYSIS_INFERENCEX", "calc_use": "Proxy", "caveat_kr": "Claude 파라미터/serving benchmark는 비공개라 proxy"},
+        {"company": "Google", "proxy_model": "Gemini closed frontier proxy", "effective_active_params_b": 80.5, "benchmark_tps_per_gpu": 60000, "benchmark_effective_active_b": 5.1, "accelerator_kw": 7.0, "serving_efficiency": 0.70, "benchmark_source": "SRC_GOOGLE_IRONWOOD; SRC_GOOGLE_TPU_V6E", "calc_use": "Proxy", "caveat_kr": "TPU serving을 GPU-equivalent proxy로 환산"},
+        {"company": "Meta", "proxy_model": "Llama 4 Maverick", "effective_active_params_b": 52.1, "benchmark_tps_per_gpu": 40000, "benchmark_effective_active_b": 17.0, "accelerator_kw": 7.0, "serving_efficiency": 0.60, "benchmark_source": "SRC_META_LLAMA4_NVIDIA", "calc_use": "Open model proxy", "caveat_kr": "Meta AI production routing과 다를 수 있음"},
+        {"company": "Microsoft", "proxy_model": "Copilot/GPT-class proxy + Phi anchor", "effective_active_params_b": 80.5, "benchmark_tps_per_gpu": 60000, "benchmark_effective_active_b": 5.1, "accelerator_kw": 7.0, "serving_efficiency": 0.70, "benchmark_source": "SRC_MS_PHI4_TECHREPORT; SRC_OPENAI_GPT41_DOCS", "calc_use": "Proxy", "caveat_kr": "Microsoft-owned/Phi와 OpenAI dependency mix가 섞인 proxy"},
+        {"company": "xAI", "proxy_model": "Grok closed frontier proxy", "effective_active_params_b": 92.0, "benchmark_tps_per_gpu": 55000, "benchmark_effective_active_b": 5.1, "accelerator_kw": 7.0, "serving_efficiency": 0.68, "benchmark_source": "SRC_XAI_MODELS; SRC_XAI_NVIDIA_COLOSSUS", "calc_use": "Proxy", "caveat_kr": "Grok closed model benchmark가 없어 cluster scale 기반 proxy"},
+        {"company": "DeepSeek", "proxy_model": "DeepSeek-V3 / R1", "effective_active_params_b": 60.1, "benchmark_tps_per_gpu": 55000, "benchmark_effective_active_b": 37.0, "accelerator_kw": 6.5, "serving_efficiency": 0.65, "benchmark_source": "SRC_DEEPSEEK_V3; SRC_DEEPSEEK_R1", "calc_use": "MoE anchored proxy", "caveat_kr": "모델 구조는 공개되어 있으나 production serving은 proxy"},
+        {"company": "Alibaba", "proxy_model": "Qwen3 235B-A22B", "effective_active_params_b": 79.2, "benchmark_tps_per_gpu": 5764, "benchmark_effective_active_b": 22.0, "accelerator_kw": 6.5, "serving_efficiency": 0.65, "benchmark_source": "SRC_QWEN3_GITHUB", "calc_use": "OSS benchmark proxy", "caveat_kr": "공개 Qwen benchmark 기반 reference; Alibaba Cloud production mix와 다를 수 있음"},
+        {"company": "Tencent", "proxy_model": "Hunyuan closed proxy", "effective_active_params_b": 85.8, "benchmark_tps_per_gpu": 50000, "benchmark_effective_active_b": 5.1, "accelerator_kw": 6.5, "serving_efficiency": 0.58, "benchmark_source": "SRC_TENCENT_HUNYUAN; SRC_TENCENT_HY3", "calc_use": "Proxy", "caveat_kr": "Hunyuan serving benchmark가 제한적이라 generic proxy"},
+    ]
+
+
+def benchmark_reference_rows(base_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    assumptions = {r["company"]: r for r in benchmark_assumptions()}
+    hardware_index = {2026: 1.00, 2027: 1.18, 2028: 1.38, 2029: 1.60, 2030: 1.85}
+    rows: list[dict[str, Any]] = []
+    for row in base_rows:
+        b = assumptions[row["company"]]
+        adjusted_tps = (
+            b["benchmark_tps_per_gpu"]
+            * (b["benchmark_effective_active_b"] / b["effective_active_params_b"])
+            * hardware_index[row["year"]]
+            * b["serving_efficiency"]
+        )
+        gpu_count = row["inference_gw"] * 1_000_000 / b["accelerator_kw"]
+        sustained_tps = adjusted_tps * gpu_count * row["utilization"]
+        annual_tokens = sustained_tps * 31_536_000
+        model_annual = row["inference_tokens_per_year"]
+        rows.append(
+            {
+                "company": row["company"],
+                "year": row["year"],
+                "proxy_model": b["proxy_model"],
+                "inference_gw_it": row["inference_gw"],
+                "effective_active_params_b": b["effective_active_params_b"],
+                "benchmark_tps_per_gpu": b["benchmark_tps_per_gpu"],
+                "benchmark_effective_active_b": b["benchmark_effective_active_b"],
+                "accelerator_kw": b["accelerator_kw"],
+                "estimated_gpu_count": round(gpu_count),
+                "hardware_index": hardware_index[row["year"]],
+                "serving_efficiency": b["serving_efficiency"],
+                "adjusted_tps_per_gpu": round(adjusted_tps, 3),
+                "sustained_tps": round(sustained_tps),
+                "benchmark_annual_tokens_q": round(annual_tokens / 1e15, 3),
+                "model_annual_tokens_q": round(model_annual / 1e15, 3),
+                "benchmark_vs_model_pct": round((annual_tokens / model_annual - 1) * 100, 1) if model_annual else "",
+                "calc_use": b["calc_use"],
+                "benchmark_source": b["benchmark_source"],
+                "caveat_kr": b["caveat_kr"],
+            }
+        )
+    return rows
+
+
+def hallucination_checklist() -> list[dict[str, Any]]:
+    return [
+        {
+            "check_id": "HC01",
+            "area": "Source existence",
+            "question_kr": "모든 source URL 또는 report name이 실제로 존재하고 접근 가능한가?",
+            "pass_criteria_kr": "01_sources의 URL을 열었을 때 publisher/title/date가 일치한다.",
+            "risk_if_fail_kr": "없는 출처 또는 잘못된 출처를 근거로 사용.",
+            "owner": "Research",
+            "severity": "High",
+            "current_status": "Needs manual URL click-through",
+        },
+        {
+            "check_id": "HC02",
+            "area": "Numeric fact quote",
+            "question_kr": "Fact anchor의 숫자(예: 4.5GW, 671B/37B, 235B/22B, 100k GPU)가 원문에 직접 존재하는가?",
+            "pass_criteria_kr": "02a_fact_anchors의 value가 원문 문장/표와 직접 매칭된다.",
+            "risk_if_fail_kr": "proxy나 추정을 fact처럼 표시.",
+            "owner": "Research",
+            "severity": "High",
+            "current_status": "Partially checked; requires final source screenshot/quote pack",
+        },
+        {
+            "check_id": "HC03",
+            "area": "Fact vs estimate separation",
+            "question_kr": "Active GW, inference share, utilization, tokens/sec/MW가 fact로 오표기되지 않았는가?",
+            "pass_criteria_kr": "해당 값은 Estimate/Scenario로 표시되고 replacement_path가 있다.",
+            "risk_if_fail_kr": "임원 보고에서 확정 수치처럼 오해.",
+            "owner": "Model",
+            "severity": "High",
+            "current_status": "Pass in structure",
+        },
+        {
+            "check_id": "HC04",
+            "area": "Closed model parameters",
+            "question_kr": "OpenAI, Anthropic, Gemini, Grok 같은 closed model에 단일 precise parameter 숫자를 쓰지 않았는가?",
+            "pass_criteria_kr": "closed model은 band/proxy로만 표시하고 benchmark는 sanity check로만 사용.",
+            "risk_if_fail_kr": "비공개 파라미터 hallucination.",
+            "owner": "Model",
+            "severity": "High",
+            "current_status": "Pass",
+        },
+        {
+            "check_id": "HC05",
+            "area": "MoE total/active",
+            "question_kr": "MoE 모델은 total params와 active params를 분리했는가?",
+            "pass_criteria_kr": "DeepSeek, Qwen, Llama 4 계열은 total/active가 별도 column 또는 anchor에 존재.",
+            "risk_if_fail_kr": "MoE 효율을 과소/과대 계산.",
+            "owner": "Model",
+            "severity": "Medium",
+            "current_status": "Pass",
+        },
+        {
+            "check_id": "HC06",
+            "area": "Host vs model owner",
+            "question_kr": "AWS/Google/Oracle 같은 host capacity가 model owner와 혼동되지 않았는가?",
+            "pass_criteria_kr": "Anthropic/OpenAI capacity는 model output 기준으로 귀속하고 host는 source/context로만 표기.",
+            "risk_if_fail_kr": "capacity double count 또는 wrong attribution.",
+            "owner": "Model",
+            "severity": "High",
+            "current_status": "Pass in attribution rules",
+        },
+        {
+            "check_id": "HC07",
+            "area": "Microsoft/OpenAI overlap",
+            "question_kr": "Microsoft Copilot token과 OpenAI model token을 이중계산하지 않았는가?",
+            "pass_criteria_kr": "OpenAI model output은 OpenAI row, Microsoft-owned/serving burden은 Microsoft row로 명시.",
+            "risk_if_fail_kr": "OpenAI/Microsoft capacity 중복 산정.",
+            "owner": "Model",
+            "severity": "High",
+            "current_status": "Needs sales/product routing data for final resolution",
+        },
+        {
+            "check_id": "HC08",
+            "area": "Capacity boundary",
+            "question_kr": "active_power_gw가 contracted_power_gw를 넘지 않는가?",
+            "pass_criteria_kr": "모든 company-year-scenario에서 active <= contracted.",
+            "risk_if_fail_kr": "물리적으로 불가능한 deployment.",
+            "owner": "Model",
+            "severity": "High",
+            "current_status": "Automated pass",
+        },
+        {
+            "check_id": "HC09",
+            "area": "Power split",
+            "question_kr": "training_power_share + inference_power_share = 100%인가?",
+            "pass_criteria_kr": "모든 row에서 합계가 1.000 +/- 0.001.",
+            "risk_if_fail_kr": "GW가 누락 또는 중복.",
+            "owner": "Model",
+            "severity": "High",
+            "current_status": "Automated pass",
+        },
+        {
+            "check_id": "HC10",
+            "area": "Unit consistency",
+            "question_kr": "daily token과 annual token 단위가 섞이지 않았는가?",
+            "pass_criteria_kr": "token/day는 86,400초, annual token은 365일 또는 31,536,000초로 환산.",
+            "risk_if_fail_kr": "365배 오류 또는 daily/annual 비교 오류.",
+            "owner": "Model",
+            "severity": "High",
+            "current_status": "Automated pass",
+        },
+        {
+            "check_id": "HC11",
+            "area": "Benchmark proxy use",
+            "question_kr": "OSS/open benchmark를 closed commercial model 결론으로 직접 사용하지 않았는가?",
+            "pass_criteria_kr": "08d_benchmark_reference는 sanity check이며 main forecast와 분리.",
+            "risk_if_fail_kr": "gpt-oss/Qwen/Llama benchmark를 GPT/Claude/Gemini 실서비스로 오인.",
+            "owner": "Model",
+            "severity": "High",
+            "current_status": "Pass",
+        },
+        {
+            "check_id": "HC12",
+            "area": "Inference share",
+            "question_kr": "2026년 추론 60%+를 fact로 단정하지 않았는가?",
+            "pass_criteria_kr": "Base 2026은 60% 미만이고 Bull에서만 60%+ 허용.",
+            "risk_if_fail_kr": "전망을 현재 fact처럼 보고.",
+            "owner": "Model",
+            "severity": "Medium",
+            "current_status": "Pass",
+        },
+        {
+            "check_id": "HC13",
+            "area": "Outlier review",
+            "question_kr": "main forecast와 benchmark reference의 차이가 큰 업체를 따로 표시했는가?",
+            "pass_criteria_kr": "benchmark_vs_model_pct가 +/-50%를 넘으면 confidence review 대상.",
+            "risk_if_fail_kr": "과감한 가정을 숨긴 채 보고.",
+            "owner": "Model",
+            "severity": "Medium",
+            "current_status": "Needs reviewer sign-off",
+        },
+        {
+            "check_id": "HC14",
+            "area": "China transparency",
+            "question_kr": "중국 업체의 낮은 공개성 때문에 수치를 임의로 페널티하거나 과신하지 않았는가?",
+            "pass_criteria_kr": "모델 구조 fact는 인정하고 capacity transparency만 confidence에 반영.",
+            "risk_if_fail_kr": "bias 또는 confidence mislabeling.",
+            "owner": "Research",
+            "severity": "Medium",
+            "current_status": "Pass in principle; needs Chinese primary-source review",
+        },
+        {
+            "check_id": "HC15",
+            "area": "Executive wording",
+            "question_kr": "슬라이드 문구가 추정치를 확정 사실처럼 표현하지 않는가?",
+            "pass_criteria_kr": "forecast, scenario, proxy, sanity check, 추정치 표현을 유지.",
+            "risk_if_fail_kr": "의사결정자가 불확실성을 과소평가.",
+            "owner": "Presentation",
+            "severity": "High",
+            "current_status": "Needs final human review",
+        },
+    ]
+
+
 def exec_summary(base_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     rows_2030 = [r for r in base_rows if r["year"] == 2030]
     total_day = sum(r["inference_tokens_per_day"] for r in rows_2030)
@@ -1013,7 +1276,7 @@ def exec_summary(base_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "metric": "2030 core-company inference tokens/day",
             "value": total_day,
             "display": f"{total_day / 1e15:.2f} quadrillion tokens/day",
-            "interpretation_kr": "8개 상용 LLM owner의 base case 총 생성 capacity.",
+            "interpretation_kr": "9개 상용 LLM owner의 base case 총 생성 capacity.",
         },
         {
             "metric": "2030 inference AI IT load",
@@ -1061,7 +1324,8 @@ def validate(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "closed_parameter_precision": "PASS - closed model rows use bands/undisclosed labels, not single precise parameter values.",
         "moe_total_active": "PASS - DeepSeek and Alibaba rows include total and active parameter bands.",
         "microsoft_openai_overlap": "PASS - attribution rule separates OpenAI model-owner output and Microsoft customer-facing serving.",
-        "anthropic_scope": "PASS - Anthropic is excluded from core rows and reserved for comparator/hosted sensitivity.",
+        "anthropic_scope": "PASS - Anthropic is included as a core model-owner row; AWS/Google host capacity is attributed to Anthropic model output.",
+        "benchmark_layer": "PASS - GPU/effective-active-parameter benchmark reference is separated from the main tokens/sec/MW forecast.",
     }
     return {
         "status": "PASS" if not failures else "FAIL",
@@ -1163,6 +1427,9 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
     ]
     append_rows(sheet("05_inference_efficiency"), data["forecast"], eff_headers)
 
+    bench_assumption_headers = list(data["benchmark_assumptions"][0].keys())
+    append_rows(sheet("05a_benchmark_assumptions"), data["benchmark_assumptions"], bench_assumption_headers)
+
     split_headers = [
         "company",
         "year",
@@ -1215,6 +1482,17 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
 
     scenario_summary_headers = list(data["scenario_summary"][0].keys())
     append_rows(sheet("08c_scenario_summary"), data["scenario_summary"], scenario_summary_headers)
+
+    benchmark_headers = list(data["benchmark_reference"][0].keys())
+    benchmark_ws = sheet("08d_benchmark_reference")
+    append_rows(benchmark_ws, data["benchmark_reference"], benchmark_headers)
+    benchmark_ws.conditional_formatting.add(
+        f"{get_column_letter(benchmark_headers.index('benchmark_vs_model_pct') + 1)}2:{get_column_letter(benchmark_headers.index('benchmark_vs_model_pct') + 1)}{benchmark_ws.max_row}",
+        ColorScaleRule(start_type="min", start_color="FDE2E2", mid_type="percentile", mid_value=50, mid_color="FFF1B8", end_type="max", end_color="B7E4C7"),
+    )
+
+    hallucination_headers = list(data["hallucination_checklist"][0].keys())
+    append_rows(sheet("11_hallucination_checklist"), data["hallucination_checklist"], hallucination_headers)
 
     exec_headers = list(data["exec_summary"][0].keys())
     append_rows(sheet("09_exec_summary"), data["exec_summary"], exec_headers)
@@ -1646,7 +1924,7 @@ def write_html(data: dict[str, Any], path: Path) -> None:
 <body>
   <header>
     <h1>상용 LLM 업체별 전력·GPU·토큰 생성량 시뮬레이션</h1>
-    <div class="sub">2026–2030 기준 시나리오. Core company는 Microsoft, Google, Meta, xAI, OpenAI, DeepSeek, Alibaba, Tencent입니다. 숫자는 Fact/Estimate/Scenario와 신뢰도를 함께 읽어야 합니다.</div>
+    <div class="sub">2026–2030 기준 시나리오. Core company는 Microsoft, Google, Meta, xAI, OpenAI, Anthropic, DeepSeek, Alibaba, Tencent입니다. 숫자는 Fact/Estimate/Scenario와 신뢰도를 함께 읽어야 합니다.</div>
   </header>
   <main>
     <div class="controls">
@@ -1682,6 +1960,15 @@ def write_html(data: dict[str, Any], path: Path) -> None:
     <section>
       <h2>Fact anchor</h2>
       <table id="facts"></table>
+    </section>
+    <section>
+      <h2>Benchmark sanity check</h2>
+      <table id="benchmarks"></table>
+      <div class="note">첨부 엑셀의 effective active params / GPU count / TPS per GPU 방식을 reference layer로 통합했습니다. Closed model proxy는 결론이 아니라 guardrail입니다.</div>
+    </section>
+    <section>
+      <h2>Hallucination 체크리스트</h2>
+      <table id="hallucination"></table>
     </section>
     <section>
       <h2>Model owner 귀속 기준</h2>
@@ -1750,6 +2037,11 @@ def write_html(data: dict[str, Any], path: Path) -> None:
         DATA.scenario_definitions.map(s=>`<tr><td>${{s.scenario}}</td><td>${{Math.round(s.operational_deploy_multiplier_2030*100)}}%</td><td>${{Math.round(s.inference_share_delta_2030*100)}}%p</td><td>${{Math.round(s.tokens_per_mw_multiplier*100)}}%</td><td>${{s.description_kr}}</td></tr>`).join('');
       $("facts").innerHTML = `<tr><th>업체</th><th>지표</th><th>값</th><th>Source</th><th>모델 반영 방식</th></tr>` +
         DATA.fact_anchors.map(f=>`<tr><td>${{f.company}}</td><td>${{f.metric}}</td><td>${{f.value}}</td><td>${{f.source_id}}</td><td>${{f.derivation_impact_kr}}</td></tr>`).join('');
+      $("benchmarks").innerHTML = `<tr><th>업체</th><th>연도</th><th>Proxy</th><th>Benchmark QTokens</th><th>Model QTokens</th><th>차이</th><th>주의점</th></tr>` +
+        DATA.benchmark_reference.filter(b => b.year === Number($("year").value) && ($("company").value === "ALL" || b.company === $("company").value))
+          .map(b=>`<tr><td>${{b.company}}</td><td>${{b.year}}</td><td>${{b.proxy_model}}</td><td>${{b.benchmark_annual_tokens_q}}</td><td>${{b.model_annual_tokens_q}}</td><td>${{b.benchmark_vs_model_pct}}%</td><td>${{b.caveat_kr}}</td></tr>`).join('');
+      $("hallucination").innerHTML = `<tr><th>ID</th><th>영역</th><th>질문</th><th>Pass 기준</th><th>심각도</th><th>상태</th></tr>` +
+        DATA.hallucination_checklist.map(h=>`<tr><td>${{h.check_id}}</td><td>${{h.area}}</td><td>${{h.question_kr}}</td><td>${{h.pass_criteria_kr}}</td><td>${{h.severity}}</td><td>${{h.current_status}}</td></tr>`).join('');
     }}
     function render() {{
       $("tpsLabel").textContent = $("tps").value + "%";
@@ -1770,7 +2062,7 @@ def write_markdown(data: dict[str, Any], path: Path) -> None:
         "# 상용 LLM 업체별 전력·GPU·토큰 생성량 시뮬레이션 (2026–2030)",
         "",
         f"- 생성일: {RUN_DATE}",
-        "- 목적: 상용 LLM owner 기준으로 전력 capacity, 추론/학습 split, GPU/ASIC mix, tokens/sec/MW, token 생성량을 연결한 임원 보고용 기준 시나리오 작성",
+        "- 목적: 상용 LLM owner 기준으로 전력 capacity, 추론/학습 split, GPU/ASIC mix, tokens/sec/MW, GPU benchmark reference, token 생성량을 연결한 임원 보고용 기준 시나리오 작성",
         "- 주의: 이 문서는 투자 조언이 아니라 supply-chain / token-capacity intelligence simulation입니다.",
         "",
         "## 핵심 결론",
@@ -1844,6 +2136,28 @@ def write_markdown(data: dict[str, Any], path: Path) -> None:
     for row in [r for r in data["scenario_summary"] if r["year"] == 2030]:
         lines.append(
             f"| {row['scenario']} | {row['active_power_gw']:.2f} | {row['inference_gw']:.2f} | {row['weighted_inference_share']:.0%} | {row['inference_tokens_per_day_q']:.2f}Q | {row['delta_vs_base_2030_pct']}% |"
+        )
+    lines += [
+        "",
+        "## Benchmark Sanity Check",
+        "",
+        "| 업체 | Proxy | Benchmark annual QTokens | Model annual QTokens | 차이 | 주의점 |",
+        "|---|---|---:|---:|---:|---|",
+    ]
+    for row in [r for r in data["benchmark_reference"] if r["year"] == 2030]:
+        lines.append(
+            f"| {row['company']} | {row['proxy_model']} | {row['benchmark_annual_tokens_q']:.2f} | {row['model_annual_tokens_q']:.2f} | {row['benchmark_vs_model_pct']}% | {row['caveat_kr']} |"
+        )
+    lines += [
+        "",
+        "## Hallucination 체크리스트",
+        "",
+        "| ID | 영역 | 질문 | Pass 기준 | 심각도 | 상태 |",
+        "|---|---|---|---|---|---|",
+    ]
+    for item in data["hallucination_checklist"]:
+        lines.append(
+            f"| {item['check_id']} | {item['area']} | {item['question_kr']} | {item['pass_criteria_kr']} | {item['severity']} | {item['current_status']} |"
         )
     lines += [
         "",
@@ -2012,8 +2326,8 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
     set_bg(slide, RGBColor(245, 248, 252))
     add_label(slide, 0.72, 0.62, 3.2, 0.28, "임원 보고용 시뮬레이션", 8, blue, True)
     add_label(slide, 0.72, 1.15, 7.4, 2.25, "상용 LLM 업체별\n전력·GPU·토큰 Capacity\n2026–2030", 34, navy, True)
-    add_label(slide, 0.78, 3.55, 7.0, 0.65, "모델 보유 업체 기준으로 OpenAI, Google, Meta, Microsoft, xAI, DeepSeek, Alibaba, Tencent의 추론 capacity를 추정", 14, muted)
-    metric_card(slide, 8.35, 1.03, 3.95, 1.05, "2030 기준 토큰/일", f"{total_tokens_2030/1e15:.2f}Q", "8개 상용 LLM owner 합산", pale_blue)
+    add_label(slide, 0.78, 3.55, 7.0, 0.65, "모델 보유 업체 기준으로 OpenAI, Anthropic, Google, Meta, Microsoft, xAI, DeepSeek, Alibaba, Tencent의 추론 capacity를 추정", 14, muted)
+    metric_card(slide, 8.35, 1.03, 3.95, 1.05, "2030 기준 토큰/일", f"{total_tokens_2030/1e15:.2f}Q", "9개 상용 LLM owner 합산", pale_blue)
     metric_card(slide, 8.35, 2.32, 3.95, 1.05, "2030 기준 추론 GW", f"{total_inf_2030:.1f} GW", "AI IT load 중 추론 배정", pale_green)
     metric_card(slide, 8.35, 3.61, 3.95, 1.05, "기준 추론 비중", f"{base_summary_2026['weighted_inference_share']:.0%} → {base_summary_2030['weighted_inference_share']:.0%}", "2026은 fact가 아닌 시나리오", pale_amber)
     add_label(slide, 0.78, 6.45, 7.5, 0.35, "핵심: 공개 fact는 capacity/model 규모를 제한하고, active GW·추론 비중·tokens/MW는 명시적 시나리오로 둔다.", 10, ink, True)
@@ -2169,7 +2483,37 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
         metric_card(slide, x, y, 5.65, 0.9, company, fact, use, [pale_blue, pale_green, pale_amber, RGBColor(240, 244, 248)][i % 4])
     add_footer(slide, "상세 출처는 Excel 01_sources 및 02a_fact_anchors에 수록")
 
-    # 8. Inference share audit
+    # 8. Benchmark sanity check
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    add_title(slide, "Benchmark sanity check", "첨부 엑셀의 effective active params와 GPU count 방식을 별도 reference layer로 통합했다.")
+    bench_2030 = sorted([r for r in data["benchmark_reference"] if r["year"] == 2030], key=lambda r: r["model_annual_tokens_q"], reverse=True)
+    chart_data = CategoryChartData()
+    chart_data.categories = [r["company"] for r in bench_2030]
+    chart_data.add_series("우리 모델 annual QTokens", [r["model_annual_tokens_q"] for r in bench_2030])
+    chart_data.add_series("Benchmark reference annual QTokens", [r["benchmark_annual_tokens_q"] for r in bench_2030])
+    chart = slide.shapes.add_chart(XL_CHART_TYPE.COLUMN_CLUSTERED, Inches(0.65), Inches(1.25), Inches(8.15), Inches(4.85), chart_data).chart
+    chart.has_legend = True
+    chart.legend.position = XL_LEGEND_POSITION.BOTTOM
+    chart.value_axis.tick_labels.font.size = Pt(8)
+    chart.category_axis.tick_labels.font.size = Pt(8)
+    bullet_list(
+        slide,
+        9.05,
+        1.45,
+        3.35,
+        4.2,
+        [
+            "Main forecast는 tokens/sec/MW 방식.",
+            "Benchmark layer는 GPU 수와 effective active params로 sanity check.",
+            "Closed model benchmark는 proxy이므로 결론이 아니라 guardrail.",
+            "큰 괴리는 confidence downgrade 신호.",
+        ],
+        11,
+    )
+    add_footer(slide)
+
+    # 9. Inference share audit
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
     add_title(slide, "추론 비중 fact-check", "이 모델은 2026년 60%+ 추론 GW를 fact로 취급하지 않는다.")
@@ -2197,12 +2541,12 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
     )
     add_footer(slide)
 
-    # 9. Model owner landscape
+    # 10. Model owner landscape
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
     add_title(slide, "모델 보유 업체 landscape", "Core row는 데이터센터 host가 아니라 상용 LLM owner다.")
     groups = [
-        ("미국 대형 플랫폼", ["OpenAI", "Google", "Meta", "Microsoft"], pale_blue),
+        ("미국 대형 플랫폼", ["OpenAI", "Anthropic", "Google", "Meta", "Microsoft"], pale_blue),
         ("미국 challenger", ["xAI"], pale_green),
         ("중국 model owner", ["DeepSeek", "Alibaba", "Tencent"], pale_amber),
     ]
@@ -2219,7 +2563,7 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
             add_label(slide, x + 0.22, 2.48 + j * 0.82, 3.1, 0.28, m["model_family"], 8.3, muted)
     add_footer(slide)
 
-    # 10. Memory implications
+    # 11. Memory implications
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
     add_title(slide, "메모리 마케팅 시사점", "토큰 capacity 성장은 allocation, qualification, attach-rate 영업 motion으로 전환된다.")
@@ -2234,7 +2578,7 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
     add_label(slide, 0.85, 5.45, 11.7, 0.55, "권장 sales motion: model owner별 account brief, 제품별 proof pack, scenario envelope에 연결된 pricing/mix 논리.", 13, navy, True)
     add_footer(slide)
 
-    # 11. Evidence confidence
+    # 12. Evidence confidence
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
     add_title(slide, "근거 신뢰도 감사", "가장 강한 근거는 모델 크기와 발표 capacity이며, 가장 약한 부분은 active serving utilization이다.")
@@ -2252,7 +2596,28 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
     add_label(slide, 0.9, 6.1, 11.5, 0.45, "Replacement path: site-level MW activation, model routing mix, production API traffic, 모델/context별 실측 tokens/sec/MW.", 11, navy, True)
     add_footer(slide)
 
-    # 12. Appendix
+    # 13. Hallucination audit checklist
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    add_title(slide, "Hallucination 체크리스트", "임원 보고 전 숫자와 문구가 fact/proxy/scenario를 혼동하지 않는지 확인합니다.")
+    checklist_items = [
+        ("출처 존재", "URL/title/date 직접 확인"),
+        ("숫자 직접 인용", "4.5GW, 671B/37B 등 원문 매칭"),
+        ("Fact/Estimate 분리", "active GW·utilization은 scenario"),
+        ("Closed model", "precise parameter 금지"),
+        ("Host attribution", "AWS/Oracle/Google host와 model owner 분리"),
+        ("Benchmark proxy", "closed model 결론이 아니라 sanity check"),
+        ("단위", "daily vs annual token 혼동 금지"),
+        ("Outlier", "benchmark_vs_model ±50% 초과 review"),
+    ]
+    for i, (title, desc) in enumerate(checklist_items):
+        x = 0.75 + (i % 2) * 6.15
+        y = 1.25 + (i // 2) * 1.15
+        metric_card(slide, x, y, 5.65, 0.82, title, "", desc, [pale_blue, pale_green, pale_amber, RGBColor(240, 244, 248)][i % 4])
+    add_label(slide, 0.85, 6.25, 11.6, 0.35, "전체 체크리스트는 Excel `11_hallucination_checklist`에 수록되어 있으며, source screenshot/quote pack으로 최종 sign-off해야 합니다.", 10, navy, True)
+    add_footer(slide)
+
+    # 14. Appendix
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
     add_title(slide, "부록: 계산 검증 컨트롤", "전체 감사 가능한 모델은 workbook에 수록되어 있다.")
@@ -2265,7 +2630,8 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
         [
             "00_formula_assumptions: 모든 계산식과 해석 방식.",
             "02a_fact_anchors: 확인된 공개 numeric anchor, confidence, replacement path.",
-            "08a/08b/08c: 시나리오 정의, 업체-연도별 forecast, aggregate scenario summary.",
+            "08a/08b/08c/08d: 시나리오 정의, 업체-연도별 forecast, aggregate summary, benchmark reference.",
+            "11_hallucination_checklist: fact/proxy/scenario 혼동 방지용 검토표.",
             "Validation: active power는 contracted power 이하, 학습+추론=100%, 표시값으로 token/day 재계산 일치.",
         ],
         15,
@@ -2291,10 +2657,13 @@ def build_payload() -> dict[str, Any]:
         "company_models": [asdict(m) for m in company_models()],
         "assumptions": assumptions(),
         "formula_assumptions": formula_assumptions(),
+        "benchmark_assumptions": benchmark_assumptions(),
+        "hallucination_checklist": hallucination_checklist(),
         "scenario_definitions": scenario_definitions(),
         "forecast": rows,
         "scenario_forecast": scenario_rows,
         "scenario_summary": scenario_summary_rows(scenario_rows),
+        "benchmark_reference": benchmark_reference_rows(rows),
         "sensitivity": sensitivity_rows(rows),
         "exec_summary": exec_summary(rows),
     }

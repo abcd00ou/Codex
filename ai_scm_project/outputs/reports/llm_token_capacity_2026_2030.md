@@ -1,13 +1,13 @@
 # 상용 LLM 업체별 전력·GPU·토큰 생성량 시뮬레이션 (2026–2030)
 
 - 생성일: 2026-05-14
-- 목적: 상용 LLM owner 기준으로 전력 capacity, 추론/학습 split, GPU/ASIC mix, tokens/sec/MW, token 생성량을 연결한 임원 보고용 기준 시나리오 작성
+- 목적: 상용 LLM owner 기준으로 전력 capacity, 추론/학습 split, GPU/ASIC mix, tokens/sec/MW, GPU benchmark reference, token 생성량을 연결한 임원 보고용 기준 시나리오 작성
 - 주의: 이 문서는 투자 조언이 아니라 supply-chain / token-capacity intelligence simulation입니다.
 
 ## 핵심 결론
-- **2030 core-company inference tokens/day**: 2.55 quadrillion tokens/day - 8개 상용 LLM owner의 base case 총 생성 capacity.
-- **2030 inference AI IT load**: 20.05 GW inference load - PUE와 AI workload share 차감 후 inference에 배정된 IT load.
-- **2030 US vs China split**: US 79% / China 21% - 회사 owner 기준 split이며 AWS/Oracle/CoreWeave 같은 host는 core row가 아님.
+- **2030 core-company inference tokens/day**: 2.87 quadrillion tokens/day - 9개 상용 LLM owner의 base case 총 생성 capacity.
+- **2030 inference AI IT load**: 23.02 GW inference load - PUE와 AI workload share 차감 후 inference에 배정된 IT load.
+- **2030 US vs China split**: US 81% / China 19% - 회사 owner 기준 split이며 AWS/Oracle/CoreWeave 같은 host는 core row가 아님.
 
 ## 2030 기준 시나리오 순위
 
@@ -17,10 +17,11 @@
 | 2 | Google | US | 3.65 | 0.54Q | Medium-High |
 | 3 | Meta | US | 3.28 | 0.40Q | Medium |
 | 4 | Microsoft | US | 3.33 | 0.37Q | Medium |
-| 5 | Alibaba | China | 1.75 | 0.26Q | Medium |
-| 6 | Tencent | China | 1.31 | 0.17Q | Medium-Low |
-| 7 | xAI | US | 1.22 | 0.13Q | Medium-Low |
-| 8 | DeepSeek | China | 0.65 | 0.10Q | Parameter High / Capacity Low-Medium |
+| 5 | Anthropic | US | 2.97 | 0.32Q | Medium |
+| 6 | Alibaba | China | 1.75 | 0.26Q | Medium |
+| 7 | Tencent | China | 1.31 | 0.17Q | Medium-Low |
+| 8 | xAI | US | 1.22 | 0.13Q | Medium-Low |
+| 9 | DeepSeek | China | 0.65 | 0.10Q | Parameter High / Capacity Low-Medium |
 
 ## 방법론
 
@@ -58,6 +59,7 @@ joules_per_token = 1,000,000 / tokens_per_second_per_mw
 | FACT_XAI_COLOSSUS_100K | xAI | Colossus initial cluster | 100,000 NVIDIA Hopper GPUs | 2024-12-04 | SRC_XAI_NVIDIA_COLOSSUS | 100k Hopper GPU는 xAI active_power_2026_gw 0.35GW가 물리적으로 과도하지 않은지 확인하는 anchor. |
 | FACT_XAI_COLOSSUS_200K | xAI | Colossus expansion direction | Expansion toward 200,000 GPUs cited by NVIDIA | 2024-12-04 | SRC_XAI_NVIDIA_COLOSSUS | xAI contracted_power_2030_gw 3GW와 active_power_2030_gw 2.5GW는 추가 clusters 포함한 scenario. |
 | FACT_MS_PHI4_14B | Microsoft | Phi-4 parameter count | 14B parameters | 2024-12-12 | SRC_MS_PHI4_TECHREPORT | Microsoft model row에서 Phi/MAI owned와 OpenAI model-owner output을 분리하는 근거. |
+| FACT_ANTHROPIC_AWS_5GW | Anthropic | AWS/Project Rainier hosted capacity direction | Up to 5GW-class AI compute capacity cited for Anthropic/AWS buildout | 2025-2026 | SRC_ANTHROPIC_AMAZON_COMPUTE | Anthropic contracted_power_2030_gw와 active_power_2030_gw의 상한 anchor. AWS는 host이며 model-owner attribution은 Anthropic. |
 | FACT_TENCENT_HUNYUAN_100B | Tencent | Hunyuan foundation model scale | Over 100B parameters and over 2T pretraining tokens | 2023-09-07 | SRC_TENCENT_HUNYUAN | Tencent parameter band를 closed-only에서 100B+ anchor로 보강. active serving capacity는 여전히 낮은 confidence. |
 | FACT_MCKINSEY_2030_INFERENCE | Cross-company | 2030 inference demand direction | Inference expected to account for more than half of AI workloads and 30-40% of data center power demand by 2030 | 2026-02-24 | SRC_MCKINSEY_AI_WORKLOADS | 2030 weighted inference share 상승의 directional anchor. 2026 60%+ 주장은 fact로 채택하지 않음. |
 | FACT_DELOITTE_2026_INFERENCE | Cross-company | 2026 inference compute share outlook | Inference cited as roughly two-thirds of compute in 2026 outlook | 2025-12 | SRC_DELOITTE_AI_POWER | 2026 base/bull inference share가 60%를 넘을 수 있는 상향 전망 anchor지만, 공식 fact로는 표시하지 않음. |
@@ -83,10 +85,44 @@ joules_per_token = 1,000,000 / tokens_per_second_per_mw
 
 | 시나리오 | 가동 전력 GW | 추론 GW | 가중 추론 비중 | 토큰/일 | 기준 대비 변화 |
 |---|---:|---:|---:|---:|---:|
-| Bear | 30.01 | 14.29 | 66% | 1.33Q | -48.0% |
-| Base | 36.60 | 20.05 | 76% | 2.55Q | 0.0% |
-| Bull | 43.16 | 26.14 | 84% | 4.27Q | 67.2% |
-| Grid-Constrained / Efficiency-Upside | 26.35 | 15.20 | 80% | 2.40Q | -5.9% |
+| Bear | 34.52 | 16.39 | 66% | 1.49Q | -48.0% |
+| Base | 42.10 | 23.02 | 76% | 2.87Q | 0.0% |
+| Bull | 49.65 | 30.01 | 84% | 4.79Q | 66.8% |
+| Grid-Constrained / Efficiency-Upside | 30.31 | 17.45 | 80% | 2.69Q | -6.2% |
+
+## Benchmark Sanity Check
+
+| 업체 | Proxy | Benchmark annual QTokens | Model annual QTokens | 차이 | 주의점 |
+|---|---|---:|---:|---:|---|
+| Microsoft | Copilot/GPT-class proxy + Phi anchor | 50.26 | 135.88 | -63.0% | Microsoft-owned/Phi와 OpenAI dependency mix가 섞인 proxy |
+| Google | Gemini closed frontier proxy | 56.68 | 195.32 | -71.0% | TPU serving을 GPU-equivalent proxy로 환산 |
+| Meta | Llama 4 Maverick | 149.86 | 146.84 | 2.1% | Meta AI production routing과 다를 수 있음 |
+| xAI | Grok closed frontier proxy | 14.11 | 45.85 | -69.2% | Grok closed model benchmark가 없어 cluster scale 기반 proxy |
+| OpenAI | gpt-oss/frontier mix proxy | 68.90 | 214.20 | -67.8% | closed GPT 실제 serving benchmark가 아니므로 sanity check로만 사용 |
+| Anthropic | Claude closed frontier proxy | 33.25 | 116.18 | -71.4% | Claude 파라미터/serving benchmark는 비공개라 proxy |
+| DeepSeek | DeepSeek-V3 / R1 | 84.88 | 38.09 | 122.8% | 모델 구조는 공개되어 있으나 production serving은 proxy |
+| Alibaba | Qwen3 235B-A22B | 11.10 | 94.83 | -88.3% | 공개 Qwen benchmark 기반 reference; Alibaba Cloud production mix와 다를 수 있음 |
+| Tencent | Hunyuan closed proxy | 13.79 | 61.09 | -77.4% | Hunyuan serving benchmark가 제한적이라 generic proxy |
+
+## Hallucination 체크리스트
+
+| ID | 영역 | 질문 | Pass 기준 | 심각도 | 상태 |
+|---|---|---|---|---|---|
+| HC01 | Source existence | 모든 source URL 또는 report name이 실제로 존재하고 접근 가능한가? | 01_sources의 URL을 열었을 때 publisher/title/date가 일치한다. | High | Needs manual URL click-through |
+| HC02 | Numeric fact quote | Fact anchor의 숫자(예: 4.5GW, 671B/37B, 235B/22B, 100k GPU)가 원문에 직접 존재하는가? | 02a_fact_anchors의 value가 원문 문장/표와 직접 매칭된다. | High | Partially checked; requires final source screenshot/quote pack |
+| HC03 | Fact vs estimate separation | Active GW, inference share, utilization, tokens/sec/MW가 fact로 오표기되지 않았는가? | 해당 값은 Estimate/Scenario로 표시되고 replacement_path가 있다. | High | Pass in structure |
+| HC04 | Closed model parameters | OpenAI, Anthropic, Gemini, Grok 같은 closed model에 단일 precise parameter 숫자를 쓰지 않았는가? | closed model은 band/proxy로만 표시하고 benchmark는 sanity check로만 사용. | High | Pass |
+| HC05 | MoE total/active | MoE 모델은 total params와 active params를 분리했는가? | DeepSeek, Qwen, Llama 4 계열은 total/active가 별도 column 또는 anchor에 존재. | Medium | Pass |
+| HC06 | Host vs model owner | AWS/Google/Oracle 같은 host capacity가 model owner와 혼동되지 않았는가? | Anthropic/OpenAI capacity는 model output 기준으로 귀속하고 host는 source/context로만 표기. | High | Pass in attribution rules |
+| HC07 | Microsoft/OpenAI overlap | Microsoft Copilot token과 OpenAI model token을 이중계산하지 않았는가? | OpenAI model output은 OpenAI row, Microsoft-owned/serving burden은 Microsoft row로 명시. | High | Needs sales/product routing data for final resolution |
+| HC08 | Capacity boundary | active_power_gw가 contracted_power_gw를 넘지 않는가? | 모든 company-year-scenario에서 active <= contracted. | High | Automated pass |
+| HC09 | Power split | training_power_share + inference_power_share = 100%인가? | 모든 row에서 합계가 1.000 +/- 0.001. | High | Automated pass |
+| HC10 | Unit consistency | daily token과 annual token 단위가 섞이지 않았는가? | token/day는 86,400초, annual token은 365일 또는 31,536,000초로 환산. | High | Automated pass |
+| HC11 | Benchmark proxy use | OSS/open benchmark를 closed commercial model 결론으로 직접 사용하지 않았는가? | 08d_benchmark_reference는 sanity check이며 main forecast와 분리. | High | Pass |
+| HC12 | Inference share | 2026년 추론 60%+를 fact로 단정하지 않았는가? | Base 2026은 60% 미만이고 Bull에서만 60%+ 허용. | Medium | Pass |
+| HC13 | Outlier review | main forecast와 benchmark reference의 차이가 큰 업체를 따로 표시했는가? | benchmark_vs_model_pct가 +/-50%를 넘으면 confidence review 대상. | Medium | Needs reviewer sign-off |
+| HC14 | China transparency | 중국 업체의 낮은 공개성 때문에 수치를 임의로 페널티하거나 과신하지 않았는가? | 모델 구조 fact는 인정하고 capacity transparency만 confidence에 반영. | Medium | Pass in principle; needs Chinese primary-source review |
+| HC15 | Executive wording | 슬라이드 문구가 추정치를 확정 사실처럼 표현하지 않는가? | forecast, scenario, proxy, sanity check, 추정치 표현을 유지. | High | Needs final human review |
 
 ## 귀속 기준
 - **Microsoft**: Microsoft-owned token은 Phi/MAI/Copilot serving으로, OpenAI model output은 OpenAI row에도 별도 표기
@@ -94,6 +130,7 @@ joules_per_token = 1,000,000 / tokens_per_second_per_mw
 - **Meta**: Meta-owned consumer and open model serving; third-party hosted Llama not counted in Meta owner tokens
 - **xAI**: xAI-owned Grok token generation; X social integration counted only when model generated
 - **OpenAI**: OpenAI model output counted here, including OpenAI models served through Microsoft channels when model ownership is OpenAI
+- **Anthropic**: Anthropic model output counted under Anthropic, even when served through AWS/Google host capacity
 - **DeepSeek**: DeepSeek direct app/API tokens counted; third-party self-hosted derivatives excluded unless DeepSeek-operated
 - **Alibaba**: Alibaba-operated Qwen serving counted; open-source third-party self-hosting excluded
 - **Tencent**: Tencent-operated Hunyuan/Yuanbao tokens counted; embedded non-LLM media generation separated
@@ -127,6 +164,8 @@ joules_per_token = 1,000,000 / tokens_per_second_per_mw
 | SRC_MS_PHI | Tier 1 | Microsoft | 2026-05-13 accessed | Microsoft-owned small language model family anchor | https://learn.microsoft.com/en-us/azure/ai-foundry/model-inference/concepts/models |
 | SRC_MS_PHI4_TECHREPORT | Tier 1/2 | Microsoft | 2024-12-12 | Microsoft-owned Phi-4 14B parameter anchor | https://arxiv.org/abs/2412.08905 |
 | SRC_GOOGLE_TPU_V6E | Tier 1 | Google Cloud | 2026-05-14 accessed | Google TPU serving/training platform generation anchor | https://cloud.google.com/tpu/docs/v6e |
+| SRC_ANTHROPIC_AMAZON_COMPUTE | Tier 1 | Anthropic / Amazon | 2025-2026 | Anthropic contracted/hosted capacity anchor; capacity attributed to Anthropic model owner | https://www.anthropic.com/news/anthropic-amazon-compute |
+| SRC_ANTHROPIC_CLAUDE_DOCS | Tier 1 | Anthropic | 2026-05-14 accessed | Claude commercial model family and closed-model disclosure boundary | https://docs.anthropic.com/en/docs/about-claude/models/overview |
 | SRC_SEMIANALYSIS_INFERENCEX | Tier 2 | SemiAnalysis | 2025-2026 | Benchmark layer for tokens/sec/MW sensitivity, not company capacity | https://inferencex.semianalysis.com/about |
 | SRC_ARXIV_INFERENCE_ENERGY | Tier 2 | arXiv | 2024-2026 | Joules/token sanity check, prefill/decode split, batching, quantization sensitivity | https://arxiv.org/search/?query=large+language+model+inference+energy+joules+per+token&searchtype=all |
 | SRC_MCKINSEY_AI_WORKLOADS | Tier 2 | McKinsey & Company | 2026-02-24 | Inference share fact-check and 2030 workload mix directional anchor | https://www.mckinsey.com/featured-insights/week-in-charts/the-future-of-ai-workloads |
@@ -139,4 +178,5 @@ joules_per_token = 1,000,000 / tokens_per_second_per_mw
 - closed_parameter_precision: PASS - closed model rows use bands/undisclosed labels, not single precise parameter values.
 - moe_total_active: PASS - DeepSeek and Alibaba rows include total and active parameter bands.
 - microsoft_openai_overlap: PASS - attribution rule separates OpenAI model-owner output and Microsoft customer-facing serving.
-- anthropic_scope: PASS - Anthropic is excluded from core rows and reserved for comparator/hosted sensitivity.
+- anthropic_scope: PASS - Anthropic is included as a core model-owner row; AWS/Google host capacity is attributed to Anthropic model output.
+- benchmark_layer: PASS - GPU/effective-active-parameter benchmark reference is separated from the main tokens/sec/MW forecast.
