@@ -10,6 +10,10 @@
 | 2026-05-15 | WATCH_DELOITTE_AI_DC | Deloitte AI/data center/semiconductor 리포트 후보 | consulting market context/scenario source로 분류 | A01/A02/A05/A06/A10 agent가 source-reviewed evidence로 승격 검토 |
 | 2026-05-15 | WATCH_AI_2027 | AI 2027 scenario 후보 | scenario/stress-test source로 분류 | A05/A06/A08/A09/A10 및 orchestrator가 Base와 분리해 검토 |
 | 2026-05-18 | WATCH_2026_SERVING_ENERGY | 2026 inference serving/energy 논문 묶음 | paper/benchmark/proxy 후보로 분류 | A08/A09가 tokens/MW, utilization, SLO, energy/query logic으로 검토 |
+| 2026-05-18 | JOULE_INFERENCE_2026 | AI inference energy and test-time compute | proxy/energy sanity source로 A08 evidence 승격 | energy sanity layer 후보, Base tokens/MW 직접 변경 없음 |
+| 2026-05-18 | IBM_PD_2026 | Prefill-decode disaggregation performance/energy implications | mechanism source로 A08/A09 evidence 승격 | P/D disaggregation은 scenario sensitivity, Base 직접 변경 없음 |
+| 2026-05-18 | ARXIV_SLO_PD_2603 | SLO-aware P/D resource allocation | mechanism source로 A09 evidence 승격 | utilization caveat 강화 |
+| 2026-05-18 | ARXIV_PREFILL_SERVICE_2604 | Prefill-as-a-service | scenario/mechanism source로 A09 evidence 승격 | agentic workload placement/network sensitivity 후보 |
 
 ## 기록 규칙
 

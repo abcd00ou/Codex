@@ -29,7 +29,7 @@ from pptx.util import Inches, Pt
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "outputs" / "reports"
-RUN_DATE = "2026-05-15"
+RUN_DATE = "2026-05-18"
 YEARS = list(range(2026, 2031))
 
 
@@ -388,6 +388,61 @@ def sources() -> list[Source]:
             "Joules/token sanity check, prefill/decode split, batching, quantization sensitivity",
             0.65,
             "논문별 수치는 workload 차이가 커서 sensitivity layer로만 사용.",
+        ),
+        Source(
+            "SRC_JOULE_INFERENCE_ENERGY_2026",
+            "Energy use of AI inference, efficiency pathways, and test-time scaling",
+            "Joule / Cell Press",
+            "2026",
+            "https://www.sciencedirect.com/science/article/pii/S2542435126001145",
+            "Tier 2",
+            "Energy/query and joules/token sanity layer for inference forecasts",
+            0.70,
+            "회사별 production telemetry가 아니라 energy sanity check와 test-time compute sensitivity로만 사용.",
+        ),
+        Source(
+            "SRC_IBM_PD_DISAGG_2026",
+            "Revisiting Disaggregated Large Language Model Serving for Performance and Energy Implications",
+            "IBM Research / EuroSys",
+            "2026",
+            "https://research.ibm.com/publications/revisiting-disaggregated-large-language-model-serving-for-performance-and-energy-implications",
+            "Tier 2",
+            "Prefill/decode disaggregation performance and energy trade-off mechanism",
+            0.72,
+            "P/D disaggregation은 항상 positive가 아니므로 workload/SLO별 sensitivity로 처리.",
+        ),
+        Source(
+            "SRC_ARXIV_SLO_PD_2026",
+            "SLO-Aware Compute Resource Allocation for Prefill-Decode Disaggregated LLM Inference",
+            "arXiv",
+            "2026",
+            "https://arxiv.org/abs/2603.04716",
+            "Tier 2",
+            "Utilization caveat for TTFT/TPOT SLO constrained serving",
+            0.62,
+            "utilization은 GPU occupancy가 아니라 latency SLO와 reserve에 의해 제한됨을 반영.",
+        ),
+        Source(
+            "SRC_ARXIV_PREFILL_AS_SERVICE_2026",
+            "Prefill-as-a-Service",
+            "arXiv",
+            "2026",
+            "https://arxiv.org/abs/2604.15039",
+            "Tier 2",
+            "Agentic/long-context placement and network sensitivity for utilization",
+            0.60,
+            "cross-datacenter prefill/KV movement은 Base fact가 아니라 future sensitivity로만 사용.",
+        ),
+        Source(
+            "SRC_ARXIV_SPEC_DECODING_LATENCY_2026",
+            "An Interpretable Latency Model for Speculative Decoding in LLM Serving",
+            "arXiv",
+            "2026",
+            "https://arxiv.org/abs/2605.15051",
+            "Tier 2",
+            "Speculative decoding latency and throughput trade-off mechanism",
+            0.60,
+            "speculative decoding은 tokens/MW 개선 가능성이 있으나 model/workload별 검증 필요.",
         ),
         Source(
             "SRC_MCKINSEY_AI_WORKLOADS",
@@ -1108,6 +1163,125 @@ def benchmark_reference_rows(base_rows: list[dict[str, Any]]) -> list[dict[str, 
     return rows
 
 
+def energy_sanity_reference_rows(base_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Energy/query sanity layer from A08 Cycle 1.
+
+    This is deliberately not a replacement for the main forecast. It checks
+    whether model-implied joules/token is directionally plausible under
+    long-context, base, and optimized serving assumptions.
+    """
+    profiles = [
+        {
+            "profile": "Strict-SLO / long-context agentic",
+            "joules_per_token_multiplier": 1.85,
+            "input_output_context_note": "long prompt, tool-use trace, low-latency SLA, limited batching",
+            "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SLO_PD_2026",
+            "interpretation_kr": "agentic/test-time compute가 증가하면 같은 MW에서 token output이 낮아질 수 있음",
+        },
+        {
+            "profile": "Base serving mix",
+            "joules_per_token_multiplier": 1.00,
+            "input_output_context_note": "mixed chatbot/API/enterprise serving with moderate batching",
+            "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX",
+            "interpretation_kr": "메인 forecast와 일치시키는 기준 energy view",
+        },
+        {
+            "profile": "Batchable / optimized serving",
+            "joules_per_token_multiplier": 0.68,
+            "input_output_context_note": "batchable workloads, KV-cache efficiency, P/D scheduling, relaxed latency",
+            "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_SEMIANALYSIS_INFERENCEX",
+            "interpretation_kr": "serving stack 최적화가 energy/token을 낮출 수 있으나 company fact는 아님",
+        },
+    ]
+    rows: list[dict[str, Any]] = []
+    for row in base_rows:
+        if row["year"] not in (2026, 2030):
+            continue
+        inference_energy_j_day = row["inference_gw"] * 1e9 * row["utilization"] * 86400
+        for profile in profiles:
+            implied_jpt = row["joules_per_token"] * profile["joules_per_token_multiplier"]
+            energy_tokens_day = inference_energy_j_day / implied_jpt if implied_jpt else 0
+            rows.append(
+                {
+                    "company": row["company"],
+                    "year": row["year"],
+                    "profile": profile["profile"],
+                    "inference_gw": row["inference_gw"],
+                    "utilization": row["utilization"],
+                    "model_joules_per_token": row["joules_per_token"],
+                    "profile_joules_per_token": round(implied_jpt, 4),
+                    "energy_implied_tokens_per_day_q": round(energy_tokens_day / 1e15, 3),
+                    "model_tokens_per_day_q": round(row["inference_tokens_per_day"] / 1e15, 3),
+                    "energy_vs_model_pct": round((energy_tokens_day / row["inference_tokens_per_day"] - 1) * 100, 1) if row["inference_tokens_per_day"] else "",
+                    "input_output_context_note": profile["input_output_context_note"],
+                    "source_ids": profile["source_ids"],
+                    "interpretation_kr": profile["interpretation_kr"],
+                    "calc_use": "Sanity check only",
+                }
+            )
+    return rows
+
+
+def utilization_sensitivity_rows(base_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """SLO/workload utilization sensitivity from A09 Cycle 1."""
+    profiles = [
+        {
+            "profile": "Strict-SLO real-time",
+            "utilization_multiplier": 0.78,
+            "tokens_per_mw_multiplier": 0.92,
+            "description_kr": "TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving",
+            "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026",
+        },
+        {
+            "profile": "Base mixed serving",
+            "utilization_multiplier": 1.00,
+            "tokens_per_mw_multiplier": 1.00,
+            "description_kr": "메인 forecast 기준",
+            "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX",
+        },
+        {
+            "profile": "Batchable optimized",
+            "utilization_multiplier": 1.12,
+            "tokens_per_mw_multiplier": 1.10,
+            "description_kr": "batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving",
+            "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026",
+        },
+        {
+            "profile": "Agentic long-context stress",
+            "utilization_multiplier": 0.88,
+            "tokens_per_mw_multiplier": 0.82,
+            "description_kr": "긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress",
+            "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026",
+        },
+    ]
+    rows: list[dict[str, Any]] = []
+    for row in base_rows:
+        if row["year"] not in (2026, 2030):
+            continue
+        for profile in profiles:
+            adjusted_util = min(row["utilization"] * profile["utilization_multiplier"], 0.86)
+            adjusted_tps = row["tokens_per_second_per_mw"] * profile["tokens_per_mw_multiplier"]
+            tokens_day = row["inference_gw"] * 1000 * adjusted_tps * adjusted_util * 86400
+            rows.append(
+                {
+                    "company": row["company"],
+                    "year": row["year"],
+                    "profile": profile["profile"],
+                    "base_utilization": row["utilization"],
+                    "adjusted_utilization": round(adjusted_util, 3),
+                    "base_tokens_per_second_per_mw": row["tokens_per_second_per_mw"],
+                    "adjusted_tokens_per_second_per_mw": round(adjusted_tps),
+                    "tokens_per_day_q": round(tokens_day / 1e15, 3),
+                    "base_tokens_per_day_q": round(row["inference_tokens_per_day"] / 1e15, 3),
+                    "delta_vs_base_pct": round((tokens_day / row["inference_tokens_per_day"] - 1) * 100, 1) if row["inference_tokens_per_day"] else "",
+                    "description_kr": profile["description_kr"],
+                    "source_ids": profile["source_ids"],
+                    "calc_use": "Sensitivity only",
+                }
+            )
+    return rows
+
+
 def hallucination_checklist() -> list[dict[str, Any]]:
     return [
         {
@@ -1326,6 +1500,8 @@ def validate(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "microsoft_openai_overlap": "PASS - attribution rule separates OpenAI model-owner output and Microsoft customer-facing serving.",
         "anthropic_scope": "PASS - Anthropic is included as a core model-owner row; AWS/Google host capacity is attributed to Anthropic model output.",
         "benchmark_layer": "PASS - GPU/effective-active-parameter benchmark reference is separated from the main tokens/sec/MW forecast.",
+        "energy_sanity_layer": "PASS - Joule/IBM/2026 serving sources are separated as sanity/sensitivity layers, not Base production telemetry.",
+        "utilization_slo_layer": "PASS - SLO/workload utilization sensitivity is separated from Base utilization band.",
     }
     return {
         "status": "PASS" if not failures else "FAIL",
@@ -1491,6 +1667,17 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
         ColorScaleRule(start_type="min", start_color="FDE2E2", mid_type="percentile", mid_value=50, mid_color="FFF1B8", end_type="max", end_color="B7E4C7"),
     )
 
+    energy_headers = list(data["energy_sanity_reference"][0].keys())
+    energy_ws = sheet("08e_energy_sanity_reference")
+    append_rows(energy_ws, data["energy_sanity_reference"], energy_headers)
+    energy_ws.conditional_formatting.add(
+        f"{get_column_letter(energy_headers.index('energy_vs_model_pct') + 1)}2:{get_column_letter(energy_headers.index('energy_vs_model_pct') + 1)}{energy_ws.max_row}",
+        ColorScaleRule(start_type="min", start_color="FDE2E2", mid_type="percentile", mid_value=50, mid_color="FFF1B8", end_type="max", end_color="B7E4C7"),
+    )
+
+    util_headers = list(data["utilization_sensitivity"][0].keys())
+    append_rows(sheet("08f_utilization_sensitivity"), data["utilization_sensitivity"], util_headers)
+
     hallucination_headers = list(data["hallucination_checklist"][0].keys())
     append_rows(sheet("11_hallucination_checklist"), data["hallucination_checklist"], hallucination_headers)
 
@@ -1513,7 +1700,7 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
     line.title = "업체별 추정 inference token capacity (quadrillion tokens/day)"
     line.y_axis.title = "Q tokens/day"
     line.x_axis.title = "Year"
-    line.add_data(Reference(chart_ws, min_col=2, max_col=9, min_row=1, max_row=6), titles_from_data=True)
+    line.add_data(Reference(chart_ws, min_col=2, max_col=1 + len(scenarios()), min_row=1, max_row=6), titles_from_data=True)
     line.set_categories(Reference(chart_ws, min_col=1, min_row=2, max_row=6))
     line.height = 9
     line.width = 24
@@ -1531,8 +1718,8 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
     bar.title = "2030 inference vs training GW"
     bar.y_axis.title = "Company"
     bar.x_axis.title = "GW"
-    bar.add_data(Reference(chart_ws, min_col=2, max_col=3, min_row=start, max_row=start + 8), titles_from_data=True)
-    bar.set_categories(Reference(chart_ws, min_col=1, min_row=start + 1, max_row=start + 8))
+    bar.add_data(Reference(chart_ws, min_col=2, max_col=3, min_row=start, max_row=start + len(scenarios())), titles_from_data=True)
+    bar.set_categories(Reference(chart_ws, min_col=1, min_row=start + 1, max_row=start + len(scenarios())))
     bar.height = 9
     bar.width = 24
     chart_ws.add_chart(bar, "A28")
@@ -1967,6 +2154,16 @@ def write_html(data: dict[str, Any], path: Path) -> None:
       <div class="note">첨부 엑셀의 effective active params / GPU count / TPS per GPU 방식을 reference layer로 통합했습니다. Closed model proxy는 결론이 아니라 guardrail입니다.</div>
     </section>
     <section>
+      <h2>Energy sanity reference</h2>
+      <table id="energySanity"></table>
+      <div class="note">A08 Cycle 1 반영: Joule/IBM/2026 serving sources는 Base tokens/MW를 직접 바꾸지 않고, energy/query 및 joules/token 검증 레이어로 사용합니다.</div>
+    </section>
+    <section>
+      <h2>SLO / utilization sensitivity</h2>
+      <table id="utilSensitivity"></table>
+      <div class="note">A09 Cycle 1 반영: utilization은 GPU 점유율이 아니라 TTFT/TPOT, batchability, placement, failover reserve가 반영된 평균값입니다.</div>
+    </section>
+    <section>
       <h2>Hallucination 체크리스트</h2>
       <table id="hallucination"></table>
     </section>
@@ -2040,6 +2237,12 @@ def write_html(data: dict[str, Any], path: Path) -> None:
       $("benchmarks").innerHTML = `<tr><th>업체</th><th>연도</th><th>Proxy</th><th>Benchmark QTokens</th><th>Model QTokens</th><th>차이</th><th>주의점</th></tr>` +
         DATA.benchmark_reference.filter(b => b.year === Number($("year").value) && ($("company").value === "ALL" || b.company === $("company").value))
           .map(b=>`<tr><td>${{b.company}}</td><td>${{b.year}}</td><td>${{b.proxy_model}}</td><td>${{b.benchmark_annual_tokens_q}}</td><td>${{b.model_annual_tokens_q}}</td><td>${{b.benchmark_vs_model_pct}}%</td><td>${{b.caveat_kr}}</td></tr>`).join('');
+      $("energySanity").innerHTML = `<tr><th>업체</th><th>연도</th><th>Profile</th><th>J/token</th><th>Energy implied Q/day</th><th>Model Q/day</th><th>차이</th><th>해석</th></tr>` +
+        DATA.energy_sanity_reference.filter(e => e.year === Number($("year").value) && ($("company").value === "ALL" || e.company === $("company").value))
+          .map(e=>`<tr><td>${{e.company}}</td><td>${{e.year}}</td><td>${{e.profile}}</td><td>${{e.profile_joules_per_token}}</td><td>${{e.energy_implied_tokens_per_day_q}}</td><td>${{e.model_tokens_per_day_q}}</td><td>${{e.energy_vs_model_pct}}%</td><td>${{e.interpretation_kr}}</td></tr>`).join('');
+      $("utilSensitivity").innerHTML = `<tr><th>업체</th><th>연도</th><th>Profile</th><th>Utilization</th><th>TPS/MW</th><th>Q/day</th><th>기준 대비</th><th>설명</th></tr>` +
+        DATA.utilization_sensitivity.filter(u => u.year === Number($("year").value) && ($("company").value === "ALL" || u.company === $("company").value))
+          .map(u=>`<tr><td>${{u.company}}</td><td>${{u.year}}</td><td>${{u.profile}}</td><td>${{u.adjusted_utilization}}</td><td>${{u.adjusted_tokens_per_second_per_mw}}</td><td>${{u.tokens_per_day_q}}</td><td>${{u.delta_vs_base_pct}}%</td><td>${{u.description_kr}}</td></tr>`).join('');
       $("hallucination").innerHTML = `<tr><th>ID</th><th>영역</th><th>질문</th><th>Pass 기준</th><th>심각도</th><th>상태</th></tr>` +
         DATA.hallucination_checklist.map(h=>`<tr><td>${{h.check_id}}</td><td>${{h.area}}</td><td>${{h.question_kr}}</td><td>${{h.pass_criteria_kr}}</td><td>${{h.severity}}</td><td>${{h.current_status}}</td></tr>`).join('');
     }}
@@ -2147,6 +2350,36 @@ def write_markdown(data: dict[str, Any], path: Path) -> None:
     for row in [r for r in data["benchmark_reference"] if r["year"] == 2030]:
         lines.append(
             f"| {row['company']} | {row['proxy_model']} | {row['benchmark_annual_tokens_q']:.2f} | {row['model_annual_tokens_q']:.2f} | {row['benchmark_vs_model_pct']}% | {row['caveat_kr']} |"
+        )
+    lines += [
+        "",
+        "## A08 Cycle 1: Energy Sanity Reference",
+        "",
+        "- Base `tokens_per_second_per_mw` 값은 아직 변경하지 않았습니다.",
+        "- Joule/IBM/2026 serving sources는 company production telemetry가 아니라 energy/query, joules/token, prefill/decode trade-off 검증 레이어로 사용합니다.",
+        "- Strict-SLO/agentic long-context는 energy/token을 악화시킬 수 있고, batchable optimized serving은 개선 가능성이 있으나 둘 다 sensitivity입니다.",
+        "",
+        "| 업체 | Profile | J/token | Energy implied Q/day | Model Q/day | 차이 | 해석 |",
+        "|---|---|---:|---:|---:|---:|---|",
+    ]
+    for row in [r for r in data["energy_sanity_reference"] if r["year"] == 2030 and r["company"] in ("OpenAI", "Google", "Anthropic")]:
+        lines.append(
+            f"| {row['company']} | {row['profile']} | {row['profile_joules_per_token']:.4f} | {row['energy_implied_tokens_per_day_q']:.3f} | {row['model_tokens_per_day_q']:.3f} | {row['energy_vs_model_pct']}% | {row['interpretation_kr']} |"
+        )
+    lines += [
+        "",
+        "## A09 Cycle 1: SLO / Utilization Sensitivity",
+        "",
+        "- Base utilization band는 유지했습니다.",
+        "- utilization은 GPU 점유율이 아니라 TTFT/TPOT, batchability, placement, failover reserve가 반영된 평균값입니다.",
+        "- strict-SLO와 agentic long-context workload는 output capacity를 낮출 수 있고, batchable optimized workload는 상향 sensitivity입니다.",
+        "",
+        "| 업체 | Profile | Adjusted utilization | Adjusted TPS/MW | Q/day | 기준 대비 | 설명 |",
+        "|---|---|---:|---:|---:|---:|---|",
+    ]
+    for row in [r for r in data["utilization_sensitivity"] if r["year"] == 2030 and r["company"] in ("OpenAI", "Google", "Meta")]:
+        lines.append(
+            f"| {row['company']} | {row['profile']} | {row['adjusted_utilization']:.3f} | {row['adjusted_tokens_per_second_per_mw']:.0f} | {row['tokens_per_day_q']:.3f} | {row['delta_vs_base_pct']}% | {row['description_kr']} |"
         )
     lines += [
         "",
@@ -2513,7 +2746,69 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
     )
     add_footer(slide)
 
-    # 9. Inference share audit
+    # 9. Energy sanity layer
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    add_title(slide, "Energy sanity layer", "A08 Cycle 1: Joule/IBM/2026 serving 논문은 Base 숫자 변경보다 energy/query 검증 레이어를 요구한다.")
+    energy_2030 = [r for r in data["energy_sanity_reference"] if r["year"] == 2030 and r["company"] in ("OpenAI", "Google", "Anthropic")]
+    profiles = ["Strict-SLO / long-context agentic", "Base serving mix", "Batchable / optimized serving"]
+    chart_data = CategoryChartData()
+    chart_data.categories = profiles
+    for company in ["OpenAI", "Google", "Anthropic"]:
+        chart_data.add_series(company, [next(r["energy_implied_tokens_per_day_q"] for r in energy_2030 if r["company"] == company and r["profile"] == p) for p in profiles])
+    chart = slide.shapes.add_chart(XL_CHART_TYPE.COLUMN_CLUSTERED, Inches(0.65), Inches(1.25), Inches(7.7), Inches(4.65), chart_data).chart
+    chart.has_legend = True
+    chart.legend.position = XL_LEGEND_POSITION.BOTTOM
+    chart.value_axis.tick_labels.font.size = Pt(8)
+    chart.category_axis.tick_labels.font.size = Pt(8)
+    bullet_list(
+        slide,
+        8.65,
+        1.4,
+        3.8,
+        4.35,
+        [
+            "Base tokens/MW는 아직 유지.",
+            "energy/query와 joules/token으로 sanity check 추가.",
+            "agentic long-context는 energy/token을 악화시킬 수 있음.",
+            "optimized serving은 개선 가능하지만 company fact가 아님.",
+        ],
+        11,
+    )
+    add_footer(slide, "Sources: Joule inference energy, IBM P/D disaggregation, SemiAnalysis InferenceX")
+
+    # 10. Utilization sensitivity
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    add_title(slide, "Utilization은 GPU 점유율이 아니라 SLO 제약 평균값", "A09 Cycle 1: TTFT/TPOT, prefill-decode allocation, batchability, placement가 realized utilization을 제한한다.")
+    util_2030 = [r for r in data["utilization_sensitivity"] if r["year"] == 2030 and r["company"] in ("OpenAI", "Google", "Meta")]
+    util_profiles = ["Strict-SLO real-time", "Base mixed serving", "Batchable optimized", "Agentic long-context stress"]
+    chart_data = CategoryChartData()
+    chart_data.categories = util_profiles
+    for company in ["OpenAI", "Google", "Meta"]:
+        chart_data.add_series(company, [next(r["tokens_per_day_q"] for r in util_2030 if r["company"] == company and r["profile"] == p) for p in util_profiles])
+    chart = slide.shapes.add_chart(XL_CHART_TYPE.COLUMN_CLUSTERED, Inches(0.65), Inches(1.25), Inches(8.0), Inches(4.65), chart_data).chart
+    chart.has_legend = True
+    chart.legend.position = XL_LEGEND_POSITION.BOTTOM
+    chart.value_axis.tick_labels.font.size = Pt(8)
+    chart.category_axis.tick_labels.font.size = Pt(8)
+    bullet_list(
+        slide,
+        8.9,
+        1.35,
+        3.55,
+        4.4,
+        [
+            "Strict-SLO는 reserve 때문에 평균 output 하락.",
+            "Batchable workload는 utilization과 tokens/MW 동시 개선 가능.",
+            "Agentic long-context는 throughput과 placement를 압박.",
+            "Base band는 유지하고 sensitivity로 분리.",
+        ],
+        11,
+    )
+    add_footer(slide, "Sources: IBM P/D disaggregation, SLO-aware P/D allocation, Prefill-as-a-Service")
+
+    # 11. Inference share audit
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
     add_title(slide, "추론 비중 fact-check", "이 모델은 2026년 60%+ 추론 GW를 fact로 취급하지 않는다.")
@@ -2664,6 +2959,8 @@ def build_payload() -> dict[str, Any]:
         "scenario_forecast": scenario_rows,
         "scenario_summary": scenario_summary_rows(scenario_rows),
         "benchmark_reference": benchmark_reference_rows(rows),
+        "energy_sanity_reference": energy_sanity_reference_rows(rows),
+        "utilization_sensitivity": utilization_sensitivity_rows(rows),
         "sensitivity": sensitivity_rows(rows),
         "exec_summary": exec_summary(rows),
     }

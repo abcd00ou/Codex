@@ -30,6 +30,8 @@ assert len(data['benchmark_reference']) == 45
 wb = load_workbook(base + '.xlsx', data_only=True)
 assert '00_formula_assumptions' in wb.sheetnames
 assert '08d_benchmark_reference' in wb.sheetnames
+assert '08e_energy_sanity_reference' in wb.sheetnames
+assert '08f_utilization_sensitivity' in wb.sheetnames
 assert '11_hallucination_checklist' in wb.sheetnames
 
 prs = Presentation(base + '.pptx')

@@ -138,3 +138,4 @@ Agent 구조가 깨지지 않았는지 확인합니다.
 - 시나리오: Bear, Base, Bull, Grid-Constrained / Efficiency-Upside
 - 검증 상태: generator validation PASS
 - 주요 감사 레이어: formula assumptions, fact anchors, benchmark reference, hallucination checklist
+- 2026-05-18 추가 레이어: `08e_energy_sanity_reference`, `08f_utilization_sensitivity`

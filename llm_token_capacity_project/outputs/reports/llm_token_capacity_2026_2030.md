@@ -1,6 +1,6 @@
 # 상용 LLM 업체별 전력·GPU·토큰 생성량 시뮬레이션 (2026–2030)
 
-- 생성일: 2026-05-15
+- 생성일: 2026-05-18
 - 목적: 상용 LLM owner 기준으로 전력 capacity, 추론/학습 split, GPU/ASIC mix, tokens/sec/MW, GPU benchmark reference, token 생성량을 연결한 임원 보고용 기준 시나리오 작성
 - 주의: 이 문서는 투자 조언이 아니라 supply-chain / token-capacity intelligence simulation입니다.
 
@@ -104,6 +104,45 @@ joules_per_token = 1,000,000 / tokens_per_second_per_mw
 | Alibaba | Qwen3 235B-A22B | 11.10 | 94.83 | -88.3% | 공개 Qwen benchmark 기반 reference; Alibaba Cloud production mix와 다를 수 있음 |
 | Tencent | Hunyuan closed proxy | 13.79 | 61.09 | -77.4% | Hunyuan serving benchmark가 제한적이라 generic proxy |
 
+## A08 Cycle 1: Energy Sanity Reference
+
+- Base `tokens_per_second_per_mw` 값은 아직 변경하지 않았습니다.
+- Joule/IBM/2026 serving sources는 company production telemetry가 아니라 energy/query, joules/token, prefill/decode trade-off 검증 레이어로 사용합니다.
+- Strict-SLO/agentic long-context는 energy/token을 악화시킬 수 있고, batchable optimized serving은 개선 가능성이 있으나 둘 다 sensitivity입니다.
+
+| 업체 | Profile | J/token | Energy implied Q/day | Model Q/day | 차이 | 해석 |
+|---|---|---:|---:|---:|---:|---|
+| Google | Strict-SLO / long-context agentic | 0.7633 | 0.289 | 0.535 | -45.9% | agentic/test-time compute가 증가하면 같은 MW에서 token output이 낮아질 수 있음 |
+| Google | Base serving mix | 0.4126 | 0.535 | 0.535 | 0.0% | 메인 forecast와 일치시키는 기준 energy view |
+| Google | Batchable / optimized serving | 0.2806 | 0.787 | 0.535 | 47.1% | serving stack 최적화가 energy/token을 낮출 수 있으나 company fact는 아님 |
+| OpenAI | Strict-SLO / long-context agentic | 0.9402 | 0.317 | 0.587 | -45.9% | agentic/test-time compute가 증가하면 같은 MW에서 token output이 낮아질 수 있음 |
+| OpenAI | Base serving mix | 0.5082 | 0.587 | 0.587 | 0.0% | 메인 forecast와 일치시키는 기준 energy view |
+| OpenAI | Batchable / optimized serving | 0.3456 | 0.863 | 0.587 | 47.1% | serving stack 최적화가 energy/token을 낮출 수 있으나 company fact는 아님 |
+| Anthropic | Strict-SLO / long-context agentic | 1.0427 | 0.172 | 0.318 | -45.9% | agentic/test-time compute가 증가하면 같은 MW에서 token output이 낮아질 수 있음 |
+| Anthropic | Base serving mix | 0.5636 | 0.318 | 0.318 | -0.0% | 메인 forecast와 일치시키는 기준 energy view |
+| Anthropic | Batchable / optimized serving | 0.3832 | 0.468 | 0.318 | 47.0% | serving stack 최적화가 energy/token을 낮출 수 있으나 company fact는 아님 |
+
+## A09 Cycle 1: SLO / Utilization Sensitivity
+
+- Base utilization band는 유지했습니다.
+- utilization은 GPU 점유율이 아니라 TTFT/TPOT, batchability, placement, failover reserve가 반영된 평균값입니다.
+- strict-SLO와 agentic long-context workload는 output capacity를 낮출 수 있고, batchable optimized workload는 상향 sensitivity입니다.
+
+| 업체 | Profile | Adjusted utilization | Adjusted TPS/MW | Q/day | 기준 대비 | 설명 |
+|---|---|---:|---:|---:|---:|---|
+| Google | Strict-SLO real-time | 0.546 | 2229594 | 0.384 | -28.2% | TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving |
+| Google | Base mixed serving | 0.700 | 2423472 | 0.535 | -0.0% | 메인 forecast 기준 |
+| Google | Batchable optimized | 0.784 | 2665819 | 0.659 | 23.2% | batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving |
+| Google | Agentic long-context stress | 0.616 | 1987247 | 0.386 | -27.8% | 긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress |
+| Meta | Strict-SLO real-time | 0.546 | 1865683 | 0.289 | -28.2% | TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving |
+| Meta | Base mixed serving | 0.700 | 2027916 | 0.402 | 0.0% | 메인 forecast 기준 |
+| Meta | Batchable optimized | 0.784 | 2230708 | 0.496 | 23.2% | batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving |
+| Meta | Agentic long-context stress | 0.616 | 1662891 | 0.290 | -27.8% | 긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress |
+| OpenAI | Strict-SLO real-time | 0.554 | 1810175 | 0.421 | -28.2% | TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving |
+| OpenAI | Base mixed serving | 0.710 | 1967582 | 0.587 | 0.0% | 메인 forecast 기준 |
+| OpenAI | Batchable optimized | 0.795 | 2164340 | 0.723 | 23.2% | batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving |
+| OpenAI | Agentic long-context stress | 0.625 | 1613417 | 0.423 | -27.8% | 긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress |
+
 ## Hallucination 체크리스트
 
 | ID | 영역 | 질문 | Pass 기준 | 심각도 | 상태 |
@@ -168,6 +207,11 @@ joules_per_token = 1,000,000 / tokens_per_second_per_mw
 | SRC_ANTHROPIC_CLAUDE_DOCS | Tier 1 | Anthropic | 2026-05-14 accessed | Claude commercial model family and closed-model disclosure boundary | https://docs.anthropic.com/en/docs/about-claude/models/overview |
 | SRC_SEMIANALYSIS_INFERENCEX | Tier 2 | SemiAnalysis | 2025-2026 | Benchmark layer for tokens/sec/MW sensitivity, not company capacity | https://inferencex.semianalysis.com/about |
 | SRC_ARXIV_INFERENCE_ENERGY | Tier 2 | arXiv | 2024-2026 | Joules/token sanity check, prefill/decode split, batching, quantization sensitivity | https://arxiv.org/search/?query=large+language+model+inference+energy+joules+per+token&searchtype=all |
+| SRC_JOULE_INFERENCE_ENERGY_2026 | Tier 2 | Joule / Cell Press | 2026 | Energy/query and joules/token sanity layer for inference forecasts | https://www.sciencedirect.com/science/article/pii/S2542435126001145 |
+| SRC_IBM_PD_DISAGG_2026 | Tier 2 | IBM Research / EuroSys | 2026 | Prefill/decode disaggregation performance and energy trade-off mechanism | https://research.ibm.com/publications/revisiting-disaggregated-large-language-model-serving-for-performance-and-energy-implications |
+| SRC_ARXIV_SLO_PD_2026 | Tier 2 | arXiv | 2026 | Utilization caveat for TTFT/TPOT SLO constrained serving | https://arxiv.org/abs/2603.04716 |
+| SRC_ARXIV_PREFILL_AS_SERVICE_2026 | Tier 2 | arXiv | 2026 | Agentic/long-context placement and network sensitivity for utilization | https://arxiv.org/abs/2604.15039 |
+| SRC_ARXIV_SPEC_DECODING_LATENCY_2026 | Tier 2 | arXiv | 2026 | Speculative decoding latency and throughput trade-off mechanism | https://arxiv.org/abs/2605.15051 |
 | SRC_MCKINSEY_AI_WORKLOADS | Tier 2 | McKinsey & Company | 2026-02-24 | Inference share fact-check and 2030 workload mix directional anchor | https://www.mckinsey.com/featured-insights/week-in-charts/the-future-of-ai-workloads |
 | SRC_DELOITTE_AI_POWER | Tier 2 | Deloitte | 2025-12 | Inference compute share outlook, used only as scenario cross-check | https://www.deloitte.com/us/en/insights/industry/technology/technology-media-and-telecom-predictions/2026/compute-power-ai.html |
 | SRC_EPRI_EPOCH_AI_POWER | Tier 2 | EPRI / Epoch AI | 2025-08 | Current AI power allocation sanity check across training, experiments, and inference | https://epoch.ai/blog/power-demands-of-frontier-ai-training |
@@ -180,3 +224,5 @@ joules_per_token = 1,000,000 / tokens_per_second_per_mw
 - microsoft_openai_overlap: PASS - attribution rule separates OpenAI model-owner output and Microsoft customer-facing serving.
 - anthropic_scope: PASS - Anthropic is included as a core model-owner row; AWS/Google host capacity is attributed to Anthropic model output.
 - benchmark_layer: PASS - GPU/effective-active-parameter benchmark reference is separated from the main tokens/sec/MW forecast.
+- energy_sanity_layer: PASS - Joule/IBM/2026 serving sources are separated as sanity/sensitivity layers, not Base production telemetry.
+- utilization_slo_layer: PASS - SLO/workload utilization sensitivity is separated from Base utilization band.
