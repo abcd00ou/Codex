@@ -5,6 +5,8 @@
 | 2026-05-15 | traffic shape and batching evidence | pending | Need source review | open |
 | 2026-05-15 | regional SLA/failover reserve concepts | pending | Need source review | open |
 | 2026-05-15 | serving scheduler improvements | pending | Need source review | open |
+| 2026-05-15 | SemiAnalysis InferenceX utilization, batching, latency and serving stack assumptions | high | Proxy/context evidence for average utilization and benchmark-to-production gap | open |
+| 2026-05-15 | AI 2027 agentic workload scenario impact on utilization, peak reserve, and traffic shape | medium | Scenario stress-test; separate from production utilization fact | open |
 
 ## Next Agent Prompt
 

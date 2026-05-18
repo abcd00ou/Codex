@@ -5,6 +5,8 @@
 | 2026-05-15 | Gemini/Claude/GPT product surface traffic signal | pending | Need source review | open |
 | 2026-05-15 | inference-optimized hardware launches | pending | Need source review | open |
 | 2026-05-15 | serving quota/product availability evidence | pending | Need source review | open |
+| 2026-05-15 | Deloitte generative AI adoption reports for commercial inference demand scenario framing | medium | Market context for inference share trajectory; not company telemetry | open |
+| 2026-05-15 | AI 2027 aggressive adoption/agent scenario impact on inference share | medium | Scenario stress-test only; do not mix into Base inference share | open |
 
 ## Next Agent Prompt
 

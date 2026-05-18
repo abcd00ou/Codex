@@ -5,6 +5,7 @@
 | 2026-05-15 | Google/Meta/Microsoft data center PUE disclosures | pending | Need source review | open |
 | 2026-05-15 | liquid cooling impact | pending | Need source review | open |
 | 2026-05-15 | AI rack density and facility overhead | pending | Need source review | open |
+| 2026-05-15 | Introl content for AI rack density, cooling overhead, and facility design context | medium | Practitioner context for PUE band, not site-specific PUE fact | open |
 
 ## Next Agent Prompt
 

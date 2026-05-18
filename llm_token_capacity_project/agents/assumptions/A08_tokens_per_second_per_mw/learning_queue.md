@@ -5,6 +5,8 @@
 | 2026-05-15 | PagedAttention/Splitwise/DistServe updates | pending | Need source review | open |
 | 2026-05-15 | InferenceX or similar benchmark changes | pending | Need source review | open |
 | 2026-05-15 | hardware generation H100/H200/GB200/TPU/Trainium throughput | pending | Need source review | open |
+| 2026-05-15 | SemiAnalysis InferenceX benchmark methodology and tokens/MW proxy extraction | high | Benchmark/proxy evidence with model, hardware, batch, latency, utilization caveats | open |
+| 2026-05-15 | AI 2027 agentic workload and test-time compute implications for tokens/MW | medium | Scenario stress-test for longer context/tool-use/reasoning load; not benchmark fact | open |
 
 ## Next Agent Prompt
 

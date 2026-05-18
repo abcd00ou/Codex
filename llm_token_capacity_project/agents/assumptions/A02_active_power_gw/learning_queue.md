@@ -5,6 +5,8 @@
 | 2026-05-15 | data center energization milestone source | pending | Need source review | open |
 | 2026-05-15 | GPU/ASIC cluster online evidence | pending | Need source review | open |
 | 2026-05-15 | transformer/cooling/rack deployment bottleneck | pending | Need source review | open |
+| 2026-05-15 | Introl infrastructure content for energization, cooling, rack deployment bottlenecks | high | Practitioner context, not direct active GW unless primary source exists | open |
+| 2026-05-15 | Deloitte power/cooling/grid constraint reports for active deployment scenario framing | medium | Market context for deployment ratio; not direct active GW | open |
 
 ## Next Agent Prompt
 

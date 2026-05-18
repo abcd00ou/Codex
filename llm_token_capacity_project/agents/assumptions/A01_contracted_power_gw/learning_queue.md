@@ -5,6 +5,8 @@
 | 2026-05-15 | OpenAI/Stargate site별 planned vs operational milestone | pending | Need source review | open |
 | 2026-05-15 | Anthropic/AWS capacity commitment definition | pending | Need source review | open |
 | 2026-05-15 | Google/Meta capex와 actual energized AI capacity 연결 | pending | Need source review | open |
+| 2026-05-15 | Introl infrastructure content for planned/contracted/operational wording discipline | medium | Practitioner context, must trace numeric claims to primary source | open |
+| 2026-05-15 | Deloitte AI data center reports for macro contracted/planned capacity framing | medium | Consulting market context; trace numeric claims to government/company primary source | open |
 
 ## Next Agent Prompt
 

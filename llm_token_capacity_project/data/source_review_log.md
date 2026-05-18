@@ -5,6 +5,11 @@
 | 날짜 | source_id | 확인한 항목 | 결과 | 후속 조치 |
 |---|---|---|---|---|
 | 2026-05-14 | 전체 | 독립 프로젝트 초기화 | 기존 생성기와 산출물 이관 | 다음 cycle에서 URL/원문 quote pack 보강 |
+| 2026-05-15 | WATCH_INFERENCEX | InferenceX/SemiAnalysis benchmark source 후보 | benchmark/proxy layer 후보로 분류 | A08/A09 agent가 source-reviewed evidence로 승격 검토 |
+| 2026-05-15 | WATCH_INTROL | Introl AI infrastructure source 후보 | practitioner context/proxy 후보로 분류 | A01/A02/A03/A04 agent가 deployment context로 검토 |
+| 2026-05-15 | WATCH_DELOITTE_AI_DC | Deloitte AI/data center/semiconductor 리포트 후보 | consulting market context/scenario source로 분류 | A01/A02/A05/A06/A10 agent가 source-reviewed evidence로 승격 검토 |
+| 2026-05-15 | WATCH_AI_2027 | AI 2027 scenario 후보 | scenario/stress-test source로 분류 | A05/A06/A08/A09/A10 및 orchestrator가 Base와 분리해 검토 |
+| 2026-05-18 | WATCH_2026_SERVING_ENERGY | 2026 inference serving/energy 논문 묶음 | paper/benchmark/proxy 후보로 분류 | A08/A09가 tokens/MW, utilization, SLO, energy/query logic으로 검토 |
 
 ## 기록 규칙
 

@@ -7,6 +7,7 @@ This file stores reviewed evidence for `utilization`.
 | evidence_id | source_id | date | evidence_class | exact_claim_or_number | unit | model_field_impacted | confidence | reviewer |
 |---|---|---|---|---|---|---|---|---|
 | A09_E000 | baseline | 2026-05-15 | Scenario | Initial agent created from existing assumption textbook | n/a | utilization | Low-Medium | Codex |
+| A09_E001 | WATCH_INFERENCEX | 2026-05-15 | Proxy | Candidate benchmark/context source for utilization, batching and benchmark-to-production gap; not yet promoted to numeric model input | n/a | utilization | Low-Medium | Codex |
 
 ## Review Notes
 

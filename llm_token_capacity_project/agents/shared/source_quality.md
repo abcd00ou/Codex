@@ -30,3 +30,15 @@ source quality는 숫자보다 중요합니다. 낮은 품질의 source에서 �
 | 논문 benchmark를 company proxy로 사용 | Medium-Low |
 | 언론 보도 단독 | Low-Medium |
 | anonymous/undated | Reject |
+
+## Named Watch Sources
+
+아래 source는 유용하지만 사용 범위를 제한합니다.
+
+| Source | Allowed use | Not allowed |
+|---|---|---|
+| SemiAnalysis InferenceX / InferenceMAX | Benchmark/proxy for serving efficiency, GPU economics, tokens/sec/MW sanity check | Company-specific production telemetry로 확정 사용 |
+| Introl AI infrastructure content | Practitioner context for deployment bottlenecks, power/cooling/rack operationalization | Primary capacity fact로 직접 사용, unless traced to official source |
+| Deloitte AI/data center/semiconductor reports | Market context, scenario framing, demand/capex/power constraint background | Company-level active GW, inference share, or token generation fact로 직접 사용 |
+| AI 2027 / AI Futures Project | Scenario stress-test for capability acceleration, agent adoption, compute-demand shock | Base-case fact, company-level telemetry, or production capacity input으로 직접 사용 |
+| 2026 inference serving/energy papers | Mechanism/proxy for prefill-decode, energy/query, SLO reserve, utilization and serving efficiency | Company-specific production tokens/MW or utilization fact로 직접 사용 |

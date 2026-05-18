@@ -84,3 +84,4 @@ Agent loop:
 - PPT slide count 및 주요 제목 검증
 - confidence downgrade 후보 자동 생성
 - 신규 official source가 발견되면 assumption replacement path 제안
+- `agent_learning_expansion_pack.md`의 source를 agent별 `evidence.md`로 승격하는 semi-automated review form

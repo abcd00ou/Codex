@@ -5,6 +5,7 @@
 | 2026-05-15 | dedicated AI campus disclosures | pending | Need source review | open |
 | 2026-05-15 | RAG/storage/control plane load | pending | Need source review | open |
 | 2026-05-15 | rack-scale AI server overhead | pending | Need source review | open |
+| 2026-05-15 | Introl content for AI cluster overhead, storage/network/control plane context | medium | Practitioner context for AI workload share, not company-specific fact | open |
 
 ## Next Agent Prompt
 

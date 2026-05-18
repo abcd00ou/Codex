@@ -49,6 +49,7 @@ llm_token_capacity_project/
   data/
     source_review_log.md
     assumption_change_log.md
+    source_watchlist.md
   agents/
     README.md
     shared/
@@ -86,16 +87,24 @@ llm_token_capacity_project/
 - `outputs/reports/assumptions/`: 10개 핵심 가정별 Word 보고서
 - `agents/`: 각 가정을 agent처럼 계속 학습·검증·업데이트하기 위한 운영 폴더
 - `docs/agent_learning_playbook.md`: agent를 실제로 학습시키고 업데이트하는 운영 playbook
+- `data/source_watchlist.md`: InferenceX, Introl 등 다음 cycle에서 검토할 source 후보 목록
+- `docs/reference_research_landscape.md`: 전문 리포트/논문/시장자료 reference landscape
+- `docs/expert_learning_pack.md`: 52개 전문 source 기반의 6-module 심화 학습자료
+- `outputs/reports/expert_learning_pack_kr.docx`: 심화 학습자료 Word 보고서
+- `docs/agent_learning_expansion_pack.md`: 10개 agent별 2026-05-18 학습 확장 커리큘럼
+- `outputs/reports/agent_learning_expansion_pack_kr.docx`: agent 학습 확장 Word 보고서
 
 추천 학습 순서:
 
 1. `llm_compute_power_theory_reader.md`로 전력과 compute allocation의 기본 이론을 공부합니다.
 2. `assumption_learning_kit.md`의 1페이지 계산 지도를 읽습니다.
-3. `docs/assumptions/README.md`에서 10개 가정별 전문 리포트를 순서대로 읽습니다.
-4. 매주 하나의 assumption module만 고릅니다.
-5. 공식 source 2개에서 숫자 3개만 추출합니다.
-6. 추출값을 fact/estimate/proxy/scenario로 분류합니다.
-7. 변경 후보를 `data/assumption_change_log.md`에 기록합니다.
+3. `expert_learning_pack.md`의 6-module study plan으로 전문 source를 넓게 학습합니다.
+4. `agent_learning_expansion_pack.md`로 agent별 최신 학습 과제를 확인합니다.
+5. `docs/assumptions/README.md`에서 10개 가정별 전문 리포트를 순서대로 읽습니다.
+6. 매주 하나의 assumption module만 고릅니다.
+7. 공식 source 2개에서 숫자 3개만 추출합니다.
+8. 추출값을 fact/estimate/proxy/scenario로 분류합니다.
+9. 변경 후보를 `data/assumption_change_log.md`에 기록합니다.
 
 ## Agent 기반 업데이트
 

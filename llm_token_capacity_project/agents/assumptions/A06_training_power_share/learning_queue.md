@@ -5,6 +5,8 @@
 | 2026-05-15 | frontier training compute trend | pending | Need source review | open |
 | 2026-05-15 | model release cadence | pending | Need source review | open |
 | 2026-05-15 | post-training and eval infrastructure evidence | pending | Need source review | open |
+| 2026-05-15 | Deloitte AI investment and model development reports for training/inference mix context | medium | Market context; combine with Epoch/arXiv for training compute theory | open |
+| 2026-05-15 | AI 2027 capability race scenario impact on training/post-training reserve | medium | Scenario stress-test only; keep separate from Base | open |
 
 ## Next Agent Prompt
 
