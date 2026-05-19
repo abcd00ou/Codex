@@ -11,6 +11,9 @@
 - Dashboard: https://inferencex.semianalysis.com/
 - 최신 확인 DB dump: `db-dump/2026-05-11` / `inferencex-dump-2026-05-11.zip` / 2072340792 bytes
 - App README 기준: dashboard는 Neon PostgreSQL 또는 static JSON dump를 데이터 소스로 사용합니다.
+- Full dump parse status: `parsed`
+- Full dump benchmark rows: `72091` / total records `72091`
+- Full dump SHA-256: `3f59aa2b4db7a0449a7bb030d70cdc3780fc59cafddf6ff071beb36365b44e2d`
 
 ## Source 우선순위
 
@@ -63,3 +66,4 @@ source_file, source_kind, benchmark_id, dashboard_tab, model, model_family, gpu,
 - `data/inferencex/normalized/inferencex_source_index.csv`
 - `data/inferencex/normalized/inferencex_normalized_schema.csv`
 - main simulation workbook의 `12_inferencex_source_index`, `12a_inferencex_schema`, `12b_inferencex_tab_rules`
+- full dump 처리 시 `inferencex_benchmark_results.csv`, `inferencex_metric_profile.csv`, `inferencex_accuracy_evals.csv`, `inferencex_dump_inventory.csv`

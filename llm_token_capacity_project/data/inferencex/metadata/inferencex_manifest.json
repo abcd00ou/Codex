@@ -1,6 +1,6 @@
 {
   "generated_at": "2026-05-19",
-  "generated_at_utc": "2026-05-19T01:37:57.244790+00:00",
+  "generated_at_utc": "2026-05-19T02:31:57.627907+00:00",
   "source": "InferenceX public GitHub repos and dashboard DB dump releases",
   "benchmark_repo": "https://github.com/SemiAnalysisAI/InferenceX",
   "app_repo": "https://github.com/SemiAnalysisAI/InferenceX-app",
@@ -20,6 +20,20 @@
   "raw_file_count": 10,
   "release_asset_count": 8,
   "normalized_index_rows": 10,
+  "parsed_dump": {
+    "status": "parsed",
+    "zip_path": "llm_token_capacity_project/data/inferencex/raw/inferencex-dump-2026-05-11.zip",
+    "prefix": "inferencex-dump-2026-05-11",
+    "sha256": "3f59aa2b4db7a0449a7bb030d70cdc3780fc59cafddf6ff071beb36365b44e2d",
+    "inventory_rows": 9,
+    "benchmark_rows": 72091,
+    "benchmark_records_total": 72091,
+    "metric_profile_rows": 298,
+    "accuracy_eval_rows": 1048,
+    "run_stats_rows": 4484,
+    "availability_rows": 5620,
+    "gpu_power_source": "InferenceX-app packages/constants/src/gpu-keys.ts; power field is kW/GPU used by dashboard energy and TCO transforms."
+  },
   "dashboard_tabs": [
     {
       "dashboard_tab": "inference_performance",

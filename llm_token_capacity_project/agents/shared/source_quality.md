@@ -50,3 +50,4 @@ source quality는 숫자보다 중요합니다. 낮은 품질의 source에서 �
 - Do not average across ISL/OSL, precision, GPU, or framework unless the aggregation method is explicitly documented.
 - Treat TCO calculator values as commercial sensitivity and memory-marketing support, not as production token volume.
 - Treat accuracy evals as quality guardrails for quantization/precision, not as throughput evidence.
+- The 2026-05-11 full dump has verified SHA-256 `3f59aa2b4db7a0449a7bb030d70cdc3780fc59cafddf6ff071beb36365b44e2d`; use `inferencex_benchmark_results.csv` for row-level audit and `inferencex_metric_profile.csv` for grouped p10/p50/p90 bands.

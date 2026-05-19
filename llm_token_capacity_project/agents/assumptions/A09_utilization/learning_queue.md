@@ -7,7 +7,8 @@
 | 2026-05-15 | serving scheduler improvements | pending | Need source review | open |
 | 2026-05-15 | SemiAnalysis InferenceX utilization, batching, latency and serving stack assumptions | high | Proxy/context evidence for average utilization and benchmark-to-production gap | open |
 | 2026-05-15 | AI 2027 agentic workload scenario impact on utilization, peak reserve, and traffic shape | medium | Scenario stress-test; separate from production utilization fact | open |
-| 2026-05-19 | Use InferenceX concurrency, TTFT/TPOT, ISL/OSL and latency tables for strict-SLO vs batchable utilization calibration | high | normalized benchmark rows mapped into utilization profiles; Base unchanged until orchestrator review | open |
+| 2026-05-19 | Use InferenceX concurrency, TTFT/TPOT, ISL/OSL and latency tables for strict-SLO vs batchable utilization calibration | high | normalized benchmark rows mapped into utilization profiles; Base unchanged until orchestrator review | done - 2026-05-19 |
+| 2026-05-19 | Build utilization profiles from InferenceX p99 TTFT/TPOT and concurrency groups | high | strict-SLO, balanced, batchable profile thresholds with benchmark-to-production haircut | open |
 
 ## Next Agent Prompt
 

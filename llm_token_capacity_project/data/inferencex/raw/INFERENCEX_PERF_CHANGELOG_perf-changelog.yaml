@@ -2888,3 +2888,16 @@
   description:
     - "Update vLLM image from v0.20.2 to v0.21.0"
   pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1504
+
+- config-keys:
+    - dsv4-fp4-gb200-dynamo-vllm-mtp2
+  description:
+    - "Upgrade GB200 DSV4 MTP2 1P/1D DEP8 MegaMOE mid-curve recipe to vLLM v0.21.0"
+    - "Extend mid-curve concurrency sweep to also benchmark conc=256, conc=512, and conc=1024"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1390
+
+- config-keys:
+    - qwen3.5-fp4-mi355x-sglang-mtp
+  description:
+    - "Add MI355X config: qwen3.5-fp4-sglang-mtp using lmsysorg/sglang-rocm:v0.5.12-rocm720-mi35x-20260517"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1445

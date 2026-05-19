@@ -15,6 +15,7 @@
 | 2026-05-18 | ARXIV_SLO_PD_2603 | SLO-aware P/D resource allocation | mechanism source로 A09 evidence 승격 | utilization caveat 강화 |
 | 2026-05-18 | ARXIV_PREFILL_SERVICE_2604 | Prefill-as-a-service | scenario/mechanism source로 A09 evidence 승격 | agentic workload placement/network sensitivity 후보 |
 | 2026-05-19 | WATCH_INFERENCEX | InferenceX benchmark repo README, `perf-changelog.yaml`, dashboard app README/.env/docs/API/release metadata | public benchmark + app + weekly DB dump source로 확인. Latest checked release: `db-dump/2026-05-11`, asset `inferencex-dump-2026-05-11.zip`; source remains Proxy/Benchmark, not company telemetry | `tools/fetch_inferencex_data.py`, `docs/inferencex_ingestion_plan.md`, Excel `12*` sheets로 ingestion layer 운영 |
+| 2026-05-19 | INFERENCEX_DUMP_2026_05_11 | GitHub release full DB dump, SHA-256 `3f59aa2b4db7a0449a7bb030d70cdc3780fc59cafddf6ff071beb36365b44e2d` | 72,091 inference performance rows, 298 metric profile groups, 1,048 accuracy eval rows, 5,620 availability rows normalized. GPU power/cost mapping follows InferenceX-app `HW_REGISTRY`; source remains Proxy/Benchmark | A08/A09 evidence로 승격. Base coefficient는 변경하지 않고 `12d_ix_benchmark_results`, `12e_ix_metric_profile`, `12f_ix_accuracy_evals`에서 검증 |
 
 ## 기록 규칙
 

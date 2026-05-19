@@ -18,6 +18,7 @@ import shutil
 import urllib.error
 import urllib.request
 import zipfile
+from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -157,6 +158,103 @@ NORMALIZED_HEADERS = [
     "caveat",
 ]
 
+DUMP_BENCHMARK_HEADERS = NORMALIZED_HEADERS + [
+    "benchmark_type",
+    "config_id",
+    "workflow_run_id",
+    "error",
+    "mean_ttft_ms",
+    "mean_tpot_ms",
+    "median_ttft_ms",
+    "median_tpot_ms",
+    "mean_e2el_s",
+    "p99_e2el_s",
+    "total_tok_s_mw",
+    "output_tok_s_mw",
+    "input_tok_s_mw",
+    "j_total_token",
+    "j_output_token",
+    "j_input_token",
+    "cost_hyperscaler_per_mtok_usd",
+    "cost_neocloud_per_mtok_usd",
+    "cost_retail_per_mtok_usd",
+]
+
+DUMP_SUMMARY_HEADERS = [
+    "group_key",
+    "model",
+    "gpu",
+    "gpu_vendor",
+    "framework",
+    "precision",
+    "isl",
+    "osl",
+    "row_count",
+    "date_min",
+    "date_max",
+    "tok_s_gpu_p10",
+    "tok_s_gpu_p50",
+    "tok_s_gpu_p90",
+    "tok_s_mw_p10",
+    "tok_s_mw_p50",
+    "tok_s_mw_p90",
+    "output_tok_s_mw_p10",
+    "output_tok_s_mw_p50",
+    "output_tok_s_mw_p90",
+    "p99_ttft_ms_p50",
+    "p99_tpot_ms_p50",
+    "j_output_token_p50",
+    "source_id",
+    "caveat",
+]
+
+DUMP_EVAL_HEADERS = [
+    "source_file",
+    "eval_id",
+    "workflow_run_id",
+    "config_id",
+    "task",
+    "model",
+    "gpu",
+    "gpu_vendor",
+    "framework",
+    "precision",
+    "isl",
+    "osl",
+    "concurrency",
+    "score",
+    "score_se",
+    "n_eff",
+    "benchmark_date",
+    "source_url",
+    "evidence_class",
+    "caveat",
+]
+
+DUMP_INVENTORY_HEADERS = [
+    "source_file",
+    "file_size_bytes",
+    "compressed_size_bytes",
+    "record_count",
+    "parse_status",
+    "notes",
+]
+
+GPU_REGISTRY = {
+    # Source: InferenceX-app packages/constants/src/gpu-keys.ts, fetched 2026-05-19.
+    # power is kW per GPU and is intentionally higher than chip TDP because the
+    # dashboard models datacenter system-level power for energy/cost charts.
+    "h100": {"gpu_vendor": "NVIDIA", "label": "H100", "tdp_w": 700, "power_kw": 1.73, "costh": 1.30, "costn": 1.69, "costr": 1.30},
+    "h200": {"gpu_vendor": "NVIDIA", "label": "H200", "tdp_w": 700, "power_kw": 1.73, "costh": 1.41, "costn": 1.74, "costr": 1.60},
+    "b200": {"gpu_vendor": "NVIDIA", "label": "B200", "tdp_w": 1000, "power_kw": 2.17, "costh": 1.95, "costn": 2.34, "costr": 2.90},
+    "b300": {"gpu_vendor": "NVIDIA", "label": "B300", "tdp_w": 1200, "power_kw": 2.17, "costh": 2.34, "costn": 2.808, "costr": 3.48},
+    "gb200": {"gpu_vendor": "NVIDIA", "label": "GB200 NVL72", "tdp_w": 1200, "power_kw": 2.10, "costh": 2.21, "costn": 2.75, "costr": 3.30},
+    "gb300": {"gpu_vendor": "NVIDIA", "label": "GB300 NVL72", "tdp_w": 1400, "power_kw": 2.10, "costh": 2.652, "costn": 3.30, "costr": 3.96},
+    "mi300x": {"gpu_vendor": "AMD", "label": "MI300X", "tdp_w": 750, "power_kw": 1.79, "costh": 1.12, "costn": 1.40, "costr": 1.55},
+    "mi325x": {"gpu_vendor": "AMD", "label": "MI325X", "tdp_w": 1000, "power_kw": 2.18, "costh": 1.28, "costn": 1.59, "costr": 1.80},
+    "mi355x": {"gpu_vendor": "AMD", "label": "MI355X", "tdp_w": 1400, "power_kw": 2.65, "costh": 1.48, "costn": 1.90, "costr": 2.10},
+}
+
 FIELD_ALIASES = {
     "model": ["model", "model_name", "model_key", "scenario_model", "hf_model_id"],
     "model_family": ["model_family", "family", "model_group"],
@@ -262,6 +360,282 @@ def write_csv(path: Path, rows: list[dict[str, Any]], headers: list[str]) -> Non
             writer.writerow({h: row.get(h, "") for h in headers})
 
 
+def read_json_from_zip(zip_path: Path, member: str) -> Any:
+    with zipfile.ZipFile(zip_path) as zf:
+        return json.loads(zf.read(member).decode("utf-8"))
+
+
+def dump_prefix(zip_path: Path) -> str:
+    with zipfile.ZipFile(zip_path) as zf:
+        for name in zf.namelist():
+            if name.endswith("/benchmark_results.json"):
+                return name.rsplit("/", 1)[0]
+    raise FileNotFoundError("benchmark_results.json not found in InferenceX dump zip")
+
+
+def as_float(value: Any) -> float | None:
+    try:
+        if value in ("", None):
+            return None
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def percentile(values: list[float], pct: float) -> float | None:
+    vals = sorted(v for v in values if v is not None)
+    if not vals:
+        return None
+    if len(vals) == 1:
+        return vals[0]
+    pos = (len(vals) - 1) * pct
+    lo = int(pos)
+    hi = min(lo + 1, len(vals) - 1)
+    frac = pos - lo
+    return vals[lo] * (1 - frac) + vals[hi] * frac
+
+
+def money_per_mtok(cost_per_gpu_hour: float | None, output_tok_s_gpu: float | None) -> float | None:
+    if not cost_per_gpu_hour or not output_tok_s_gpu:
+        return None
+    return cost_per_gpu_hour / (output_tok_s_gpu * 3600) * 1_000_000
+
+
+def build_config_maps(configs: list[dict[str, Any]]) -> dict[int, dict[str, Any]]:
+    return {int(row["id"]): row for row in configs if row.get("id") is not None}
+
+
+def normalize_hardware_key(hardware: Any) -> str:
+    return str(hardware or "").lower().split("_")[0].split("-")[0]
+
+
+def source_url_for_dump(tag_name: str | None) -> str:
+    tag = tag_name or "db-dump/2026-05-11"
+    return f"https://github.com/{APP_REPO}/releases/tag/{tag}"
+
+
+def normalize_inferencex_benchmark_row(
+    record: dict[str, Any],
+    config: dict[str, Any],
+    zip_path: Path,
+    release_tag: str | None,
+) -> dict[str, Any]:
+    metrics = record.get("metrics") or {}
+    hardware = normalize_hardware_key(config.get("hardware"))
+    gpu = GPU_REGISTRY.get(hardware, {})
+    power_kw = as_float(gpu.get("power_kw"))
+    power_w = power_kw * 1000 if power_kw else None
+    total_tput = as_float(metrics.get("tput_per_gpu"))
+    input_tput = as_float(metrics.get("input_tput_per_gpu"))
+    output_tput = as_float(metrics.get("output_tput_per_gpu"))
+    tok_s_mw = total_tput * 1000 / power_kw if total_tput and power_kw else None
+    input_tok_s_mw = input_tput * 1000 / power_kw if input_tput and power_kw else None
+    output_tok_s_mw = output_tput * 1000 / power_kw if output_tput and power_kw else None
+    source_file = f"{zip_path.name}:benchmark_results.json"
+    return {
+        "source_file": source_file,
+        "source_kind": "inferencex_db_dump",
+        "benchmark_id": record.get("id"),
+        "dashboard_tab": "inference_performance",
+        "model": config.get("model"),
+        "model_family": config.get("model"),
+        "gpu": hardware,
+        "gpu_vendor": gpu.get("gpu_vendor", ""),
+        "gpu_count": config.get("num_decode_gpu") or config.get("num_prefill_gpu"),
+        "framework": config.get("framework"),
+        "runtime": record.get("image") or "",
+        "precision": config.get("precision"),
+        "isl": record.get("isl"),
+        "osl": record.get("osl"),
+        "concurrency": record.get("conc"),
+        "batch_size": "",
+        "metric_name": "tput_per_gpu",
+        "metric_value": total_tput,
+        "metric_unit": "tokens/s/GPU",
+        "tok_s_user": "",
+        "tok_s_gpu": total_tput,
+        "tok_s_mw": tok_s_mw,
+        "input_tok_s_gpu": input_tput,
+        "output_tok_s_gpu": output_tput,
+        "joules_token": power_w / output_tput if power_w and output_tput else "",
+        "p99_ttft_ms": metrics.get("p99_ttft"),
+        "p99_tpot_ms": metrics.get("p99_tpot"),
+        "cost_per_million_tokens_usd": money_per_mtok(as_float(gpu.get("costh")), output_tput),
+        "power_w": power_w,
+        "benchmark_date": record.get("date"),
+        "github_run_url": "",
+        "source_url": source_url_for_dump(release_tag),
+        "evidence_class": "Proxy/Benchmark",
+        "caveat": "InferenceX dump row. Benchmark/proxy only; not company production telemetry. Match ISL/OSL/framework/precision before using.",
+        "benchmark_type": record.get("benchmark_type"),
+        "config_id": record.get("config_id"),
+        "workflow_run_id": record.get("workflow_run_id"),
+        "error": record.get("error"),
+        "mean_ttft_ms": metrics.get("mean_ttft"),
+        "mean_tpot_ms": metrics.get("mean_tpot"),
+        "median_ttft_ms": metrics.get("median_ttft"),
+        "median_tpot_ms": metrics.get("median_tpot"),
+        "mean_e2el_s": metrics.get("mean_e2el"),
+        "p99_e2el_s": metrics.get("p99_e2el"),
+        "total_tok_s_mw": tok_s_mw,
+        "output_tok_s_mw": output_tok_s_mw,
+        "input_tok_s_mw": input_tok_s_mw,
+        "j_total_token": power_w / total_tput if power_w and total_tput else "",
+        "j_output_token": power_w / output_tput if power_w and output_tput else "",
+        "j_input_token": power_w / input_tput if power_w and input_tput else "",
+        "cost_hyperscaler_per_mtok_usd": money_per_mtok(as_float(gpu.get("costh")), output_tput),
+        "cost_neocloud_per_mtok_usd": money_per_mtok(as_float(gpu.get("costn")), output_tput),
+        "cost_retail_per_mtok_usd": money_per_mtok(as_float(gpu.get("costr")), output_tput),
+    }
+
+
+def summarize_benchmark_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    groups: dict[tuple[Any, ...], list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        key = (row.get("model"), row.get("gpu"), row.get("gpu_vendor"), row.get("framework"), row.get("precision"), row.get("isl"), row.get("osl"))
+        groups[key].append(row)
+    out: list[dict[str, Any]] = []
+    for key, items in sorted(groups.items(), key=lambda kv: (str(kv[0]), -len(kv[1]))):
+        model, gpu, vendor, framework, precision, isl, osl = key
+        dates = [str(i.get("benchmark_date") or "")[:10] for i in items if i.get("benchmark_date")]
+        def vals(field: str) -> list[float]:
+            return [v for v in (as_float(i.get(field)) for i in items) if v is not None]
+        row = {
+            "group_key": "|".join(str(x) for x in key),
+            "model": model,
+            "gpu": gpu,
+            "gpu_vendor": vendor,
+            "framework": framework,
+            "precision": precision,
+            "isl": isl,
+            "osl": osl,
+            "row_count": len(items),
+            "date_min": min(dates) if dates else "",
+            "date_max": max(dates) if dates else "",
+            "tok_s_gpu_p10": percentile(vals("tok_s_gpu"), 0.10),
+            "tok_s_gpu_p50": percentile(vals("tok_s_gpu"), 0.50),
+            "tok_s_gpu_p90": percentile(vals("tok_s_gpu"), 0.90),
+            "tok_s_mw_p10": percentile(vals("tok_s_mw"), 0.10),
+            "tok_s_mw_p50": percentile(vals("tok_s_mw"), 0.50),
+            "tok_s_mw_p90": percentile(vals("tok_s_mw"), 0.90),
+            "output_tok_s_mw_p10": percentile(vals("output_tok_s_mw"), 0.10),
+            "output_tok_s_mw_p50": percentile(vals("output_tok_s_mw"), 0.50),
+            "output_tok_s_mw_p90": percentile(vals("output_tok_s_mw"), 0.90),
+            "p99_ttft_ms_p50": percentile(vals("p99_ttft_ms"), 0.50),
+            "p99_tpot_ms_p50": percentile(vals("p99_tpot_ms"), 0.50),
+            "j_output_token_p50": percentile(vals("j_output_token"), 0.50),
+            "source_id": "INFERENCEX_DUMP_2026_05_11",
+            "caveat": "Grouped benchmark summary; do not average across groups without weighting and SLO comparability checks.",
+        }
+        out.append(row)
+    return out
+
+
+def normalize_inferencex_eval_row(
+    record: dict[str, Any],
+    config: dict[str, Any],
+    zip_path: Path,
+    release_tag: str | None,
+) -> dict[str, Any]:
+    metrics = record.get("metrics") or {}
+    hardware = normalize_hardware_key(config.get("hardware"))
+    gpu = GPU_REGISTRY.get(hardware, {})
+    return {
+        "source_file": f"{zip_path.name}:eval_results.json",
+        "eval_id": record.get("id"),
+        "workflow_run_id": record.get("workflow_run_id"),
+        "config_id": record.get("config_id"),
+        "task": record.get("task"),
+        "model": config.get("model"),
+        "gpu": hardware,
+        "gpu_vendor": gpu.get("gpu_vendor", ""),
+        "framework": config.get("framework"),
+        "precision": config.get("precision"),
+        "isl": record.get("isl"),
+        "osl": record.get("osl"),
+        "concurrency": record.get("conc"),
+        "score": metrics.get("score"),
+        "score_se": metrics.get("score_se"),
+        "n_eff": metrics.get("n_eff"),
+        "benchmark_date": record.get("date"),
+        "source_url": source_url_for_dump(release_tag),
+        "evidence_class": "Proxy/Benchmark",
+        "caveat": "Accuracy eval proxy. Use as quality guardrail when precision/framework changes throughput.",
+    }
+
+
+def process_inferencex_dump_zip(zip_path: Path, release_tag: str | None, max_rows: int) -> dict[str, Any]:
+    if not zip_path.exists():
+        return {"status": "skipped", "reason": f"dump zip not found: {zip_path}", "benchmark_rows": []}
+    prefix = dump_prefix(zip_path)
+    inventory: list[dict[str, Any]] = []
+    with zipfile.ZipFile(zip_path) as zf:
+        for info in zf.infolist():
+            if info.is_dir():
+                continue
+            record_count = ""
+            status = "indexed"
+            notes = ""
+            if info.filename.endswith((".json", ".jsonl")) and info.file_size <= 100_000_000:
+                try:
+                    obj = json.loads(zf.read(info.filename).decode("utf-8"))
+                    record_count = len(obj) if isinstance(obj, list) else 1
+                    status = "parsed"
+                except Exception as exc:  # noqa: BLE001 - inventory should not fail the run.
+                    status = "parse_error"
+                    notes = str(exc)[:200]
+            elif info.file_size > 100_000_000:
+                notes = "Large table kept in raw zip; parse only with dedicated streaming job."
+            inventory.append(
+                {
+                    "source_file": info.filename,
+                    "file_size_bytes": info.file_size,
+                    "compressed_size_bytes": info.compress_size,
+                    "record_count": record_count,
+                    "parse_status": status,
+                    "notes": notes,
+                }
+            )
+
+    configs = read_json_from_zip(zip_path, f"{prefix}/configs.json")
+    config_by_id = build_config_maps(configs)
+    benchmark_records = read_json_from_zip(zip_path, f"{prefix}/benchmark_results.json")
+    benchmark_rows = [
+        normalize_inferencex_benchmark_row(record, config_by_id.get(int(record.get("config_id", -1)), {}), zip_path, release_tag)
+        for record in benchmark_records[:max_rows]
+    ]
+    summary_rows = summarize_benchmark_rows(benchmark_rows)
+    eval_records = read_json_from_zip(zip_path, f"{prefix}/eval_results.json")
+    eval_rows = [
+        normalize_inferencex_eval_row(record, config_by_id.get(int(record.get("config_id", -1)), {}), zip_path, release_tag)
+        for record in eval_records[:max_rows]
+    ]
+    run_stats = read_json_from_zip(zip_path, f"{prefix}/run_stats.json")
+    availability = read_json_from_zip(zip_path, f"{prefix}/availability.json")
+
+    write_csv(NORM_DIR / "inferencex_dump_inventory.csv", inventory, DUMP_INVENTORY_HEADERS)
+    write_csv(NORM_DIR / "inferencex_benchmark_results.csv", benchmark_rows, DUMP_BENCHMARK_HEADERS)
+    write_csv(NORM_DIR / "inferencex_metric_profile.csv", summary_rows, DUMP_SUMMARY_HEADERS)
+    write_csv(NORM_DIR / "inferencex_accuracy_evals.csv", eval_rows, DUMP_EVAL_HEADERS)
+    write_csv(NORM_DIR / "inferencex_run_stats.csv", run_stats, list(run_stats[0].keys()) if run_stats else ["id"])
+    write_csv(NORM_DIR / "inferencex_availability.csv", availability, list(availability[0].keys()) if availability else ["model"])
+
+    return {
+        "status": "parsed",
+        "zip_path": str(zip_path.relative_to(ROOT)) if zip_path.is_relative_to(ROOT) else str(zip_path),
+        "prefix": prefix,
+        "sha256": sha256(zip_path),
+        "inventory_rows": len(inventory),
+        "benchmark_rows": len(benchmark_rows),
+        "benchmark_records_total": len(benchmark_records),
+        "metric_profile_rows": len(summary_rows),
+        "accuracy_eval_rows": len(eval_rows),
+        "run_stats_rows": len(run_stats),
+        "availability_rows": len(availability),
+        "gpu_power_source": "InferenceX-app packages/constants/src/gpu-keys.ts; power field is kW/GPU used by dashboard energy and TCO transforms.",
+    }
+
+
 def collect_releases(repo: str) -> list[dict[str, Any]]:
     releases = fetch_json(f"{GITHUB_API}/repos/{repo}/releases?per_page=30")
     rows = []
@@ -327,14 +701,29 @@ def download_latest_release_asset(releases: list[dict[str, Any]]) -> dict[str, A
     if not url:
         return {"status": "skipped", "reason": "latest release has no asset URL"}
     target = RAW_DIR / safe_name(latest["asset_name"])
-    body, _headers = fetch_bytes(url)
-    target.write_bytes(body)
+    req = request(url)
+    bytes_written = 0
+    with urllib.request.urlopen(req, timeout=120) as resp, target.open("wb") as f:
+        while True:
+            chunk = resp.read(1024 * 1024 * 8)
+            if not chunk:
+                break
+            f.write(chunk)
+            bytes_written += len(chunk)
     extract_dir = RAW_DIR / target.stem
     extracted_files: list[str] = []
+    zip_members: list[dict[str, Any]] = []
     if zipfile.is_zipfile(target):
         extract_dir.mkdir(parents=True, exist_ok=True)
         with zipfile.ZipFile(target) as zf:
             for member in zf.infolist():
+                zip_members.append(
+                    {
+                        "filename": member.filename,
+                        "file_size": member.file_size,
+                        "compress_size": member.compress_size,
+                    }
+                )
                 if member.file_size > 250_000_000:
                     continue
                 zf.extract(member, extract_dir)
@@ -343,8 +732,10 @@ def download_latest_release_asset(releases: list[dict[str, Any]]) -> dict[str, A
         "status": "downloaded",
         "asset_name": latest["asset_name"],
         "asset_size_bytes": latest["asset_size_bytes"],
+        "bytes_written": bytes_written,
         "local_path": str(target.relative_to(ROOT)),
         "sha256": sha256(target),
+        "zip_members": zip_members[:500],
         "extracted_files": extracted_files[:200],
     }
 
@@ -471,6 +862,7 @@ def build_manifest(
     releases: list[dict[str, Any]],
     downloaded_asset: dict[str, Any],
     normalized_rows: list[dict[str, Any]],
+    parsed_dump: dict[str, Any],
 ) -> dict[str, Any]:
     latest_release = releases[0] if releases else {}
     return {
@@ -492,6 +884,7 @@ def build_manifest(
         "raw_file_count": len(raw_rows),
         "release_asset_count": len(releases),
         "normalized_index_rows": len(normalized_rows),
+        "parsed_dump": parsed_dump,
         "dashboard_tabs": TAB_RULES,
         "evidence_rule": "InferenceX is benchmark/proxy data. It can calibrate tokens/sec/MW and utilization sensitivity, but not company-specific production telemetry.",
     }
@@ -513,6 +906,9 @@ def write_docs(manifest: dict[str, Any]) -> None:
         "- Dashboard: https://inferencex.semianalysis.com/",
         f"- 최신 확인 DB dump: `{latest.get('tag_name')}` / `{latest.get('asset_name')}` / {latest.get('asset_size_bytes')} bytes",
         "- App README 기준: dashboard는 Neon PostgreSQL 또는 static JSON dump를 데이터 소스로 사용합니다.",
+        f"- Full dump parse status: `{manifest.get('parsed_dump', {}).get('status', 'not_run')}`",
+        f"- Full dump benchmark rows: `{manifest.get('parsed_dump', {}).get('benchmark_rows', 0)}` / total records `{manifest.get('parsed_dump', {}).get('benchmark_records_total', 0)}`",
+        f"- Full dump SHA-256: `{manifest.get('parsed_dump', {}).get('sha256', '')}`",
         "",
         "## Source 우선순위",
         "",
@@ -564,6 +960,7 @@ def write_docs(manifest: dict[str, Any]) -> None:
         "- `data/inferencex/normalized/inferencex_source_index.csv`",
         "- `data/inferencex/normalized/inferencex_normalized_schema.csv`",
         "- main simulation workbook의 `12_inferencex_source_index`, `12a_inferencex_schema`, `12b_inferencex_tab_rules`",
+        "- full dump 처리 시 `inferencex_benchmark_results.csv`, `inferencex_metric_profile.csv`, `inferencex_accuracy_evals.csv`, `inferencex_dump_inventory.csv`",
     ]
     DOC_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -571,8 +968,10 @@ def write_docs(manifest: dict[str, Any]) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input-dir", type=Path, help="Optional local InferenceX dump/export directory to index.")
+    parser.add_argument("--dump-zip", type=Path, help="Optional local InferenceX DB dump zip to parse without extracting huge files.")
     parser.add_argument("--download-latest-dump", action="store_true", help="Download the latest InferenceX-app DB dump asset.")
     parser.add_argument("--max-rows-per-file", type=int, default=50_000, help="Maximum CSV/JSON rows to normalize per input file.")
+    parser.add_argument("--max-dump-rows", type=int, default=100_000, help="Maximum benchmark/eval rows to normalize from a DB dump zip.")
     args = parser.parse_args()
 
     for path in (RAW_DIR, NORM_DIR, META_DIR):
@@ -587,6 +986,12 @@ def main() -> None:
         downloaded_asset = download_latest_release_asset(releases)
 
     normalized_rows = normalize_input_dir(args.input_dir, args.max_rows_per_file)
+    latest_asset = releases[0].get("asset_name") if releases else ""
+    default_zip = RAW_DIR / safe_name(latest_asset) if latest_asset else Path()
+    dump_zip = args.dump_zip or (default_zip if default_zip.exists() else None)
+    parsed_dump = {"status": "skipped", "reason": "no local dump zip found; pass --dump-zip or --download-latest-dump"}
+    if dump_zip:
+        parsed_dump = process_inferencex_dump_zip(dump_zip, releases[0].get("tag_name") if releases else None, args.max_dump_rows)
     write_csv(NORM_DIR / "inferencex_source_index.csv", normalized_rows, NORMALIZED_HEADERS)
     write_csv(NORM_DIR / "inferencex_normalized_schema.csv", [{h: "" for h in NORMALIZED_HEADERS}], NORMALIZED_HEADERS)
     write_csv(NORM_DIR / "inferencex_tab_rules.csv", TAB_RULES, list(TAB_RULES[0].keys()))
@@ -596,7 +1001,7 @@ def main() -> None:
         list(raw_rows[0].keys()) if raw_rows else ["source_id"],
     )
 
-    manifest = build_manifest(raw_rows, releases, downloaded_asset, normalized_rows)
+    manifest = build_manifest(raw_rows, releases, downloaded_asset, normalized_rows, parsed_dump)
     (META_DIR / "inferencex_manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
     write_docs(manifest)
 

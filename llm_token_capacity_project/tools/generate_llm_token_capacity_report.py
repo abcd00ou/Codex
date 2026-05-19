@@ -1558,6 +1558,12 @@ def inferencex_ingestion_payload() -> dict[str, Any]:
     schema_rows = read_csv_rows(base / "normalized" / "inferencex_normalized_schema.csv")
     tab_rules = read_csv_rows(base / "normalized" / "inferencex_tab_rules.csv")
     release_assets = read_csv_rows(base / "normalized" / "inferencex_release_assets.csv")
+    benchmark_results = read_csv_rows(base / "normalized" / "inferencex_benchmark_results.csv")
+    metric_profile = read_csv_rows(base / "normalized" / "inferencex_metric_profile.csv")
+    accuracy_evals = read_csv_rows(base / "normalized" / "inferencex_accuracy_evals.csv")
+    dump_inventory = read_csv_rows(base / "normalized" / "inferencex_dump_inventory.csv")
+    run_stats = read_csv_rows(base / "normalized" / "inferencex_run_stats.csv")
+    availability = read_csv_rows(base / "normalized" / "inferencex_availability.csv")
     if manifest_path.exists():
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     else:
@@ -1592,6 +1598,12 @@ def inferencex_ingestion_payload() -> dict[str, Any]:
             }
         ],
         "release_assets": release_assets[:30],
+        "benchmark_results": benchmark_results,
+        "metric_profile": metric_profile,
+        "accuracy_evals": accuracy_evals,
+        "dump_inventory": dump_inventory,
+        "run_stats": run_stats,
+        "availability": availability,
     }
 
 
@@ -1740,6 +1752,17 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
     if inferencex["release_assets"]:
         ix_release_headers = list(inferencex["release_assets"][0].keys())
         append_rows(sheet("12c_inferencex_releases"), inferencex["release_assets"], ix_release_headers)
+    for sheet_name, key in [
+        ("12d_ix_benchmark_results", "benchmark_results"),
+        ("12e_ix_metric_profile", "metric_profile"),
+        ("12f_ix_accuracy_evals", "accuracy_evals"),
+        ("12g_ix_dump_inventory", "dump_inventory"),
+        ("12h_ix_run_stats", "run_stats"),
+        ("12i_ix_availability", "availability"),
+    ]:
+        rows = inferencex.get(key) or []
+        if rows:
+            append_rows(sheet(sheet_name), rows, list(rows[0].keys()))
 
     hallucination_headers = list(data["hallucination_checklist"][0].keys())
     append_rows(sheet("11_hallucination_checklist"), data["hallucination_checklist"], hallucination_headers)
@@ -2458,6 +2481,7 @@ def write_markdown(data: dict[str, Any], path: Path) -> None:
         )
     ix = data["inferencex"]
     latest = ix["manifest"].get("latest_db_dump", {})
+    parsed = ix["manifest"].get("parsed_dump", {})
     lines += [
         "",
         "## InferenceX Ingestion Layer",
@@ -2465,7 +2489,8 @@ def write_markdown(data: dict[str, Any], path: Path) -> None:
         "- InferenceX는 company production telemetry가 아니라 benchmark/proxy layer입니다.",
         "- Dashboard DOM 크롤링보다 GitHub release DB dump, benchmark repo, app API/schema를 우선합니다.",
         f"- 최신 확인 DB dump: `{latest.get('tag_name', 'not refreshed')}` / `{latest.get('asset_name', '')}` / `{latest.get('asset_size_bytes', '')}` bytes.",
-        "- 정규화 결과는 엑셀 `12_inferencex_source_index`, `12a_inferencex_schema`, `12b_inferencex_tab_rules`에 반영됩니다.",
+        f"- Full dump parse: `{parsed.get('status', 'not_run')}` / benchmark rows `{parsed.get('benchmark_rows', 0)}` / metric profile rows `{parsed.get('metric_profile_rows', 0)}` / SHA-256 `{parsed.get('sha256', '')}`.",
+        "- 정규화 결과는 엑셀 `12d_ix_benchmark_results`, `12e_ix_metric_profile`, `12f_ix_accuracy_evals`, `12g_ix_dump_inventory`에 반영됩니다.",
         "",
         "| Tab | 모델 내 사용처 | Forecast 반영 |",
         "|---|---|---|",
@@ -2986,18 +3011,19 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
     latest = data["inferencex"]["manifest"].get("latest_db_dump", {})
+    parsed = data["inferencex"]["manifest"].get("parsed_dump", {})
     add_title(slide, "InferenceX는 benchmark DB로 별도 수집한다", "대시보드 DOM이 아니라 GitHub release dump와 app schema를 기준으로 A08/A09 sensitivity를 갱신한다.")
     ix_cards = [
         ("최신 dump", latest.get("tag_name", "not refreshed"), latest.get("asset_name", "")),
-        ("수집 row", str(len(data["inferencex"]["source_index"])), "raw README, changelog, app docs, release metadata"),
+        ("Benchmark rows", str(parsed.get("benchmark_rows", 0)), f"profile {parsed.get('metric_profile_rows', 0)} / eval {parsed.get('accuracy_eval_rows', 0)}"),
         ("Evidence class", "Proxy / Benchmark", "company production telemetry로 직접 사용 금지"),
-        ("Workbook sheets", "12 / 12a / 12b", "source index, schema, dashboard tab rules"),
+        ("Workbook sheets", "12d / 12e / 12f", "benchmark, metric profile, accuracy evals"),
     ]
     for i, (label, value, note) in enumerate(ix_cards):
         metric_card(slide, 0.8 + (i % 2) * 6.1, 1.35 + (i // 2) * 1.65, 5.65, 1.05, label, value, note, [pale_blue, pale_green, pale_amber, RGBColor(240, 244, 248)][i])
     tab_text = "Inference Performance → tokens/MW, latency | Accuracy Evals → precision quality guardrail | Historical Trends → software improvement CAGR | TCO/GPU Specs → cost/token and hardware sanity"
     add_label(slide, 0.9, 5.15, 11.55, 0.85, tab_text, 12, navy, True)
-    add_label(slide, 0.9, 6.08, 11.55, 0.45, "대용량 DB dump는 기본 실행에서 받지 않고 `fetch_inferencex_data.py --download-latest-dump`로 명시 실행합니다.", 11, muted)
+    add_label(slide, 0.9, 6.08, 11.55, 0.45, f"검증 digest: {parsed.get('sha256', '')[:24]}... / 원천 dump는 git ignore, 정규화 CSV만 산출물화.", 11, muted)
     add_footer(slide)
 
     # 14. Hallucination audit checklist
@@ -3078,6 +3104,22 @@ def build_payload() -> dict[str, Any]:
     return data
 
 
+def lightweight_payload(data: dict[str, Any]) -> dict[str, Any]:
+    """Keep machine-readable/HTML artifacts small while preserving full XLSX rows."""
+    slim = dict(data)
+    ix = dict(data.get("inferencex", {}))
+    benchmark_rows = ix.get("benchmark_results") or []
+    ix["benchmark_results_preview"] = benchmark_rows[:250]
+    ix["benchmark_results"] = []
+    ix["benchmark_results_note"] = (
+        "Full InferenceX benchmark rows are stored in the XLSX sheet "
+        "`12d_ix_benchmark_results` and CSV `data/inferencex/normalized/inferencex_benchmark_results.csv`. "
+        "JSON/HTML keep a preview only to stay below GitHub file-size limits."
+    )
+    slim["inferencex"] = ix
+    return slim
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     data = build_payload()
@@ -3085,11 +3127,12 @@ def main() -> None:
         raise SystemExit(json.dumps(data["validation"], indent=2, ensure_ascii=False))
 
     stem = "llm_token_capacity_2026_2030"
-    write_json(data, OUT / f"{stem}.json")
+    slim_data = lightweight_payload(data)
+    write_json(slim_data, OUT / f"{stem}.json")
     write_excel(data, OUT / f"{stem}.xlsx")
     write_ppt(data, OUT / f"{stem}.pptx")
-    write_html(data, OUT / f"{stem}.html")
-    write_markdown(data, OUT / f"{stem}.md")
+    write_html(slim_data, OUT / f"{stem}.html")
+    write_markdown(slim_data, OUT / f"{stem}.md")
     print(json.dumps({"status": "PASS", "outputs": [str(OUT / f"{stem}.{ext}") for ext in ("json", "xlsx", "pptx", "html", "md")]}, indent=2, ensure_ascii=False))
 
 

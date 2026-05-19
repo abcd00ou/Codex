@@ -11,6 +11,7 @@ This file stores reviewed evidence for `tokens_per_second_per_mw`.
 | A08_E002 | JOULE_INFERENCE_2026 | 2026-05-18 | Proxy | Inference energy depends on query length, response length, model choice and test-time compute; use as energy/query and joules/token sanity layer, not company telemetry | energy/query, joules/token | tokens_per_second_per_mw | Medium | Codex |
 | A08_E003 | IBM_PD_2026 | 2026-05-18 | Mechanism | Prefill-decode disaggregation has performance and energy trade-offs and should be evaluated against workload shape rather than assumed universally positive | n/a | tokens_per_second_per_mw | Medium | Codex |
 | A08_E004 | ARXIV_SPEC_DECODE_2605 | 2026-05-18 | Mechanism | Speculative decoding changes latency/throughput trade-offs and requires workload/model-specific latency modeling | n/a | tokens_per_second_per_mw | Low-Medium | Codex |
+| A08_E005 | INFERENCEX_DUMP_2026_05_11 | 2026-05-19 | Proxy | Full InferenceX-app release dump normalized: 72,091 inference performance rows and 298 model/GPU/framework/precision/ISL/OSL profile groups; fields include tput_per_gpu, output_tput_per_gpu, tokens/sec/MW, J/token, TTFT/TPOT | tokens/s/GPU, tokens/s/MW, J/token | tokens_per_second_per_mw | Medium | Codex |
 
 ## Review Notes
 
@@ -23,3 +24,4 @@ This file stores reviewed evidence for `tokens_per_second_per_mw`.
 - A08 should not move Base `tokens_per_second_per_mw` yet.
 - Add an energy sanity layer using joules/token or energy/query before increasing tokens/MW.
 - Treat prefill/decode disaggregation and speculative decoding as mechanism evidence. They justify scenario sensitivity, not company production coefficients.
+- InferenceX dump rows are now usable for benchmark sanity checks, but still require SLO/workload comparability before changing Base forecast coefficients.
