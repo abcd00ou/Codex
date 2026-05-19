@@ -143,6 +143,21 @@ joules_per_token = 1,000,000 / tokens_per_second_per_mw
 | OpenAI | Batchable optimized | 0.795 | 2164340 | 0.723 | 23.2% | batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving |
 | OpenAI | Agentic long-context stress | 0.625 | 1613417 | 0.423 | -27.8% | 긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress |
 
+## InferenceX Ingestion Layer
+
+- InferenceX는 company production telemetry가 아니라 benchmark/proxy layer입니다.
+- Dashboard DOM 크롤링보다 GitHub release DB dump, benchmark repo, app API/schema를 우선합니다.
+- 최신 확인 DB dump: `db-dump/2026-05-11` / `inferencex-dump-2026-05-11.zip` / `2072340792` bytes.
+- 정규화 결과는 엑셀 `12_inferencex_source_index`, `12a_inferencex_schema`, `12b_inferencex_tab_rules`에 반영됩니다.
+
+| Tab | 모델 내 사용처 | Forecast 반영 |
+|---|---|---|
+| inference_performance | A08 tokens/sec/MW, A09 latency/utilization sensitivity | benchmark/proxy only |
+| accuracy_evals | model quality guardrail when comparing precision/quantization choices | quality sanity check; not token capacity |
+| historical_trends | software improvement CAGR, SGLang/vLLM/TRT-LLM version step changes | scenario support for Bull/Base/Bear tokens/MW improvement |
+| tco_calculator | cost/token and memory marketing implications | commercial sensitivity layer, not production volume |
+| gpu_specs | GPU generation, memory capacity/bandwidth, TDP cross-check | hardware sanity check for GPU/ASIC mix |
+
 ## Hallucination 체크리스트
 
 | ID | 영역 | 질문 | Pass 기준 | 심각도 | 상태 |

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import math
+import csv
 from dataclasses import asdict, dataclass
 from datetime import date
 from pathlib import Path
@@ -1543,6 +1544,57 @@ def append_rows(ws, rows: list[dict[str, Any]], headers: list[str]) -> None:
     style_sheet(ws)
 
 
+def read_csv_rows(path: Path) -> list[dict[str, Any]]:
+    if not path.exists():
+        return []
+    with path.open(newline="", encoding="utf-8") as f:
+        return list(csv.DictReader(f))
+
+
+def inferencex_ingestion_payload() -> dict[str, Any]:
+    base = ROOT / "data" / "inferencex"
+    manifest_path = base / "metadata" / "inferencex_manifest.json"
+    source_index = read_csv_rows(base / "normalized" / "inferencex_source_index.csv")
+    schema_rows = read_csv_rows(base / "normalized" / "inferencex_normalized_schema.csv")
+    tab_rules = read_csv_rows(base / "normalized" / "inferencex_tab_rules.csv")
+    release_assets = read_csv_rows(base / "normalized" / "inferencex_release_assets.csv")
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    else:
+        manifest = {
+            "generated_at": "",
+            "source": "InferenceX ingestion has not been run yet.",
+            "evidence_rule": "Run tools/fetch_inferencex_data.py before using InferenceX as a benchmark layer.",
+        }
+    return {
+        "manifest": manifest,
+        "source_index": source_index
+        or [
+            {
+                "source_file": "",
+                "source_kind": "not_refreshed",
+                "benchmark_id": "",
+                "dashboard_tab": "",
+                "evidence_class": "Proxy/Benchmark",
+                "caveat": "Run tools/fetch_inferencex_data.py to populate the source index.",
+            }
+        ],
+        "schema": schema_rows or [{h: "" for h in [
+            "source_file", "source_kind", "benchmark_id", "dashboard_tab", "model", "gpu", "framework", "precision", "isl", "osl", "metric_name", "metric_value", "metric_unit", "source_url", "evidence_class", "caveat"
+        ]}],
+        "tab_rules": tab_rules
+        or [
+            {
+                "dashboard_tab": "not_refreshed",
+                "use_in_model": "Run fetch_inferencex_data.py",
+                "required_keys": "",
+                "forecast_use": "benchmark/proxy only",
+            }
+        ],
+        "release_assets": release_assets[:30],
+    }
+
+
 def write_excel(data: dict[str, Any], path: Path) -> None:
     wb = Workbook()
     wb.remove(wb.active)
@@ -1677,6 +1729,17 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
 
     util_headers = list(data["utilization_sensitivity"][0].keys())
     append_rows(sheet("08f_utilization_sensitivity"), data["utilization_sensitivity"], util_headers)
+
+    inferencex = data["inferencex"]
+    ix_headers = list(inferencex["source_index"][0].keys())
+    append_rows(sheet("12_inferencex_source_index"), inferencex["source_index"], ix_headers)
+    ix_schema_headers = list(inferencex["schema"][0].keys())
+    append_rows(sheet("12a_inferencex_schema"), inferencex["schema"], ix_schema_headers)
+    ix_tab_headers = list(inferencex["tab_rules"][0].keys())
+    append_rows(sheet("12b_inferencex_tab_rules"), inferencex["tab_rules"], ix_tab_headers)
+    if inferencex["release_assets"]:
+        ix_release_headers = list(inferencex["release_assets"][0].keys())
+        append_rows(sheet("12c_inferencex_releases"), inferencex["release_assets"], ix_release_headers)
 
     hallucination_headers = list(data["hallucination_checklist"][0].keys())
     append_rows(sheet("11_hallucination_checklist"), data["hallucination_checklist"], hallucination_headers)
@@ -2164,6 +2227,11 @@ def write_html(data: dict[str, Any], path: Path) -> None:
       <div class="note">A09 Cycle 1 반영: utilization은 GPU 점유율이 아니라 TTFT/TPOT, batchability, placement, failover reserve가 반영된 평균값입니다.</div>
     </section>
     <section>
+      <h2>InferenceX ingestion layer</h2>
+      <table id="inferencex"></table>
+      <div class="note">InferenceX는 company production telemetry가 아니라 benchmark/proxy layer입니다. DB dump/CSV 정규화 후 A08/A09 sensitivity로만 승격합니다.</div>
+    </section>
+    <section>
       <h2>Hallucination 체크리스트</h2>
       <table id="hallucination"></table>
     </section>
@@ -2243,6 +2311,13 @@ def write_html(data: dict[str, Any], path: Path) -> None:
       $("utilSensitivity").innerHTML = `<tr><th>업체</th><th>연도</th><th>Profile</th><th>Utilization</th><th>TPS/MW</th><th>Q/day</th><th>기준 대비</th><th>설명</th></tr>` +
         DATA.utilization_sensitivity.filter(u => u.year === Number($("year").value) && ($("company").value === "ALL" || u.company === $("company").value))
           .map(u=>`<tr><td>${{u.company}}</td><td>${{u.year}}</td><td>${{u.profile}}</td><td>${{u.adjusted_utilization}}</td><td>${{u.adjusted_tokens_per_second_per_mw}}</td><td>${{u.tokens_per_day_q}}</td><td>${{u.delta_vs_base_pct}}%</td><td>${{u.description_kr}}</td></tr>`).join('');
+      const ix = DATA.inferencex || {{}};
+      const ixManifest = ix.manifest || {{}};
+      $("inferencex").innerHTML = `<tr><th>항목</th><th>값</th></tr>` +
+        `<tr><td>최신 DB dump</td><td>${{ixManifest.latest_db_dump?.tag_name || "not refreshed"}}</td></tr>` +
+        `<tr><td>Release asset</td><td>${{ixManifest.latest_db_dump?.asset_name || ""}}</td></tr>` +
+        `<tr><td>Source index rows</td><td>${{ix.source_index?.length || 0}}</td></tr>` +
+        `<tr><td>Evidence rule</td><td>${{ixManifest.evidence_rule || ""}}</td></tr>`;
       $("hallucination").innerHTML = `<tr><th>ID</th><th>영역</th><th>질문</th><th>Pass 기준</th><th>심각도</th><th>상태</th></tr>` +
         DATA.hallucination_checklist.map(h=>`<tr><td>${{h.check_id}}</td><td>${{h.area}}</td><td>${{h.question_kr}}</td><td>${{h.pass_criteria_kr}}</td><td>${{h.severity}}</td><td>${{h.current_status}}</td></tr>`).join('');
     }}
@@ -2381,6 +2456,22 @@ def write_markdown(data: dict[str, Any], path: Path) -> None:
         lines.append(
             f"| {row['company']} | {row['profile']} | {row['adjusted_utilization']:.3f} | {row['adjusted_tokens_per_second_per_mw']:.0f} | {row['tokens_per_day_q']:.3f} | {row['delta_vs_base_pct']}% | {row['description_kr']} |"
         )
+    ix = data["inferencex"]
+    latest = ix["manifest"].get("latest_db_dump", {})
+    lines += [
+        "",
+        "## InferenceX Ingestion Layer",
+        "",
+        "- InferenceX는 company production telemetry가 아니라 benchmark/proxy layer입니다.",
+        "- Dashboard DOM 크롤링보다 GitHub release DB dump, benchmark repo, app API/schema를 우선합니다.",
+        f"- 최신 확인 DB dump: `{latest.get('tag_name', 'not refreshed')}` / `{latest.get('asset_name', '')}` / `{latest.get('asset_size_bytes', '')}` bytes.",
+        "- 정규화 결과는 엑셀 `12_inferencex_source_index`, `12a_inferencex_schema`, `12b_inferencex_tab_rules`에 반영됩니다.",
+        "",
+        "| Tab | 모델 내 사용처 | Forecast 반영 |",
+        "|---|---|---|",
+    ]
+    for row in ix["tab_rules"]:
+        lines.append(f"| {row.get('dashboard_tab', '')} | {row.get('use_in_model', '')} | {row.get('forecast_use', '')} |")
     lines += [
         "",
         "## Hallucination 체크리스트",
@@ -2891,7 +2982,25 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
     add_label(slide, 0.9, 6.1, 11.5, 0.45, "Replacement path: site-level MW activation, model routing mix, production API traffic, 모델/context별 실측 tokens/sec/MW.", 11, navy, True)
     add_footer(slide)
 
-    # 13. Hallucination audit checklist
+    # 13. InferenceX ingestion layer
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    latest = data["inferencex"]["manifest"].get("latest_db_dump", {})
+    add_title(slide, "InferenceX는 benchmark DB로 별도 수집한다", "대시보드 DOM이 아니라 GitHub release dump와 app schema를 기준으로 A08/A09 sensitivity를 갱신한다.")
+    ix_cards = [
+        ("최신 dump", latest.get("tag_name", "not refreshed"), latest.get("asset_name", "")),
+        ("수집 row", str(len(data["inferencex"]["source_index"])), "raw README, changelog, app docs, release metadata"),
+        ("Evidence class", "Proxy / Benchmark", "company production telemetry로 직접 사용 금지"),
+        ("Workbook sheets", "12 / 12a / 12b", "source index, schema, dashboard tab rules"),
+    ]
+    for i, (label, value, note) in enumerate(ix_cards):
+        metric_card(slide, 0.8 + (i % 2) * 6.1, 1.35 + (i // 2) * 1.65, 5.65, 1.05, label, value, note, [pale_blue, pale_green, pale_amber, RGBColor(240, 244, 248)][i])
+    tab_text = "Inference Performance → tokens/MW, latency | Accuracy Evals → precision quality guardrail | Historical Trends → software improvement CAGR | TCO/GPU Specs → cost/token and hardware sanity"
+    add_label(slide, 0.9, 5.15, 11.55, 0.85, tab_text, 12, navy, True)
+    add_label(slide, 0.9, 6.08, 11.55, 0.45, "대용량 DB dump는 기본 실행에서 받지 않고 `fetch_inferencex_data.py --download-latest-dump`로 명시 실행합니다.", 11, muted)
+    add_footer(slide)
+
+    # 14. Hallucination audit checklist
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
     add_title(slide, "Hallucination 체크리스트", "임원 보고 전 숫자와 문구가 fact/proxy/scenario를 혼동하지 않는지 확인합니다.")
@@ -2961,6 +3070,7 @@ def build_payload() -> dict[str, Any]:
         "benchmark_reference": benchmark_reference_rows(rows),
         "energy_sanity_reference": energy_sanity_reference_rows(rows),
         "utilization_sensitivity": utilization_sensitivity_rows(rows),
+        "inferencex": inferencex_ingestion_payload(),
         "sensitivity": sensitivity_rows(rows),
         "exec_summary": exec_summary(rows),
     }

@@ -7,6 +7,7 @@
 | 2026-05-15 | hardware generation H100/H200/GB200/TPU/Trainium throughput | pending | Need source review | open |
 | 2026-05-15 | SemiAnalysis InferenceX benchmark methodology and tokens/MW proxy extraction | high | Benchmark/proxy evidence with model, hardware, batch, latency, utilization caveats | open |
 | 2026-05-15 | AI 2027 agentic workload and test-time compute implications for tokens/MW | medium | Scenario stress-test for longer context/tool-use/reasoning load; not benchmark fact | open |
+| 2026-05-19 | Ingest InferenceX normalized dataset by model/GPU/framework/precision/ISL/OSL | high | `data/inferencex/normalized/inferencex_source_index.csv` plus future DB/CSV dump rows; calculate candidate tokens/sec/MW bands without changing Base | open |
 
 ## Next Agent Prompt
 

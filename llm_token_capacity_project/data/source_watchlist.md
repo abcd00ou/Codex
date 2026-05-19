@@ -13,7 +13,7 @@
 
 | source_id | source | publisher / owner | url | likely use | evidence class cap | target agents | status |
 |---|---|---|---|---|---|---|---|
-| WATCH_INFERENCEX | InferenceX / InferenceMAX | SemiAnalysis | https://inferencex.semianalysis.com/ | LLM inference benchmark, serving stack, GPU economics, tokens/MW sanity check | Proxy / Benchmark | A08, A09 | pending review |
+| WATCH_INFERENCEX | InferenceX / InferenceMAX | SemiAnalysis | https://inferencex.semianalysis.com/; https://github.com/SemiAnalysisAI/InferenceX; https://github.com/SemiAnalysisAI/InferenceX-app/releases | LLM inference benchmark, serving stack, GPU economics, tokens/MW sanity check, weekly DB dump source | Proxy / Benchmark | A08, A09, A07, A10 | ingestion pipeline added |
 | WATCH_INTROL | Introl AI infrastructure content | Introl | https://introl.com/ | AI data center deployment, power/cooling/rack/GPU infrastructure practitioner context | Context / Proxy | A01, A02, A03, A04 | pending review |
 | WATCH_DELOITTE_AI_DC | Deloitte AI/data center/semiconductor insights | Deloitte | https://www.deloitte.com/ | AI data center demand, power/cooling investment, enterprise AI adoption, semiconductor supply-chain framing | Market Context / Scenario | A01, A02, A05, A06, A10 | pending review |
 | WATCH_AI_2027 | AI 2027 scenario | AI Futures Project | https://ai-2027.com/ | Aggressive AI capability timeline, compute-demand shock, automation/takeoff scenario stress-test | Scenario / Stress Test | A05, A06, A08, A09, A10, Orchestrator | pending review |
@@ -25,11 +25,22 @@
 
 InferenceX should be treated as a benchmark/proxy layer. It can improve the `tokens_per_second_per_mw`, utilization, serving efficiency, and benchmark sanity-check assumptions, but it should not be described as a company-specific production telemetry source unless the original source explicitly provides that claim.
 
+2026-05-19 update: the dashboard is backed by the open `InferenceX-app` repo and weekly GitHub release DB dumps. The preferred path is no longer dashboard DOM scraping. Use `tools/fetch_inferencex_data.py` to refresh:
+
+- benchmark repo raw files: README, AGENTS, `perf-changelog.yaml`
+- dashboard app docs/config: data pipeline, transforms, GPU specs, TCO calculator
+- release metadata for `db-dump/YYYY-MM-DD` assets
+- normalized source/schema files under `data/inferencex/`
+
+The latest checked release metadata showed `db-dump/2026-05-11` with `inferencex-dump-2026-05-11.zip`. The asset is large, so default automation records metadata and schema only. Download the dump only with explicit `--download-latest-dump`.
+
 Recommended agent flow:
 
 1. A08 reviews tokens/sec/GPU, tokens/sec/MW, model/hardware benchmark methodology.
 2. A09 reviews utilization, batching, latency/SLO and serving-stack implications.
 3. Orchestrator checks whether benchmark reference diverges from main forecast by more than 50%.
+4. A07 checks MoE/dense active parameter mapping from benchmark config keys before comparing closed/open model proxy rows.
+5. A10 checks that benchmark operator/host/provider is not confused with commercial model-owner token attribution.
 
 ### WATCH_INTROL
 

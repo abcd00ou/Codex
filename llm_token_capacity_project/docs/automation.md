@@ -5,7 +5,9 @@
 ## 기본 명령
 
 ```bash
+.venv/bin/python -m py_compile llm_token_capacity_project/tools/fetch_inferencex_data.py
 .venv/bin/python -m py_compile llm_token_capacity_project/tools/generate_llm_token_capacity_report.py
+.venv/bin/python llm_token_capacity_project/tools/fetch_inferencex_data.py
 .venv/bin/python llm_token_capacity_project/tools/generate_llm_token_capacity_report.py
 ```
 
@@ -32,10 +34,13 @@ assert '00_formula_assumptions' in wb.sheetnames
 assert '08d_benchmark_reference' in wb.sheetnames
 assert '08e_energy_sanity_reference' in wb.sheetnames
 assert '08f_utilization_sensitivity' in wb.sheetnames
+assert '12_inferencex_source_index' in wb.sheetnames
+assert '12a_inferencex_schema' in wb.sheetnames
+assert '12b_inferencex_tab_rules' in wb.sheetnames
 assert '11_hallucination_checklist' in wb.sheetnames
 
 prs = Presentation(base + '.pptx')
-assert len(prs.slides) >= 14
+assert len(prs.slides) >= 15
 
 for suffix in ['.xlsx', '.pptx']:
     with zipfile.ZipFile(base + suffix) as z:
@@ -87,3 +92,5 @@ Agent loop:
 - confidence downgrade 후보 자동 생성
 - 신규 official source가 발견되면 assumption replacement path 제안
 - `agent_learning_expansion_pack.md`의 source를 agent별 `evidence.md`로 승격하는 semi-automated review form
+- InferenceX DB dump/CSV export를 `data/inferencex/normalized/` 스키마로 full normalization
+- InferenceX `tok_s_mw`, ISL/OSL, precision, GPU별 outlier와 Base tokens/MW gap 자동 표시

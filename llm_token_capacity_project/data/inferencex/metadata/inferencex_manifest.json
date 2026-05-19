@@ -1,0 +1,56 @@
+{
+  "generated_at": "2026-05-19",
+  "generated_at_utc": "2026-05-19T01:37:57.244790+00:00",
+  "source": "InferenceX public GitHub repos and dashboard DB dump releases",
+  "benchmark_repo": "https://github.com/SemiAnalysisAI/InferenceX",
+  "app_repo": "https://github.com/SemiAnalysisAI/InferenceX-app",
+  "dashboard": "https://inferencex.semianalysis.com/",
+  "latest_db_dump": {
+    "tag_name": "db-dump/2026-05-11",
+    "published_at": "2026-05-11T01:11:04Z",
+    "asset_name": "inferencex-dump-2026-05-11.zip",
+    "asset_size_bytes": 2072340792,
+    "asset_digest": "sha256:3f59aa2b4db7a0449a7bb030d70cdc3780fc59cafddf6ff071beb36365b44e2d",
+    "download_url": "https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-05-11/inferencex-dump-2026-05-11.zip",
+    "downloaded_in_this_run": {
+      "status": "skipped",
+      "reason": "use --download-latest-dump for large weekly DB dump assets"
+    }
+  },
+  "raw_file_count": 10,
+  "release_asset_count": 8,
+  "normalized_index_rows": 10,
+  "dashboard_tabs": [
+    {
+      "dashboard_tab": "inference_performance",
+      "use_in_model": "A08 tokens/sec/MW, A09 latency/utilization sensitivity",
+      "required_keys": "model, gpu, framework/runtime, precision, ISL, OSL, concurrency, throughput, latency",
+      "forecast_use": "benchmark/proxy only"
+    },
+    {
+      "dashboard_tab": "accuracy_evals",
+      "use_in_model": "model quality guardrail when comparing precision/quantization choices",
+      "required_keys": "model, precision, benchmark, score, date",
+      "forecast_use": "quality sanity check; not token capacity"
+    },
+    {
+      "dashboard_tab": "historical_trends",
+      "use_in_model": "software improvement CAGR, SGLang/vLLM/TRT-LLM version step changes",
+      "required_keys": "config key, software version, benchmark date, PR/run URL",
+      "forecast_use": "scenario support for Bull/Base/Bear tokens/MW improvement"
+    },
+    {
+      "dashboard_tab": "tco_calculator",
+      "use_in_model": "cost/token and memory marketing implications",
+      "required_keys": "GPU, system cost, power, throughput, utilization, amortization",
+      "forecast_use": "commercial sensitivity layer, not production volume"
+    },
+    {
+      "dashboard_tab": "gpu_specs",
+      "use_in_model": "GPU generation, memory capacity/bandwidth, TDP cross-check",
+      "required_keys": "GPU, vendor, memory, bandwidth, power/TDP",
+      "forecast_use": "hardware sanity check for GPU/ASIC mix"
+    }
+  ],
+  "evidence_rule": "InferenceX is benchmark/proxy data. It can calibrate tokens/sec/MW and utilization sensitivity, but not company-specific production telemetry."
+}

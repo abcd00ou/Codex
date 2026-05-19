@@ -34,6 +34,7 @@ AWS, Oracle, CoreWeave 등은 model owner가 아니라 hosting/infrastructure ca
 llm_token_capacity_project/
   tools/
     generate_llm_token_capacity_report.py
+    fetch_inferencex_data.py
   outputs/reports/
     llm_token_capacity_2026_2030.xlsx
     llm_token_capacity_2026_2030.pptx
@@ -47,6 +48,7 @@ llm_token_capacity_project/
     hallucination_checklist.md
     automation.md
   data/
+    inferencex/
     source_review_log.md
     assumption_change_log.md
     source_watchlist.md
@@ -88,6 +90,7 @@ llm_token_capacity_project/
 - `agents/`: 각 가정을 agent처럼 계속 학습·검증·업데이트하기 위한 운영 폴더
 - `docs/agent_learning_playbook.md`: agent를 실제로 학습시키고 업데이트하는 운영 playbook
 - `data/source_watchlist.md`: InferenceX, Introl 등 다음 cycle에서 검토할 source 후보 목록
+- `docs/inferencex_ingestion_plan.md`: InferenceX benchmark/app/DB dump를 DOM 크롤링 없이 수집·정규화하는 운영 기준
 - `docs/reference_research_landscape.md`: 전문 리포트/논문/시장자료 reference landscape
 - `docs/expert_learning_pack.md`: 52개 전문 source 기반의 6-module 심화 학습자료
 - `outputs/reports/expert_learning_pack_kr.docx`: 심화 학습자료 Word 보고서
@@ -131,6 +134,23 @@ Agent 구조가 깨지지 않았는지 확인합니다.
 .venv/bin/python llm_token_capacity_project/tools/validate_assumption_agents.py
 ```
 
+## InferenceX 데이터 수집
+
+InferenceX는 tokens/sec/MW와 utilization을 교정하는 benchmark/proxy source입니다. 회사별 production telemetry로 직접 쓰지 않습니다.
+
+```bash
+.venv/bin/python llm_token_capacity_project/tools/fetch_inferencex_data.py
+.venv/bin/python llm_token_capacity_project/tools/generate_llm_token_capacity_report.py
+```
+
+대시보드 전체 DB dump가 필요할 때만 아래 옵션을 사용합니다. 최신 dump는 수백 MB~수 GB 규모일 수 있습니다.
+
+```bash
+.venv/bin/python llm_token_capacity_project/tools/fetch_inferencex_data.py --download-latest-dump
+```
+
+수집 결과는 `data/inferencex/metadata/inferencex_manifest.json`, `data/inferencex/normalized/inferencex_source_index.csv`, `data/inferencex/normalized/inferencex_normalized_schema.csv`에 저장되고, 메인 엑셀에는 `12_inferencex_source_index`, `12a_inferencex_schema`, `12b_inferencex_tab_rules`로 반영됩니다.
+
 ## 현재 산출물 상태
 
 - 기준일: 2026-05-15
@@ -139,3 +159,4 @@ Agent 구조가 깨지지 않았는지 확인합니다.
 - 검증 상태: generator validation PASS
 - 주요 감사 레이어: formula assumptions, fact anchors, benchmark reference, hallucination checklist
 - 2026-05-18 추가 레이어: `08e_energy_sanity_reference`, `08f_utilization_sensitivity`
+- 2026-05-19 추가 레이어: InferenceX ingestion metadata/schema, `12_inferencex_source_index`, `12a_inferencex_schema`, `12b_inferencex_tab_rules`

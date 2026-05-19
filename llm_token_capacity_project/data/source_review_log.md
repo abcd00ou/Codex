@@ -14,6 +14,7 @@
 | 2026-05-18 | IBM_PD_2026 | Prefill-decode disaggregation performance/energy implications | mechanism source로 A08/A09 evidence 승격 | P/D disaggregation은 scenario sensitivity, Base 직접 변경 없음 |
 | 2026-05-18 | ARXIV_SLO_PD_2603 | SLO-aware P/D resource allocation | mechanism source로 A09 evidence 승격 | utilization caveat 강화 |
 | 2026-05-18 | ARXIV_PREFILL_SERVICE_2604 | Prefill-as-a-service | scenario/mechanism source로 A09 evidence 승격 | agentic workload placement/network sensitivity 후보 |
+| 2026-05-19 | WATCH_INFERENCEX | InferenceX benchmark repo README, `perf-changelog.yaml`, dashboard app README/.env/docs/API/release metadata | public benchmark + app + weekly DB dump source로 확인. Latest checked release: `db-dump/2026-05-11`, asset `inferencex-dump-2026-05-11.zip`; source remains Proxy/Benchmark, not company telemetry | `tools/fetch_inferencex_data.py`, `docs/inferencex_ingestion_plan.md`, Excel `12*` sheets로 ingestion layer 운영 |
 
 ## 기록 규칙
 

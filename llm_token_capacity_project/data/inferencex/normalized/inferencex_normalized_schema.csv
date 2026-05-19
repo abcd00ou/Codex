@@ -1,0 +1,2 @@
+source_file,source_kind,benchmark_id,dashboard_tab,model,model_family,gpu,gpu_vendor,gpu_count,framework,runtime,precision,isl,osl,concurrency,batch_size,metric_name,metric_value,metric_unit,tok_s_user,tok_s_gpu,tok_s_mw,input_tok_s_gpu,output_tok_s_gpu,joules_token,p99_ttft_ms,p99_tpot_ms,cost_per_million_tokens_usd,power_w,benchmark_date,github_run_url,source_url,evidence_class,caveat
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,

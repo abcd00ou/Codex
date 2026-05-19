@@ -1,0 +1,6 @@
+dashboard_tab,use_in_model,required_keys,forecast_use
+inference_performance,"A08 tokens/sec/MW, A09 latency/utilization sensitivity","model, gpu, framework/runtime, precision, ISL, OSL, concurrency, throughput, latency",benchmark/proxy only
+accuracy_evals,model quality guardrail when comparing precision/quantization choices,"model, precision, benchmark, score, date",quality sanity check; not token capacity
+historical_trends,"software improvement CAGR, SGLang/vLLM/TRT-LLM version step changes","config key, software version, benchmark date, PR/run URL",scenario support for Bull/Base/Bear tokens/MW improvement
+tco_calculator,cost/token and memory marketing implications,"GPU, system cost, power, throughput, utilization, amortization","commercial sensitivity layer, not production volume"
+gpu_specs,"GPU generation, memory capacity/bandwidth, TDP cross-check","GPU, vendor, memory, bandwidth, power/TDP",hardware sanity check for GPU/ASIC mix
