@@ -2,10 +2,11 @@
 
 - 생성일: 2026-05-18
 - 목적: 상용 LLM owner 기준으로 전력 capacity, 추론/학습 split, GPU/ASIC mix, tokens/sec/MW, GPU benchmark reference, token 생성량을 연결한 임원 보고용 기준 시나리오 작성
+- Headline token 정의: `inference_tokens_per_day`는 generated output token equivalent입니다. input+output processed token, training token, billable token과 분리합니다.
 - 주의: 이 문서는 투자 조언이 아니라 supply-chain / token-capacity intelligence simulation입니다.
 
 ## 핵심 결론
-- **2030 core-company inference tokens/day**: 2.87 quadrillion tokens/day - 9개 상용 LLM owner의 base case 총 생성 capacity.
+- **2030 core-company inference tokens/day**: 2.87 quadrillion generated output tokens/day - 9개 상용 LLM owner의 base case 생성 output token capacity.
 - **2030 inference AI IT load**: 23.02 GW inference load - PUE와 AI workload share 차감 후 inference에 배정된 IT load.
 - **2030 US vs China split**: US 81% / China 19% - 회사 owner 기준 split이며 AWS/Oracle/CoreWeave 같은 host는 core row가 아님.
 
@@ -33,10 +34,23 @@ inference_tokens_per_day = inference_mw * tokens_per_second_per_mw * utilization
 joules_per_token = 1,000,000 / tokens_per_second_per_mw
 ```
 
+## Token 정의
+
+| Token metric | 한국어 | 정의 | InferenceX mapping | Status |
+|---|---|---|---|---|
+| `headline_generated_output_tokens` | 생성 output token | 사용자/API/제품 표면으로 실제 생성되어 반환되는 output token equivalent. 본 보고서의 `inference_tokens_per_day` 기본 정의. | `output_tput_per_gpu`, `output_tok_s_mw`, `j_output_token`을 우선 사용. | default headline definition |
+| `processed_inference_tokens` | 처리 token | serving system이 처리한 input+output token. 긴 prompt/RAG/agentic workload에서는 output token보다 훨씬 클 수 있음. | `tput_per_gpu` / `tok_s_mw`는 처리량 분석용으로 사용하고 headline 생성량에는 직접 대입하지 않음. | benchmark and load-shape diagnostic |
+| `input_prefill_tokens` | 입력/prefill token | prompt, retrieved context, tool transcript, conversation history처럼 output 생성 전에 읽는 token. | ISL과 `input_tput_per_gpu`를 사용. 높은 ISL은 short-chat output forecast와 분리. | SLO/utilization and memory/HBM stress driver |
+| `training_tokens_processed` | 학습 처리 token | pretraining/post-training 과정에서 처리된 corpus token. 상용 inference generated token과 절대 합산하지 않음. | 직접 mapping 없음. InferenceX는 inference serving 기준. | separate training sanity metric |
+| `billable_api_tokens` | 과금 token | API/제품 과금 기준의 input/output/cache/reasoning token. 업체별 과금정책이 달라 capacity headline으로 직접 사용하지 않음. | InferenceX 대상 아님. 공식 API billing docs로 별도 대조. | future commercial reconciliation layer |
+
 ## 계산식/가정 감사
 
 | Block | Formula | 해석 | Sources |
 |---|---|---|---|
+| Token definition - forecast headline | `inference_tokens_per_day = generated output token equivalent, not input+output processed tokens` | 임원 보고의 headline token은 사용자가 받는 생성 output token 기준으로 해석합니다. InferenceX의 total throughput과 비교할 때는 output_tput/output_tok_s_mw를 우선 대조합니다. | SRC_GOOGLE_GEMINI_TOKENS; SRC_SEMIANALYSIS_INFERENCEX |
+| Token definition - processed benchmark | `processed_tokens = input_tokens + output_tokens; benchmark total tput may include both` | benchmark의 total tokens/sec 또는 tok_s_mw는 prompt input 처리량과 생성 output 처리량이 섞일 수 있습니다. processed token을 generated token forecast로 직접 치환하지 않습니다. | SRC_SEMIANALYSIS_INFERENCEX |
+| Token definition - training | `training_tokens_processed_per_day = training_gw * 1000 * training_tps_per_mw_equivalent * utilization * 86,400` | training token은 모델 학습에서 처리된 corpus/token count이며 상용 서비스가 생성한 output token이 아닙니다. inference token과 합산하지 않습니다. | SRC_DEEPSEEK_V3; SRC_TENCENT_HUNYUAN_PRETRAIN |
 | Power to AI IT load | `it_load_gw = active_power_gw / pue` | 계약/계획 전력이 아니라 실제 operational deploy된 전력에서 PUE를 차감해 IT load를 산출. | SRC_MCKINSEY_AI_WORKLOADS; SRC_EPRI_EPOCH_AI_POWER |
 | AI workload allocation | `ai_it_load_gw = it_load_gw * ai_workload_share` | 데이터센터 전체 IT load 중 LLM serving/training에 쓰이는 AI load만 분리. | ASSUMP_POWER_RAMP |
 | Training vs inference split | `inference_gw = ai_it_load_gw * inference_power_share; training_gw = ai_it_load_gw * (1 - inference_power_share)` | inference 비중은 company fact가 아니라 상용화 성숙도와 제품 표면에 따른 시나리오 변수. | SRC_MCKINSEY_AI_WORKLOADS; SRC_DELOITTE_AI_POWER; SRC_EPRI_EPOCH_AI_POWER; ASSUMP_INFERENCE_SHARE_NOT_FACT_60 |
@@ -178,6 +192,7 @@ joules_per_token = 1,000,000 / tokens_per_second_per_mw
 | HC13 | Outlier review | main forecast와 benchmark reference의 차이가 큰 업체를 따로 표시했는가? | benchmark_vs_model_pct가 +/-50%를 넘으면 confidence review 대상. | Medium | Needs reviewer sign-off |
 | HC14 | China transparency | 중국 업체의 낮은 공개성 때문에 수치를 임의로 페널티하거나 과신하지 않았는가? | 모델 구조 fact는 인정하고 capacity transparency만 confidence에 반영. | Medium | Pass in principle; needs Chinese primary-source review |
 | HC15 | Executive wording | 슬라이드 문구가 추정치를 확정 사실처럼 표현하지 않는가? | forecast, scenario, proxy, sanity check, 추정치 표현을 유지. | High | Needs final human review |
+| HC16 | Token definition | generated output token, processed inference token, training token, billable token을 혼동하지 않았는가? | headline `inference_tokens_per_day`는 generated output token equivalent로 표기하고, InferenceX total `tok_s_mw`는 processed-token proxy로 분리. | High | Definition added; needs reviewer sign-off |
 
 ## 귀속 기준
 - **Microsoft**: Microsoft-owned token은 Phi/MAI/Copilot serving으로, OpenAI model output은 OpenAI row에도 별도 표기

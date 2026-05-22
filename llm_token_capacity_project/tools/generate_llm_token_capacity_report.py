@@ -911,6 +911,27 @@ def fact_anchors() -> list[FactAnchor]:
 def formula_assumptions() -> list[dict[str, Any]]:
     return [
         {
+            "category": "Token definition - forecast headline",
+            "formula": "inference_tokens_per_day = generated output token equivalent, not input+output processed tokens",
+            "meaning_kr": "임원 보고의 headline token은 사용자가 받는 생성 output token 기준으로 해석합니다. InferenceX의 total throughput과 비교할 때는 output_tput/output_tok_s_mw를 우선 대조합니다.",
+            "evidence_type": "Definition",
+            "source_ids": "SRC_GOOGLE_GEMINI_TOKENS; SRC_SEMIANALYSIS_INFERENCEX",
+        },
+        {
+            "category": "Token definition - processed benchmark",
+            "formula": "processed_tokens = input_tokens + output_tokens; benchmark total tput may include both",
+            "meaning_kr": "benchmark의 total tokens/sec 또는 tok_s_mw는 prompt input 처리량과 생성 output 처리량이 섞일 수 있습니다. processed token을 generated token forecast로 직접 치환하지 않습니다.",
+            "evidence_type": "Definition",
+            "source_ids": "SRC_SEMIANALYSIS_INFERENCEX",
+        },
+        {
+            "category": "Token definition - training",
+            "formula": "training_tokens_processed_per_day = training_gw * 1000 * training_tps_per_mw_equivalent * utilization * 86,400",
+            "meaning_kr": "training token은 모델 학습에서 처리된 corpus/token count이며 상용 서비스가 생성한 output token이 아닙니다. inference token과 합산하지 않습니다.",
+            "evidence_type": "Definition",
+            "source_ids": "SRC_DEEPSEEK_V3; SRC_TENCENT_HUNYUAN_PRETRAIN",
+        },
+        {
             "category": "Power to AI IT load",
             "formula": "it_load_gw = active_power_gw / pue",
             "meaning_kr": "계약/계획 전력이 아니라 실제 operational deploy된 전력에서 PUE를 차감해 IT load를 산출.",
@@ -973,6 +994,61 @@ def scenario_definitions() -> list[dict[str, Any]]:
             }
         )
     return rows
+
+
+def token_definitions() -> list[dict[str, Any]]:
+    return [
+        {
+            "token_metric": "headline_generated_output_tokens",
+            "korean_name": "생성 output token",
+            "definition_kr": "사용자/API/제품 표면으로 실제 생성되어 반환되는 output token equivalent. 본 보고서의 `inference_tokens_per_day` 기본 정의.",
+            "included": "decode/output token; model-owner가 운영한 상용 LLM surface",
+            "excluded": "prompt input token, KV cache read/write, internal speculative draft token, training corpus token",
+            "primary_fields": "inference_tokens_per_day; inference_tokens_per_year; output_tok_s_mw sanity layer",
+            "inferencex_mapping": "`output_tput_per_gpu`, `output_tok_s_mw`, `j_output_token`을 우선 사용.",
+            "status": "default headline definition",
+        },
+        {
+            "token_metric": "processed_inference_tokens",
+            "korean_name": "처리 token",
+            "definition_kr": "serving system이 처리한 input+output token. 긴 prompt/RAG/agentic workload에서는 output token보다 훨씬 클 수 있음.",
+            "included": "input token + output token; prefill + decode workload",
+            "excluded": "training corpus token; non-token image/video generation units",
+            "primary_fields": "tok_s_mw; input_tok_s_gpu; output_tok_s_gpu; total_tok_s_mw",
+            "inferencex_mapping": "`tput_per_gpu` / `tok_s_mw`는 처리량 분석용으로 사용하고 headline 생성량에는 직접 대입하지 않음.",
+            "status": "benchmark and load-shape diagnostic",
+        },
+        {
+            "token_metric": "input_prefill_tokens",
+            "korean_name": "입력/prefill token",
+            "definition_kr": "prompt, retrieved context, tool transcript, conversation history처럼 output 생성 전에 읽는 token.",
+            "included": "ISL, prompt token, RAG context, agent memory/context",
+            "excluded": "generated output token",
+            "primary_fields": "isl; input_tok_s_gpu; input_tok_s_mw",
+            "inferencex_mapping": "ISL과 `input_tput_per_gpu`를 사용. 높은 ISL은 short-chat output forecast와 분리.",
+            "status": "SLO/utilization and memory/HBM stress driver",
+        },
+        {
+            "token_metric": "training_tokens_processed",
+            "korean_name": "학습 처리 token",
+            "definition_kr": "pretraining/post-training 과정에서 처리된 corpus token. 상용 inference generated token과 절대 합산하지 않음.",
+            "included": "pretraining token, post-training data token, synthetic training data when disclosed",
+            "excluded": "commercial API/consumer output token",
+            "primary_fields": "training_tokens_processed_per_day; model card pretraining token anchors",
+            "inferencex_mapping": "직접 mapping 없음. InferenceX는 inference serving 기준.",
+            "status": "separate training sanity metric",
+        },
+        {
+            "token_metric": "billable_api_tokens",
+            "korean_name": "과금 token",
+            "definition_kr": "API/제품 과금 기준의 input/output/cache/reasoning token. 업체별 과금정책이 달라 capacity headline으로 직접 사용하지 않음.",
+            "included": "provider-specific billed input/output/cache/reasoning token categories",
+            "excluded": "non-billed internal scheduler work unless disclosed",
+            "primary_fields": "future replacement path; not in current Base forecast",
+            "inferencex_mapping": "InferenceX 대상 아님. 공식 API billing docs로 별도 대조.",
+            "status": "future commercial reconciliation layer",
+        },
+    ]
 
 
 def is_moe_company(company: str) -> bool:
@@ -1435,6 +1511,16 @@ def hallucination_checklist() -> list[dict[str, Any]]:
             "severity": "High",
             "current_status": "Needs final human review",
         },
+        {
+            "check_id": "HC16",
+            "area": "Token definition",
+            "question_kr": "generated output token, processed inference token, training token, billable token을 혼동하지 않았는가?",
+            "pass_criteria_kr": "headline `inference_tokens_per_day`는 generated output token equivalent로 표기하고, InferenceX total `tok_s_mw`는 processed-token proxy로 분리.",
+            "risk_if_fail_kr": "InferenceX benchmark total throughput을 상용 output token 생성량으로 과대 적용.",
+            "owner": "Model",
+            "severity": "High",
+            "current_status": "Definition added; needs reviewer sign-off",
+        },
     ]
 
 
@@ -1450,8 +1536,8 @@ def exec_summary(base_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         {
             "metric": "2030 core-company inference tokens/day",
             "value": total_day,
-            "display": f"{total_day / 1e15:.2f} quadrillion tokens/day",
-            "interpretation_kr": "9개 상용 LLM owner의 base case 총 생성 capacity.",
+            "display": f"{total_day / 1e15:.2f} quadrillion generated output tokens/day",
+            "interpretation_kr": "9개 상용 LLM owner의 base case 생성 output token capacity.",
         },
         {
             "metric": "2030 inference AI IT load",
@@ -1616,6 +1702,9 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
 
     formula_headers = list(data["formula_assumptions"][0].keys())
     append_rows(sheet("00_formula_assumptions"), data["formula_assumptions"], formula_headers)
+
+    token_headers = list(data["token_definitions"][0].keys())
+    append_rows(sheet("00a_token_definitions"), data["token_definitions"], token_headers)
 
     src_headers = list(asdict(sources()[0]).keys())
     append_rows(sheet("01_sources"), [asdict(s) for s in sources()], src_headers)
@@ -2215,6 +2304,8 @@ def write_html(data: dict[str, Any], path: Path) -> None:
     </section>
     <section>
       <h2>계산식과 가정</h2>
+      <table id="tokenDefs"></table>
+      <div class="note">Headline `inference_tokens_per_day`는 생성 output token equivalent입니다. InferenceX total throughput은 processed token proxy이므로 output throughput과 분리해 봅니다.</div>
       <table id="formulas"></table>
       <div class="note">Inference 60%+ GW 비중은 공식 fact가 아니라 scenario assumption입니다. Source audit에서 McKinsey/Deloitte/EPRI-Epoch anchor를 함께 확인하세요.</div>
     </section>
@@ -2321,6 +2412,8 @@ def write_html(data: dict[str, Any], path: Path) -> None:
           .map(m=>`<tr><td>${{m.company}}</td><td>${{m.model_family}}</td><td>${{m.commercial_surface}}</td><td>${{m.attribution_rule}}</td></tr>`).join('');
       $("formulas").innerHTML = `<tr><th>구분</th><th>계산식</th><th>해석</th><th>Sources</th></tr>` +
         DATA.formula_assumptions.map(f=>`<tr><td>${{f.category}}</td><td><code>${{f.formula}}</code></td><td>${{f.meaning_kr}}</td><td>${{f.source_ids}}</td></tr>`).join('');
+      $("tokenDefs").innerHTML = `<tr><th>Token metric</th><th>정의</th><th>포함</th><th>InferenceX mapping</th><th>Status</th></tr>` +
+        DATA.token_definitions.map(t=>`<tr><td>${{t.korean_name}}<br/><code>${{t.token_metric}}</code></td><td>${{t.definition_kr}}</td><td>${{t.included}}</td><td>${{t.inferencex_mapping}}</td><td>${{t.status}}</td></tr>`).join('');
       $("scenarioDefs").innerHTML = `<tr><th>시나리오</th><th>2030 가동률 배수</th><th>2030 추론 비중 변화</th><th>Tokens/MW</th><th>설명</th></tr>` +
         DATA.scenario_definitions.map(s=>`<tr><td>${{s.scenario}}</td><td>${{Math.round(s.operational_deploy_multiplier_2030*100)}}%</td><td>${{Math.round(s.inference_share_delta_2030*100)}}%p</td><td>${{Math.round(s.tokens_per_mw_multiplier*100)}}%</td><td>${{s.description_kr}}</td></tr>`).join('');
       $("facts").innerHTML = `<tr><th>업체</th><th>지표</th><th>값</th><th>Source</th><th>모델 반영 방식</th></tr>` +
@@ -2364,6 +2457,7 @@ def write_markdown(data: dict[str, Any], path: Path) -> None:
         "",
         f"- 생성일: {RUN_DATE}",
         "- 목적: 상용 LLM owner 기준으로 전력 capacity, 추론/학습 split, GPU/ASIC mix, tokens/sec/MW, GPU benchmark reference, token 생성량을 연결한 임원 보고용 기준 시나리오 작성",
+        "- Headline token 정의: `inference_tokens_per_day`는 generated output token equivalent입니다. input+output processed token, training token, billable token과 분리합니다.",
         "- 주의: 이 문서는 투자 조언이 아니라 supply-chain / token-capacity intelligence simulation입니다.",
         "",
         "## 핵심 결론",
@@ -2392,6 +2486,15 @@ def write_markdown(data: dict[str, Any], path: Path) -> None:
         "inference_tokens_per_day = inference_mw * tokens_per_second_per_mw * utilization * 86,400",
         "joules_per_token = 1,000,000 / tokens_per_second_per_mw",
         "```",
+        "",
+        "## Token 정의",
+        "",
+        "| Token metric | 한국어 | 정의 | InferenceX mapping | Status |",
+        "|---|---|---|---|---|",
+    ]
+    for item in data["token_definitions"]:
+        lines.append(f"| `{item['token_metric']}` | {item['korean_name']} | {item['definition_kr']} | {item['inferencex_mapping']} | {item['status']} |")
+    lines += [
         "",
         "## 계산식/가정 감사",
         "",
@@ -2559,18 +2662,18 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
     prs.slide_height = Inches(7.5)
     blank = prs.slide_layouts[6]
 
-    navy = RGBColor(18, 32, 55)
-    ink = RGBColor(30, 41, 59)
-    muted = RGBColor(100, 116, 139)
-    blue = RGBColor(37, 99, 235)
-    green = RGBColor(15, 159, 110)
-    amber = RGBColor(180, 116, 30)
+    navy = RGBColor(16, 27, 46)
+    ink = RGBColor(28, 38, 54)
+    muted = RGBColor(103, 116, 134)
+    blue = RGBColor(33, 96, 214)
+    green = RGBColor(20, 148, 103)
+    amber = RGBColor(190, 123, 35)
     red = RGBColor(185, 56, 56)
-    bg = RGBColor(247, 249, 252)
+    bg = RGBColor(251, 252, 254)
     line = RGBColor(218, 226, 236)
-    pale_blue = RGBColor(235, 242, 255)
-    pale_green = RGBColor(232, 248, 240)
-    pale_amber = RGBColor(255, 247, 229)
+    pale_blue = RGBColor(239, 245, 255)
+    pale_green = RGBColor(235, 249, 242)
+    pale_amber = RGBColor(255, 249, 235)
 
     def set_bg(slide, color=bg):
         fill = slide.background.fill
@@ -2584,25 +2687,29 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
         "Grid-Constrained / Efficiency-Upside": "전력제약·효율상승",
     }
 
-    def add_footer(slide, note: str = "출처 기반 시뮬레이션 | Fact / Estimate / Scenario 분리"):
-        tx = slide.shapes.add_textbox(Inches(0.55), Inches(7.05), Inches(12.25), Inches(0.24))
+    def add_footer(slide, note: str = "전력·모델·serving 가정 기반 시뮬레이션"):
+        tx = slide.shapes.add_textbox(Inches(0.72), Inches(7.05), Inches(11.85), Inches(0.24))
         p = tx.text_frame.paragraphs[0]
         p.text = f"{note} | 생성일 {RUN_DATE}"
         p.font.size = Pt(7.5)
         p.font.color.rgb = muted
 
     def add_title(slide, title: str, subtitle: str | None = None):
-        tx = slide.shapes.add_textbox(Inches(0.55), Inches(0.34), Inches(12.15), Inches(0.55))
+        accent = slide.shapes.add_shape(1, Inches(0.72), Inches(0.43), Inches(0.08), Inches(0.54))
+        accent.fill.solid()
+        accent.fill.fore_color.rgb = blue
+        accent.line.color.rgb = blue
+        tx = slide.shapes.add_textbox(Inches(0.92), Inches(0.32), Inches(11.55), Inches(0.66))
         p = tx.text_frame.paragraphs[0]
         p.text = title
-        p.font.size = Pt(23)
+        p.font.size = Pt(24)
         p.font.bold = True
         p.font.color.rgb = navy
         if subtitle:
-            sub = slide.shapes.add_textbox(Inches(0.58), Inches(0.88), Inches(11.9), Inches(0.34))
+            sub = slide.shapes.add_textbox(Inches(0.94), Inches(0.92), Inches(11.35), Inches(0.42))
             p2 = sub.text_frame.paragraphs[0]
             p2.text = subtitle
-            p2.font.size = Pt(10)
+            p2.font.size = Pt(10.5)
             p2.font.color.rgb = muted
 
     def add_label(slide, x, y, w, h, text, size=10, color=muted, bold=False, align=PP_ALIGN.LEFT):
@@ -2624,7 +2731,7 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
         shape = slide.shapes.add_shape(1, Inches(x), Inches(y), Inches(w), Inches(h))
         shape.fill.solid()
         shape.fill.fore_color.rgb = fill_color
-        shape.line.color.rgb = line
+        shape.line.color.rgb = RGBColor(235, 240, 248)
         tf = shape.text_frame
         tf.margin_left = Inches(0.16)
         tf.margin_right = Inches(0.12)
@@ -2644,6 +2751,27 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
         p3.font.size = Pt(8.5)
         p3.font.color.rgb = muted
         return shape
+
+    def style_light_table(table, header_color=navy, band_color=RGBColor(247, 250, 253)):
+        for r_idx, row in enumerate(table.rows):
+            for cell in row.cells:
+                cell.margin_left = Inches(0.06)
+                cell.margin_right = Inches(0.06)
+                cell.margin_top = Inches(0.04)
+                cell.margin_bottom = Inches(0.04)
+                if r_idx == 0:
+                    cell.fill.solid()
+                    cell.fill.fore_color.rgb = header_color
+                    for p in cell.text_frame.paragraphs:
+                        p.font.color.rgb = RGBColor(255, 255, 255)
+                        p.font.bold = True
+                        p.font.size = Pt(8.5)
+                elif r_idx % 2 == 0:
+                    cell.fill.solid()
+                    cell.fill.fore_color.rgb = band_color
+                else:
+                    cell.fill.solid()
+                    cell.fill.fore_color.rgb = RGBColor(255, 255, 255)
 
     def bullet_list(slide, x, y, w, h, bullets, size=14, color=ink):
         tx = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
@@ -2670,403 +2798,1646 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
     total_inf_2030 = sum(r["inference_gw"] for r in base_2030)
     total_train_2030 = sum(r["training_gw"] for r in base_2030)
 
-    # 1. Cover
+    def takeaway_band(slide, text: str, y: float = 6.17, color=navy):
+        rule = slide.shapes.add_shape(1, Inches(2.45), Inches(y - 0.16), Inches(8.45), Inches(0.02))
+        rule.fill.solid()
+        rule.fill.fore_color.rgb = RGBColor(214, 225, 239)
+        rule.line.color.rgb = RGBColor(214, 225, 239)
+        add_label(slide, 0.92, y, 11.45, 0.42, text, 11, color, True, PP_ALIGN.CENTER)
+
+    # 1. Cover: answer first
     slide = prs.slides.add_slide(blank)
-    set_bg(slide, RGBColor(245, 248, 252))
-    add_label(slide, 0.72, 0.62, 3.2, 0.28, "임원 보고용 시뮬레이션", 8, blue, True)
-    add_label(slide, 0.72, 1.15, 7.4, 2.25, "상용 LLM 업체별\n전력·GPU·토큰 Capacity\n2026–2030", 34, navy, True)
-    add_label(slide, 0.78, 3.55, 7.0, 0.65, "모델 보유 업체 기준으로 OpenAI, Anthropic, Google, Meta, Microsoft, xAI, DeepSeek, Alibaba, Tencent의 추론 capacity를 추정", 14, muted)
-    metric_card(slide, 8.35, 1.03, 3.95, 1.05, "2030 기준 토큰/일", f"{total_tokens_2030/1e15:.2f}Q", "9개 상용 LLM owner 합산", pale_blue)
-    metric_card(slide, 8.35, 2.32, 3.95, 1.05, "2030 기준 추론 GW", f"{total_inf_2030:.1f} GW", "AI IT load 중 추론 배정", pale_green)
-    metric_card(slide, 8.35, 3.61, 3.95, 1.05, "기준 추론 비중", f"{base_summary_2026['weighted_inference_share']:.0%} → {base_summary_2030['weighted_inference_share']:.0%}", "2026은 fact가 아닌 시나리오", pale_amber)
-    add_label(slide, 0.78, 6.45, 7.5, 0.35, "핵심: 공개 fact는 capacity/model 규모를 제한하고, active GW·추론 비중·tokens/MW는 명시적 시나리오로 둔다.", 10, ink, True)
+    set_bg(slide, RGBColor(244, 247, 251))
+    add_label(slide, 0.72, 0.62, 3.2, 0.28, "검증 기반 팀 발표안", 8, blue, True)
+    add_label(slide, 0.72, 1.12, 8.0, 1.95, "2030년 LLM 토큰 병목은\n전력보다 ‘추론 전환 속도’와\nserving 효율에서 갈린다", 31, navy, True)
+    add_label(slide, 0.78, 3.38, 6.95, 0.62, "상용 LLM model owner 기준 2026-2030 전력·GPU·토큰 capacity 시뮬레이션", 14, muted)
+    add_label(slide, 8.35, 1.12, 3.8, 0.32, "Base case 2030", 10, muted, True)
+    add_label(slide, 8.35, 1.58, 3.8, 0.75, f"{total_tokens_2030/1e15:.2f}Q", 34, blue, True)
+    add_label(slide, 8.38, 2.32, 3.9, 0.32, "generated output tokens/day", 10, muted)
+    add_label(slide, 8.35, 3.15, 3.9, 0.55, f"{total_inf_2030:.1f}GW 추론 load", 20, green, True)
+    add_label(slide, 8.38, 3.74, 3.9, 0.32, f"추론 비중 {base_summary_2026['weighted_inference_share']:.0%} → {base_summary_2030['weighted_inference_share']:.0%}", 10, muted)
+    takeaway_band(slide, "오늘의 결론: 2030년 추론 토큰 수요는 상위 model owner에 집중되며, 메모리 마케팅은 이 계정들에 선제 배치해야 한다.")
     add_footer(slide)
 
-    # 2. Executive conclusion
+    # 2. Talk track
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
-    add_title(slide, "임원 요약 결론", "기준 시나리오는 2026년 0.19Q/day에서 2030년 2.55Q/day로 확대되지만, 신뢰도는 전력 가동과 serving 효율에 좌우됩니다.")
-    bullets = [
-        "OpenAI·Google·Meta가 2030년 기준 토큰 capacity의 상위권을 형성한다.",
-        "2026년 추론 60%+는 공식 fact가 아니므로 기준은 56%, 낙관만 61%로 제한했다.",
-        "2030년 기준 추론 비중 76%는 상용 serving 확대를 반영하되, 학습 GW를 계속 남긴다.",
-        "MoE 공개 모델 DeepSeek/Qwen은 파라미터 근거가 강하지만, active capacity 투명성은 낮다.",
+    add_title(slide, "발표에서 답할 네 가지 질문", "결론을 먼저 공유하고, 그 결론을 만든 계산 로직과 가정의 이유를 설명합니다.")
+    questions = [
+        ("1", "얼마나 커지나?", f"Base 2030: {total_tokens_2030/1e15:.2f}Q generated output tokens/day"),
+        ("2", "누가 주도하나?", f"상위 3개: {', '.join(r['company'] for r in ranked_2030[:3])}"),
+        ("3", "무엇이 흔드나?", "active power, inference share, tokens/MW, utilization"),
+        ("4", "우리는 무엇을 해야 하나?", "HBM allocation, DDR5/MRDIMM attach, SSD/CXL proof pack"),
     ]
-    bullet_list(slide, 0.75, 1.35, 6.1, 3.6, bullets, 15)
-    chart_data = CategoryChartData()
-    chart_data.categories = [r["company"] for r in ranked_2030[:5]]
-    chart_data.add_series("2030 토큰/일 (Q)", [r["inference_tokens_per_day"] / 1e15 for r in ranked_2030[:5]])
-    chart = slide.shapes.add_chart(XL_CHART_TYPE.BAR_CLUSTERED, Inches(7.0), Inches(1.35), Inches(5.65), Inches(3.75), chart_data).chart
-    chart.has_legend = False
-    chart.value_axis.tick_labels.font.size = Pt(8)
-    chart.category_axis.tick_labels.font.size = Pt(9)
-    add_label(slide, 7.02, 5.35, 5.4, 0.48, "2030 기준 업체 순위, quadrillion tokens/day", 9, muted)
+    for i, (num, q, a) in enumerate(questions):
+        y = 1.28 + i * 1.18
+        add_label(slide, 0.9, y, 0.55, 0.42, num, 18, blue, True, PP_ALIGN.CENTER)
+        add_label(slide, 1.65, y, 3.5, 0.38, q, 18, navy, True)
+        add_label(slide, 5.3, y + 0.02, 6.9, 0.36, a, 14, ink)
+    takeaway_band(slide, "듣는 순서: 시장 크기 → 우선 계정 → token 정의 → 계산 로직 → 주요 driver → 메모리 마케팅 액션.")
     add_footer(slide)
 
-    # 3. Calculation logic
+    # 3. Executive conclusion
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
-    add_title(slide, "계산 로직은 전력 funnel과 serving 효율의 곱", "계약 전력은 token capacity가 아니며, 가동 전력과 AI IT load를 거쳐 추론 GW로 내려옵니다.")
-    steps = [
-        ("1", "계약 전력", "계약/계획 GW\nsource anchor"),
-        ("2", "가동 전력", "operational deploy\n시나리오"),
-        ("3", "AI IT load", "PUE·AI workload\n차감"),
-        ("4", "추론 GW", "학습/추론\nsplit"),
-        ("5", "토큰/일", "tokens/sec/MW ×\nutilization"),
-    ]
-    x0 = 0.75
-    for i, (num, title, desc) in enumerate(steps):
-        x = x0 + i * 2.45
-        shape = slide.shapes.add_shape(1, Inches(x), Inches(1.55), Inches(2.0), Inches(1.55))
-        shape.fill.solid()
-        shape.fill.fore_color.rgb = [pale_blue, RGBColor(240, 244, 248), pale_green, pale_amber, RGBColor(240, 251, 255)][i]
-        shape.line.color.rgb = line
-        tf = shape.text_frame
-        tf.margin_left = Inches(0.12)
-        tf.margin_top = Inches(0.1)
-        tf.clear()
-        p = tf.paragraphs[0]
-        p.text = f"{num}. {title}"
-        p.font.bold = True
-        p.font.size = Pt(12)
-        p.font.color.rgb = navy
-        p2 = tf.add_paragraph()
-        p2.text = desc
-        p2.font.size = Pt(9)
-        p2.font.color.rgb = muted
-        if i < len(steps) - 1:
-            add_label(slide, x + 2.06, 2.08, 0.36, 0.3, "→", 18, muted, True, PP_ALIGN.CENTER)
-    formula = "추론 토큰/일 = 추론 GW × 1,000 × tokens/sec/MW × utilization × 86,400"
-    add_label(slide, 1.15, 4.05, 11.0, 0.45, formula, 16, navy, True, PP_ALIGN.CENTER)
-    bullet_list(
-        slide,
-        1.1,
-        5.0,
-        11.0,
-        1.15,
-        [
-            "Excel/JSON 표시값 기준 재계산도 일치하도록 rounding 후 토큰 산식을 적용했다.",
-            "Closed model parameter는 단일 숫자가 아니라 band만 사용하며, MoE는 total/active parameter를 분리한다.",
-        ],
-        11,
-        muted,
-    )
-    add_footer(slide)
-
-    # 4. Scenario envelope
-    slide = prs.slides.add_slide(blank)
-    set_bg(slide)
-    add_title(slide, "시나리오별 토큰 capacity 범위", "낙관/기준/보수 시나리오는 전력 가동 속도, 추론 비중, MoE·serving 효율을 동시에 움직입니다.")
+    add_title(slide, "2026-2030 generated output token은 Base에서도 빠르게 증가한다", "전력 가동 속도와 serving 효율을 함께 반영하면 2030년 토큰 capacity는 구조적으로 커집니다.")
     chart_data = CategoryChartData()
     chart_data.categories = [str(y) for y in YEARS]
-    for scen in SCENARIO_CASES:
+    for scen in ("Bear", "Base", "Bull"):
         chart_data.add_series(
-            scenario_label_kr.get(scen, scen),
+            scenario_label_kr[scen],
             [next(r["inference_tokens_per_day_q"] for r in data["scenario_summary"] if r["scenario"] == scen and r["year"] == y) for y in YEARS],
         )
-    chart = slide.shapes.add_chart(XL_CHART_TYPE.LINE_MARKERS, Inches(0.75), Inches(1.25), Inches(8.15), Inches(4.95), chart_data).chart
+    chart = slide.shapes.add_chart(XL_CHART_TYPE.LINE_MARKERS, Inches(0.8), Inches(1.25), Inches(7.35), Inches(4.6), chart_data).chart
     chart.has_legend = True
     chart.legend.position = XL_LEGEND_POSITION.BOTTOM
     chart.value_axis.tick_labels.font.size = Pt(8)
     chart.category_axis.tick_labels.font.size = Pt(8)
-    for i, r in enumerate(scenario_2030):
-        metric_card(slide, 9.25, 1.2 + i * 1.2, 3.15, 0.88, scenario_label_kr.get(r["scenario"], r["scenario"]), f"{r['inference_tokens_per_day_q']:.2f}Q/일", f"2030 비중 {r['weighted_inference_share']:.0%}", [pale_blue, pale_green, pale_amber, RGBColor(240, 244, 248)][i % 4])
-    add_footer(slide)
-
-    # 5. Power funnel
-    slide = prs.slides.add_slide(blank)
-    set_bg(slide)
-    add_title(slide, "2030 기준 전력 전환 구조", "토큰 capacity는 계약 전력이 아니라 실제 추론 GW에서 나온다.")
-    funnel = [
-        ("계약", sum(r["contracted_power_gw"] for r in base_2030)),
-        ("가동", total_active_2030),
-        ("AI IT load", total_ai_2030),
-        ("추론", total_inf_2030),
-        ("학습", total_train_2030),
-    ]
-    chart_data = CategoryChartData()
-    chart_data.categories = [x[0] for x in funnel]
-    chart_data.add_series("GW", [x[1] for x in funnel])
-    chart = slide.shapes.add_chart(XL_CHART_TYPE.COLUMN_CLUSTERED, Inches(0.9), Inches(1.35), Inches(7.6), Inches(4.7), chart_data).chart
-    chart.has_legend = False
-    chart.value_axis.tick_labels.font.size = Pt(8)
-    chart.category_axis.tick_labels.font.size = Pt(9)
-    metric_card(slide, 9.0, 1.35, 3.35, 1.0, "계약 → 가동", f"{total_active_2030 / sum(r['contracted_power_gw'] for r in base_2030):.0%}", "operational deployment ratio", pale_blue)
-    metric_card(slide, 9.0, 2.65, 3.35, 1.0, "AI IT → 추론", f"{total_inf_2030 / total_ai_2030:.0%}", "2030 기준 split", pale_green)
-    metric_card(slide, 9.0, 3.95, 3.35, 1.0, "학습 잔존", f"{total_train_2030:.1f} GW", "0으로 가정하지 않음", pale_amber)
-    add_footer(slide)
-
-    # 6. Company ranking
-    slide = prs.slides.add_slide(blank)
-    set_bg(slide)
-    add_title(slide, "2030 기준 모델 보유 업체별 토큰 capacity", "호스팅 capacity는 모델 소유권이 명확한 경우 model owner 기준으로 귀속한다.")
-    chart_data = CategoryChartData()
-    chart_data.categories = [r["company"] for r in ranked_2030]
-    chart_data.add_series("Q tokens/일", [r["inference_tokens_per_day"] / 1e15 for r in ranked_2030])
-    chart = slide.shapes.add_chart(XL_CHART_TYPE.COLUMN_CLUSTERED, Inches(0.65), Inches(1.2), Inches(12.0), Inches(4.8), chart_data).chart
-    chart.has_legend = False
-    chart.value_axis.tick_labels.font.size = Pt(8)
-    chart.category_axis.tick_labels.font.size = Pt(9)
-    add_label(slide, 0.8, 6.25, 11.6, 0.45, "Microsoft/OpenAI 중복 처리: OpenAI 모델 output은 OpenAI model-owner로 귀속하고, Microsoft row는 Microsoft-owned/serving burden 가정을 반영한다.", 9, muted)
-    add_footer(slide)
-
-    # 7. Fact anchors
-    slide = prs.slides.add_slide(blank)
-    set_bg(slide)
-    add_title(slide, "Fact anchor는 모델을 조여주지만 telemetry를 대체하지 않는다", "공개 fact는 모델 규모와 capacity 상한을 제한하고, active GW와 utilization은 여전히 추정치다.")
-    curated = [
-        ("OpenAI", "Oracle 4.5GW + Stargate 10GW", "capacity 상한"),
-        ("Google", "Ironwood 9,216 chips / 42.5 exaflops", "tokens/MW premium"),
-        ("DeepSeek", "671B total / 37B active", "MoE 효율"),
-        ("Alibaba", "Qwen3 235B / 22B active", "MoE 효율"),
-        ("xAI", "Colossus 100k Hopper GPU", "cluster scale"),
-        ("Microsoft", "Phi-4 14B", "owned model anchor"),
-        ("Tencent", "Hunyuan 100B+ / 2T+ tokens", "model scale"),
-        ("Meta", "Llama 4 109B/400B, 17B active", "open model band"),
-    ]
-    for i, (company, fact, use) in enumerate(curated):
-        row = i // 2
-        col = i % 2
-        x = 0.75 + col * 6.2
-        y = 1.25 + row * 1.22
-        metric_card(slide, x, y, 5.65, 0.9, company, fact, use, [pale_blue, pale_green, pale_amber, RGBColor(240, 244, 248)][i % 4])
-    add_footer(slide, "상세 출처는 Excel 01_sources 및 02a_fact_anchors에 수록")
-
-    # 8. Benchmark sanity check
-    slide = prs.slides.add_slide(blank)
-    set_bg(slide)
-    add_title(slide, "Benchmark sanity check", "첨부 엑셀의 effective active params와 GPU count 방식을 별도 reference layer로 통합했다.")
-    bench_2030 = sorted([r for r in data["benchmark_reference"] if r["year"] == 2030], key=lambda r: r["model_annual_tokens_q"], reverse=True)
-    chart_data = CategoryChartData()
-    chart_data.categories = [r["company"] for r in bench_2030]
-    chart_data.add_series("우리 모델 annual QTokens", [r["model_annual_tokens_q"] for r in bench_2030])
-    chart_data.add_series("Benchmark reference annual QTokens", [r["benchmark_annual_tokens_q"] for r in bench_2030])
-    chart = slide.shapes.add_chart(XL_CHART_TYPE.COLUMN_CLUSTERED, Inches(0.65), Inches(1.25), Inches(8.15), Inches(4.85), chart_data).chart
-    chart.has_legend = True
-    chart.legend.position = XL_LEGEND_POSITION.BOTTOM
-    chart.value_axis.tick_labels.font.size = Pt(8)
-    chart.category_axis.tick_labels.font.size = Pt(8)
-    bullet_list(
-        slide,
-        9.05,
-        1.45,
-        3.35,
-        4.2,
-        [
-            "Main forecast는 tokens/sec/MW 방식.",
-            "Benchmark layer는 GPU 수와 effective active params로 sanity check.",
-            "Closed model benchmark는 proxy이므로 결론이 아니라 guardrail.",
-            "큰 괴리는 confidence downgrade 신호.",
-        ],
-        11,
-    )
-    add_footer(slide)
-
-    # 9. Energy sanity layer
-    slide = prs.slides.add_slide(blank)
-    set_bg(slide)
-    add_title(slide, "Energy sanity layer", "A08 Cycle 1: Joule/IBM/2026 serving 논문은 Base 숫자 변경보다 energy/query 검증 레이어를 요구한다.")
-    energy_2030 = [r for r in data["energy_sanity_reference"] if r["year"] == 2030 and r["company"] in ("OpenAI", "Google", "Anthropic")]
-    profiles = ["Strict-SLO / long-context agentic", "Base serving mix", "Batchable / optimized serving"]
-    chart_data = CategoryChartData()
-    chart_data.categories = profiles
-    for company in ["OpenAI", "Google", "Anthropic"]:
-        chart_data.add_series(company, [next(r["energy_implied_tokens_per_day_q"] for r in energy_2030 if r["company"] == company and r["profile"] == p) for p in profiles])
-    chart = slide.shapes.add_chart(XL_CHART_TYPE.COLUMN_CLUSTERED, Inches(0.65), Inches(1.25), Inches(7.7), Inches(4.65), chart_data).chart
-    chart.has_legend = True
-    chart.legend.position = XL_LEGEND_POSITION.BOTTOM
-    chart.value_axis.tick_labels.font.size = Pt(8)
-    chart.category_axis.tick_labels.font.size = Pt(8)
+    add_label(slide, 8.65, 1.35, 3.55, 0.42, "그래프 읽는 법", 12, muted, True)
     bullet_list(
         slide,
         8.65,
-        1.4,
-        3.8,
+        1.92,
+        3.65,
+        3.0,
+        [
+            "세 선의 간격은 전력 가동 속도, MoE 최적화, utilization 차이입니다.",
+            "Base는 현재 공개 roadmap을 단계적 가동으로 반영한 중심선입니다.",
+            "Bull/Bear는 account별 물량·가격·제품 mix를 준비하기 위한 운영 범위입니다.",
+        ],
+        12,
+    )
+    takeaway_band(slide, "이 장의 메시지: Base만 보지 말고, 상하단 범위에서 HBM·DDR5·SSD 수요가 어떻게 달라지는지 봐야 합니다.")
+    add_footer(slide)
+
+    # 4. Who matters
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    add_title(slide, "2030 상위 model owner가 토큰 capacity 대부분을 만든다", "메모리 영업 우선순위는 데이터센터 host가 아니라 commercial LLM owner 기준으로 잡습니다.")
+    chart_data = CategoryChartData()
+    chart_data.categories = [r["company"] for r in ranked_2030]
+    chart_data.add_series("Q output tokens/day", [r["inference_tokens_per_day"] / 1e15 for r in ranked_2030])
+    chart = slide.shapes.add_chart(XL_CHART_TYPE.BAR_CLUSTERED, Inches(0.7), Inches(1.15), Inches(8.0), Inches(4.95), chart_data).chart
+    chart.has_legend = False
+    chart.value_axis.tick_labels.font.size = Pt(8)
+    chart.category_axis.tick_labels.font.size = Pt(9)
+    bullet_list(
+        slide,
+        9.15,
+        1.45,
+        3.3,
+        3.6,
+        [
+            f"Top 3: {', '.join(r['company'] for r in ranked_2030[:3])}.",
+            "OpenAI/Microsoft는 같은 생태계라도 모델 소유 token과 Copilot serving burden을 분리해 봅니다.",
+            "중국 model owner는 MoE 효율이 높아 tokens/MW 관점에서 별도 기회로 봅니다.",
+        ],
+        12,
+    )
+    takeaway_band(slide, "이 장의 메시지: top account brief는 model owner 기준으로 만들고, 제품별 attach 기회를 계정별로 붙입니다.")
+    add_footer(slide)
+
+    # 5. Token definition
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    add_title(slide, "Token 정의: headline은 generated output token이다", "input+output processed token, training token, billable token은 같은 숫자로 합산하지 않습니다.")
+    token_rows = data["token_definitions"][:4]
+    table = slide.shapes.add_table(len(token_rows) + 1, 4, Inches(0.65), Inches(1.25), Inches(12.05), Inches(4.65)).table
+    headers = ["Metric", "정의", "모델 내 사용", "InferenceX mapping"]
+    widths = [2.0, 3.8, 2.95, 3.3]
+    for i, w in enumerate(widths):
+        table.columns[i].width = Inches(w)
+    for c, h in enumerate(headers):
+        cell = table.cell(0, c)
+        cell.text = h
+        cell.fill.solid()
+        cell.fill.fore_color.rgb = navy
+        cell.text_frame.paragraphs[0].font.color.rgb = RGBColor(255, 255, 255)
+        cell.text_frame.paragraphs[0].font.bold = True
+        cell.text_frame.paragraphs[0].font.size = Pt(8)
+    for r, item in enumerate(token_rows, start=1):
+        vals = [item["korean_name"], item["definition_kr"], item["primary_fields"], item["inferencex_mapping"]]
+        for c, v in enumerate(vals):
+            cell = table.cell(r, c)
+            cell.text = v
+            cell.text_frame.paragraphs[0].font.size = Pt(7.4)
+            cell.margin_left = Inches(0.04)
+            cell.margin_right = Inches(0.04)
+    style_light_table(table)
+    takeaway_band(slide, "이 장의 메시지: InferenceX의 total throughput은 workload 처리량이고, 본 보고서 headline은 사용자가 받는 output token입니다.")
+    add_footer(slide)
+
+    # 6. Why the model is credible
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    add_title(slide, "계산 로직: 전력 funnel에 serving 효율을 곱한다", "계약 전력에서 바로 토큰이 나오는 것이 아니라, 가동 전력과 추론 배정, serving 효율을 거쳐 토큰이 만들어집니다.")
+    steps = [
+        ("계약/계획 GW", "official capacity anchor"),
+        ("가동 전력", "deployment 가정"),
+        ("AI IT load", "PUE·AI workload 차감"),
+        ("추론 GW", "training/inference split"),
+        ("output token/day", "tokens/MW × utilization"),
+    ]
+    for i, (title, desc) in enumerate(steps):
+        x = 0.7 + i * 2.5
+        add_label(slide, x, 1.55, 1.95, 0.38, title, 12, navy, True, PP_ALIGN.CENTER)
+        add_label(slide, x, 2.05, 1.95, 0.45, desc, 9, muted, False, PP_ALIGN.CENTER)
+        if i < len(steps) - 1:
+            add_label(slide, x + 2.0, 1.85, 0.35, 0.3, "→", 17, muted, True, PP_ALIGN.CENTER)
+    add_label(slide, 1.1, 3.38, 11.1, 0.48, "output tokens/day = inference GW × 1,000 × tokens/sec/MW × utilization × 86,400", 16, blue, True, PP_ALIGN.CENTER)
+    bullet_list(
+        slide,
+        1.2,
+        4.55,
+        10.8,
+        1.0,
+        [
+            "전력 계약은 capacity 상한이고, 실제 token capacity는 operational deploy 이후에 생깁니다.",
+            "inference share는 전력 배정이고, utilization은 그 전력이 실제 traffic으로 전환되는 운영 효율입니다.",
+        ],
+        11,
+        ink,
+    )
+    takeaway_band(slide, "이 장의 메시지: 추론 GW, tokens/MW, utilization 세 계수를 따로 관리하면 토큰 capacity 변화를 설명할 수 있습니다.")
+    add_footer(slide)
+
+    # 7. InferenceX support
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    parsed = data["inferencex"]["manifest"].get("parsed_dump", {})
+    add_title(slide, "InferenceX로 보정하는 것: tokens/MW, J/token, SLO 조건", "InferenceX benchmark는 serving 효율과 latency 조건을 수치화해 tokens/MW 가정을 좁혀줍니다.")
+    add_label(slide, 0.85, 1.35, 2.8, 0.32, "Full dump normalized", 11, muted, True)
+    add_label(slide, 0.85, 1.78, 3.4, 0.72, f"{parsed.get('benchmark_rows', 0):,}", 34, blue, True)
+    add_label(slide, 0.88, 2.48, 3.7, 0.3, "inference performance rows", 10, muted)
+    add_label(slide, 4.6, 1.78, 2.8, 0.72, f"{parsed.get('metric_profile_rows', 0):,}", 34, green, True)
+    add_label(slide, 4.62, 2.48, 3.5, 0.3, "model/GPU/framework profiles", 10, muted)
+    add_label(slide, 8.1, 1.78, 2.8, 0.72, f"{parsed.get('accuracy_eval_rows', 0):,}", 34, amber, True)
+    add_label(slide, 8.12, 2.48, 3.5, 0.3, "accuracy eval rows", 10, muted)
+    bullet_list(
+        slide,
+        1.1,
+        3.55,
+        11.0,
+        1.65,
+        [
+            "우리 산식의 tokens/sec/MW, J/token, TTFT/TPOT, utilization 가정과 직접 연결됩니다.",
+            "total `tok_s_mw`는 input+output 처리량일 수 있어, headline output token에는 `output_tok_s_mw`를 우선 봅니다.",
+            "다음 cycle에서는 workload별 benchmark-to-production haircut을 계수화해 tokens/MW 범위를 더 좁힙니다.",
+        ],
+        12,
+    )
+    takeaway_band(slide, "이 장의 메시지: InferenceX는 serving 효율 계수를 더 현실적인 범위로 조정하는 데이터 레이어입니다.")
+    add_footer(slide)
+
+    # 8. Key uncertainties
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    add_title(slide, "핵심 driver: active power와 utilization이 forecast를 가장 크게 움직인다", "토큰 capacity를 키우는 실제 driver는 전력 가동, traffic shape, SLO 조건, serving stack 개선입니다.")
+    risk_rows = [
+        ("High", "active_power_gw", "site-level energization / GPU rack deployment"),
+        ("High", "utilization", "traffic shape, TTFT/TPOT, failover reserve"),
+        ("Medium", "tokens/sec/MW", "serving stack, precision, model routing"),
+        ("Medium", "inference share", "commercial serving ramp vs training demand"),
+        ("Low-Med", "model parameters", "open MoE는 강함, closed model은 band"),
+    ]
+    table = slide.shapes.add_table(len(risk_rows) + 1, 3, Inches(0.85), Inches(1.35), Inches(11.65), Inches(4.55)).table
+    for i, w in enumerate([1.45, 3.0, 7.2]):
+        table.columns[i].width = Inches(w)
+    for c, h in enumerate(["Risk", "변수", "왜 중요한가"]):
+        cell = table.cell(0, c)
+        cell.text = h
+        cell.fill.solid()
+        cell.fill.fore_color.rgb = navy
+        cell.text_frame.paragraphs[0].font.color.rgb = RGBColor(255, 255, 255)
+        cell.text_frame.paragraphs[0].font.bold = True
+        cell.text_frame.paragraphs[0].font.size = Pt(9)
+    for r, row in enumerate(risk_rows, start=1):
+        for c, v in enumerate(row):
+            cell = table.cell(r, c)
+            cell.text = v
+            cell.text_frame.paragraphs[0].font.size = Pt(11 if c != 2 else 10)
+    style_light_table(table)
+    takeaway_band(slide, "이 장의 메시지: 전력 계약만 보는 팀보다, 가동 전력과 serving 운영 변화를 읽는 팀이 먼저 revenue 기회를 잡습니다.")
+    add_footer(slide)
+
+    # 9. Memory marketing actions
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    add_title(slide, "메모리 마케팅 액션: 토큰 growth를 제품별 sales motion으로 바꾼다", "상위 model owner의 추론 ramp는 HBM allocation뿐 아니라 DDR5, SSD, CXL attach 기회로 이어집니다.")
+    actions = [
+        ("HBM", "allocation / qualification / HBM4 roadmap lock-in", "OpenAI, Google, Meta, xAI"),
+        ("DDR5·MRDIMM", "CPU-side inference attach, density/bandwidth refresh", "hyperscaler + OEM/ODM"),
+        ("Enterprise SSD·QLC", "RAG, checkpointing, vector retrieval TCO proof", "enterprise AI + cloud"),
+        ("CXL", "memory expansion and utilization recovery narrative", "inference fleet architects"),
+    ]
+    table = slide.shapes.add_table(len(actions) + 1, 3, Inches(0.8), Inches(1.35), Inches(11.8), Inches(4.45)).table
+    for i, w in enumerate([2.0, 6.4, 3.4]):
+        table.columns[i].width = Inches(w)
+    for c, h in enumerate(["제품", "Revenue motion", "우선 고객"]):
+        cell = table.cell(0, c)
+        cell.text = h
+        cell.fill.solid()
+        cell.fill.fore_color.rgb = navy
+        cell.text_frame.paragraphs[0].font.color.rgb = RGBColor(255, 255, 255)
+        cell.text_frame.paragraphs[0].font.bold = True
+        cell.text_frame.paragraphs[0].font.size = Pt(9)
+    for r, row in enumerate(actions, start=1):
+        for c, v in enumerate(row):
+            cell = table.cell(r, c)
+            cell.text = v
+            cell.text_frame.paragraphs[0].font.size = Pt(10.5)
+    style_light_table(table)
+    takeaway_band(slide, "발표 후 액션: 상위 10개 account별로 product-fit, urgency, proof pack, pricing/mix recommendation을 작성합니다.")
+    add_footer(slide)
+
+    # 10. Next operating loop
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    add_title(slide, "다음 운영 방식: 매주 source-refresh → model-update → account-action", "가정이 바뀌면 모델 숫자와 영업 액션이 같은 주에 같이 업데이트되도록 운영합니다.")
+    loop = [
+        ("월", "source refresh", "official IR / filings / model cards / InferenceX dump"),
+        ("화", "model update", "token definition, active GW, routing, utilization"),
+        ("수", "account translation", "customer pain → product fit → proof"),
+        ("목", "sales review", "pipeline impact, objection, win/loss signal"),
+        ("금", "assumption review", "token definition, unit check, next-week model update"),
+    ]
+    for i, (day, task, desc) in enumerate(loop):
+        y = 1.28 + i * 0.92
+        add_label(slide, 0.95, y, 0.8, 0.32, day, 15, blue, True)
+        add_label(slide, 1.95, y, 2.8, 0.32, task, 14, navy, True)
+        add_label(slide, 4.85, y, 7.0, 0.32, desc, 12, ink)
+    takeaway_band(slide, "이 장의 메시지: PPT는 발표용, Excel은 계산용, MD/agents는 가정 업데이트와 반복 학습용으로 역할을 나눕니다.")
+    add_footer(slide)
+
+    # 11. Appendix map
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    add_title(slide, "부록 위치: 계산식·가정·InferenceX 원천 테이블은 workbook에 있다", "발표에서는 결론과 로직만 말하고, 질문이 들어오면 workbook sheet로 내려갑니다.")
+    bullet_list(
+        slide,
+        0.95,
+        1.35,
+        11.3,
         4.35,
         [
-            "Base tokens/MW는 아직 유지.",
-            "energy/query와 joules/token으로 sanity check 추가.",
-            "agentic long-context는 energy/token을 악화시킬 수 있음.",
-            "optimized serving은 개선 가능하지만 company fact가 아님.",
+            "00_formula_assumptions / 00a_token_definitions: 계산식과 token 정의.",
+            "02a_fact_anchors: 공개 numeric anchor와 모델 반영 방식.",
+            "08a-08f: scenario, benchmark, energy, utilization sensitivity.",
+            "12d-12f: InferenceX benchmark rows, metric profile, accuracy evals.",
+            "07/08 sheets: company-year forecast와 sensitivity 결과.",
         ],
-        11,
+        14,
     )
-    add_footer(slide, "Sources: Joule inference energy, IBM P/D disaggregation, SemiAnalysis InferenceX")
-
-    # 10. Utilization sensitivity
-    slide = prs.slides.add_slide(blank)
-    set_bg(slide)
-    add_title(slide, "Utilization은 GPU 점유율이 아니라 SLO 제약 평균값", "A09 Cycle 1: TTFT/TPOT, prefill-decode allocation, batchability, placement가 realized utilization을 제한한다.")
-    util_2030 = [r for r in data["utilization_sensitivity"] if r["year"] == 2030 and r["company"] in ("OpenAI", "Google", "Meta")]
-    util_profiles = ["Strict-SLO real-time", "Base mixed serving", "Batchable optimized", "Agentic long-context stress"]
-    chart_data = CategoryChartData()
-    chart_data.categories = util_profiles
-    for company in ["OpenAI", "Google", "Meta"]:
-        chart_data.add_series(company, [next(r["tokens_per_day_q"] for r in util_2030 if r["company"] == company and r["profile"] == p) for p in util_profiles])
-    chart = slide.shapes.add_chart(XL_CHART_TYPE.COLUMN_CLUSTERED, Inches(0.65), Inches(1.25), Inches(8.0), Inches(4.65), chart_data).chart
-    chart.has_legend = True
-    chart.legend.position = XL_LEGEND_POSITION.BOTTOM
-    chart.value_axis.tick_labels.font.size = Pt(8)
-    chart.category_axis.tick_labels.font.size = Pt(8)
-    bullet_list(
-        slide,
-        8.9,
-        1.35,
-        3.55,
-        4.4,
-        [
-            "Strict-SLO는 reserve 때문에 평균 output 하락.",
-            "Batchable workload는 utilization과 tokens/MW 동시 개선 가능.",
-            "Agentic long-context는 throughput과 placement를 압박.",
-            "Base band는 유지하고 sensitivity로 분리.",
-        ],
-        11,
-    )
-    add_footer(slide, "Sources: IBM P/D disaggregation, SLO-aware P/D allocation, Prefill-as-a-Service")
-
-    # 11. Inference share audit
-    slide = prs.slides.add_slide(blank)
-    set_bg(slide)
-    add_title(slide, "추론 비중 fact-check", "이 모델은 2026년 60%+ 추론 GW를 fact로 취급하지 않는다.")
-    chart_data = CategoryChartData()
-    chart_data.categories = ["보수", "기준", "낙관", "전력제약"]
-    chart_data.add_series("2026", [next(r for r in data["scenario_summary"] if r["scenario"] == s and r["year"] == 2026)["weighted_inference_share"] for s in SCENARIO_CASES])
-    chart_data.add_series("2030", [next(r for r in data["scenario_summary"] if r["scenario"] == s and r["year"] == 2030)["weighted_inference_share"] for s in SCENARIO_CASES])
-    chart = slide.shapes.add_chart(XL_CHART_TYPE.COLUMN_CLUSTERED, Inches(0.8), Inches(1.35), Inches(7.2), Inches(4.55), chart_data).chart
-    chart.has_legend = True
-    chart.legend.position = XL_LEGEND_POSITION.BOTTOM
-    chart.value_axis.tick_labels.number_format = "0%"
-    bullet_list(
-        slide,
-        8.45,
-        1.45,
-        3.95,
-        4.0,
-        [
-            "기준 2026: 56%, 60% 미만.",
-            "낙관 2026: 61%, upside scenario에서만 허용.",
-            "기준 2030: 76%, 상용 serving 확대 반영.",
-            "모든 case에서 학습 capacity는 계속 유의미하게 남김.",
-        ],
-        13,
-    )
+    takeaway_band(slide, "이 장의 메시지: 발표 본문은 간결하게, 세부 계산과 원천 테이블은 workbook에서 설명합니다.")
     add_footer(slide)
 
-    # 10. Model owner landscape
-    slide = prs.slides.add_slide(blank)
-    set_bg(slide)
-    add_title(slide, "모델 보유 업체 landscape", "Core row는 데이터센터 host가 아니라 상용 LLM owner다.")
-    groups = [
-        ("미국 대형 플랫폼", ["OpenAI", "Anthropic", "Google", "Meta", "Microsoft"], pale_blue),
-        ("미국 challenger", ["xAI"], pale_green),
-        ("중국 model owner", ["DeepSeek", "Alibaba", "Tencent"], pale_amber),
-    ]
-    for i, (label, companies, fill) in enumerate(groups):
-        x = 0.8 + i * 4.15
-        shape = slide.shapes.add_shape(1, Inches(x), Inches(1.35), Inches(3.65), Inches(4.7))
+    prs.save(path)
+
+
+def write_ppt_samsung_style(data: dict[str, Any], path: Path) -> None:
+    """Create a Samsung Electronics-inspired executive deck.
+
+    This is a clean corporate style deck: white canvas, Samsung-blue accents,
+    strong conclusion titles, large numbers, thin rules, and fewer containers.
+    It does not use Samsung logos or proprietary brand assets.
+    """
+
+    prs = Presentation()
+    prs.slide_width = Inches(13.333)
+    prs.slide_height = Inches(7.5)
+    blank = prs.slide_layouts[6]
+
+    samsung_blue = RGBColor(20, 40, 160)
+    electric_blue = RGBColor(0, 112, 243)
+    ink = RGBColor(20, 24, 32)
+    body = RGBColor(60, 68, 82)
+    muted = RGBColor(118, 128, 145)
+    silver = RGBColor(230, 235, 243)
+    pale = RGBColor(247, 249, 252)
+    cyan = RGBColor(0, 163, 224)
+    green = RGBColor(16, 150, 108)
+    amber = RGBColor(212, 142, 28)
+
+    scenario_label_kr = {
+        "Bear": "Bear",
+        "Base": "Base",
+        "Bull": "Bull",
+        "Grid-Constrained / Efficiency-Upside": "Grid constrained + efficiency",
+    }
+
+    base_2030 = [r for r in data["forecast"] if r["year"] == 2030]
+    base_2026 = [r for r in data["forecast"] if r["year"] == 2026]
+    ranked_2030 = sorted(base_2030, key=lambda r: r["inference_tokens_per_day"], reverse=True)
+    scenario_2030 = [r for r in data["scenario_summary"] if r["year"] == 2030]
+    base_summary_2030 = next(r for r in scenario_2030 if r["scenario"] == "Base")
+    base_summary_2026 = next(r for r in data["scenario_summary"] if r["scenario"] == "Base" and r["year"] == 2026)
+    total_tokens_2030 = sum(r["inference_tokens_per_day"] for r in base_2030)
+    total_tokens_2026 = sum(r["inference_tokens_per_day"] for r in base_2026)
+    total_active_2030 = sum(r["active_power_gw"] for r in base_2030)
+    total_inf_2030 = sum(r["inference_gw"] for r in base_2030)
+    total_train_2030 = sum(r["training_gw"] for r in base_2030)
+
+    def set_bg(slide, color=RGBColor(255, 255, 255)):
+        fill = slide.background.fill
+        fill.solid()
+        fill.fore_color.rgb = color
+
+    def rect(slide, x, y, w, h, color, line_color=None):
+        shape = slide.shapes.add_shape(1, Inches(x), Inches(y), Inches(w), Inches(h))
         shape.fill.solid()
-        shape.fill.fore_color.rgb = fill
-        shape.line.color.rgb = line
-        add_label(slide, x + 0.18, 1.58, 3.2, 0.32, label, 13, navy, True)
-        for j, c in enumerate(companies):
-            m = next(m for m in data["company_models"] if m["company"] == c)
-            add_label(slide, x + 0.22, 2.18 + j * 0.82, 3.1, 0.26, c, 13, ink, True)
-            add_label(slide, x + 0.22, 2.48 + j * 0.82, 3.1, 0.28, m["model_family"], 8.3, muted)
-    add_footer(slide)
+        shape.fill.fore_color.rgb = color
+        shape.line.color.rgb = line_color or color
+        return shape
 
-    # 11. Memory implications
+    def text(slide, x, y, w, h, value, size=12, color=body, bold=False, align=PP_ALIGN.LEFT):
+        box = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
+        tf = box.text_frame
+        tf.margin_left = 0
+        tf.margin_right = 0
+        tf.margin_top = 0
+        tf.margin_bottom = 0
+        p = tf.paragraphs[0]
+        p.text = value
+        p.font.size = Pt(size)
+        p.font.color.rgb = color
+        p.font.bold = bold
+        p.alignment = align
+        return box
+
+    def add_header(slide, title: str, kicker: str = "LLM TOKEN CAPACITY SIMULATION"):
+        rect(slide, 0, 0, 13.333, 0.08, samsung_blue)
+        text(slide, 0.72, 0.42, 3.8, 0.22, kicker, 7.5, samsung_blue, True)
+        text(slide, 0.72, 0.78, 11.9, 0.64, title, 23, ink, True)
+        rect(slide, 0.72, 1.52, 11.9, 0.01, silver)
+
+    def add_footer(slide, note: str = "Commercial LLM model-owner basis | Generated output token headline"):
+        text(slide, 0.72, 7.08, 10.3, 0.18, note, 7.2, muted)
+        text(slide, 11.52, 7.08, 1.1, 0.18, RUN_DATE, 7.2, muted, False, PP_ALIGN.RIGHT)
+
+    def bullet(slide, x, y, w, h, items, size=12, color=body, gap=8):
+        box = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
+        tf = box.text_frame
+        tf.clear()
+        for i, item in enumerate(items):
+            p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
+            p.text = item
+            p.font.size = Pt(size)
+            p.font.color.rgb = color
+            p.space_after = Pt(gap)
+        return box
+
+    def underline_takeaway(slide, value: str):
+        rect(slide, 0.72, 6.42, 1.4, 0.04, samsung_blue)
+        text(slide, 2.25, 6.32, 10.1, 0.32, value, 11.5, ink, True)
+
+    def stat(slide, x, y, label, value, unit, color=samsung_blue):
+        text(slide, x, y, 2.7, 0.25, label, 8.8, muted, True)
+        text(slide, x, y + 0.34, 2.7, 0.7, value, 30, color, True)
+        text(slide, x, y + 1.0, 2.7, 0.24, unit, 8.5, muted)
+
+    def style_table(table, header_color=samsung_blue):
+        for r_idx, row in enumerate(table.rows):
+            for cell in row.cells:
+                cell.margin_left = Inches(0.06)
+                cell.margin_right = Inches(0.06)
+                cell.margin_top = Inches(0.04)
+                cell.margin_bottom = Inches(0.04)
+                if r_idx == 0:
+                    cell.fill.solid()
+                    cell.fill.fore_color.rgb = header_color
+                    for p in cell.text_frame.paragraphs:
+                        p.font.color.rgb = RGBColor(255, 255, 255)
+                        p.font.bold = True
+                        p.font.size = Pt(8.5)
+                else:
+                    cell.fill.solid()
+                    cell.fill.fore_color.rgb = RGBColor(255, 255, 255) if r_idx % 2 else pale
+                    for p in cell.text_frame.paragraphs:
+                        p.font.color.rgb = body
+                        p.font.size = Pt(8.5)
+
+    def chart_axis_style(chart):
+        chart.value_axis.tick_labels.font.size = Pt(8)
+        chart.category_axis.tick_labels.font.size = Pt(8)
+        chart.value_axis.format.line.color.rgb = silver
+        chart.category_axis.format.line.color.rgb = silver
+
+    # 1. Cover
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
-    add_title(slide, "메모리 마케팅 시사점", "토큰 capacity 성장은 allocation, qualification, attach-rate 영업 motion으로 전환된다.")
-    motions = [
-        ("HBM", "OpenAI/Google/Meta/xAI ramp → LTA, HBM4 roadmap lock-in, second-source qualification"),
-        ("DDR5 / MRDIMM", "추론 fleet 확대 → CPU-side memory density와 bandwidth attach story"),
-        ("Enterprise SSD / QLC", "RAG, checkpointing, vector retrieval → TCO, endurance, retrieval latency"),
-        ("CXL", "고가동률 추론 cluster → memory expansion과 utilization recovery"),
+    rect(slide, 0, 0, 13.333, 0.12, samsung_blue)
+    text(slide, 0.72, 0.62, 4.2, 0.24, "MEMORY MARKETING STRATEGY", 8, samsung_blue, True)
+    text(slide, 0.72, 1.22, 8.4, 1.75, "2030 LLM Token Capacity\nSimulation", 35, ink, True)
+    text(slide, 0.76, 3.13, 7.5, 0.45, "상용 LLM 업체별 전력·GPU·토큰 생성량 기반 메모리 매출 기회 분석", 14, body)
+    rect(slide, 8.8, 1.28, 0.04, 3.3, samsung_blue)
+    stat(slide, 9.1, 1.28, "Base 2030", f"{total_tokens_2030/1e15:.2f}Q", "output tokens/day", samsung_blue)
+    stat(slide, 9.1, 2.9, "Inference load", f"{total_inf_2030:.1f}GW", "2030 model-owner basis", cyan)
+    text(slide, 0.72, 6.55, 5.8, 0.24, "Samsung-style executive version | no brand assets used", 8, muted)
+    text(slide, 10.72, 6.55, 1.9, 0.24, RUN_DATE, 8, muted, False, PP_ALIGN.RIGHT)
+
+    # 2. Answer first
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    add_header(slide, "결론: 2030년 토큰 공급력은 ‘가동 전력 × 추론 전환 × serving 효율’이 결정한다")
+    columns = [
+        ("01", "Capacity", f"Base 기준 2030년 {total_tokens_2030/1e15:.2f}Q output tokens/day까지 확대"),
+        ("02", "Concentration", f"상위 계정은 {', '.join(r['company'] for r in ranked_2030[:3])} 중심으로 집중"),
+        ("03", "Memory motion", "HBM allocation에서 DDR5·SSD·CXL attach로 revenue motion 확장"),
     ]
-    for i, (title, desc) in enumerate(motions):
-        metric_card(slide, 0.8 + (i % 2) * 6.05, 1.45 + (i // 2) * 1.75, 5.55, 1.18, title, "", desc, [pale_blue, pale_green, pale_amber, RGBColor(240, 244, 248)][i])
-    add_label(slide, 0.85, 5.45, 11.7, 0.55, "권장 sales motion: model owner별 account brief, 제품별 proof pack, scenario envelope에 연결된 pricing/mix 논리.", 13, navy, True)
+    for i, (num, title, desc) in enumerate(columns):
+        x = 0.82 + i * 4.05
+        text(slide, x, 1.95, 0.7, 0.32, num, 11, samsung_blue, True)
+        rect(slide, x, 2.32, 3.25, 0.03, samsung_blue if i == 0 else silver)
+        text(slide, x, 2.62, 3.3, 0.38, title, 18, ink, True)
+        text(slide, x, 3.2, 3.25, 1.2, desc, 15, body)
+    underline_takeaway(slide, "Executive takeaway: 전력 계약보다 ‘실제 inference serving으로 전환되는 속도’를 계정 전략의 선행지표로 봐야 합니다.")
     add_footer(slide)
 
-    # 12. Evidence confidence
+    # 3. Scenario envelope
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
-    add_title(slide, "근거 신뢰도 감사", "가장 강한 근거는 모델 크기와 발표 capacity이며, 가장 약한 부분은 active serving utilization이다.")
-    audit_rows = [
-        ("높음", "공식 model card / technical report", "DeepSeek 671B/37B, Qwen3 235B/22B, Phi-4 14B"),
-        ("중간", "공식 capacity 또는 hardware 발표", "OpenAI/Stargate GW, Google Ironwood, xAI Colossus"),
-        ("낮음-중간", "Active GW와 추론/학습 split", "telemetry 또는 site-level disclosure 필요"),
-        ("민감도", "tokens/sec/MW와 utilization", "company fact가 아니라 scenario benchmark"),
-    ]
-    for i, (level, evidence, example) in enumerate(audit_rows):
-        y = 1.35 + i * 1.05
-        add_label(slide, 0.9, y, 1.45, 0.35, level, 14, [green, blue, amber, red][i], True)
-        add_label(slide, 2.45, y, 4.2, 0.35, evidence, 13, ink, True)
-        add_label(slide, 6.7, y, 5.6, 0.35, example, 11, muted)
-    add_label(slide, 0.9, 6.1, 11.5, 0.45, "Replacement path: site-level MW activation, model routing mix, production API traffic, 모델/context별 실측 tokens/sec/MW.", 11, navy, True)
-    add_footer(slide)
-
-    # 13. InferenceX ingestion layer
-    slide = prs.slides.add_slide(blank)
-    set_bg(slide)
-    latest = data["inferencex"]["manifest"].get("latest_db_dump", {})
-    parsed = data["inferencex"]["manifest"].get("parsed_dump", {})
-    add_title(slide, "InferenceX는 benchmark DB로 별도 수집한다", "대시보드 DOM이 아니라 GitHub release dump와 app schema를 기준으로 A08/A09 sensitivity를 갱신한다.")
-    ix_cards = [
-        ("최신 dump", latest.get("tag_name", "not refreshed"), latest.get("asset_name", "")),
-        ("Benchmark rows", str(parsed.get("benchmark_rows", 0)), f"profile {parsed.get('metric_profile_rows', 0)} / eval {parsed.get('accuracy_eval_rows', 0)}"),
-        ("Evidence class", "Proxy / Benchmark", "company production telemetry로 직접 사용 금지"),
-        ("Workbook sheets", "12d / 12e / 12f", "benchmark, metric profile, accuracy evals"),
-    ]
-    for i, (label, value, note) in enumerate(ix_cards):
-        metric_card(slide, 0.8 + (i % 2) * 6.1, 1.35 + (i // 2) * 1.65, 5.65, 1.05, label, value, note, [pale_blue, pale_green, pale_amber, RGBColor(240, 244, 248)][i])
-    tab_text = "Inference Performance → tokens/MW, latency | Accuracy Evals → precision quality guardrail | Historical Trends → software improvement CAGR | TCO/GPU Specs → cost/token and hardware sanity"
-    add_label(slide, 0.9, 5.15, 11.55, 0.85, tab_text, 12, navy, True)
-    add_label(slide, 0.9, 6.08, 11.55, 0.45, f"검증 digest: {parsed.get('sha256', '')[:24]}... / 원천 dump는 git ignore, 정규화 CSV만 산출물화.", 11, muted)
-    add_footer(slide)
-
-    # 14. Hallucination audit checklist
-    slide = prs.slides.add_slide(blank)
-    set_bg(slide)
-    add_title(slide, "Hallucination 체크리스트", "임원 보고 전 숫자와 문구가 fact/proxy/scenario를 혼동하지 않는지 확인합니다.")
-    checklist_items = [
-        ("출처 존재", "URL/title/date 직접 확인"),
-        ("숫자 직접 인용", "4.5GW, 671B/37B 등 원문 매칭"),
-        ("Fact/Estimate 분리", "active GW·utilization은 scenario"),
-        ("Closed model", "precise parameter 금지"),
-        ("Host attribution", "AWS/Oracle/Google host와 model owner 분리"),
-        ("Benchmark proxy", "closed model 결론이 아니라 sanity check"),
-        ("단위", "daily vs annual token 혼동 금지"),
-        ("Outlier", "benchmark_vs_model ±50% 초과 review"),
-    ]
-    for i, (title, desc) in enumerate(checklist_items):
-        x = 0.75 + (i % 2) * 6.15
-        y = 1.25 + (i // 2) * 1.15
-        metric_card(slide, x, y, 5.65, 0.82, title, "", desc, [pale_blue, pale_green, pale_amber, RGBColor(240, 244, 248)][i % 4])
-    add_label(slide, 0.85, 6.25, 11.6, 0.35, "전체 체크리스트는 Excel `11_hallucination_checklist`에 수록되어 있으며, source screenshot/quote pack으로 최종 sign-off해야 합니다.", 10, navy, True)
-    add_footer(slide)
-
-    # 14. Appendix
-    slide = prs.slides.add_slide(blank)
-    set_bg(slide)
-    add_title(slide, "부록: 계산 검증 컨트롤", "전체 감사 가능한 모델은 workbook에 수록되어 있다.")
-    bullet_list(
+    add_header(slide, "2026-2030 토큰 capacity는 Base에서도 급격히 증가한다")
+    chart_data = CategoryChartData()
+    chart_data.categories = [str(y) for y in YEARS]
+    for scen in ("Bear", "Base", "Bull"):
+        chart_data.add_series(
+            scenario_label_kr[scen],
+            [next(r["inference_tokens_per_day_q"] for r in data["scenario_summary"] if r["scenario"] == scen and r["year"] == y) for y in YEARS],
+        )
+    chart = slide.shapes.add_chart(XL_CHART_TYPE.LINE_MARKERS, Inches(0.82), Inches(1.85), Inches(8.0), Inches(4.1), chart_data).chart
+    chart.has_legend = True
+    chart.legend.position = XL_LEGEND_POSITION.BOTTOM
+    chart_axis_style(chart)
+    text(slide, 9.35, 1.88, 2.8, 0.3, "시나리오가 벌어지는 이유", 11, muted, True)
+    bullet(
         slide,
-        0.9,
-        1.35,
-        11.5,
-        4.4,
+        9.35,
+        2.35,
+        3.1,
+        2.6,
         [
-            "00_formula_assumptions: 모든 계산식과 해석 방식.",
-            "02a_fact_anchors: 확인된 공개 numeric anchor, confidence, replacement path.",
-            "08a/08b/08c/08d: 시나리오 정의, 업체-연도별 forecast, aggregate summary, benchmark reference.",
-            "11_hallucination_checklist: fact/proxy/scenario 혼동 방지용 검토표.",
-            "Validation: active power는 contracted power 이하, 학습+추론=100%, 표시값으로 token/day 재계산 일치.",
+            "Operational deploy 속도 차이",
+            "MoE·quantization·batching 최적화",
+            "학습 중심에서 상용 추론 중심으로의 전력 배정 변화",
         ],
-        15,
+        12,
     )
+    underline_takeaway(slide, "Base는 중심선이고, Bull/Bear는 account별 allocation·pricing·attach 전략을 준비하는 운영 범위입니다.")
     add_footer(slide)
+
+    # 4. Account priority
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    add_header(slide, "2030년 메모리 영업 우선순위는 model owner 기준으로 재정렬한다")
+    chart_data = CategoryChartData()
+    chart_data.categories = [r["company"] for r in ranked_2030]
+    chart_data.add_series("Q output tokens/day", [r["inference_tokens_per_day"] / 1e15 for r in ranked_2030])
+    chart = slide.shapes.add_chart(XL_CHART_TYPE.BAR_CLUSTERED, Inches(0.82), Inches(1.78), Inches(7.8), Inches(4.25), chart_data).chart
+    chart.has_legend = False
+    chart_axis_style(chart)
+    stat(slide, 9.15, 1.82, "Top account", ranked_2030[0]["company"], "largest 2030 token capacity", samsung_blue)
+    stat(slide, 9.15, 3.25, "Total active power", f"{total_active_2030:.1f}GW", "Base 2030", cyan)
+    text(slide, 9.15, 4.92, 3.0, 0.58, "Host capacity와 model-owner token 귀속을 분리해야 Copilot, ChatGPT, Gemini, Llama, Grok, Claude, Qwen, DeepSeek 계정 전략이 선명해집니다.", 10.5, body)
+    underline_takeaway(slide, "Account brief는 cloud host가 아니라 상용 LLM owner별로 만들고, 제품별 attach 기회를 붙입니다.")
+    add_footer(slide)
+
+    # 5. Calculation logic
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    add_header(slide, "계산식은 전력 funnel과 serving 효율을 분리해서 관리한다")
+    steps = [
+        ("Contracted\nGW", "capacity ceiling"),
+        ("Active\nGW", "energized & deployed"),
+        ("AI IT\nload", "PUE / workload"),
+        ("Inference\nGW", "power split"),
+        ("Output\ntoken/day", "tokens/MW × utilization"),
+    ]
+    for i, (label, note) in enumerate(steps):
+        x = 0.82 + i * 2.43
+        text(slide, x, 2.03, 1.55, 0.72, label, 18, ink, True, PP_ALIGN.CENTER)
+        rect(slide, x, 2.92, 1.55, 0.035, samsung_blue if i == 4 else silver)
+        text(slide, x, 3.18, 1.55, 0.3, note, 8.2, muted, False, PP_ALIGN.CENTER)
+        if i < len(steps) - 1:
+            text(slide, x + 1.72, 2.42, 0.35, 0.25, "→", 16, muted, True, PP_ALIGN.CENTER)
+    text(slide, 1.1, 4.35, 11.1, 0.45, "output tokens/day = inference GW × 1,000 × output tokens/sec/MW × utilization × 86,400", 16, samsung_blue, True, PP_ALIGN.CENTER)
+    underline_takeaway(slide, "전력 계약은 상한값이고, revenue signal은 active GW와 inference serving 전환에서 발생합니다.")
+    add_footer(slide)
+
+    # 6. Training vs inference shift
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    add_header(slide, "추론 비중 증가는 토큰 생성량과 메모리 제품 mix를 동시에 바꾼다")
+    pie_data = CategoryChartData()
+    pie_data.categories = ["Inference GW", "Training GW"]
+    pie_data.add_series("2030 GW split", [total_inf_2030, total_train_2030])
+    chart = slide.shapes.add_chart(XL_CHART_TYPE.PIE, Inches(0.85), Inches(1.85), Inches(4.3), Inches(4.0), pie_data).chart
+    chart.has_legend = True
+    chart.legend.position = XL_LEGEND_POSITION.BOTTOM
+    stat(slide, 6.0, 1.92, "Inference share", f"{base_summary_2026['weighted_inference_share']:.0%} → {base_summary_2030['weighted_inference_share']:.0%}", "Base weighted share, 2026 to 2030", samsung_blue)
+    text(slide, 6.0, 3.58, 5.7, 0.92, "상용 traffic이 커질수록 decode/prefill, KV cache, retrieval, checkpoint, storage tiering 요구가 늘어납니다. 이는 HBM뿐 아니라 DDR5, MRDIMM, SSD, CXL의 계정별 가치 제안으로 연결됩니다.", 13, body)
+    underline_takeaway(slide, "Inference shift는 단순 GPU 수요가 아니라 memory hierarchy 전체의 판매 기회입니다.")
+    add_footer(slide)
+
+    # 7. Token definition
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    add_header(slide, "Headline metric은 generated output token으로 고정한다")
+    token_rows = data["token_definitions"][:4]
+    table = slide.shapes.add_table(len(token_rows) + 1, 4, Inches(0.72), Inches(1.78), Inches(11.95), Inches(4.25)).table
+    headers = ["Metric", "Definition", "Use in model", "InferenceX mapping"]
+    widths = [2.0, 4.05, 2.7, 3.2]
+    for i, width in enumerate(widths):
+        table.columns[i].width = Inches(width)
+    for c, header in enumerate(headers):
+        table.cell(0, c).text = header
+    for r, item in enumerate(token_rows, start=1):
+        values = [item["korean_name"], item["definition_kr"], item["primary_fields"], item["inferencex_mapping"]]
+        for c, value in enumerate(values):
+            table.cell(r, c).text = value
+    style_table(table)
+    underline_takeaway(slide, "Input+output processed token, billable token, training token을 하나로 합산하지 않도록 정의를 분리합니다.")
+    add_footer(slide)
+
+    # 8. InferenceX calibration
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    parsed = data["inferencex"]["manifest"].get("parsed_dump", {})
+    add_header(slide, "InferenceX는 serving 효율 가정을 실제 benchmark 범위로 좁힌다")
+    stat(slide, 0.92, 1.92, "Performance rows", f"{parsed.get('benchmark_rows', 0):,}", "model × GPU × precision × ISL/OSL", samsung_blue)
+    stat(slide, 4.75, 1.92, "Metric profiles", f"{parsed.get('metric_profile_rows', 0):,}", "GPU/framework/profile groups", cyan)
+    stat(slide, 8.55, 1.92, "Accuracy evals", f"{parsed.get('accuracy_eval_rows', 0):,}", "quality trade-off layer", green)
+    bullet(
+        slide,
+        1.0,
+        4.12,
+        11.0,
+        1.1,
+        [
+            "tokens/sec/MW, J/token, TTFT/TPOT, batch/SLO 조건을 함께 보면서 production haircut을 설계합니다.",
+            "headline output token에는 total tok/s/MW보다 output_tok_s_mw를 우선 매핑합니다.",
+        ],
+        12.5,
+    )
+    underline_takeaway(slide, "Benchmark는 forecast 숫자를 대체하지 않고, tokens/MW 가정의 현실 범위를 정교하게 만드는 calibration layer입니다.")
+    add_footer(slide)
+
+    # 9. Memory revenue actions
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    add_header(slide, "토큰 growth를 메모리 제품별 revenue motion으로 변환한다")
+    actions = [
+        ("HBM", "Allocation / qualification / HBM4 roadmap lock-in", "frontier model ramp"),
+        ("DDR5·MRDIMM", "CPU-side inference attach and density refresh", "inference server refresh"),
+        ("Enterprise SSD·QLC", "RAG, checkpointing, vector DB TCO proof", "retrieval-heavy AI"),
+        ("CXL", "memory expansion and utilization recovery", "capacity-bound inference"),
+    ]
+    table = slide.shapes.add_table(len(actions) + 1, 3, Inches(0.72), Inches(1.78), Inches(11.95), Inches(4.2)).table
+    for i, width in enumerate([2.1, 6.1, 3.75]):
+        table.columns[i].width = Inches(width)
+    for c, header in enumerate(["제품", "Sales motion", "Trigger"]):
+        table.cell(0, c).text = header
+    for r, row in enumerate(actions, start=1):
+        for c, value in enumerate(row):
+            table.cell(r, c).text = value
+    style_table(table)
+    underline_takeaway(slide, "상위 10개 model-owner account부터 product fit, urgency, proof pack, pricing/mix recommendation을 완성합니다.")
+    add_footer(slide)
+
+    # 10. Operating cadence and appendix
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    add_header(slide, "운영 방식은 source refresh에서 account action까지 일주일 단위로 닫는다")
+    days = [
+        ("Mon", "Source refresh", "IR / filings / model cards / InferenceX"),
+        ("Tue", "Model update", "active GW, inference share, tokens/MW"),
+        ("Wed", "Account translation", "pain → product fit → message"),
+        ("Thu", "Sales review", "pipeline, objections, win/loss"),
+        ("Fri", "Assumption review", "unit check, next update"),
+    ]
+    for i, (day, task, desc) in enumerate(days):
+        y = 1.82 + i * 0.75
+        text(slide, 0.92, y, 0.78, 0.25, day, 12, samsung_blue, True)
+        rect(slide, 1.88, y + 0.12, 1.0, 0.02, silver)
+        text(slide, 3.1, y, 2.6, 0.25, task, 13, ink, True)
+        text(slide, 5.9, y, 5.8, 0.25, desc, 11.5, body)
+    text(slide, 0.92, 5.95, 11.1, 0.3, "Workbook appendix: 00_formula_assumptions, 00a_token_definitions, 08 sensitivity sheets, 12 InferenceX raw benchmark sheets", 10.5, muted)
+    underline_takeaway(slide, "PPT는 결론 전달, Excel은 계산 검증, MD/agents는 가정 업데이트와 반복 학습에 사용합니다.")
+    add_footer(slide)
+
+    prs.save(path)
+
+
+def write_ppt_samsung_style(data: dict[str, Any], path: Path) -> None:
+    """Create an English Samsung Electronics-inspired executive deck.
+
+    The design is intentionally brand-adjacent rather than branded: white
+    canvas, deep blue accents, large executive claims, thin separators, and
+    data-first layouts. No Samsung logo or proprietary brand asset is used.
+    """
+
+    prs = Presentation()
+    prs.slide_width = Inches(13.333)
+    prs.slide_height = Inches(7.5)
+    blank = prs.slide_layouts[6]
+
+    samsung_blue = RGBColor(20, 40, 160)
+    blue = RGBColor(0, 112, 243)
+    ink = RGBColor(20, 24, 32)
+    body = RGBColor(58, 66, 82)
+    muted = RGBColor(116, 126, 142)
+    silver = RGBColor(227, 233, 242)
+    pale = RGBColor(247, 249, 252)
+    cyan = RGBColor(0, 163, 224)
+    green = RGBColor(16, 150, 108)
+
+    base_2030 = [r for r in data["forecast"] if r["year"] == 2030]
+    base_2026 = [r for r in data["forecast"] if r["year"] == 2026]
+    ranked_2030 = sorted(base_2030, key=lambda r: r["inference_tokens_per_day"], reverse=True)
+    scenario_2030 = [r for r in data["scenario_summary"] if r["year"] == 2030]
+    base_summary_2030 = next(r for r in scenario_2030 if r["scenario"] == "Base")
+    base_summary_2026 = next(r for r in data["scenario_summary"] if r["scenario"] == "Base" and r["year"] == 2026)
+    total_tokens_2030 = sum(r["inference_tokens_per_day"] for r in base_2030)
+    total_tokens_2026 = sum(r["inference_tokens_per_day"] for r in base_2026)
+    total_active_2030 = sum(r["active_power_gw"] for r in base_2030)
+    total_inf_2030 = sum(r["inference_gw"] for r in base_2030)
+    total_train_2030 = sum(r["training_gw"] for r in base_2030)
+    growth_multiple = total_tokens_2030 / total_tokens_2026 if total_tokens_2026 else 0
+
+    token_rows = [
+        (
+            "Generated output tokens",
+            "Tokens actually returned to users, APIs, or product surfaces. This is the headline capacity metric in the model.",
+            "`inference_tokens_per_day` and `output_tok_s_mw` sanity layer",
+            "Map to output throughput and joules per output token first.",
+        ),
+        (
+            "Processed inference tokens",
+            "Input plus output tokens handled by the serving system. This can be much larger than output tokens for RAG and agentic workloads.",
+            "`tok_s_mw`, input throughput, output throughput",
+            "Use for load-shape and benchmark diagnostics, not as the headline.",
+        ),
+        (
+            "Input / prefill tokens",
+            "Prompt, retrieved context, tool transcript, and history read before generation begins.",
+            "ISL, `input_tok_s_gpu`, `input_tok_s_mw`",
+            "Use to explain memory pressure, TTFT, and utilization effects.",
+        ),
+        (
+            "Training tokens processed",
+            "Corpus tokens used in pretraining or post-training. These are not added to commercial inference output tokens.",
+            "`training_tokens_processed_per_day` sanity checks",
+            "Separate training metric; InferenceX is an inference-serving benchmark.",
+        ),
+    ]
+
+    def set_bg(slide, color=RGBColor(255, 255, 255)):
+        fill = slide.background.fill
+        fill.solid()
+        fill.fore_color.rgb = color
+
+    def rect(slide, x, y, w, h, color, line_color=None):
+        shape = slide.shapes.add_shape(1, Inches(x), Inches(y), Inches(w), Inches(h))
+        shape.fill.solid()
+        shape.fill.fore_color.rgb = color
+        shape.line.color.rgb = line_color or color
+        return shape
+
+    def text(slide, x, y, w, h, value, size=12, color=body, bold=False, align=PP_ALIGN.LEFT):
+        box = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
+        tf = box.text_frame
+        tf.margin_left = 0
+        tf.margin_right = 0
+        tf.margin_top = 0
+        tf.margin_bottom = 0
+        p = tf.paragraphs[0]
+        p.text = value
+        p.font.size = Pt(size)
+        p.font.color.rgb = color
+        p.font.bold = bold
+        p.alignment = align
+        return box
+
+    def header(slide, title: str, subtitle: str = ""):
+        rect(slide, 0, 0, 13.333, 0.08, samsung_blue)
+        text(slide, 0.72, 0.36, 4.5, 0.22, "LLM TOKEN CAPACITY SIMULATION", 7.5, samsung_blue, True)
+        text(slide, 0.72, 0.72, 11.85, 0.55, title, 22, ink, True)
+        if subtitle:
+            text(slide, 0.74, 1.28, 11.3, 0.28, subtitle, 9.5, muted)
+        rect(slide, 0.72, 1.63, 11.9, 0.01, silver)
+
+    def footer(slide, note: str = "Commercial LLM model-owner basis | Headline metric: generated output tokens"):
+        text(slide, 0.72, 7.08, 10.4, 0.18, note, 7.2, muted)
+        text(slide, 11.52, 7.08, 1.1, 0.18, RUN_DATE, 7.2, muted, False, PP_ALIGN.RIGHT)
+
+    def takeaway(slide, value: str):
+        rect(slide, 0.72, 6.42, 1.25, 0.04, samsung_blue)
+        text(slide, 2.13, 6.3, 10.35, 0.38, value, 11.2, ink, True)
+
+    def stat(slide, x, y, label, value, unit, color=samsung_blue):
+        text(slide, x, y, 3.05, 0.22, label, 8.6, muted, True)
+        text(slide, x, y + 0.31, 3.05, 0.62, value, 27, color, True)
+        text(slide, x, y + 0.94, 3.05, 0.24, unit, 8.4, muted)
+
+    def bullets(slide, x, y, w, h, items, size=11.5, color=body, gap=7):
+        box = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
+        tf = box.text_frame
+        tf.clear()
+        for i, item in enumerate(items):
+            p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
+            p.text = item
+            p.font.size = Pt(size)
+            p.font.color.rgb = color
+            p.space_after = Pt(gap)
+        return box
+
+    def style_table(table, header_color=samsung_blue):
+        for r_idx, row in enumerate(table.rows):
+            for cell in row.cells:
+                cell.margin_left = Inches(0.055)
+                cell.margin_right = Inches(0.055)
+                cell.margin_top = Inches(0.035)
+                cell.margin_bottom = Inches(0.035)
+                cell.fill.solid()
+                cell.fill.fore_color.rgb = header_color if r_idx == 0 else (RGBColor(255, 255, 255) if r_idx % 2 else pale)
+                for p in cell.text_frame.paragraphs:
+                    p.font.size = Pt(8.1 if r_idx else 8.4)
+                    p.font.color.rgb = RGBColor(255, 255, 255) if r_idx == 0 else body
+                    p.font.bold = r_idx == 0
+
+    def chart_axis_style(chart):
+        chart.value_axis.tick_labels.font.size = Pt(8)
+        chart.category_axis.tick_labels.font.size = Pt(8)
+        chart.value_axis.format.line.color.rgb = silver
+        chart.category_axis.format.line.color.rgb = silver
+
+    # 1. Cover
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    rect(slide, 0, 0, 13.333, 0.12, samsung_blue)
+    text(slide, 0.72, 0.62, 4.3, 0.22, "MEMORY MARKETING STRATEGY", 8, samsung_blue, True)
+    text(slide, 0.72, 1.18, 8.2, 1.72, "2030 LLM Token Capacity\nSimulation", 35, ink, True)
+    text(slide, 0.76, 3.08, 7.6, 0.58, "A model-owner view of power, accelerator capacity, inference mix, and memory revenue motions", 13.5, body)
+    rect(slide, 8.85, 1.26, 0.04, 3.3, samsung_blue)
+    stat(slide, 9.15, 1.25, "Base 2030 capacity", f"{total_tokens_2030/1e15:.2f}Q", "generated output tokens/day", samsung_blue)
+    stat(slide, 9.15, 2.82, "Inference load", f"{total_inf_2030:.1f}GW", "model-owner AI IT load basis", cyan)
+    text(slide, 0.72, 6.54, 5.7, 0.22, "Samsung-style executive version | no brand assets used", 8, muted)
+    text(slide, 10.7, 6.54, 1.95, 0.22, RUN_DATE, 8, muted, False, PP_ALIGN.RIGHT)
+
+    # 2. Answer first
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    header(
+        slide,
+        "Executive answer: token capacity is determined by active power, inference mix, and serving efficiency",
+        "The model separates power availability from the operating variables that actually turn power into commercial output tokens.",
+    )
+    columns = [
+        ("01", "Capacity expands", f"Base case reaches {total_tokens_2030/1e15:.2f}Q generated output tokens/day by 2030."),
+        ("02", "Capacity concentrates", f"The largest 2030 contributors are {', '.join(r['company'] for r in ranked_2030[:3])}."),
+        ("03", "Memory motion broadens", "Inference growth creates HBM allocation pressure plus DDR5, SSD, and CXL attach opportunities."),
+    ]
+    for i, (num, title, desc) in enumerate(columns):
+        x = 0.82 + i * 4.05
+        text(slide, x, 2.0, 0.7, 0.3, num, 11, samsung_blue, True)
+        rect(slide, x, 2.36, 3.25, 0.03, samsung_blue if i == 0 else silver)
+        text(slide, x, 2.64, 3.3, 0.35, title, 17.5, ink, True)
+        text(slide, x, 3.18, 3.35, 1.35, desc, 14, body)
+    text(slide, 0.88, 5.15, 11.5, 0.52, "Why this matters: account planning should not start from data-center announcements alone. It should start from the model owner that controls traffic, model routing, SLO targets, and commercial token generation.", 11.5, body)
+    takeaway(slide, "Use inference conversion speed as the leading indicator for account prioritization.")
+    footer(slide)
+
+    # 3. Scenario envelope
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    header(
+        slide,
+        "2026-2030 token capacity grows rapidly even in the Base case",
+        "Bull, Base, and Bear cases are built from deployment speed, MoE optimization, inference power share, and utilization assumptions.",
+    )
+    chart_data = CategoryChartData()
+    chart_data.categories = [str(y) for y in YEARS]
+    for scen in ("Bear", "Base", "Bull"):
+        chart_data.add_series(
+            scen,
+            [next(r["inference_tokens_per_day_q"] for r in data["scenario_summary"] if r["scenario"] == scen and r["year"] == y) for y in YEARS],
+        )
+    chart = slide.shapes.add_chart(XL_CHART_TYPE.LINE_MARKERS, Inches(0.82), Inches(1.92), Inches(7.75), Inches(3.95), chart_data).chart
+    chart.has_legend = True
+    chart.legend.position = XL_LEGEND_POSITION.BOTTOM
+    chart_axis_style(chart)
+    text(slide, 9.08, 1.95, 3.25, 0.3, "How to read the chart", 11, muted, True)
+    bullets(
+        slide,
+        9.08,
+        2.38,
+        3.45,
+        2.7,
+        [
+            "The slope is driven by active power and inference share moving upward together.",
+            "The gap between cases is driven by serving-stack efficiency, MoE routing, and real utilization.",
+            "The Base line is not a demand forecast; it is a capacity envelope under the stated assumptions.",
+        ],
+        10.8,
+    )
+    text(slide, 9.08, 5.38, 3.2, 0.35, f"Base 2026-2030 growth: {growth_multiple:.1f}x", 13, samsung_blue, True)
+    takeaway(slide, "The commercial question is not whether capacity grows, but which accounts absorb it first.")
+    footer(slide)
+
+    # 4. Account priority
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    header(
+        slide,
+        "Memory account priority should be organized around model owners, not only cloud hosts",
+        "Hosting capacity and model-owner token attribution are separated so Copilot, ChatGPT, Gemini, Llama, Grok, Claude, Qwen, and DeepSeek are not mixed incorrectly.",
+    )
+    chart_data = CategoryChartData()
+    chart_data.categories = [r["company"] for r in ranked_2030]
+    chart_data.add_series("Q output tokens/day", [r["inference_tokens_per_day"] / 1e15 for r in ranked_2030])
+    chart = slide.shapes.add_chart(XL_CHART_TYPE.BAR_CLUSTERED, Inches(0.82), Inches(1.92), Inches(7.7), Inches(4.0), chart_data).chart
+    chart.has_legend = False
+    chart_axis_style(chart)
+    stat(slide, 9.08, 1.94, "Largest modeled account", ranked_2030[0]["company"], "2030 generated output token capacity", samsung_blue)
+    stat(slide, 9.08, 3.32, "Total active power", f"{total_active_2030:.1f}GW", "Base 2030, modeled company set", cyan)
+    text(slide, 9.08, 4.85, 3.25, 0.72, "Implication: each top account needs a different proof package because model architecture, accelerator mix, memory stack, and procurement control points differ by owner.", 10.2, body)
+    takeaway(slide, "Build the top-account brief by model owner, then map HBM, DDR5, SSD, and CXL attach points.")
+    footer(slide)
+
+    # 5. Calculation logic
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    header(
+        slide,
+        "The formula is a power funnel multiplied by serving efficiency",
+        "This slide is the control logic: every forecast movement must trace back to one of these conversion steps.",
+    )
+    steps = [
+        ("Contracted\nGW", "capacity ceiling"),
+        ("Active\nGW", "energized and deployed"),
+        ("AI IT\nload", "PUE and workload share"),
+        ("Inference\nGW", "training/inference split"),
+        ("Output\ntoken/day", "tokens/MW and utilization"),
+    ]
+    for i, (label, note) in enumerate(steps):
+        x = 0.82 + i * 2.43
+        text(slide, x, 2.04, 1.55, 0.72, label, 17, ink, True, PP_ALIGN.CENTER)
+        rect(slide, x, 2.92, 1.55, 0.035, samsung_blue if i == 4 else silver)
+        text(slide, x, 3.18, 1.55, 0.36, note, 8.1, muted, False, PP_ALIGN.CENTER)
+        if i < len(steps) - 1:
+            text(slide, x + 1.72, 2.42, 0.35, 0.25, "→", 16, muted, True, PP_ALIGN.CENTER)
+    text(slide, 1.0, 4.28, 11.35, 0.43, "output tokens/day = inference GW x 1,000 x output tokens/sec/MW x utilization x 86,400", 15, samsung_blue, True, PP_ALIGN.CENTER)
+    bullets(
+        slide,
+        1.18,
+        5.05,
+        10.9,
+        0.72,
+        [
+            "Contracted power is an upper bound; token capacity begins only after power is energized and assigned to AI IT load.",
+            "Inference share is a capacity allocation variable; utilization is the operating conversion from installed serving capacity to traffic.",
+        ],
+        10.4,
+        body,
+        4,
+    )
+    takeaway(slide, "This structure prevents double-counting power announcements as immediate token capacity.")
+    footer(slide)
+
+    # 6. Training vs inference shift
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    header(
+        slide,
+        "The inference mix shift changes both token capacity and memory product mix",
+        "A higher inference share increases sustained serving load and pushes the memory hierarchy beyond HBM alone.",
+    )
+    pie_data = CategoryChartData()
+    pie_data.categories = ["Inference GW", "Training GW"]
+    pie_data.add_series("2030 GW split", [total_inf_2030, total_train_2030])
+    chart = slide.shapes.add_chart(XL_CHART_TYPE.PIE, Inches(0.85), Inches(1.92), Inches(4.1), Inches(3.75), pie_data).chart
+    chart.has_legend = True
+    chart.legend.position = XL_LEGEND_POSITION.BOTTOM
+    stat(slide, 5.72, 1.92, "Inference share", f"{base_summary_2026['weighted_inference_share']:.0%} to {base_summary_2030['weighted_inference_share']:.0%}", "Base weighted share, 2026 to 2030", samsung_blue)
+    text(slide, 5.72, 3.3, 6.3, 0.76, "Interpretation: this is a scenario assumption, not a disclosed company-level fact. The model uses it to show how serving-dominated AI fleets would translate into token capacity and memory demand.", 10.8, body)
+    bullets(
+        slide,
+        5.72,
+        4.33,
+        6.3,
+        0.95,
+        [
+            "Decode and prefill raise KV-cache and HBM bandwidth pressure.",
+            "RAG and agentic workloads increase SSD, QLC, and memory-expansion relevance.",
+        ],
+        10.5,
+        body,
+        5,
+    )
+    takeaway(slide, "Inference growth is a full memory-hierarchy opportunity, not only a GPU or HBM story.")
+    footer(slide)
+
+    # 7. Token definition
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    header(
+        slide,
+        "The headline metric is generated output tokens",
+        "Keeping token definitions separate is essential because benchmark throughput, billing tokens, training tokens, and user-visible output are different units.",
+    )
+    table = slide.shapes.add_table(len(token_rows) + 1, 4, Inches(0.72), Inches(1.88), Inches(11.95), Inches(4.05)).table
+    for i, width in enumerate([2.05, 4.1, 2.95, 2.85]):
+        table.columns[i].width = Inches(width)
+    for c, header_text in enumerate(["Metric", "Definition", "Model usage", "Benchmark mapping"]):
+        table.cell(0, c).text = header_text
+    for r, row in enumerate(token_rows, start=1):
+        for c, value in enumerate(row):
+            table.cell(r, c).text = value
+    style_table(table)
+    takeaway(slide, "The forecast does not add input tokens, billable tokens, and training tokens into one headline number.")
+    footer(slide)
+
+    # 8. InferenceX calibration
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    parsed = data["inferencex"]["manifest"].get("parsed_dump", {})
+    header(
+        slide,
+        "InferenceX calibrates the serving-efficiency assumptions",
+        "The benchmark layer narrows the plausible range for tokens/MW, joules/token, latency conditions, and workload shape.",
+    )
+    stat(slide, 0.92, 1.96, "Performance rows", f"{parsed.get('benchmark_rows', 0):,}", "model x GPU x precision x ISL/OSL", samsung_blue)
+    stat(slide, 4.75, 1.96, "Metric profiles", f"{parsed.get('metric_profile_rows', 0):,}", "GPU, framework, and profile groups", cyan)
+    stat(slide, 8.55, 1.96, "Accuracy evals", f"{parsed.get('accuracy_eval_rows', 0):,}", "quality trade-off layer", green)
+    text(slide, 0.95, 3.78, 11.25, 0.56, "How it is used: InferenceX does not replace the company capacity model. It calibrates the efficiency layer after capacity has already been attributed to a model owner and assigned to inference serving.", 11.5, body)
+    bullets(
+        slide,
+        0.95,
+        4.65,
+        11.1,
+        0.9,
+        [
+            "Use output throughput and joules/output token for the headline output-token sanity check.",
+            "Use total token throughput, input length, output length, TTFT, and TPOT to explain production haircut and utilization.",
+        ],
+        10.5,
+        body,
+        5,
+    )
+    takeaway(slide, "The benchmark layer makes the tokens/MW assumption operational rather than purely theoretical.")
+    footer(slide)
+
+    # 9. Memory revenue actions
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    header(
+        slide,
+        "Translate token growth into product-level revenue motions",
+        "The output of the model should be account action: which customer, which product, what urgency, what proof, and what commercial motion.",
+    )
+    actions = [
+        ("HBM", "Allocation, qualification, and HBM4 roadmap lock-in", "Frontier model ramps and accelerator supply tension"),
+        ("DDR5 / MRDIMM", "CPU-side inference attach and memory-density refresh", "Inference server refresh and higher host memory requirements"),
+        ("Enterprise SSD / QLC", "RAG, checkpointing, vector DB, and storage TCO proof", "Retrieval-heavy and agentic AI workloads"),
+        ("CXL", "Memory expansion and utilization recovery narrative", "Capacity-bound inference and larger context workloads"),
+    ]
+    table = slide.shapes.add_table(len(actions) + 1, 3, Inches(0.72), Inches(1.88), Inches(11.95), Inches(4.05)).table
+    for i, width in enumerate([2.0, 5.8, 4.15]):
+        table.columns[i].width = Inches(width)
+    for c, header_text in enumerate(["Product", "Revenue motion", "Trigger"]):
+        table.cell(0, c).text = header_text
+    for r, row in enumerate(actions, start=1):
+        for c, value in enumerate(row):
+            table.cell(r, c).text = value
+    style_table(table)
+    takeaway(slide, "Start with the top 10 model-owner accounts and attach a product-fit, proof-pack, and pricing/mix recommendation.")
+    footer(slide)
+
+    # 10. Operating cadence and appendix
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    header(
+        slide,
+        "Run the model as a weekly operating system, not a one-time report",
+        "The same assumptions should update market intelligence, account briefs, and sales enablement in the same weekly cycle.",
+    )
+    days = [
+        ("Mon", "Source refresh", "IR, filings, model cards, technical reports, InferenceX benchmark updates"),
+        ("Tue", "Model update", "active GW, inference share, accelerator mix, tokens/MW, utilization"),
+        ("Wed", "Account translation", "customer pain, product fit, urgency, value message, proof package"),
+        ("Thu", "Sales review", "pipeline impact, objections, pricing/mix discussion, win/loss signal"),
+        ("Fri", "Assumption review", "unit checks, scenario changes, next-week open questions"),
+    ]
+    for i, (day, task, desc) in enumerate(days):
+        y = 1.86 + i * 0.72
+        text(slide, 0.92, y, 0.78, 0.24, day, 12, samsung_blue, True)
+        rect(slide, 1.88, y + 0.11, 1.0, 0.02, silver)
+        text(slide, 3.1, y, 2.55, 0.24, task, 13, ink, True)
+        text(slide, 5.85, y, 6.25, 0.24, desc, 10.8, body)
+    text(slide, 0.92, 5.78, 11.1, 0.42, "Workbook appendix: formula assumptions, token definitions, scenario sensitivity, InferenceX raw benchmark tables, source registry, and company-year forecast rows.", 10.5, muted)
+    takeaway(slide, "Presentation for the executive story, workbook for the math, Markdown/agents for continuous assumption learning.")
+    footer(slide)
+
+    prs.save(path)
+
+
+def write_ppt_compute_constraint(data: dict[str, Any], path: Path) -> None:
+    """Create an English deck focused on token supply constraints by compute capacity."""
+
+    prs = Presentation()
+    prs.slide_width = Inches(13.333)
+    prs.slide_height = Inches(7.5)
+    blank = prs.slide_layouts[6]
+
+    samsung_blue = RGBColor(20, 40, 160)
+    blue = RGBColor(0, 112, 243)
+    ink = RGBColor(20, 24, 32)
+    body = RGBColor(58, 66, 82)
+    muted = RGBColor(116, 126, 142)
+    silver = RGBColor(227, 233, 242)
+    pale = RGBColor(247, 249, 252)
+    cyan = RGBColor(0, 163, 224)
+    green = RGBColor(16, 150, 108)
+    amber = RGBColor(212, 142, 28)
+    red = RGBColor(186, 68, 68)
+
+    rows_2030 = sorted([r for r in data["forecast"] if r["year"] == 2030], key=lambda r: r["inference_tokens_per_day"], reverse=True)
+    rows_2026 = [r for r in data["forecast"] if r["year"] == 2026]
+    total_2030 = sum(r["inference_tokens_per_day"] for r in rows_2030)
+    total_2026 = sum(r["inference_tokens_per_day"] for r in rows_2026)
+    total_contracted_2030 = sum(r["contracted_power_gw"] for r in rows_2030)
+    total_active_2030 = sum(r["active_power_gw"] for r in rows_2030)
+    total_inference_2030 = sum(r["inference_gw"] for r in rows_2030)
+    total_training_2030 = sum(r["training_gw"] for r in rows_2030)
+    top3_share = sum(r["inference_tokens_per_day"] for r in rows_2030[:3]) / total_2030
+    median_tpmw = sorted(r["tokens_per_second_per_mw"] for r in rows_2030)[len(rows_2030) // 2]
+    median_inf_share = sorted(r["inference_power_share"] for r in rows_2030)[len(rows_2030) // 2]
+    median_util = sorted(r["utilization"] for r in rows_2030)[len(rows_2030) // 2]
+
+    def constraint_label(row: dict[str, Any]) -> str:
+        deploy_gap = 1 - row["active_power_gw"] / row["contracted_power_gw"]
+        if deploy_gap >= 0.32:
+            return "Deployment gap"
+        if row["inference_power_share"] < median_inf_share:
+            return "Training allocation"
+        if row["tokens_per_second_per_mw"] < median_tpmw:
+            return "Serving efficiency"
+        if row["utilization"] < median_util:
+            return "Utilization reserve"
+        return "Scale absorption"
+
+    def constraint_score(row: dict[str, Any]) -> float:
+        deploy_gap = 1 - row["active_power_gw"] / row["contracted_power_gw"]
+        serving_gap = max(0, (median_tpmw - row["tokens_per_second_per_mw"]) / median_tpmw)
+        inference_gap = max(0, (median_inf_share - row["inference_power_share"]) / median_inf_share)
+        util_gap = max(0, (median_util - row["utilization"]) / median_util)
+        return round(100 * (0.38 * deploy_gap + 0.24 * serving_gap + 0.22 * inference_gap + 0.16 * util_gap), 1)
+
+    constraint_rows = sorted(
+        [
+            {
+                **r,
+                "deployment_gap": 1 - r["active_power_gw"] / r["contracted_power_gw"],
+                "token_per_contracted_gw_q": r["inference_tokens_per_day"] / 1e15 / r["contracted_power_gw"],
+                "constraint": constraint_label(r),
+                "constraint_score": constraint_score(r),
+            }
+            for r in rows_2030
+        ],
+        key=lambda r: r["constraint_score"],
+        reverse=True,
+    )
+
+    def set_bg(slide, color=RGBColor(255, 255, 255)):
+        fill = slide.background.fill
+        fill.solid()
+        fill.fore_color.rgb = color
+
+    def rect(slide, x, y, w, h, color, line_color=None):
+        shape = slide.shapes.add_shape(1, Inches(x), Inches(y), Inches(w), Inches(h))
+        shape.fill.solid()
+        shape.fill.fore_color.rgb = color
+        shape.line.color.rgb = line_color or color
+        return shape
+
+    def text(slide, x, y, w, h, value, size=12, color=body, bold=False, align=PP_ALIGN.LEFT):
+        box = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
+        tf = box.text_frame
+        tf.margin_left = 0
+        tf.margin_right = 0
+        tf.margin_top = 0
+        tf.margin_bottom = 0
+        p = tf.paragraphs[0]
+        p.text = value
+        p.font.size = Pt(size)
+        p.font.color.rgb = color
+        p.font.bold = bold
+        p.alignment = align
+        return box
+
+    def header(slide, title: str, subtitle: str = ""):
+        rect(slide, 0, 0, 13.333, 0.08, samsung_blue)
+        text(slide, 0.72, 0.36, 4.7, 0.22, "TOKEN SUPPLY CONSTRAINTS", 7.5, samsung_blue, True)
+        text(slide, 0.72, 0.72, 11.85, 0.55, title, 19.5, ink, True)
+        if subtitle:
+            text(slide, 0.74, 1.24, 11.4, 0.34, subtitle, 9.0, muted)
+        rect(slide, 0.72, 1.64, 11.9, 0.01, silver)
+
+    def footer(slide):
+        text(slide, 0.72, 7.08, 10.2, 0.18, "Commercial LLM model-owner basis | Compute capacity to generated output token supply", 7.2, muted)
+        text(slide, 11.52, 7.08, 1.1, 0.18, RUN_DATE, 7.2, muted, False, PP_ALIGN.RIGHT)
+
+    def takeaway(slide, value: str):
+        rect(slide, 0.72, 6.42, 1.25, 0.04, samsung_blue)
+        text(slide, 2.13, 6.3, 10.35, 0.38, value, 11.2, ink, True)
+
+    def stat(slide, x, y, label, value, unit, color=samsung_blue):
+        text(slide, x, y, 3.05, 0.22, label, 8.6, muted, True)
+        text(slide, x, y + 0.31, 3.05, 0.62, value, 27, color, True)
+        text(slide, x, y + 0.94, 3.05, 0.24, unit, 8.4, muted)
+
+    def bullets(slide, x, y, w, h, items, size=11.1, color=body, gap=6):
+        box = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
+        tf = box.text_frame
+        tf.clear()
+        for i, item in enumerate(items):
+            p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
+            p.text = item
+            p.font.size = Pt(size)
+            p.font.color.rgb = color
+            p.space_after = Pt(gap)
+        return box
+
+    def style_table(table, header_color=samsung_blue, font_size=8.0):
+        for r_idx, row in enumerate(table.rows):
+            for cell in row.cells:
+                cell.margin_left = Inches(0.055)
+                cell.margin_right = Inches(0.055)
+                cell.margin_top = Inches(0.035)
+                cell.margin_bottom = Inches(0.035)
+                cell.fill.solid()
+                cell.fill.fore_color.rgb = header_color if r_idx == 0 else (RGBColor(255, 255, 255) if r_idx % 2 else pale)
+                for p in cell.text_frame.paragraphs:
+                    p.font.size = Pt(font_size if r_idx else 8.2)
+                    p.font.color.rgb = RGBColor(255, 255, 255) if r_idx == 0 else body
+                    p.font.bold = r_idx == 0
+
+    def add_small_table(slide, rows, headers, x, y, w, h, col_widths=None, font_size=7.3):
+        table = slide.shapes.add_table(len(rows) + 1, len(headers), Inches(x), Inches(y), Inches(w), Inches(h)).table
+        if col_widths:
+            for i, width in enumerate(col_widths):
+                table.columns[i].width = Inches(width)
+        for c, header_text in enumerate(headers):
+            table.cell(0, c).text = header_text
+        for r_idx, row in enumerate(rows, start=1):
+            for c_idx, value in enumerate(row):
+                table.cell(r_idx, c_idx).text = str(value)
+        style_table(table, font_size=font_size)
+        return table
+
+    def add_chart_labels(chart, number_format="0.00"):
+        plot = chart.plots[0]
+        plot.has_data_labels = True
+        labels = plot.data_labels
+        labels.number_format = number_format
+        labels.font.size = Pt(6.5)
+        labels.font.color.rgb = muted
+
+    def chart_axis_style(chart):
+        chart.value_axis.tick_labels.font.size = Pt(8)
+        chart.category_axis.tick_labels.font.size = Pt(8)
+        chart.value_axis.format.line.color.rgb = silver
+        chart.category_axis.format.line.color.rgb = silver
+
+    # 1. Cover
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    rect(slide, 0, 0, 13.333, 0.12, samsung_blue)
+    text(slide, 0.72, 0.62, 4.4, 0.22, "COMPUTE CAPACITY STUDY", 8, samsung_blue, True)
+    text(slide, 0.72, 1.12, 8.5, 1.72, "Token Supply Constraints\nby LLM Provider", 35, ink, True)
+    text(slide, 0.76, 3.05, 7.9, 0.62, "A compute-capacity view of how contracted power, active AI load, inference allocation, and serving efficiency limit generated output token supply", 13.2, body)
+    rect(slide, 8.88, 1.2, 0.04, 3.45, samsung_blue)
+    stat(slide, 9.18, 1.24, "Modeled provider set", "9", "commercial LLM owners", samsung_blue)
+    stat(slide, 9.18, 2.74, "Base 2030 supply", f"{total_2030/1e15:.2f}Q", "generated output tokens/day", cyan)
+    text(slide, 0.72, 6.54, 6.7, 0.22, "Focus: supply constraints, not memory marketing motions", 8, muted)
+    text(slide, 10.72, 6.54, 1.9, 0.22, RUN_DATE, 8, muted, False, PP_ALIGN.RIGHT)
+
+    # 2. Executive answer
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    header(
+        slide,
+        "Executive answer: the bottleneck is active inference compute, not announced power alone",
+        "Token supply is constrained by four sequential conversion losses: deployment, AI IT allocation, inference share, and serving efficiency.",
+    )
+    cols = [
+        ("01", "Deployment", f"{total_active_2030:.1f}GW active out of {total_contracted_2030:.1f}GW contracted in Base 2030."),
+        ("02", "Inference allocation", f"{total_inference_2030:.1f}GW goes to inference; {total_training_2030:.1f}GW remains training-oriented."),
+        ("03", "Concentration", f"Top 3 providers account for {top3_share:.0%} of modeled 2030 generated-token supply."),
+    ]
+    for i, (num, title, desc) in enumerate(cols):
+        x = 0.82 + i * 4.05
+        text(slide, x, 2.0, 0.7, 0.3, num, 11, samsung_blue, True)
+        rect(slide, x, 2.36, 3.25, 0.03, samsung_blue if i == 0 else silver)
+        text(slide, x, 2.65, 3.35, 0.35, title, 17.5, ink, True)
+        text(slide, x, 3.18, 3.35, 1.25, desc, 14, body)
+    text(slide, 0.88, 5.08, 11.5, 0.5, "What changed from the prior deck: this version does not lead with memory revenue actions. It leads with provider-level token supply constraints and only uses memory implications as downstream context.", 11.3, body)
+    takeaway(slide, "Read every provider through the same funnel: contracted GW to active GW to inference GW to output tokens.")
+    footer(slide)
+
+    # 3. Constraint model
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    header(
+        slide,
+        "The constraint model traces where compute capacity is lost before it becomes tokens",
+        "The same formula is applied to every provider so differences come from assumptions, capacity attribution, and serving efficiency.",
+    )
+    steps = [
+        ("Contracted\npower", "Announced or inferred capacity envelope"),
+        ("Active\npower", "Energized sites and deployed accelerators"),
+        ("AI IT\nload", "PUE and AI workload allocation"),
+        ("Inference\nGW", "Power assigned to commercial serving"),
+        ("Token\nsupply", "Output tokens/sec/MW x utilization"),
+    ]
+    for i, (label, note) in enumerate(steps):
+        x = 0.78 + i * 2.45
+        text(slide, x, 2.08, 1.7, 0.7, label, 16.5, ink, True, PP_ALIGN.CENTER)
+        rect(slide, x, 2.92, 1.7, 0.035, samsung_blue if i == 4 else silver)
+        text(slide, x, 3.16, 1.7, 0.46, note, 8.0, muted, False, PP_ALIGN.CENTER)
+        if i < len(steps) - 1:
+            text(slide, x + 1.84, 2.43, 0.25, 0.24, "→", 15.5, muted, True, PP_ALIGN.CENTER)
+    text(slide, 0.95, 4.25, 11.5, 0.45, "generated output tokens/day = inference GW x 1,000 x output tokens/sec/MW x utilization x 86,400", 15, samsung_blue, True, PP_ALIGN.CENTER)
+    bullets(
+        slide,
+        1.18,
+        5.05,
+        10.9,
+        0.7,
+        [
+            "Deployment gap captures power that is contracted or planned but not yet producing AI IT load.",
+            "Serving efficiency captures model architecture, precision, batching, SLO targets, and production overhead.",
+        ],
+        10.4,
+        body,
+        4,
+    )
+    takeaway(slide, "The constraint is visible only after separating capacity ownership from operating conversion factors.")
+    footer(slide)
+
+    # 4. Provider supply ranking
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    header(
+        slide,
+        "2030 token supply is concentrated in providers with both scale and high inference conversion",
+        "The chart ranks generated output token supply, while the side metrics show the compute base behind the output.",
+    )
+    chart_data = CategoryChartData()
+    chart_data.categories = [r["company"] for r in rows_2030]
+    chart_data.add_series("Q output tokens/day", [r["inference_tokens_per_day"] / 1e15 for r in rows_2030])
+    chart = slide.shapes.add_chart(XL_CHART_TYPE.BAR_CLUSTERED, Inches(0.72), Inches(1.92), Inches(7.25), Inches(4.0), chart_data).chart
+    chart.has_legend = False
+    chart_axis_style(chart)
+    add_chart_labels(chart, "0.00")
+    text(slide, 8.45, 1.92, 3.65, 0.24, "2030 provider snapshot", 10.6, muted, True)
+    add_small_table(
+        slide,
+        [
+            [r["company"], f"{r['inference_tokens_per_day']/1e15:.2f}", f"{r['inference_gw']:.1f}", f"{r['active_power_gw']:.1f}"]
+            for r in rows_2030[:5]
+        ],
+        ["Provider", "Q/day", "Inf. GW", "Act. GW"],
+        8.45,
+        2.28,
+        3.85,
+        2.35,
+        [1.25, 0.78, 0.82, 0.82],
+        7.1,
+    )
+    stat(slide, 8.45, 4.92, "Top 3 share", f"{top3_share:.0%}", "of modeled 2030 supply", cyan)
+    takeaway(slide, "Token supply leadership is a compute-conversion outcome, not just a data-center footprint outcome.")
+    footer(slide)
+
+    # 5. Provider token supply time series
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    header(
+        slide,
+        "Provider token supply trajectories show when each company begins to separate",
+        "The line chart shows the top 2030 providers; the table keeps every modeled provider visible across 2026, 2028, and 2030.",
+    )
+    top5_companies = [r["company"] for r in rows_2030[:5]]
+    chart_data = CategoryChartData()
+    chart_data.categories = [str(y) for y in YEARS]
+    for company in top5_companies:
+        chart_data.add_series(
+            company,
+            [
+                next(r["inference_tokens_per_day"] / 1e15 for r in data["forecast"] if r["company"] == company and r["year"] == year)
+                for year in YEARS
+            ],
+        )
+    chart = slide.shapes.add_chart(XL_CHART_TYPE.LINE_MARKERS, Inches(0.72), Inches(1.9), Inches(7.05), Inches(4.08), chart_data).chart
+    chart.has_legend = True
+    chart.legend.position = XL_LEGEND_POSITION.BOTTOM
+    chart_axis_style(chart)
+    text(slide, 8.18, 1.92, 3.95, 0.28, "All-provider token supply table", 10.6, muted, True)
+    token_ts_rows = []
+    for r2030 in rows_2030:
+        company = r2030["company"]
+        y2026 = next(r for r in data["forecast"] if r["company"] == company and r["year"] == 2026)
+        y2028 = next(r for r in data["forecast"] if r["company"] == company and r["year"] == 2028)
+        multiple = r2030["inference_tokens_per_day"] / y2026["inference_tokens_per_day"] if y2026["inference_tokens_per_day"] else 0
+        token_ts_rows.append(
+            [
+                company,
+                f"{y2026['inference_tokens_per_day']/1e15:.2f}",
+                f"{y2028['inference_tokens_per_day']/1e15:.2f}",
+                f"{r2030['inference_tokens_per_day']/1e15:.2f}",
+                f"{multiple:.1f}x",
+            ]
+        )
+    add_small_table(
+        slide,
+        token_ts_rows,
+        ["Provider", "2026", "2028", "2030", "30/26"],
+        8.18,
+        2.28,
+        4.25,
+        3.55,
+        [1.22, 0.7, 0.7, 0.7, 0.68],
+        6.5,
+    )
+    takeaway(slide, "The constraint story is dynamic: the relevant question is when token supply separates, not only who leads in 2030.")
+    footer(slide)
+
+    # 6. Provider inference GW time series
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    header(
+        slide,
+        "Inference GW trajectories explain the token supply trajectories",
+        "If token supply rises faster than inference GW, the driver is serving efficiency or utilization; if both rise together, deployment is the driver.",
+    )
+    chart_data = CategoryChartData()
+    chart_data.categories = [str(y) for y in YEARS]
+    for company in top5_companies:
+        chart_data.add_series(
+            company,
+            [
+                next(r["inference_gw"] for r in data["forecast"] if r["company"] == company and r["year"] == year)
+                for year in YEARS
+            ],
+        )
+    chart = slide.shapes.add_chart(XL_CHART_TYPE.LINE_MARKERS, Inches(0.72), Inches(1.9), Inches(7.05), Inches(4.08), chart_data).chart
+    chart.has_legend = True
+    chart.legend.position = XL_LEGEND_POSITION.BOTTOM
+    chart_axis_style(chart)
+    text(slide, 8.18, 1.92, 3.95, 0.28, "All-provider inference GW table", 10.6, muted, True)
+    inf_ts_rows = []
+    for r2030 in rows_2030:
+        company = r2030["company"]
+        y2026 = next(r for r in data["forecast"] if r["company"] == company and r["year"] == 2026)
+        y2028 = next(r for r in data["forecast"] if r["company"] == company and r["year"] == 2028)
+        inf_ts_rows.append(
+            [
+                company,
+                f"{y2026['inference_gw']:.1f}",
+                f"{y2028['inference_gw']:.1f}",
+                f"{r2030['inference_gw']:.1f}",
+                f"{r2030['inference_power_share']:.0%}",
+            ]
+        )
+    add_small_table(
+        slide,
+        inf_ts_rows,
+        ["Provider", "2026", "2028", "2030", "Share"],
+        8.18,
+        2.28,
+        4.25,
+        3.55,
+        [1.22, 0.7, 0.7, 0.7, 0.68],
+        6.5,
+    )
+    takeaway(slide, "Token growth should be decomposed into more inference GW versus better token output per MW.")
+    footer(slide)
+
+    # 7. Deployment gap
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    header(
+        slide,
+        "The first constraint is the gap between contracted capacity and active capacity",
+        "This is the most important near-term bottleneck because non-energized or non-deployed power cannot serve tokens.",
+    )
+    chart_data = CategoryChartData()
+    chart_data.categories = [r["company"] for r in rows_2030]
+    chart_data.add_series("Contracted GW", [r["contracted_power_gw"] for r in rows_2030])
+    chart_data.add_series("Active GW", [r["active_power_gw"] for r in rows_2030])
+    chart = slide.shapes.add_chart(XL_CHART_TYPE.BAR_CLUSTERED, Inches(0.72), Inches(1.9), Inches(7.65), Inches(4.1), chart_data).chart
+    chart.has_legend = True
+    chart.legend.position = XL_LEGEND_POSITION.BOTTOM
+    chart_axis_style(chart)
+    add_chart_labels(chart, "0.0")
+    high_gap = sorted(constraint_rows, key=lambda r: r["deployment_gap"], reverse=True)[:3]
+    text(slide, 8.75, 1.95, 3.35, 0.28, "Deployment gap table", 10.8, muted, True)
+    add_small_table(
+        slide,
+        [[r["company"], f"{r['contracted_power_gw']:.1f}", f"{r['active_power_gw']:.1f}", f"{r['deployment_gap']:.0%}"] for r in high_gap],
+        ["Provider", "Contr.", "Active", "Gap"],
+        8.75,
+        2.35,
+        3.65,
+        1.7,
+        [1.25, 0.75, 0.75, 0.68],
+        7.4,
+    )
+    text(slide, 8.75, 4.42, 3.45, 0.8, "How to read this: the gap between contracted and active GW is supply that exists in plans but not yet in token-serving reality.", 10.0, body)
+    takeaway(slide, "Deployment speed is the first gating variable in the 2026-2030 token supply ramp.")
+    footer(slide)
+
+    # 8. Inference allocation
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    header(
+        slide,
+        "The second constraint is how much AI load is assigned to inference instead of training",
+        "A provider can own large compute capacity but still have limited commercial token supply if more AI load remains training-oriented.",
+    )
+    chart_data = CategoryChartData()
+    chart_data.categories = [r["company"] for r in rows_2030]
+    chart_data.add_series("Inference GW", [r["inference_gw"] for r in rows_2030])
+    chart_data.add_series("Training GW", [r["training_gw"] for r in rows_2030])
+    chart = slide.shapes.add_chart(XL_CHART_TYPE.BAR_STACKED, Inches(0.72), Inches(1.9), Inches(7.65), Inches(4.1), chart_data).chart
+    chart.has_legend = True
+    chart.legend.position = XL_LEGEND_POSITION.BOTTOM
+    chart_axis_style(chart)
+    add_chart_labels(chart, "0.0")
+    text(slide, 8.75, 1.95, 3.35, 0.28, "Inference allocation", 10.8, muted, True)
+    add_small_table(
+        slide,
+        [
+            [r["company"], f"{r['inference_gw']:.1f}", f"{r['training_gw']:.1f}", f"{r['inference_power_share']:.0%}"]
+            for r in rows_2030[:5]
+        ],
+        ["Provider", "Inf.", "Train", "Share"],
+        8.75,
+        2.35,
+        3.65,
+        2.25,
+        [1.25, 0.72, 0.72, 0.72],
+        7.2,
+    )
+    text(slide, 8.75, 4.95, 3.45, 0.54, "This split is a scenario variable and should be updated as providers disclose product traffic and training cadence.", 9.5, body)
+    takeaway(slide, "Inference share is the bridge between compute capacity and commercial token supply.")
+    footer(slide)
+
+    # 9. Serving efficiency
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    header(
+        slide,
+        "The third constraint is serving efficiency: tokens per MW and real utilization",
+        "InferenceX and model architecture assumptions are used to calibrate the conversion from inference GW to output tokens.",
+    )
+    chart_data = CategoryChartData()
+    chart_data.categories = [r["company"] for r in rows_2030]
+    chart_data.add_series("Output tokens/sec/MW", [r["tokens_per_second_per_mw"] / 1e6 for r in rows_2030])
+    chart = slide.shapes.add_chart(XL_CHART_TYPE.BAR_CLUSTERED, Inches(0.72), Inches(1.9), Inches(7.0), Inches(4.1), chart_data).chart
+    chart.has_legend = False
+    chart.value_axis.tick_labels.number_format = "0.0"
+    chart_axis_style(chart)
+    add_chart_labels(chart, "0.0")
+    table_rows = sorted(rows_2030, key=lambda r: r["tokens_per_second_per_mw"])[:5]
+    text(slide, 8.18, 1.92, 3.95, 0.28, "Lowest tokens/MW and utilization", 10.6, muted, True)
+    add_small_table(
+        slide,
+        [[r["company"], f"{r['tokens_per_second_per_mw']/1e6:.1f}", f"{r['utilization']:.0%}", constraint_label(r)] for r in table_rows],
+        ["Provider", "M tok/s/MW", "Util.", "Constraint"],
+        8.18,
+        2.30,
+        4.25,
+        2.35,
+        [1.2, 1.0, 0.62, 1.22],
+        6.9,
+    )
+    text(slide, 8.18, 4.98, 4.05, 0.54, "Low utilization can reflect reserve capacity, SLO headroom, uneven traffic, and failover requirements.", 9.4, body)
+    takeaway(slide, "Tokens/MW sets the theoretical ceiling; utilization determines how much of that ceiling becomes supply.")
+    footer(slide)
+
+    # 10. Provider constraint map
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    header(
+        slide,
+        "Provider constraint map: each company has a different limiting factor",
+        "The score is a directional operating index using deployment gap, inference share, tokens/MW, and utilization versus the peer set.",
+    )
+    table = slide.shapes.add_table(len(constraint_rows) + 1, 6, Inches(0.72), Inches(1.85), Inches(11.95), Inches(4.25)).table
+    widths = [1.55, 1.25, 1.2, 1.55, 1.35, 4.05]
+    for i, width in enumerate(widths):
+        table.columns[i].width = Inches(width)
+    headers = ["Provider", "Supply Q/day", "Inf. GW", "Deploy gap", "Constraint", "What to validate next"]
+    for c, h in enumerate(headers):
+        table.cell(0, c).text = h
+    for i, r in enumerate(constraint_rows, start=1):
+        validate_next = {
+            "Deployment gap": "site energization, rack deployment, accelerator delivery",
+            "Training allocation": "training cadence, launch schedule, commercial serving ramp",
+            "Serving efficiency": "model routing, precision, batching, TTFT/TPOT target",
+            "Utilization reserve": "SLO headroom, failover reserve, traffic shape",
+            "Scale absorption": "demand absorption and product surface expansion",
+        }[r["constraint"]]
+        vals = [
+            r["company"],
+            f"{r['inference_tokens_per_day']/1e15:.2f}",
+            f"{r['inference_gw']:.1f}",
+            f"{r['deployment_gap']:.0%}",
+            r["constraint"],
+            validate_next,
+        ]
+        for c, v in enumerate(vals):
+            table.cell(i, c).text = v
+    style_table(table, font_size=7.4)
+    takeaway(slide, "The next research cycle should target the limiting factor for each provider, not collect generic capacity headlines.")
+    footer(slide)
+
+    # 11. Scenario stress
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    header(
+        slide,
+        "Scenario stress shows how sensitive token supply is to compute conversion assumptions",
+        "Bull and Bear cases are not alternate stories; they are operating ranges around deployment, inference mix, MoE optimization, and utilization.",
+    )
+    chart_data = CategoryChartData()
+    chart_data.categories = [str(y) for y in YEARS]
+    for scen in ("Bear", "Base", "Bull"):
+        chart_data.add_series(
+            scen,
+            [next(r["inference_tokens_per_day_q"] for r in data["scenario_summary"] if r["scenario"] == scen and r["year"] == y) for y in YEARS],
+        )
+    chart = slide.shapes.add_chart(XL_CHART_TYPE.LINE_MARKERS, Inches(0.82), Inches(1.9), Inches(7.25), Inches(4.0), chart_data).chart
+    chart.has_legend = True
+    chart.legend.position = XL_LEGEND_POSITION.BOTTOM
+    chart_axis_style(chart)
+    add_chart_labels(chart, "0.00")
+    text(slide, 8.55, 1.95, 3.5, 0.28, "2030 scenario output", 10.8, muted, True)
+    scenario_2030_rows = [r for r in data["scenario_summary"] if r["year"] == 2030 and r["scenario"] in ("Bear", "Base", "Bull")]
+    add_small_table(
+        slide,
+        [[r["scenario"], f"{r['inference_tokens_per_day_q']:.2f}", f"{r['active_power_gw']:.1f}", f"{r['weighted_inference_share']:.0%}"] for r in scenario_2030_rows],
+        ["Case", "Q/day", "Act. GW", "Inf. share"],
+        8.55,
+        2.32,
+        3.8,
+        1.7,
+        [0.85, 0.8, 0.85, 1.0],
+        7.2,
+    )
+    text(slide, 8.55, 4.35, 3.2, 0.28, "Scenario levers", 10.5, muted, True)
+    bullets(
+        slide,
+        8.55,
+        4.72,
+        3.3,
+        0.88,
+        [
+            "Operational deployment speed",
+            "MoE and serving-stack optimization",
+            "Inference share of AI IT load",
+        ],
+        9.7,
+        body,
+        3,
+    )
+    text(slide, 8.55, 5.75, 3.2, 0.28, f"Base growth: {total_2030 / total_2026:.1f}x, 2026-2030", 11.2, samsung_blue, True)
+    takeaway(slide, "The same provider can move from constrained to advantaged if deployment and serving conversion improve together.")
+    footer(slide)
+
+    # 12. Operating questions
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    header(
+        slide,
+        "The operating agenda is to verify the bottleneck, then update the provider model",
+        "This is the checklist that keeps the simulation tied to facts as new capacity, model, and benchmark data arrives.",
+    )
+    questions = [
+        ("Power", "Which contracted sites are energized, and when do accelerators enter production service?"),
+        ("Allocation", "What share of AI IT load is serving commercial inference versus training or experimentation?"),
+        ("Architecture", "Which model family, active parameter band, context length, and routing policy dominate traffic?"),
+        ("Efficiency", "What output tokens/sec/MW is realistic after SLO, precision, batching, and production haircut?"),
+        ("Demand absorption", "Which product surfaces can absorb the incremental token supply without idle capacity?"),
+    ]
+    for i, (area, q) in enumerate(questions):
+        y = 1.86 + i * 0.72
+        text(slide, 0.92, y, 1.35, 0.24, area, 12, samsung_blue, True)
+        rect(slide, 2.48, y + 0.11, 0.8, 0.02, silver)
+        text(slide, 3.52, y, 8.65, 0.27, q, 11.4, body)
+    text(slide, 0.92, 5.78, 11.1, 0.42, "Workbook appendix: formula assumptions, company-year forecast, scenario sensitivity, source registry, and InferenceX benchmark tables.", 10.5, muted)
+    takeaway(slide, "Update the model by bottleneck type: deployment, allocation, architecture, efficiency, or demand absorption.")
+    footer(slide)
 
     prs.save(path)
 
@@ -3087,6 +4458,7 @@ def build_payload() -> dict[str, Any]:
         "company_models": [asdict(m) for m in company_models()],
         "assumptions": assumptions(),
         "formula_assumptions": formula_assumptions(),
+        "token_definitions": token_definitions(),
         "benchmark_assumptions": benchmark_assumptions(),
         "hallucination_checklist": hallucination_checklist(),
         "scenario_definitions": scenario_definitions(),
@@ -3130,10 +4502,25 @@ def main() -> None:
     slim_data = lightweight_payload(data)
     write_json(slim_data, OUT / f"{stem}.json")
     write_excel(data, OUT / f"{stem}.xlsx")
-    write_ppt(data, OUT / f"{stem}.pptx")
+    write_ppt_compute_constraint(data, OUT / f"{stem}.pptx")
+    write_ppt_compute_constraint(data, OUT / "llm_token_supply_constraints_by_compute_capacity_en_2026_2030.pptx")
+    write_ppt_samsung_style(data, OUT / "llm_token_capacity_samsung_style_en_2026_2030.pptx")
     write_html(slim_data, OUT / f"{stem}.html")
     write_markdown(slim_data, OUT / f"{stem}.md")
-    print(json.dumps({"status": "PASS", "outputs": [str(OUT / f"{stem}.{ext}") for ext in ("json", "xlsx", "pptx", "html", "md")]}, indent=2, ensure_ascii=False))
+    print(
+        json.dumps(
+            {
+                "status": "PASS",
+                "outputs": [str(OUT / f"{stem}.{ext}") for ext in ("json", "xlsx", "pptx", "html", "md")]
+                + [
+                    str(OUT / "llm_token_supply_constraints_by_compute_capacity_en_2026_2030.pptx"),
+                    str(OUT / "llm_token_capacity_samsung_style_en_2026_2030.pptx"),
+                ],
+            },
+            indent=2,
+            ensure_ascii=False,
+        )
+    )
 
 
 if __name__ == "__main__":

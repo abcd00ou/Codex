@@ -749,6 +749,27 @@
   ],
   "formula_assumptions": [
     {
+      "category": "Token definition - forecast headline",
+      "formula": "inference_tokens_per_day = generated output token equivalent, not input+output processed tokens",
+      "meaning_kr": "임원 보고의 headline token은 사용자가 받는 생성 output token 기준으로 해석합니다. InferenceX의 total throughput과 비교할 때는 output_tput/output_tok_s_mw를 우선 대조합니다.",
+      "evidence_type": "Definition",
+      "source_ids": "SRC_GOOGLE_GEMINI_TOKENS; SRC_SEMIANALYSIS_INFERENCEX"
+    },
+    {
+      "category": "Token definition - processed benchmark",
+      "formula": "processed_tokens = input_tokens + output_tokens; benchmark total tput may include both",
+      "meaning_kr": "benchmark의 total tokens/sec 또는 tok_s_mw는 prompt input 처리량과 생성 output 처리량이 섞일 수 있습니다. processed token을 generated token forecast로 직접 치환하지 않습니다.",
+      "evidence_type": "Definition",
+      "source_ids": "SRC_SEMIANALYSIS_INFERENCEX"
+    },
+    {
+      "category": "Token definition - training",
+      "formula": "training_tokens_processed_per_day = training_gw * 1000 * training_tps_per_mw_equivalent * utilization * 86,400",
+      "meaning_kr": "training token은 모델 학습에서 처리된 corpus/token count이며 상용 서비스가 생성한 output token이 아닙니다. inference token과 합산하지 않습니다.",
+      "evidence_type": "Definition",
+      "source_ids": "SRC_DEEPSEEK_V3; SRC_TENCENT_HUNYUAN_PRETRAIN"
+    },
+    {
       "category": "Power to AI IT load",
       "formula": "it_load_gw = active_power_gw / pue",
       "meaning_kr": "계약/계획 전력이 아니라 실제 operational deploy된 전력에서 PUE를 차감해 IT load를 산출.",
@@ -789,6 +810,58 @@
       "meaning_kr": "DeepSeek/Qwen 같은 MoE 모델은 active parameter가 낮아 serving efficiency scenario에 별도 multiplier를 적용.",
       "evidence_type": "Scenario assumption",
       "source_ids": "SRC_DEEPSEEK_V3; SRC_QWEN3_GITHUB; ASSUMP_MOE_EFFICIENCY"
+    }
+  ],
+  "token_definitions": [
+    {
+      "token_metric": "headline_generated_output_tokens",
+      "korean_name": "생성 output token",
+      "definition_kr": "사용자/API/제품 표면으로 실제 생성되어 반환되는 output token equivalent. 본 보고서의 `inference_tokens_per_day` 기본 정의.",
+      "included": "decode/output token; model-owner가 운영한 상용 LLM surface",
+      "excluded": "prompt input token, KV cache read/write, internal speculative draft token, training corpus token",
+      "primary_fields": "inference_tokens_per_day; inference_tokens_per_year; output_tok_s_mw sanity layer",
+      "inferencex_mapping": "`output_tput_per_gpu`, `output_tok_s_mw`, `j_output_token`을 우선 사용.",
+      "status": "default headline definition"
+    },
+    {
+      "token_metric": "processed_inference_tokens",
+      "korean_name": "처리 token",
+      "definition_kr": "serving system이 처리한 input+output token. 긴 prompt/RAG/agentic workload에서는 output token보다 훨씬 클 수 있음.",
+      "included": "input token + output token; prefill + decode workload",
+      "excluded": "training corpus token; non-token image/video generation units",
+      "primary_fields": "tok_s_mw; input_tok_s_gpu; output_tok_s_gpu; total_tok_s_mw",
+      "inferencex_mapping": "`tput_per_gpu` / `tok_s_mw`는 처리량 분석용으로 사용하고 headline 생성량에는 직접 대입하지 않음.",
+      "status": "benchmark and load-shape diagnostic"
+    },
+    {
+      "token_metric": "input_prefill_tokens",
+      "korean_name": "입력/prefill token",
+      "definition_kr": "prompt, retrieved context, tool transcript, conversation history처럼 output 생성 전에 읽는 token.",
+      "included": "ISL, prompt token, RAG context, agent memory/context",
+      "excluded": "generated output token",
+      "primary_fields": "isl; input_tok_s_gpu; input_tok_s_mw",
+      "inferencex_mapping": "ISL과 `input_tput_per_gpu`를 사용. 높은 ISL은 short-chat output forecast와 분리.",
+      "status": "SLO/utilization and memory/HBM stress driver"
+    },
+    {
+      "token_metric": "training_tokens_processed",
+      "korean_name": "학습 처리 token",
+      "definition_kr": "pretraining/post-training 과정에서 처리된 corpus token. 상용 inference generated token과 절대 합산하지 않음.",
+      "included": "pretraining token, post-training data token, synthetic training data when disclosed",
+      "excluded": "commercial API/consumer output token",
+      "primary_fields": "training_tokens_processed_per_day; model card pretraining token anchors",
+      "inferencex_mapping": "직접 mapping 없음. InferenceX는 inference serving 기준.",
+      "status": "separate training sanity metric"
+    },
+    {
+      "token_metric": "billable_api_tokens",
+      "korean_name": "과금 token",
+      "definition_kr": "API/제품 과금 기준의 input/output/cache/reasoning token. 업체별 과금정책이 달라 capacity headline으로 직접 사용하지 않음.",
+      "included": "provider-specific billed input/output/cache/reasoning token categories",
+      "excluded": "non-billed internal scheduler work unless disclosed",
+      "primary_fields": "future replacement path; not in current Base forecast",
+      "inferencex_mapping": "InferenceX 대상 아님. 공식 API billing docs로 별도 대조.",
+      "status": "future commercial reconciliation layer"
     }
   ],
   "benchmark_assumptions": [
@@ -1051,6 +1124,16 @@
       "owner": "Presentation",
       "severity": "High",
       "current_status": "Needs final human review"
+    },
+    {
+      "check_id": "HC16",
+      "area": "Token definition",
+      "question_kr": "generated output token, processed inference token, training token, billable token을 혼동하지 않았는가?",
+      "pass_criteria_kr": "headline `inference_tokens_per_day`는 generated output token equivalent로 표기하고, InferenceX total `tok_s_mw`는 processed-token proxy로 분리.",
+      "risk_if_fail_kr": "InferenceX benchmark total throughput을 상용 output token 생성량으로 과대 적용.",
+      "owner": "Model",
+      "severity": "High",
+      "current_status": "Definition added; needs reviewer sign-off"
     }
   ],
   "scenario_definitions": [
@@ -154620,8 +154703,8 @@
     {
       "metric": "2030 core-company inference tokens/day",
       "value": 2871987625721952,
-      "display": "2.87 quadrillion tokens/day",
-      "interpretation_kr": "9개 상용 LLM owner의 base case 총 생성 capacity."
+      "display": "2.87 quadrillion generated output tokens/day",
+      "interpretation_kr": "9개 상용 LLM owner의 base case 생성 output token capacity."
     },
     {
       "metric": "2030 inference AI IT load",

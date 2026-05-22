@@ -35,6 +35,14 @@ REQUIRED_SHARED_FILES = [
     "orchestrator/cycle_log.md",
 ]
 
+REQUIRED_REVIEW_AGENT_FILES = [
+    "review/logic_review_agent/README.md",
+    "review/logic_review_agent/state.md",
+    "review/logic_review_agent/checklist.md",
+    "review/logic_review_agent/prompt.md",
+    "review/logic_review_agent/output_template.md",
+]
+
 
 def require(condition: bool, message: str, errors: list[str]) -> None:
     if not condition:
@@ -50,6 +58,33 @@ def validate() -> dict:
         require(path.exists(), f"Missing shared/orchestrator file: {relative}", errors)
         if path.exists():
             require(path.stat().st_size > 200, f"Shared/orchestrator file too small: {relative}", errors)
+
+    for relative in REQUIRED_REVIEW_AGENT_FILES:
+        path = AGENTS_ROOT / relative
+        require(path.exists(), f"Missing review agent file: {relative}", errors)
+        if path.exists():
+            text = path.read_text(encoding="utf-8")
+            require(len(text) > 200, f"Review agent file too small: {relative}", errors)
+
+    review_readme = AGENTS_ROOT / "review/logic_review_agent/README.md"
+    if review_readme.exists():
+        text = review_readme.read_text(encoding="utf-8")
+        require("Mission" in text, "logic_review_agent/README.md missing Mission", errors)
+        require("Expertise Profile" in text, "logic_review_agent/README.md missing Expertise Profile", errors)
+        require("Review Authority" in text, "logic_review_agent/README.md missing Review Authority", errors)
+
+    review_checklist = AGENTS_ROOT / "review/logic_review_agent/checklist.md"
+    if review_checklist.exists():
+        text = review_checklist.read_text(encoding="utf-8")
+        require("LR01" in text, "logic_review_agent/checklist.md missing LR01", errors)
+        require("Capacity Attribution" in text, "logic_review_agent/checklist.md missing Capacity Attribution", errors)
+        require("Executive Output Safety" in text, "logic_review_agent/checklist.md missing Executive Output Safety", errors)
+
+    review_state = AGENTS_ROOT / "review/logic_review_agent/state.md"
+    if review_state.exists():
+        text = review_state.read_text(encoding="utf-8")
+        require("Open Review Questions" in text, "logic_review_agent/state.md missing Open Review Questions", errors)
+        require("Current Blocker Register" in text, "logic_review_agent/state.md missing Current Blocker Register", errors)
 
     agent_dirs = sorted(path.name for path in ASSUMPTION_ROOT.glob("A*_*") if path.is_dir())
     require(agent_dirs == EXPECTED_AGENTS, f"Agent directories mismatch: {agent_dirs}", errors)
@@ -99,6 +134,7 @@ def validate() -> dict:
         "status": status,
         "agent_count": len(agent_dirs),
         "expected_agent_count": len(EXPECTED_AGENTS),
+        "review_agent": "present" if (AGENTS_ROOT / "review/logic_review_agent/README.md").exists() else "missing",
         "errors": errors,
         "warnings": warnings,
     }

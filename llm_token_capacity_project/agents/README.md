@@ -16,6 +16,13 @@ agents/
   orchestrator/
     README.md
     cycle_log.md
+  review/
+    logic_review_agent/
+      README.md
+      state.md
+      checklist.md
+      prompt.md
+      output_template.md
   assumptions/
     A01_contracted_power_gw/
       README.md
@@ -30,6 +37,7 @@ agents/
 
 - **Assumption agents:** 각 가정의 fact, estimate, proxy, scenario를 관리합니다.
 - **Orchestrator:** 가정 간 충돌, 단위 오류, 중복 귀속, token forecast 영향도를 검토합니다.
+- **Logic Review Agent:** LLM serving/infra 고급 개발자 관점에서 계산식, 단위, attribution, benchmark mapping, 시나리오 로직을 독립 검수합니다.
 - **Shared rules:** 모든 agent가 동일한 source quality와 update protocol을 따르게 합니다.
 
 ## 운영 원칙
@@ -48,6 +56,7 @@ source 발견
 -> fact/estimate/proxy/scenario 분류
 -> agent evidence 업데이트
 -> state 변경 후보 작성
+-> logic review agent의 formula/unit/serving sanity review
 -> orchestrator consistency review
 -> generator 반영
 -> Excel/PPT/HTML/MD/JSON 재생성
@@ -60,3 +69,11 @@ source 발견
 - benchmark 값을 production company metric으로 확정
 - host capacity와 model-owner token을 중복 계산
 - confidence가 낮은 estimate를 executive conclusion처럼 표현
+
+## Logic Review Agent 사용 시점
+
+- `generate_llm_token_capacity_report.py`의 산식, 계수, scenario multiplier를 바꿀 때
+- InferenceX, arXiv, vendor benchmark를 `tokens_per_second_per_mw`, `joules_per_token`, `utilization`으로 반영할 때
+- PPT/Excel의 headline number가 바뀌었을 때
+- 특정 업체의 capacity attribution rule을 수정했을 때
+- executive deck에 "constraint", "supply", "inference share" 같은 강한 결론을 넣기 전

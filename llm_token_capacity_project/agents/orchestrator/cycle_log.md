@@ -7,6 +7,7 @@
 | 2 | 2026-05-18 | A08/A09 first learning cycle | Promoted 2026 inference energy and serving-disaggregation sources as proxy/mechanism evidence; no Base numeric change yet | Need energy sanity layer and SLO/utilization sensitivity table |
 | 3 | 2026-05-19 | InferenceX ingestion layer | Added public repo/release metadata pipeline and workbook schema sheets; no Base numeric change yet | Need full DB dump/CSV normalization and A08/A09 review before coefficient updates |
 | 4 | 2026-05-19 | InferenceX full dump normalization | Verified 2026-05-11 dump digest and normalized 72,091 benchmark rows, 298 metric profile groups, 1,048 accuracy eval rows, run stats and availability tables | Need A08/A09 mapping from benchmark groups to Base/Bull/Bear coefficient bands; Base remains unchanged |
+| 5 | 2026-05-20 | Logic review agent first formal review | No blockers found; formula/unit checks, scenario monotonicity, PPT token wording, source/assumption IDs passed | Major follow-ups remain for A08/A09 benchmark-to-production mapping, A05/A06 split evidence, and A10 attribution ledger |
 
 ## Open Flags
 

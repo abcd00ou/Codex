@@ -45,6 +45,8 @@ source_file, source_kind, benchmark_id, dashboard_tab, model, model_family, gpu,
 ## 사용 규칙
 
 - InferenceX 수치는 `Proxy/Benchmark`입니다. 특정 회사의 production token telemetry로 쓰지 않습니다.
+- 본 보고서의 headline `inference_tokens_per_day`는 generated output token equivalent입니다. InferenceX total `tok_s_mw`는 processed token proxy일 수 있으므로 headline 검증에는 `output_tok_s_mw`와 `j_output_token`을 우선 사용합니다.
+- `tok_s_mw`, `input_tok_s_mw`, `output_tok_s_mw`는 서로 다른 단위/의미로 취급합니다. input+output processed throughput을 generated output capacity로 직접 치환하지 않습니다.
 - ISL/OSL, precision, framework, GPU, concurrency가 다른 값을 한 숫자로 평균 내지 않습니다.
 - tokens/sec/MW는 A08 sensitivity 또는 benchmark sanity layer에만 먼저 반영합니다.
 - latency/SLO, concurrency, P/D disaggregation 정보는 A09 utilization sensitivity로 분리합니다.

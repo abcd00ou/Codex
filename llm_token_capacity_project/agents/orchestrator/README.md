@@ -16,6 +16,8 @@ Orchestrator는 10개 assumption agent의 업데이트를 모아 전체 숫자 �
 
 - `agents/assumptions/*/state.md`
 - `agents/assumptions/*/evidence.md`
+- `agents/review/logic_review_agent/state.md`
+- `agents/review/logic_review_agent/checklist.md`
 - `data/source_review_log.md`
 - `data/assumption_change_log.md`
 - `outputs/reports/llm_token_capacity_2026_2030.json`
@@ -34,6 +36,7 @@ Orchestrator는 10개 assumption agent의 업데이트를 모아 전체 숫자 �
 3. benchmark sanity layer와 괴리가 커졌는가?
 4. 특정 회사가 host와 model owner 양쪽에 중복 반영됐는가?
 5. executive summary 문구가 source confidence보다 강하지 않은가?
+6. Logic Review Agent가 단위, 산식, benchmark mapping, attribution 중 하나라도 `blocker`로 표시했는가?
 
 ## Approval Criteria
 
@@ -44,3 +47,4 @@ orchestrator는 다음 조건을 만족할 때만 generator 반영을 승인합�
 - confidence와 replacement path 존재
 - validation rule 위반 없음
 - unresolved cross-agent conflict 없음
+- logic review blocker 없음

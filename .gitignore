@@ -6,6 +6,7 @@ __pycache__/
 .DS_Store
 ~$*.docx
 ~$*.xlsx
+~$*.pptx
 llm_token_capacity_project/data/inferencex/raw/*.zip
 llm_token_capacity_project/data/inferencex/raw/inferencex-dump-*/
 llm_token_capacity_project/data/inferencex/raw/**/*.duckdb

@@ -18,6 +18,22 @@ contracted_power_gw
 -> daily / annual tokens
 ```
 
+## 토큰 정의
+
+본 보고서의 headline `inference_tokens_per_day`는 **generated output token equivalent**입니다. 사용자가 API, 앱, Copilot, 챗봇, enterprise surface에서 실제로 받는 생성 output token capacity를 의미합니다.
+
+토큰 정의는 반드시 아래처럼 분리합니다.
+
+| 구분 | 정의 | 포함 | 제외 | InferenceX mapping |
+|---|---|---|---|---|
+| 생성 output token | 상용 LLM이 사용자/API/제품 표면으로 반환하는 output token. 본 보고서의 headline 정의 | decode/output token, model-owner 운영 surface | prompt input, KV cache read/write, speculative draft token, training token | `output_tput_per_gpu`, `output_tok_s_mw`, `j_output_token` 우선 사용 |
+| 처리 inference token | serving system이 처리한 input+output token | prompt/prefill input + generated output | training corpus token | `tput_per_gpu`, `tok_s_mw`, `input_tput_per_gpu`, `output_tput_per_gpu` |
+| 입력/prefill token | output 생성 전에 읽는 prompt/context token | prompt, RAG context, tool transcript, conversation history | generated output token | `isl`, `input_tput_per_gpu`, `input_tok_s_mw` |
+| 학습 처리 token | pretraining/post-training 중 처리된 corpus token | model card의 pretraining token, synthetic training data when disclosed | 상용 inference output token | InferenceX 직접 mapping 없음 |
+| 과금 token | API/제품 billing 기준 token | provider별 input/output/cache/reasoning token | 비과금 internal work unless disclosed | 공식 API billing docs로만 reconciliation |
+
+따라서 InferenceX의 total `tok_s_mw`를 headline token 생성량으로 직접 치환하지 않습니다. InferenceX는 `output_tok_s_mw`로 generated-token sanity check를 하고, total `tok_s_mw`는 processed-token workload 및 전력부하 진단에 사용합니다.
+
 ## 전력 계산
 
 ```text
@@ -54,6 +70,7 @@ annual_tokens = inference_tokens_per_day * 365
 
 - MW, GW, seconds/day 단위 변환이 맞는지 확인
 - daily token과 annual token을 혼동하지 않음
+- generated output token과 processed token을 혼동하지 않음
 - utilization은 fact가 아니라 scenario 계수로 취급
 
 ## 파라미터 기반 sanity check
