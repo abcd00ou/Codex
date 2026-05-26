@@ -36,6 +36,14 @@ ai_workload_share는 inference_gw를 선형적으로 움직인다. active_power_
 
 이 가정은 memory marketing에도 중요하다. AI workload share가 높을수록 HBM과 accelerator attach가 커지고, mixed workload share가 높을수록 DDR5, enterprise SSD, network/storage infrastructure 기회도 커진다.
 
+## 2026-05-26 Workbook 반영 방식
+
+최종 Excel은 company별 `ai_workload_share` 값을 단독 숫자로만 두지 않습니다. `02b_number_trace`와 `03_power_capacity`에 각 업체의 `why_this_number`, `source_ids`, `derivation_type`, `replacement_path`를 기록합니다.
+
+- 공식 AI/inference accelerator 발표는 AI-focused direction의 근거입니다.
+- 공식 발표가 AI IT load의 정확한 비율을 공개한 것으로 해석하지 않습니다.
+- 현재 share는 scenario allocation이며, company-level scheduling 또는 allocated accelerator-hour telemetry가 나오면 교체합니다.
+
 ## Hallucination 위험
 
 가장 큰 위험은 AI data center라는 표현을 보고 IT load 전체를 GPU inference로 간주하는 것이다. 두 번째 위험은 storage와 networking overhead를 무시하는 것이다. 세 번째 위험은 hyperscaler region 전체와 model-owner-dedicated cluster를 같은 share로 처리하는 것이다.

@@ -19,6 +19,11 @@
 | HC13 | Outlier review | benchmark와 main model 괴리 큰 row를 검토했는가? | ±50% 이상 row에 review note | confidence downgrade |
 | HC14 | China transparency | 중국 업체의 낮은 공개성을 숫자 penalty로 착각하지 않았는가? | confidence만 조정 | assumption note 수정 |
 | HC15 | Executive wording | 임원 보고 문구가 확정/추정/시나리오를 구분하는가? | 모든 chart subtitle에 기준 표시 | PPT/HTML/MD 수정 |
+| HC16 | Token definition | generated output, processed, training, billable token을 혼동하지 않았는가? | headline은 generated output token이며 InferenceX total throughput과 분리 | 산식/표기 수정 |
+| HC17 | Capacity terminology | contracted_power_gw가 모두 공식 계약 fact처럼 보이지 않는가? | sourced ceiling과 scenario envelope가 `02b_number_trace`에 명시 | capacity basis 재분류 |
+| HC18 | Accelerator mix | GPU/ASIC 숫자 mix가 platform presence fact와 fleet-share scenario를 구분하는가? | `04_gpu_asic_mix`에 reason/source/replacement path 및 share sum check | A11 검토 |
+| HC19 | Efficiency bridge | tokens/MW가 hardware mix와 architecture/workload factor로 재구성되는가? | `05_inference_efficiency` bridge 재계산과 validation PASS | A08/A11 검토 |
+| HC20 | Complete numeric trace | 최종 표와 보조 표의 모든 output-driving 숫자에 이유가 있는가? | `02b_number_trace`에 company-year-scenario별 26개 metric의 formula/reason/source/assumption/replacement path 존재 | trace 누락 field 추가 |
 
 ## 수동 체크 메모
 
@@ -37,3 +42,5 @@
 5. OpenAI, Anthropic, Microsoft attribution overlap
 6. China model owner의 실제 commercial serving scale
 7. benchmark_reference와 main forecast 괴리 row
+8. GPU/purpose-built accelerator operated serving share의 공개 근거
+9. tokens/MW bridge에서 hardware migration과 software CAGR 중복 반영 여부

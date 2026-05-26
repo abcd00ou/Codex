@@ -33,6 +33,8 @@
 8. Excel, PPT, HTML, MD, JSON이 모두 재생성됐는지 확인합니다.
 9. `docs/hallucination_checklist.md`를 기준으로 보고 전 review를 합니다.
 
+업체별 숫자 검증은 Excel `02b_number_trace`에서 시작합니다. capacity, AI allocation, GPU/purpose-built mix, efficiency bridge의 모든 숫자, inference/training split, `tokens_per_second_per_mw`, `joules_per_token`, `utilization`, daily/annual inference token 및 별도 training processing proxy가 같은 company-year-scenario row 체계로 `formula_or_rule`, `why_this_number`, `source_ids`, `assumption_ids`, `replacement_path`를 가져야 합니다.
+
 ## 4. 숫자 정합성 체크
 
 필수 체크:
@@ -45,6 +47,11 @@
 - benchmark layer와 main forecast가 50% 이상 차이 나는 row가 있는가?
 - closed model parameter를 단일 precise number처럼 표현하지 않았는가?
 - hosting provider capacity를 model owner token capacity로 잘못 귀속하지 않았는가?
+- `contracted_power_gw`가 공식 계약 수치인지, 공식 capacity ceiling인지, scenario envelope인지 구분됐는가?
+- `active_power_gw = min(contracted_power_gw, operationally deployed capacity)` 통제가 적용됐는가?
+- GPU/purpose-built accelerator share 합이 100%이며, 실제 fleet disclosure가 없는 share를 fact로 표현하지 않았는가?
+- `tokens_per_second_per_mw`가 numeric accelerator mix, architecture/workload factor, software efficiency 및 scenario multiplier로 재계산되는가?
+- `utilization`이 장비 가동률이 아니라 SLO·reserve·traffic shape 이후 실현 output capacity 비율로 설명됐는가?
 
 ## 5. 보고 문구 체크
 
@@ -72,4 +79,5 @@
 - PPT에 Hallucination 체크리스트 슬라이드 존재
 - JSON에 sources, fact_anchors, benchmark_reference, hallucination_checklist 존재
 - 변경된 숫자마다 source_id 또는 assumption_id 존재
+- Excel에 `02b_number_trace`, `04_gpu_asic_mix`, `05_inference_efficiency`가 존재하고 수치 bridge가 재계산 가능
 - 변경 이유가 source log 또는 assumption log에 기록됨

@@ -30,6 +30,8 @@ Use this checklist before publishing a new simulation cycle or presentation deck
 | LR12 | Does tokens/MW account for production overhead? | Utilization or haircut reflects SLO, batching, routing, reserve capacity, and failover. | major |
 | LR13 | Does the forecast avoid peak-throughput-to-annual-average conversion errors? | Peak benchmark numbers are not treated as sustained fleet average without haircut. | blocker |
 | LR14 | Is latency relevant to the benchmark mapping? | TTFT/TPOT or SLO caveat is included when using InferenceX performance data. | major |
+| LR27 | Does numeric accelerator mix separate platform presence facts from operated fleet-share scenarios? | `04_gpu_asic_mix` labels share values as scenario unless a denominated disclosure exists. | blocker |
+| LR28 | Can serving efficiency be reconstructed through the hardware bridge? | `tokens_per_second_per_mw = gpu_reference * accelerator_mix_factor * architecture_workload_factor * software_efficiency_growth * scenario_multipliers`. | blocker |
 
 ## 4. Capacity Attribution
 
@@ -56,7 +58,7 @@ Use this checklist before publishing a new simulation cycle or presentation deck
 | LR23 | Does PPT wording match derivation type? | Scenario/estimate/proxy values are not worded as disclosed production facts. | major |
 | LR24 | Are charts and tables using the same token definition? | PPT, Excel, JSON, and Markdown all use generated output tokens for headline supply. | blocker |
 | LR25 | Are company rankings based on the same year and scenario? | Ranking labels specify Base 2030 or the applicable scenario/year. | major |
-| LR26 | Are source paths available for every number that might be challenged? | Workbook/source registry can trace the number to source IDs or assumption IDs. | major |
+| LR26 | Are source paths available for every number that might be challenged? | Workbook `02b_number_trace` and source registry trace the number to source IDs or assumption IDs and a replacement path. | major |
 
 ## Review Result Template
 
@@ -76,7 +78,7 @@ minor_findings:
 - none
 
 recommended_owner:
-- A01/A02/.../A10/orchestrator/generator/PPT
+- A01/A02/.../A11/orchestrator/generator/PPT
 
 next_review_trigger:
 - coefficient change

@@ -38,7 +38,7 @@ Output format:
 - blockers: list with exact file/field/slide references
 - major_findings: list
 - minor_findings: list
-- assumptions_to_update: A01-A10 or orchestrator
+- assumptions_to_update: A01-A11 or orchestrator
 - recommended_tests_or_sensitivity: list
 - executive_safe_wording_changes: list
 

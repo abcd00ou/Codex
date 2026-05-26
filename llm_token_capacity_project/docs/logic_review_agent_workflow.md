@@ -19,7 +19,7 @@ The Logic Review Agent is a high-skepticism reviewer for the model logic. It is 
 Run a logic review before:
 
 1. changing `tools/generate_llm_token_capacity_report.py`
-2. changing any A01-A10 assumption state
+2. changing any A01-A11 assumption state
 3. ingesting a new InferenceX dump or benchmark source
 4. changing Microsoft/OpenAI/Anthropic/cloud-host attribution
 5. publishing a new PPT or Excel to executives
@@ -48,7 +48,7 @@ The agent should read:
 4. Check capacity attribution.
 5. Check scenario and sensitivity logic.
 6. Check executive output wording.
-7. Route findings to A01-A10, orchestrator, generator, or PPT.
+7. Route findings to A01-A11, orchestrator, generator, or PPT.
 ```
 
 ## Output
@@ -86,6 +86,8 @@ llm_token_capacity_project/agents/review/logic_review_agent/reviews/YYYY-MM-DD_l
 8. Are 2026-2030 time-series comparisons based on the same scenario and token definition?
 9. Does the PPT state estimates as estimates and scenarios as scenarios?
 10. Can every challenged number be traced to source IDs or assumption IDs?
+11. Does numeric GPU/purpose-built mix clearly separate official platform presence from scenario fleet allocation?
+12. Can `tokens_per_second_per_mw` be reconstructed from the mix bridge and efficiency factors in the workbook?
 
 ## Validation Command
 

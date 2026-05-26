@@ -36,6 +36,12 @@ contracted_power_gw는 forecast의 천장이다. active_power_gw가 이 값을 �
 
 이 값이 10% 증가해도 단기 token forecast는 거의 변하지 않을 수 있다. 왜냐하면 2026년 forecast는 active deployment가 병목일 수 있기 때문이다. 반대로 2030년 forecast에서는 contracted capacity가 부족하면 active_power_gw의 상한이 되므로 장기 token capacity를 강하게 제한한다.
 
+## 2026-05-26 Definition Clarification
+
+최종 workbook에서 `contracted_power_gw`는 모든 업체에 동일한 계약서 기반 fact를 의미하지 않는다. OpenAI Stargate, Anthropic/AWS처럼 공식 capacity 방향이 확인된 업체는 sourced ceiling anchor를 사용하고, company-level GW 공개가 없는 업체는 model-owner serving capacity envelope scenario로 분류한다.
+
+이 구분은 Excel `02b_number_trace`와 `03_power_capacity`에서 company-year별 `derivation_type`, `why_this_number`, `source_ids`, `replacement_path`로 확인한다. 숫자 자체가 같더라도 공개 근거의 성격이 다르면 같은 confidence로 읽지 않는다.
+
 ## Hallucination 위험
 
 가장 큰 위험은 planned GW를 active inference GW로 표현하는 것이다. 두 번째 위험은 host provider capacity를 model owner capacity로 중복 계산하는 것이다. 세 번째 위험은 annual electricity consumption TWh와 instantaneous power GW를 섞는 것이다. 보고서 문구에는 반드시 planned/contracted/operational을 구분해야 한다.

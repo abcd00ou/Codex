@@ -1,7 +1,7 @@
 # InferenceX 데이터 수집 및 정규화 계획
 
 - 기준일: 2026-05-19
-- 목적: InferenceX의 공개 benchmark/app/dump 자료를 A08 tokens/sec/MW, A09 utilization, GPU spec, TCO sanity layer로 반복 수집합니다.
+- 목적: InferenceX의 공개 benchmark/app/dump 자료를 A08 tokens/sec/MW, A09 utilization, A11 gpu_asic_mix의 성능 bridge, GPU spec, TCO sanity layer로 반복 수집합니다.
 - 핵심 원칙: dashboard DOM 크롤링보다 GitHub repo, API route, weekly DB dump release, raw CSV/export를 우선합니다.
 
 ## 확인된 공개 소스
@@ -49,6 +49,7 @@ source_file, source_kind, benchmark_id, dashboard_tab, model, model_family, gpu,
 - `tok_s_mw`, `input_tok_s_mw`, `output_tok_s_mw`는 서로 다른 단위/의미로 취급합니다. input+output processed throughput을 generated output capacity로 직접 치환하지 않습니다.
 - ISL/OSL, precision, framework, GPU, concurrency가 다른 값을 한 숫자로 평균 내지 않습니다.
 - tokens/sec/MW는 A08 sensitivity 또는 benchmark sanity layer에만 먼저 반영합니다.
+- InferenceX가 보여주는 GPU별 output efficiency는 A11의 `purpose_built_accelerator_share`를 입증하지 않습니다. A11 mix는 업체의 operated serving allocation 공시가 나올 때까지 scenario이며, InferenceX는 동일 workload에서의 효율 calibration에만 사용합니다.
 - latency/SLO, concurrency, P/D disaggregation 정보는 A09 utilization sensitivity로 분리합니다.
 - TCO calculator 값은 memory marketing 및 cost/token narrative용이며 company capacity forecast를 직접 바꾸지 않습니다.
 
@@ -68,4 +69,5 @@ source_file, source_kind, benchmark_id, dashboard_tab, model, model_family, gpu,
 - `data/inferencex/normalized/inferencex_source_index.csv`
 - `data/inferencex/normalized/inferencex_normalized_schema.csv`
 - main simulation workbook의 `12_inferencex_source_index`, `12a_inferencex_schema`, `12b_inferencex_tab_rules`
+- main simulation workbook의 `02b_number_trace`, `04_gpu_asic_mix`, `05_inference_efficiency`에서는 benchmark가 fleet share fact가 아니라 efficiency calibration 또는 replacement path인지 명시
 - full dump 처리 시 `inferencex_benchmark_results.csv`, `inferencex_metric_profile.csv`, `inferencex_accuracy_evals.csv`, `inferencex_dump_inventory.csv`

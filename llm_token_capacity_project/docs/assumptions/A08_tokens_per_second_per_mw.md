@@ -38,6 +38,24 @@ tokens_per_second_per_mw는 active inference MW와 곱해져 token/day를 만든
 
 이 변수는 memory marketing에도 직접 연결된다. tokens/MW가 올라가면 같은 전력으로 더 많은 token을 만들 수 있어 HBM capacity pressure가 낮아질 수도 있지만, 실제로는 demand elasticity 때문에 더 많은 inference traffic이 생겨 전체 memory demand가 다시 증가할 수 있다.
 
+## 2026-05-26 Numeric Hardware Bridge
+
+이제 `tokens_per_second_per_mw`는 company별 단일 시작값으로만 입력하지 않고 아래 구성요소를 공개합니다.
+
+```text
+tokens_per_second_per_mw =
+  gpu_reference_tps_per_mw
+  * accelerator_mix_factor
+  * architecture_workload_factor
+  * software_efficiency_growth
+  * scenario_multipliers
+```
+
+- `accelerator_mix_factor`는 A11이 관리하는 numeric GPU/purpose-built accelerator scenario에서 산출됩니다.
+- `architecture_workload_factor`는 MoE active parameter, closed-model proxy, product workload shape의 영향을 분리합니다.
+- `software_efficiency_growth`는 hardware migration 자체와 중복되지 않도록 별도 표시합니다.
+- Excel `05_inference_efficiency`와 `02b_number_trace`에서 모든 company-year 값을 재구성할 수 있습니다.
+
 ## Hallucination 위험
 
 가장 큰 위험은 benchmark number를 company fact처럼 쓰는 것이다. 두 번째 위험은 peak throughput을 annual average throughput으로 쓰는 것이다. 세 번째 위험은 input token과 output token을 섞는 것이다. token forecast에서 말하는 token이 input, output, total processed 중 무엇인지 반드시 명시해야 한다.

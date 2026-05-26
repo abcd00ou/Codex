@@ -22,6 +22,7 @@ EXPECTED_AGENTS = [
     "A08_tokens_per_second_per_mw",
     "A09_utilization",
     "A10_attribution_rule",
+    "A11_gpu_asic_mix",
 ]
 
 REQUIRED_AGENT_FILES = ["README.md", "state.md", "evidence.md", "learning_queue.md"]

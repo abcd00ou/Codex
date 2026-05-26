@@ -1,6 +1,6 @@
 # Assumption Agent System
 
-이 폴더는 LLM token capacity simulation의 10개 핵심 가정을 각각 독립 agent처럼 관리하기 위한 운영 구조입니다.
+이 폴더는 LLM token capacity simulation의 11개 핵심 가정을 각각 독립 agent처럼 관리하기 위한 운영 구조입니다.
 
 목표는 단순 자동 업데이트가 아닙니다. 각 agent가 자기 가정의 이론, 출처, 현재값, confidence, replacement path를 계속 학습하고, orchestrator가 전체 숫자 정합성을 검토하는 구조를 만드는 것입니다.
 
@@ -31,6 +31,7 @@ agents/
       learning_queue.md
     ...
     A10_attribution_rule/
+    A11_gpu_asic_mix/
 ```
 
 ## 역할

@@ -7,8 +7,8 @@
 | owned_field | cross-assumption review only; no direct coefficient ownership |
 | current_scope | compute capacity -> inference GW -> generated output token supply simulation |
 | confidence | Medium for structure review; Low for undisclosed company production telemetry |
-| last_reviewed | 2026-05-20 |
-| status | first formal review completed; no blockers, major follow-up items routed |
+| last_reviewed | 2026-05-26 |
+| status | evidence-trace and accelerator-mix bridge validated; open scenario replacement work routed |
 
 ## Current Review Position
 
@@ -28,6 +28,7 @@ The weakest logic areas remain:
 3. company-specific inference/training split over time
 4. production utilization and SLO headroom
 5. closed frontier model active-parameter proxy bands
+6. numeric accelerator serving mix where providers disclose platforms but not fleet allocation
 
 ## Proposed Changes
 
@@ -35,6 +36,7 @@ The weakest logic areas remain:
 |---|---|---|---|---|
 | 2026-05-20 | Add Logic Review Agent as independent reviewer | The simulation now drives executive PPT conclusions and needs formula/unit/serving sanity review beyond assumption-specific agents. | internal-agent-system | implemented |
 | 2026-05-20 | Require logic review before coefficient or attribution changes are promoted | Prevent benchmark-to-production overreach, double attribution, and token-definition confusion. | internal-agent-system | proposed - orchestrator adoption |
+| 2026-05-26 | Require `02b_number_trace` and A11 hardware-mix bridge checks | Every output-driving number must expose its reason and platform facts must not be presented as measured serving share. | A11; HC17-HC19; LR27-LR28 | implemented pending validation |
 
 ## Current Blocker Register
 
@@ -46,14 +48,15 @@ The weakest logic areas remain:
 
 | Field | Value |
 |---|---|
-| review_note | `agents/review/logic_review_agent/reviews/2026-05-20_logic_review.md` |
+| review_note | `agents/review/logic_review_agent/reviews/2026-05-26_logic_review.md` |
 | overall_status | major |
 | blocker_count | 0 |
-| major_finding_count | 4 |
-| minor_finding_count | 3 |
+| major_finding_count | 3 |
+| minor_finding_count | 0 |
 | automated_formula_failures | 0 |
 | automated_scenario_monotonicity_failures | 0 |
-| ppt_hangul_count | 0 |
+| number_trace_rows | 4,680 |
+| ppt_package_qa_failures | 0 |
 
 ## Open Review Questions
 
@@ -64,6 +67,7 @@ The weakest logic areas remain:
 | LRQ03 | How should Microsoft Copilot tokens be separated from OpenAI model-owner tokens? | A10 | high |
 | LRQ04 | What evidence can bound company-specific inference/training split from 2026 to 2030? | A05/A06 | high |
 | LRQ05 | Which closed-model parameter proxy bands are defensible enough for FLOPs/token sanity checks? | A07 | medium |
+| LRQ06 | Which official disclosures can replace numeric GPU/purpose-built serving share scenarios? | A11 | high |
 
 ## Downstream Impact Notes
 
@@ -81,3 +85,4 @@ Review the current Base/Bear/Bull simulation and the `Token Supply Constraints b
 4. benchmark-to-production mapping
 5. scenario monotonicity
 6. executive chart wording
+7. number trace completeness and hardware-mix bridge reconstruction

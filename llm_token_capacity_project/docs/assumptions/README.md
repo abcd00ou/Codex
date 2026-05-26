@@ -2,7 +2,7 @@
 
 생성일: 2026-05-15
 
-이 폴더는 LLM token capacity simulation의 10개 핵심 가정을 각각 독립 리포트로 공부하기 위한 자료입니다.
+이 폴더는 LLM token capacity simulation의 11개 핵심 가정을 각각 독립 리포트로 공부하기 위한 자료입니다.
 
 | ID | 가정 | 공부 질문 | Markdown | Word |
 |---|---|---|---|---|
@@ -16,6 +16,7 @@
 | A08 | tokens_per_second_per_mw | 1MW inference load가 초당 몇 token을 만들 수 있는가 | A08_tokens_per_second_per_mw.md | outputs/reports/assumptions/A08_tokens_per_second_per_mw.docx |
 | A09 | utilization | 이론 capacity 중 실제 연평균 토큰으로 전환되는 비율 | A09_utilization.md | outputs/reports/assumptions/A09_utilization.docx |
 | A10 | attribution_rule | host capacity와 model-owner token을 중복 없이 귀속하는 법 | A10_attribution_rule.md | outputs/reports/assumptions/A10_attribution_rule.docx |
+| A11 | gpu_asic_mix | GPU와 purpose-built accelerator mix를 tokens/MW로 연결하는 법 | A11_gpu_asic_mix.md | Markdown-first; workbook trace 반영 |
 
 ## 추천 학습 순서
 
@@ -24,3 +25,4 @@
 3. A05-A06으로 training/inference allocation을 공부합니다.
 4. A07-A09로 모델 구조, serving efficiency, utilization을 공부합니다.
 5. A10으로 company attribution을 정리해 중복 계산을 제거합니다.
+6. A11으로 hardware mix와 tokens/MW bridge의 숫자 근거를 점검합니다.

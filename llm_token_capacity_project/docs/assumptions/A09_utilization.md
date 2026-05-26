@@ -38,6 +38,20 @@ utilization은 token forecast에 선형적으로 작용한다. tokens/sec/MW가 
 
 utilization 상승은 capacity 부족을 일부 완화할 수 있다. 전력 ramp가 지연되어도 batching, disaggregation, model routing이 개선되면 token output 감소를 줄일 수 있다. 그래서 grid-constrained / efficiency-upside 시나리오가 필요하다.
 
+## 2026-05-26 Utilization 해석 보강
+
+본 모델의 `utilization`은 전력이 켜져 있거나 GPU가 배치되어 있다는 비율이 아니다. 이는 이론적인 generated output token throughput 중 실제 상용 traffic으로 실현되는 비율이다.
+
+감산 요인은 다음과 같다.
+
+- latency SLO를 지키기 위한 headroom
+- batch fill 부족과 traffic arrival 변동
+- failover 및 regional redundancy reserve
+- 긴 context, RAG, agentic workload의 prefill/decode 변화
+- maintenance, orchestration, model routing 제약
+
+Excel `05_inference_efficiency`와 `02b_number_trace`에는 업체별 utilization 값과 해당 값을 둔 운영 논리, 교체에 필요한 telemetry를 기록합니다.
+
 ## Hallucination 위험
 
 peak benchmark throughput을 utilization 100%로 연중 곱하는 것이 가장 위험하다. 두 번째 위험은 utilization을 전력 사용률처럼 해석하는 것이다. inference fleet은 전력을 쓰고 있어도 SLO reserve로 일부 capacity가 비어 있을 수 있다.

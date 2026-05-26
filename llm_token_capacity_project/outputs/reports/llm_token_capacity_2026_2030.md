@@ -1,24 +1,24 @@
 # 상용 LLM 업체별 전력·GPU·토큰 생성량 시뮬레이션 (2026–2030)
 
-- 생성일: 2026-05-18
+- 생성일: 2026-05-26
 - 목적: 상용 LLM owner 기준으로 전력 capacity, 추론/학습 split, GPU/ASIC mix, tokens/sec/MW, GPU benchmark reference, token 생성량을 연결한 임원 보고용 기준 시나리오 작성
 - Headline token 정의: `inference_tokens_per_day`는 generated output token equivalent입니다. input+output processed token, training token, billable token과 분리합니다.
 - 주의: 이 문서는 투자 조언이 아니라 supply-chain / token-capacity intelligence simulation입니다.
 
 ## 핵심 결론
-- **2030 core-company inference tokens/day**: 2.87 quadrillion generated output tokens/day - 9개 상용 LLM owner의 base case 생성 output token capacity.
+- **2030 core-company inference tokens/day**: 2.93 quadrillion generated output tokens/day - 9개 상용 LLM owner의 base case 생성 output token capacity.
 - **2030 inference AI IT load**: 23.02 GW inference load - PUE와 AI workload share 차감 후 inference에 배정된 IT load.
-- **2030 US vs China split**: US 81% / China 19% - 회사 owner 기준 split이며 AWS/Oracle/CoreWeave 같은 host는 core row가 아님.
+- **2030 US vs China split**: US 82% / China 18% - 회사 owner 기준 split이며 AWS/Oracle/CoreWeave 같은 host는 core row가 아님.
 
 ## 2030 기준 시나리오 순위
 
 | 순위 | 업체 | 지역 | 추론 GW | 토큰/일 | 신뢰도 |
 |---:|---|---|---:|---:|---|
 | 1 | OpenAI | US | 4.86 | 0.59Q | Medium |
-| 2 | Google | US | 3.65 | 0.54Q | Medium-High |
-| 3 | Meta | US | 3.28 | 0.40Q | Medium |
-| 4 | Microsoft | US | 3.33 | 0.37Q | Medium |
-| 5 | Anthropic | US | 2.97 | 0.32Q | Medium |
+| 2 | Google | US | 3.65 | 0.55Q | Medium-High |
+| 3 | Meta | US | 3.28 | 0.43Q | Medium |
+| 4 | Microsoft | US | 3.33 | 0.39Q | Medium |
+| 5 | Anthropic | US | 2.97 | 0.33Q | Medium |
 | 6 | Alibaba | China | 1.75 | 0.26Q | Medium |
 | 7 | Tencent | China | 1.31 | 0.17Q | Medium-Low |
 | 8 | xAI | US | 1.22 | 0.13Q | Medium-Low |
@@ -30,9 +30,19 @@
 it_load_gw = active_power_gw / pue
 ai_it_load_gw = it_load_gw * ai_workload_share
 inference_gw = ai_it_load_gw * inference_power_share
+accelerator_mix_factor = gpu_share * 1.0 + purpose_built_share * purpose_built_relative_efficiency_factor
+tokens_per_second_per_mw = gpu_reference_tps_per_mw * accelerator_mix_factor * architecture_workload_factor * software_efficiency_growth * scenario_multipliers
 inference_tokens_per_day = inference_mw * tokens_per_second_per_mw * utilization * 86,400
 joules_per_token = 1,000,000 / tokens_per_second_per_mw
 ```
+
+## Number Trace In Excel
+
+- Excel `02b_number_trace`는 모든 company-year-scenario 핵심 수치에 대해 `formula_or_rule`, `why_this_number`, `source_ids`, `assumption_ids`, `replacement_path`를 제공합니다.
+- `contracted_power_gw`는 source가 있는 업체의 committed/planned ceiling anchor와, 공개 GW가 없는 업체의 scenario capacity envelope를 구분합니다.
+- `active_power_gw`는 항상 capacity ceiling 이하이고 energization/deployment를 거친 modeled operational power입니다.
+- `gpu_asic_mix`는 numeric scenario로 명시하며, 공식 platform presence를 실제 fleet share fact로 오인하지 않습니다.
+- `utilization`은 power-on ratio가 아니라 SLO/reserve/traffic shape 이후 realized output-capacity fraction입니다.
 
 ## Token 정의
 
@@ -48,13 +58,18 @@ joules_per_token = 1,000,000 / tokens_per_second_per_mw
 
 | Block | Formula | 해석 | Sources |
 |---|---|---|---|
+| Capacity definition - contracted or attributed ceiling | `contracted_power_gw = announced/committed capacity where sourced; otherwise explicitly modeled capacity envelope` | `contracted_power_gw`는 업체별 동일한 disclosure 수준의 fact가 아닙니다. OpenAI/Anthropic처럼 공개 capacity anchor가 있는 경우 상한 anchor이며, 미공개 업체는 model-owner serving capacity envelope scenario입니다. | SRC_OPENAI_STARGATE_ORACLE; SRC_OPENAI_STARGATE_PROGRESS; SRC_ANTHROPIC_AMAZON_COMPUTE; ASSUMP_POWER_RAMP |
+| Capacity definition - active relationship | `active_power_gw = min(contracted_power_gw, modeled_operationally_deployed_power_gw)` | active power는 계약/계획/귀속 capacity 중 실제로 energization, accelerator deployment, cooling/network readiness를 통과해 AI workload에 배치 가능한 power envelope입니다. 따라서 항상 contracted 이하이며 fact가 아닌 경우 scenario로 표기합니다. | ASSUMP_POWER_RAMP; ASSUMP_STARGATE_RAMP |
 | Token definition - forecast headline | `inference_tokens_per_day = generated output token equivalent, not input+output processed tokens` | 임원 보고의 headline token은 사용자가 받는 생성 output token 기준으로 해석합니다. InferenceX의 total throughput과 비교할 때는 output_tput/output_tok_s_mw를 우선 대조합니다. | SRC_GOOGLE_GEMINI_TOKENS; SRC_SEMIANALYSIS_INFERENCEX |
 | Token definition - processed benchmark | `processed_tokens = input_tokens + output_tokens; benchmark total tput may include both` | benchmark의 total tokens/sec 또는 tok_s_mw는 prompt input 처리량과 생성 output 처리량이 섞일 수 있습니다. processed token을 generated token forecast로 직접 치환하지 않습니다. | SRC_SEMIANALYSIS_INFERENCEX |
-| Token definition - training | `training_tokens_processed_per_day = training_gw * 1000 * training_tps_per_mw_equivalent * utilization * 86,400` | training token은 모델 학습에서 처리된 corpus/token count이며 상용 서비스가 생성한 output token이 아닙니다. inference token과 합산하지 않습니다. | SRC_DEEPSEEK_V3; SRC_TENCENT_HUNYUAN_PRETRAIN |
+| Token definition - training | `training_tokens_processed_per_day = training_gw * 1000 * training_tps_per_mw_equivalent * utilization * 86,400` | training token은 모델 학습에서 처리된 corpus/token count이며 상용 서비스가 생성한 output token이 아닙니다. 본 모델의 training_tps_per_mw_equivalent = inference tokens/MW * 0.22는 별도 capacity sanity proxy이며 실제 training telemetry가 아닙니다. | SRC_DEEPSEEK_V3; SRC_TENCENT_HUNYUAN; ASSUMP_POWER_RAMP |
 | Power to AI IT load | `it_load_gw = active_power_gw / pue` | 계약/계획 전력이 아니라 실제 operational deploy된 전력에서 PUE를 차감해 IT load를 산출. | SRC_MCKINSEY_AI_WORKLOADS; SRC_EPRI_EPOCH_AI_POWER |
-| AI workload allocation | `ai_it_load_gw = it_load_gw * ai_workload_share` | 데이터센터 전체 IT load 중 LLM serving/training에 쓰이는 AI load만 분리. | ASSUMP_POWER_RAMP |
+| AI workload allocation | `ai_it_load_gw = it_load_gw * ai_workload_share` | active capacity가 전부 LLM 계산으로 쓰이지 않으므로 데이터센터 IT load 중 modeled model-owner AI training/serving 몫만 분리합니다. 업체별 dedicated AI 방향은 공식 source로 확인하되, 구체적 share는 telemetry 부재 시 scenario입니다. | SRC_MS_MAIA200; SRC_GOOGLE_IRONWOOD; SRC_META_MTIA_GENAI_2026; SRC_AWS_RAINIER_ACTIVE; ASSUMP_POWER_RAMP |
 | Training vs inference split | `inference_gw = ai_it_load_gw * inference_power_share; training_gw = ai_it_load_gw * (1 - inference_power_share)` | inference 비중은 company fact가 아니라 상용화 성숙도와 제품 표면에 따른 시나리오 변수. | SRC_MCKINSEY_AI_WORKLOADS; SRC_DELOITTE_AI_POWER; SRC_EPRI_EPOCH_AI_POWER; ASSUMP_INFERENCE_SHARE_NOT_FACT_60 |
+| Accelerator mix bridge | `accelerator_mix_factor = gpu_share * 1.0 + purpose_built_share * purpose_built_relative_efficiency_factor` | GPU/ASIC mix는 numeric scenario로 관리합니다. official source는 accelerator의 존재와 목적을 증명하지만 operated serving share는 대체로 공개하지 않으므로, share와 relative efficiency factor는 replacement evidence가 생기기 전까지 estimate/scenario입니다. | SRC_MS_MAIA200; SRC_GOOGLE_IRONWOOD; SRC_META_MTIA_GENAI_2026; SRC_AWS_RAINIER_ACTIVE; ASSUMP_NUMERIC_ACCELERATOR_MIX |
+| Mix to serving efficiency | `tokens_per_second_per_mw = gpu_reference_tps_per_mw * accelerator_mix_factor * architecture_workload_factor * software_efficiency_growth * scenario_multipliers` | tokens/MW는 hardware mix alone이 아니라 모델 architecture(MoE/closed proxy), ISL/OSL, precision, batching, SLO와 software efficiency를 함께 반영합니다. InferenceX는 output-token benchmark calibration layer이며 company production fact가 아닙니다. | SRC_SEMIANALYSIS_INFERENCEX; SRC_DEEPSEEK_V3; SRC_QWEN3_GITHUB; SRC_TENCENT_AI_INFRA_MOE; ASSUMP_NUMERIC_ACCELERATOR_MIX |
 | Inference token capacity | `inference_tokens_per_day = inference_gw * 1000 * tokens_per_second_per_mw * utilization * 86,400` | 전력 배정, serving 효율, 실제 utilization이 token 생성 capacity를 결정. | SRC_SEMIANALYSIS_INFERENCEX; SRC_ARXIV_INFERENCE_ENERGY |
+| Utilization interpretation | `realized_output_capacity = theoretical_output_capacity * utilization` | utilization은 전력이 켜져 있다는 뜻이 아니라 theoretical output throughput 중 실제 traffic으로 실현되는 비율입니다. latency SLO headroom, failover reserve, uneven arrivals, batch fill, maintenance, training competition 때문에 100%가 될 수 없습니다. | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_SEMIANALYSIS_INFERENCEX |
 | Energy sanity check | `joules_per_token = 1,000,000 / tokens_per_second_per_mw` | MW를 J/s로 환산해 tokens/sec/MW와 에너지/token이 상호 일관되는지 확인. | SRC_ARXIV_INFERENCE_ENERGY |
 | MoE optimization | `scenario_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier * moe_optimization_multiplier` | DeepSeek/Qwen 같은 MoE 모델은 active parameter가 낮아 serving efficiency scenario에 별도 multiplier를 적용. | SRC_DEEPSEEK_V3; SRC_QWEN3_GITHUB; ASSUMP_MOE_EFFICIENCY |
 
@@ -64,7 +79,7 @@ joules_per_token = 1,000,000 / tokens_per_second_per_mw
 |---|---|---|---|---|---|---|
 | FACT_OPENAI_ORACLE_4_5GW | OpenAI | Additional Oracle datacenter capacity | 4.5 GW | 2025-07-22 | SRC_OPENAI_STARGATE_ORACLE | OpenAI 2030 contracted_power_gw 상향 anchor. active_power_gw는 energization/GPU delivery 때문에 별도 multiplier 적용. |
 | FACT_OPENAI_STARGATE_10GW | OpenAI | Stargate planned capacity commitment | Nearly 7 GW announced across new sites; over 10 GW commitment stated | 2025-09-23 | SRC_OPENAI_STARGATE_PROGRESS | 2030 OpenAI contracted_power_gw 12GW는 공개 commitment를 약간 상회하지 않도록 점검하는 ceiling 역할. |
-| FACT_GOOGLE_IRONWOOD_POD | Google | Ironwood TPU pod scale | 9,216 liquid-cooled chips; 42.5 exaflops per pod | 2025-04-09 | SRC_GOOGLE_IRONWOOD | Google tps_per_mw_2026 premium과 efficiency_cagr는 TPU/Ironwood inference-optimized hardware direction으로 정당화. |
+| FACT_GOOGLE_IRONWOOD_POD | Google | Ironwood TPU pod scale | 9,216 liquid-cooled chips; 42.5 exaflops per pod | 2025-04-09 | SRC_GOOGLE_IRONWOOD | Google TPU/Ironwood platform direction은 accelerator mix bridge와 efficiency-growth scenario를 설정하는 근거이며, 공개 fleet share 또는 production tokens/MW fact가 아님. |
 | FACT_GOOGLE_TPU_V6E | Google | TPU v6e / Trillium generation | Google Cloud TPU v6e public product documentation | 2026-05-14 accessed | SRC_GOOGLE_TPU_V6E | Google serving_platform fact 보강. tokens/MW 수치는 직접 인용하지 않음. |
 | FACT_DEEPSEEK_V3_MOE | DeepSeek | DeepSeek-V3 MoE parameters | 671B total parameters; 37B activated per token | 2024-12-26 | SRC_DEEPSEEK_V3 | DeepSeek MoE efficiency multiplier 적용의 가장 강한 모델-side evidence. |
 | FACT_DEEPSEEK_V3_TRAINING_TOKENS | DeepSeek | DeepSeek-V3 pretraining corpus | 14.8T high-quality tokens | 2024-12-26 | SRC_DEEPSEEK_V3 | training_tokens_processed_per_day는 pretraining token scale과 order-of-magnitude 비교 가능하지만 직접 calibration은 아님. |
@@ -73,7 +88,11 @@ joules_per_token = 1,000,000 / tokens_per_second_per_mw
 | FACT_XAI_COLOSSUS_100K | xAI | Colossus initial cluster | 100,000 NVIDIA Hopper GPUs | 2024-12-04 | SRC_XAI_NVIDIA_COLOSSUS | 100k Hopper GPU는 xAI active_power_2026_gw 0.35GW가 물리적으로 과도하지 않은지 확인하는 anchor. |
 | FACT_XAI_COLOSSUS_200K | xAI | Colossus expansion direction | Expansion toward 200,000 GPUs cited by NVIDIA | 2024-12-04 | SRC_XAI_NVIDIA_COLOSSUS | xAI contracted_power_2030_gw 3GW와 active_power_2030_gw 2.5GW는 추가 clusters 포함한 scenario. |
 | FACT_MS_PHI4_14B | Microsoft | Phi-4 parameter count | 14B parameters | 2024-12-12 | SRC_MS_PHI4_TECHREPORT | Microsoft model row에서 Phi/MAI owned와 OpenAI model-owner output을 분리하는 근거. |
+| FACT_MS_MAIA_INFERENCE | Microsoft | Maia 200 inference deployment direction | Maia 200 designed for AI inference; deployed in Azure AI Foundry and Microsoft 365 Copilot | 2026-01-26 | SRC_MS_MAIA200 | Microsoft GPU/ASIC mix에서 Maia share를 0보다 크게 둘 수 있는 방향성 anchor. share 자체는 scenario. |
+| FACT_META_MTIA_INFERENCE | Meta | MTIA inference-first deployment direction | Meta states hundreds of thousands of MTIA chips deployed for inference and next MTIA generations focus on GenAI inference | 2026-03-11 | SRC_META_MTIA_GENAI_2026 | Meta GPU/ASIC mix에 MTIA share scenario를 추가하는 anchor. exact share와 tokens/MW는 공개되지 않음. |
 | FACT_ANTHROPIC_AWS_5GW | Anthropic | AWS/Project Rainier hosted capacity direction | Up to 5GW-class AI compute capacity cited for Anthropic/AWS buildout | 2025-2026 | SRC_ANTHROPIC_AMAZON_COMPUTE | Anthropic contracted_power_2030_gw와 active_power_2030_gw의 상한 anchor. AWS는 host이며 model-owner attribution은 Anthropic. |
+| FACT_ANTHROPIC_RAINIER_TRAINIUM | Anthropic | Project Rainier purpose-built accelerator direction | AWS activated an Anthropic AI compute cluster built on Trainium2 chips | 2025-10-29 | SRC_AWS_RAINIER_ACTIVE | Anthropic purpose-built accelerator mix share와 relative efficiency factor는 scenario로만 적용. |
+| FACT_DEEPSEEK_H800_SERVING | DeepSeek | Published V3/R1 inference service hardware | DeepSeek states online V3/R1 inference services ran entirely on H800 GPUs in its disclosed overview | 2025-02-28 | SRC_DEEPSEEK_H800_INFERENCE | DeepSeek Base GPU share를 100% reference로 두고 MoE 효율은 architecture factor로 분리. |
 | FACT_TENCENT_HUNYUAN_100B | Tencent | Hunyuan foundation model scale | Over 100B parameters and over 2T pretraining tokens | 2023-09-07 | SRC_TENCENT_HUNYUAN | Tencent parameter band를 closed-only에서 100B+ anchor로 보강. active serving capacity는 여전히 낮은 confidence. |
 | FACT_MCKINSEY_2030_INFERENCE | Cross-company | 2030 inference demand direction | Inference expected to account for more than half of AI workloads and 30-40% of data center power demand by 2030 | 2026-02-24 | SRC_MCKINSEY_AI_WORKLOADS | 2030 weighted inference share 상승의 directional anchor. 2026 60%+ 주장은 fact로 채택하지 않음. |
 | FACT_DELOITTE_2026_INFERENCE | Cross-company | 2026 inference compute share outlook | Inference cited as roughly two-thirds of compute in 2026 outlook | 2025-12 | SRC_DELOITTE_AI_POWER | 2026 base/bull inference share가 60%를 넘을 수 있는 상향 전망 anchor지만, 공식 fact로는 표시하지 않음. |
@@ -99,42 +118,42 @@ joules_per_token = 1,000,000 / tokens_per_second_per_mw
 
 | 시나리오 | 가동 전력 GW | 추론 GW | 가중 추론 비중 | 토큰/일 | 기준 대비 변화 |
 |---|---:|---:|---:|---:|---:|
-| Bear | 34.52 | 16.39 | 66% | 1.49Q | -48.0% |
-| Base | 42.10 | 23.02 | 76% | 2.87Q | 0.0% |
-| Bull | 49.65 | 30.01 | 84% | 4.79Q | 66.8% |
-| Grid-Constrained / Efficiency-Upside | 30.31 | 17.45 | 80% | 2.69Q | -6.2% |
+| Bear | 34.52 | 16.39 | 66% | 1.53Q | -48.0% |
+| Base | 42.10 | 23.02 | 76% | 2.93Q | 0.0% |
+| Bull | 49.65 | 30.01 | 84% | 4.89Q | 66.7% |
+| Grid-Constrained / Efficiency-Upside | 30.31 | 17.45 | 80% | 2.75Q | -6.3% |
 
 ## Benchmark Sanity Check
 
 | 업체 | Proxy | Benchmark annual QTokens | Model annual QTokens | 차이 | 주의점 |
 |---|---|---:|---:|---:|---|
-| Microsoft | Copilot/GPT-class proxy + Phi anchor | 50.26 | 135.88 | -63.0% | Microsoft-owned/Phi와 OpenAI dependency mix가 섞인 proxy |
-| Google | Gemini closed frontier proxy | 56.68 | 195.32 | -71.0% | TPU serving을 GPU-equivalent proxy로 환산 |
-| Meta | Llama 4 Maverick | 149.86 | 146.84 | 2.1% | Meta AI production routing과 다를 수 있음 |
+| Microsoft | Copilot/GPT-class proxy + Phi anchor | 50.26 | 142.92 | -64.8% | Microsoft-owned/Phi와 OpenAI dependency mix가 섞인 proxy |
+| Google | Gemini closed frontier proxy | 56.68 | 199.40 | -71.6% | TPU serving을 GPU-equivalent proxy로 환산 |
+| Meta | Llama 4 Maverick | 149.86 | 155.92 | -3.9% | Meta AI production routing과 다를 수 있음 |
 | xAI | Grok closed frontier proxy | 14.11 | 45.85 | -69.2% | Grok closed model benchmark가 없어 cluster scale 기반 proxy |
 | OpenAI | gpt-oss/frontier mix proxy | 68.90 | 214.20 | -67.8% | closed GPT 실제 serving benchmark가 아니므로 sanity check로만 사용 |
-| Anthropic | Claude closed frontier proxy | 33.25 | 116.18 | -71.4% | Claude 파라미터/serving benchmark는 비공개라 proxy |
+| Anthropic | Claude closed frontier proxy | 33.25 | 118.77 | -72.0% | Claude 파라미터/serving benchmark는 비공개라 proxy |
 | DeepSeek | DeepSeek-V3 / R1 | 84.88 | 38.09 | 122.8% | 모델 구조는 공개되어 있으나 production serving은 proxy |
 | Alibaba | Qwen3 235B-A22B | 11.10 | 94.83 | -88.3% | 공개 Qwen benchmark 기반 reference; Alibaba Cloud production mix와 다를 수 있음 |
 | Tencent | Hunyuan closed proxy | 13.79 | 61.09 | -77.4% | Hunyuan serving benchmark가 제한적이라 generic proxy |
 
 ## A08 Cycle 1: Energy Sanity Reference
 
-- Base `tokens_per_second_per_mw` 값은 아직 변경하지 않았습니다.
+- Base `tokens_per_second_per_mw`는 이제 numeric GPU/purpose-built mix bridge와 architecture/workload factor로 구성되며, production telemetry가 아닌 derived estimate입니다.
 - Joule/IBM/2026 serving sources는 company production telemetry가 아니라 energy/query, joules/token, prefill/decode trade-off 검증 레이어로 사용합니다.
 - Strict-SLO/agentic long-context는 energy/token을 악화시킬 수 있고, batchable optimized serving은 개선 가능성이 있으나 둘 다 sensitivity입니다.
 
 | 업체 | Profile | J/token | Energy implied Q/day | Model Q/day | 차이 | 해석 |
 |---|---|---:|---:|---:|---:|---|
-| Google | Strict-SLO / long-context agentic | 0.7633 | 0.289 | 0.535 | -45.9% | agentic/test-time compute가 증가하면 같은 MW에서 token output이 낮아질 수 있음 |
-| Google | Base serving mix | 0.4126 | 0.535 | 0.535 | 0.0% | 메인 forecast와 일치시키는 기준 energy view |
-| Google | Batchable / optimized serving | 0.2806 | 0.787 | 0.535 | 47.1% | serving stack 최적화가 energy/token을 낮출 수 있으나 company fact는 아님 |
+| Google | Strict-SLO / long-context agentic | 0.7478 | 0.295 | 0.546 | -45.9% | agentic/test-time compute가 증가하면 같은 MW에서 token output이 낮아질 수 있음 |
+| Google | Base serving mix | 0.4042 | 0.546 | 0.546 | -0.0% | 메인 forecast와 일치시키는 기준 energy view |
+| Google | Batchable / optimized serving | 0.2749 | 0.803 | 0.546 | 47.1% | serving stack 최적화가 energy/token을 낮출 수 있으나 company fact는 아님 |
 | OpenAI | Strict-SLO / long-context agentic | 0.9402 | 0.317 | 0.587 | -45.9% | agentic/test-time compute가 증가하면 같은 MW에서 token output이 낮아질 수 있음 |
 | OpenAI | Base serving mix | 0.5082 | 0.587 | 0.587 | 0.0% | 메인 forecast와 일치시키는 기준 energy view |
 | OpenAI | Batchable / optimized serving | 0.3456 | 0.863 | 0.587 | 47.1% | serving stack 최적화가 energy/token을 낮출 수 있으나 company fact는 아님 |
-| Anthropic | Strict-SLO / long-context agentic | 1.0427 | 0.172 | 0.318 | -45.9% | agentic/test-time compute가 증가하면 같은 MW에서 token output이 낮아질 수 있음 |
-| Anthropic | Base serving mix | 0.5636 | 0.318 | 0.318 | -0.0% | 메인 forecast와 일치시키는 기준 energy view |
-| Anthropic | Batchable / optimized serving | 0.3832 | 0.468 | 0.318 | 47.0% | serving stack 최적화가 energy/token을 낮출 수 있으나 company fact는 아님 |
+| Anthropic | Strict-SLO / long-context agentic | 1.0199 | 0.176 | 0.325 | -45.9% | agentic/test-time compute가 증가하면 같은 MW에서 token output이 낮아질 수 있음 |
+| Anthropic | Base serving mix | 0.5513 | 0.325 | 0.325 | -0.0% | 메인 forecast와 일치시키는 기준 energy view |
+| Anthropic | Batchable / optimized serving | 0.3749 | 0.479 | 0.325 | 47.1% | serving stack 최적화가 energy/token을 낮출 수 있으나 company fact는 아님 |
 
 ## A09 Cycle 1: SLO / Utilization Sensitivity
 
@@ -144,14 +163,14 @@ joules_per_token = 1,000,000 / tokens_per_second_per_mw
 
 | 업체 | Profile | Adjusted utilization | Adjusted TPS/MW | Q/day | 기준 대비 | 설명 |
 |---|---|---:|---:|---:|---:|---|
-| Google | Strict-SLO real-time | 0.546 | 2229594 | 0.384 | -28.2% | TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving |
-| Google | Base mixed serving | 0.700 | 2423472 | 0.535 | -0.0% | 메인 forecast 기준 |
-| Google | Batchable optimized | 0.784 | 2665819 | 0.659 | 23.2% | batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving |
-| Google | Agentic long-context stress | 0.616 | 1987247 | 0.386 | -27.8% | 긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress |
-| Meta | Strict-SLO real-time | 0.546 | 1865683 | 0.289 | -28.2% | TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving |
-| Meta | Base mixed serving | 0.700 | 2027916 | 0.402 | 0.0% | 메인 forecast 기준 |
-| Meta | Batchable optimized | 0.784 | 2230708 | 0.496 | 23.2% | batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving |
-| Meta | Agentic long-context stress | 0.616 | 1662891 | 0.290 | -27.8% | 긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress |
+| Google | Strict-SLO real-time | 0.546 | 2276117 | 0.392 | -28.2% | TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving |
+| Google | Base mixed serving | 0.700 | 2474040 | 0.546 | 0.0% | 메인 forecast 기준 |
+| Google | Batchable optimized | 0.784 | 2721444 | 0.673 | 23.2% | batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving |
+| Google | Agentic long-context stress | 0.616 | 2028713 | 0.394 | -27.8% | 긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress |
+| Meta | Strict-SLO real-time | 0.546 | 1981149 | 0.307 | -28.2% | TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving |
+| Meta | Base mixed serving | 0.700 | 2153423 | 0.427 | 0.0% | 메인 forecast 기준 |
+| Meta | Batchable optimized | 0.784 | 2368765 | 0.526 | 23.2% | batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving |
+| Meta | Agentic long-context stress | 0.616 | 1765807 | 0.308 | -27.8% | 긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress |
 | OpenAI | Strict-SLO real-time | 0.554 | 1810175 | 0.421 | -28.2% | TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving |
 | OpenAI | Base mixed serving | 0.710 | 1967582 | 0.587 | 0.0% | 메인 forecast 기준 |
 | OpenAI | Batchable optimized | 0.795 | 2164340 | 0.723 | 23.2% | batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving |
@@ -193,6 +212,10 @@ joules_per_token = 1,000,000 / tokens_per_second_per_mw
 | HC14 | China transparency | 중국 업체의 낮은 공개성 때문에 수치를 임의로 페널티하거나 과신하지 않았는가? | 모델 구조 fact는 인정하고 capacity transparency만 confidence에 반영. | Medium | Pass in principle; needs Chinese primary-source review |
 | HC15 | Executive wording | 슬라이드 문구가 추정치를 확정 사실처럼 표현하지 않는가? | forecast, scenario, proxy, sanity check, 추정치 표현을 유지. | High | Needs final human review |
 | HC16 | Token definition | generated output token, processed inference token, training token, billable token을 혼동하지 않았는가? | headline `inference_tokens_per_day`는 generated output token equivalent로 표기하고, InferenceX total `tok_s_mw`는 processed-token proxy로 분리. | High | Definition added; needs reviewer sign-off |
+| HC17 | Capacity terminology | `contracted_power_gw`가 모든 회사에서 공식 계약 fact인 것처럼 해석되지 않도록 capacity ceiling과 scenario envelope를 구분했는가? | 02b_number_trace 및 03_power_capacity에 업체별 capacity_basis와 derivation_type이 존재. | High | Implemented in trace layer |
+| HC18 | Numeric accelerator mix | GPU/ASIC mix 수치가 공식 platform presence와 실제 fleet share fact를 혼동하지 않는가? | 04_gpu_asic_mix에 numeric scenario, reason, source, replacement path가 있고 GPU+purpose-built share가 100%. | High | Implemented; telemetry replacement pending |
+| HC19 | Efficiency bridge reconstruction | tokens/sec/MW가 numeric mix와 architecture/workload factor에서 재구성되는가? | 05_inference_efficiency의 bridge fields로 각 row의 tokens/sec/MW를 재계산할 수 있고 validation이 통과. | High | Automated validation added |
+| HC20 | Complete numeric trace | 최종 표와 보조 표의 output-driving 숫자마다 company-year-scenario별 이유와 교체 경로가 있는가? | 02b_number_trace에 26개 numeric metric별 formula, reason, source/assumption ID, replacement path가 존재. | High | Implemented in trace layer |
 
 ## 귀속 기준
 - **Microsoft**: Microsoft-owned token은 Phi/MAI/Copilot serving으로, OpenAI model output은 OpenAI row에도 별도 표기
@@ -233,9 +256,15 @@ joules_per_token = 1,000,000 / tokens_per_second_per_mw
 | SRC_TENCENT_HUNYUAN | Tier 1 | Tencent | 2023-09-07 | Tencent Hunyuan parameter and pretraining token anchor | https://www.tencent.com/en-us/articles/2201460.html |
 | SRC_MS_PHI | Tier 1 | Microsoft | 2026-05-13 accessed | Microsoft-owned small language model family anchor | https://learn.microsoft.com/en-us/azure/ai-foundry/model-inference/concepts/models |
 | SRC_MS_PHI4_TECHREPORT | Tier 1/2 | Microsoft | 2024-12-12 | Microsoft-owned Phi-4 14B parameter anchor | https://arxiv.org/abs/2412.08905 |
+| SRC_MS_MAIA200 | Tier 1 | Microsoft | 2026-01-26 | Confirms Maia 200 is an inference accelerator deployed for Microsoft AI models, Azure AI Foundry and Microsoft 365 Copilot | https://news.microsoft.com/source/emea/2026/01/microsoft-introduces-maia-200-new-inference-accelerator-enhances-ai-performance-in-azure/ |
 | SRC_GOOGLE_TPU_V6E | Tier 1 | Google Cloud | 2026-05-14 accessed | Google TPU serving/training platform generation anchor | https://cloud.google.com/tpu/docs/v6e |
 | SRC_ANTHROPIC_AMAZON_COMPUTE | Tier 1 | Anthropic / Amazon | 2025-2026 | Anthropic contracted/hosted capacity anchor; capacity attributed to Anthropic model owner | https://www.anthropic.com/news/anthropic-amazon-compute |
 | SRC_ANTHROPIC_CLAUDE_DOCS | Tier 1 | Anthropic | 2026-05-14 accessed | Claude commercial model family and closed-model disclosure boundary | https://docs.anthropic.com/en/docs/about-claude/models/overview |
+| SRC_AWS_RAINIER_ACTIVE | Tier 1 | Amazon Web Services / Amazon | 2025-10-29 | Confirms Anthropic-dedicated Trainium2 capacity direction and purpose-built accelerator presence | https://www.aboutamazon.com/news/aws/aws-project-rainier-ai-trainium-chips-compute-cluster |
+| SRC_META_MTIA_GENAI_2026 | Tier 1 | Meta | 2026-03-11 | Confirms hundreds of thousands of MTIA deployed for inference and MTIA 400/450/500 focus on GenAI inference production | https://about.fb.com/news/2026/03/expanding-metas-custom-silicon-to-power-our-ai-workloads/ |
+| SRC_DEEPSEEK_H800_INFERENCE | Tier 1 | DeepSeek | 2025-02-28 | Confirms disclosed DeepSeek-operated V3/R1 inference services used H800 GPUs and reports peak/average node occupancy | https://github.com/deepseek-ai/open-infra-index/blob/main/202502OpenSourceWeek/day_6_one_more_thing_deepseekV3R1_inference_system_overview.md |
+| SRC_ALIBABA_QWEN_GPU_DEPLOY | Tier 1 | Alibaba Cloud | 2025-09-18 | Confirms an official Alibaba Cloud GPU deployment path for Qwen inference; not an operated fleet-share disclosure | https://www.alibabacloud.com/help/doc-detail/2921971.html |
+| SRC_TENCENT_AI_INFRA_MOE | Tier 1 | Tencent | 2024-09-05 | Confirms Tencent AI Infra and Hunyuan Turbo MoE service with stated inference-cost reduction | https://www.tencent.com/en-us/articles/2201930.html |
 | SRC_SEMIANALYSIS_INFERENCEX | Tier 2 | SemiAnalysis | 2025-2026 | Benchmark layer for tokens/sec/MW sensitivity, not company capacity | https://inferencex.semianalysis.com/about |
 | SRC_ARXIV_INFERENCE_ENERGY | Tier 2 | arXiv | 2024-2026 | Joules/token sanity check, prefill/decode split, batching, quantization sensitivity | https://arxiv.org/search/?query=large+language+model+inference+energy+joules+per+token&searchtype=all |
 | SRC_JOULE_INFERENCE_ENERGY_2026 | Tier 2 | Joule / Cell Press | 2026 | Energy/query and joules/token sanity layer for inference forecasts | https://www.sciencedirect.com/science/article/pii/S2542435126001145 |
@@ -257,3 +286,6 @@ joules_per_token = 1,000,000 / tokens_per_second_per_mw
 - benchmark_layer: PASS - GPU/effective-active-parameter benchmark reference is separated from the main tokens/sec/MW forecast.
 - energy_sanity_layer: PASS - Joule/IBM/2026 serving sources are separated as sanity/sensitivity layers, not Base production telemetry.
 - utilization_slo_layer: PASS - SLO/workload utilization sensitivity is separated from Base utilization band.
+- numeric_accelerator_mix_bridge: PASS - GPU/purpose-built shares sum to 100% and reconstruct tokens/sec/MW through explicit bridge factors.
+- complete_numeric_trace_inputs: PASS - joules/token, annual output tokens, training throughput proxy and training processed tokens are formula-reconstructable.
+- source_assumption_registry: PASS - Every source_id and assumption_id referenced by facts, formulas and forecast trace rows is registered.

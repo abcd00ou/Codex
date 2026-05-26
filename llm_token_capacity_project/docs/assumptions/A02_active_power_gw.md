@@ -38,6 +38,18 @@ active_power_gw는 token forecast의 가장 큰 sensitivity driver 중 하나다
 
 하지만 active_power_gw는 confidence가 낮은 경우가 많다. 따라서 단일 base 값만 두면 보고서가 취약해진다. 반드시 bear/base/bull deployment ratio를 두고, site-level source가 나오면 교체할 replacement path를 명시해야 한다.
 
+## 2026-05-26 Active Relationship Rule
+
+최종 모델은 다음 통제식을 명시적으로 적용한다.
+
+```text
+active_power_gw =
+  min(contracted_power_gw,
+      modeled_operationally_deployed_power_gw)
+```
+
+즉, capacity ceiling이 있어도 energization, cooling/network readiness, accelerator delivery, cluster service readiness가 확인되지 않으면 active capacity로 바로 승격하지 않는다. Excel `02b_number_trace`에는 각 업체·연도별 active power가 어떤 이유로 staged ramp를 적용받았는지 기록한다.
+
 ## Hallucination 위험
 
 active_power_gw를 발표 GW와 같게 두는 것이 가장 위험하다. 두 번째 위험은 accelerator count에서 board power만 곱해 facility active power를 추정하는 것이다. board power에는 CPU, memory, networking, power conversion, cooling overhead가 빠져 있다. 세 번째 위험은 online cluster 발표를 연중 평균 active power로 그대로 쓰는 것이다.

@@ -12,6 +12,7 @@ This file stores reviewed evidence for `utilization`.
 | A09_E003 | ARXIV_SLO_PD_2603 | 2026-05-18 | Mechanism | SLO-aware resource allocation for prefill/decode disaggregated inference implies utilization is constrained by TTFT/TPOT and SLA reserve, not just available GPU capacity | n/a | utilization | Low-Medium | Codex |
 | A09_E004 | ARXIV_PREFILL_SERVICE_2604 | 2026-05-18 | Scenario | Prefill-as-a-service and cross-datacenter prefill/KV movement imply future agentic workloads may alter utilization through network and placement constraints | n/a | utilization | Low-Medium | Codex |
 | A09_E005 | INFERENCEX_DUMP_2026_05_11 | 2026-05-19 | Proxy | Full InferenceX-app release dump normalized: benchmark rows include concurrency, ISL/OSL, p99 TTFT, p99 TPOT, p99 end-to-end latency, run stats and availability rows for serving-stack comparability | concurrency, TTFT/TPOT latency, availability | utilization | Medium | Codex |
+| A09_E006 | model update | 2026-05-26 | Interpretation | Utilization is now defined in the workbook as realized output-capacity fraction after SLO headroom, reserve, traffic shape and batch fill constraints | fraction | utilization; inference_tokens_per_day | Medium | Codex |
 
 ## Review Notes
 
@@ -25,3 +26,4 @@ This file stores reviewed evidence for `utilization`.
 - 2026 serving papers support adding utilization caveats: TTFT/TPOT SLO, P/D allocation, peak reserve, network placement and agentic workload shape.
 - Future Bull scenario may improve utilization through better scheduling, while agentic long-context workloads may also increase reserve needs.
 - InferenceX can calibrate strict-SLO versus batchable profiles, but observed benchmark concurrency is not the same as fleet-wide annual utilization.
+- Excel `02b_number_trace` now records a company-specific reason and replacement path for every utilization input and resulting output-token capacity row.

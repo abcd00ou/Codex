@@ -1,6 +1,6 @@
 # Orchestrator Agent
 
-Orchestrator는 10개 assumption agent의 업데이트를 모아 전체 숫자 정합성을 검토합니다.
+Orchestrator는 11개 assumption agent의 업데이트를 모아 전체 숫자 정합성을 검토합니다.
 
 ## 책임
 
@@ -10,6 +10,7 @@ Orchestrator는 10개 assumption agent의 업데이트를 모아 전체 숫자 �
 - inference_power_share + training_power_share = 100% 확인
 - host/model-owner attribution 중복 제거
 - benchmark_reference와 main forecast 괴리 검토
+- GPU/purpose-built accelerator numeric mix와 tokens/MW bridge 검토
 - executive wording에서 fact/estimate/proxy/scenario 구분 확인
 
 ## 입력
@@ -37,6 +38,7 @@ Orchestrator는 10개 assumption agent의 업데이트를 모아 전체 숫자 �
 4. 특정 회사가 host와 model owner 양쪽에 중복 반영됐는가?
 5. executive summary 문구가 source confidence보다 강하지 않은가?
 6. Logic Review Agent가 단위, 산식, benchmark mapping, attribution 중 하나라도 `blocker`로 표시했는가?
+7. A11 numeric accelerator mix가 official platform presence와 scenario share를 혼동하지 않는가?
 
 ## Approval Criteria
 

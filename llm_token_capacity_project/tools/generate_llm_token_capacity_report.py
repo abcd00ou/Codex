@@ -30,7 +30,7 @@ from pptx.util import Inches, Pt
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "outputs" / "reports"
-RUN_DATE = "2026-05-18"
+RUN_DATE = "2026-05-26"
 YEARS = list(range(2026, 2031))
 
 
@@ -123,7 +123,6 @@ class CompanyScenario:
     active_power_2030_gw: float
     inference_share_2026: float
     inference_share_2030: float
-    tps_per_mw_2026: float
     efficiency_cagr: float
     utilization_2026: float
     utilization_2030: float
@@ -336,6 +335,17 @@ def sources() -> list[Source]:
             "Phi-4는 Microsoft-owned model size anchor. Copilot frontier routing은 별도 attribution.",
         ),
         Source(
+            "SRC_MS_MAIA200",
+            "Microsoft introduces Maia 200: New inference accelerator enhances AI performance in Azure",
+            "Microsoft",
+            "2026-01-26",
+            "https://news.microsoft.com/source/emea/2026/01/microsoft-introduces-maia-200-new-inference-accelerator-enhances-ai-performance-in-azure/",
+            "Tier 1",
+            "Confirms Maia 200 is an inference accelerator deployed for Microsoft AI models, Azure AI Foundry and Microsoft 365 Copilot",
+            0.91,
+            "Maia 존재와 inference 용도는 fact. Microsoft serving fleet 내 Maia 비중은 scenario.",
+        ),
+        Source(
             "SRC_GOOGLE_TPU_V6E",
             "Cloud TPU v6e / Trillium documentation",
             "Google Cloud",
@@ -367,6 +377,61 @@ def sources() -> list[Source]:
             "Claude commercial model family and closed-model disclosure boundary",
             0.86,
             "Claude 모델 family 확인. 파라미터는 비공개이므로 band/benchmark proxy만 사용.",
+        ),
+        Source(
+            "SRC_AWS_RAINIER_ACTIVE",
+            "AWS activates Project Rainier: AI compute cluster for Anthropic",
+            "Amazon Web Services / Amazon",
+            "2025-10-29",
+            "https://www.aboutamazon.com/news/aws/aws-project-rainier-ai-trainium-chips-compute-cluster",
+            "Tier 1",
+            "Confirms Anthropic-dedicated Trainium2 capacity direction and purpose-built accelerator presence",
+            0.90,
+            "Trainium hardware direction은 fact. Claude inference/training allocation과 year-by-year mix는 scenario.",
+        ),
+        Source(
+            "SRC_META_MTIA_GENAI_2026",
+            "Expanding Meta's Custom Silicon to Power Our AI Workloads",
+            "Meta",
+            "2026-03-11",
+            "https://about.fb.com/news/2026/03/expanding-metas-custom-silicon-to-power-our-ai-workloads/",
+            "Tier 1",
+            "Confirms hundreds of thousands of MTIA deployed for inference and MTIA 400/450/500 focus on GenAI inference production",
+            0.92,
+            "MTIA 존재와 inference-first 방향은 fact. Meta AI LLM serving의 MTIA share는 scenario.",
+        ),
+        Source(
+            "SRC_DEEPSEEK_H800_INFERENCE",
+            "DeepSeek-V3/R1 inference system overview",
+            "DeepSeek",
+            "2025-02-28",
+            "https://github.com/deepseek-ai/open-infra-index/blob/main/202502OpenSourceWeek/day_6_one_more_thing_deepseekV3R1_inference_system_overview.md",
+            "Tier 1",
+            "Confirms disclosed DeepSeek-operated V3/R1 inference services used H800 GPUs and reports peak/average node occupancy",
+            0.91,
+            "공개 시점의 H800 serving은 fact. 2026-2030 증설 규모는 scenario.",
+        ),
+        Source(
+            "SRC_ALIBABA_QWEN_GPU_DEPLOY",
+            "Deploy a Qwen3-32B inference service with ACS GPU computing power",
+            "Alibaba Cloud",
+            "2025-09-18",
+            "https://www.alibabacloud.com/help/doc-detail/2921971.html",
+            "Tier 1",
+            "Confirms an official Alibaba Cloud GPU deployment path for Qwen inference; not an operated fleet-share disclosure",
+            0.78,
+            "Qwen GPU serving 가능성은 fact. 실제 Alibaba-operated GPU/ASIC 비중은 공개되지 않아 Base는 GPU reference 처리.",
+        ),
+        Source(
+            "SRC_TENCENT_AI_INFRA_MOE",
+            "Tencent Unveils New AI Upgrades, Proprietary Innovations, and Global Solutions",
+            "Tencent",
+            "2024-09-05",
+            "https://www.tencent.com/en-us/articles/2201930.html",
+            "Tier 1",
+            "Confirms Tencent AI Infra and Hunyuan Turbo MoE service with stated inference-cost reduction",
+            0.84,
+            "MoE/infra 방향은 fact. 운영 GPU/ASIC mix와 tokens/MW는 정량 미공개로 scenario.",
         ),
         Source(
             "SRC_SEMIANALYSIS_INFERENCEX",
@@ -492,8 +557,8 @@ def company_models() -> list[CompanyModel]:
             "Dense SLM + closed frontier/agentic routing",
             "Azure GPU + Maia inference + OpenAI-hosted dependency split",
             "Microsoft-owned token은 Phi/MAI/Copilot serving으로, OpenAI model output은 OpenAI row에도 별도 표기",
-            "NVIDIA GPU, Azure Maia, OpenAI-hosted frontier serving",
-            "SRC_MS_PHI; SRC_OPENAI_GPT41_DOCS",
+            "NVIDIA GPU + Maia inference accelerator (numeric share modeled separately)",
+            "SRC_MS_PHI; SRC_OPENAI_GPT41_DOCS; SRC_MS_MAIA200",
             "Medium",
             "Microsoft는 Copilot 상용 표면이 크지만 model-owner attribution은 OpenAI dependency를 분리해야 함.",
         ),
@@ -520,8 +585,8 @@ def company_models() -> list[CompanyModel]:
             "Open dense/MoE family + in-house ranking/routing",
             "NVIDIA GPU fleet + MTIA inference layer",
             "Meta-owned consumer and open model serving; third-party hosted Llama not counted in Meta owner tokens",
-            "NVIDIA GPU, MTIA for internal inference acceleration",
-            "SRC_META_LLAMA; SRC_META_LLAMA4_NVIDIA",
+            "NVIDIA GPU + MTIA inference portfolio (numeric share modeled separately)",
+            "SRC_META_LLAMA; SRC_META_LLAMA4_NVIDIA; SRC_META_MTIA_GENAI_2026",
             "Medium-High for open model params, Medium for active capacity",
             "Llama 4 MoE parameter facts improve model-side confidence; exact Meta AI active capacity remains scenario.",
         ),
@@ -548,8 +613,8 @@ def company_models() -> list[CompanyModel]:
             "Closed frontier multimodal/reasoning + router stack",
             "Azure + Oracle/Stargate + partner GPU clusters",
             "OpenAI model output counted here, including OpenAI models served through Microsoft channels when model ownership is OpenAI",
-            "NVIDIA GPU dominated; custom/partner accelerators TBD",
-            "SRC_OPENAI_GPT41_DOCS; SRC_OPENAI_STARGATE_ORACLE",
+            "NVIDIA GB200/GPU reference; no public operated custom-ASIC share",
+            "SRC_OPENAI_GPT41_DOCS; SRC_OPENAI_STARGATE_ORACLE; SRC_OPENAI_STARGATE_PROGRESS",
             "Medium",
             "사용량은 가장 크지만 parameter와 active capacity 공개성이 낮아 band/scenario 중심.",
         ),
@@ -562,8 +627,8 @@ def company_models() -> list[CompanyModel]:
             "Closed frontier reasoning/coding/multimodal model family",
             "AWS Trainium/Rainier + Google Cloud TPU/GPU hosted capacity",
             "Anthropic model output counted under Anthropic, even when served through AWS/Google host capacity",
-            "AWS Trainium-heavy hosted capacity, Google TPU/GPU partner capacity",
-            "SRC_ANTHROPIC_CLAUDE_DOCS; SRC_ANTHROPIC_AMAZON_COMPUTE",
+            "AWS Trainium / Google TPU purpose-built hosted capacity plus GPU partners (numeric share modeled separately)",
+            "SRC_ANTHROPIC_CLAUDE_DOCS; SRC_ANTHROPIC_AMAZON_COMPUTE; SRC_AWS_RAINIER_ACTIVE",
             "Medium for capacity anchor, Low for parameters",
             "Anthropic은 이번 통합 버전부터 core model owner로 포함. 파라미터는 closed band로만 처리.",
         ),
@@ -576,8 +641,8 @@ def company_models() -> list[CompanyModel]:
             "MoE reasoning/dense distilled ecosystem",
             "GPU-constrained serving with MoE efficiency and local cloud deployments",
             "DeepSeek direct app/API tokens counted; third-party self-hosted derivatives excluded unless DeepSeek-operated",
-            "NVIDIA/China-available GPU mix, MoE efficiency emphasis",
-            "SRC_DEEPSEEK_V3; SRC_DEEPSEEK_R1",
+            "H800 GPU serving anchor; future mix undisclosed",
+            "SRC_DEEPSEEK_V3; SRC_DEEPSEEK_R1; SRC_DEEPSEEK_H800_INFERENCE",
             "High for parameters, Low-Medium for capacity",
             "모델 구조는 투명하지만 회사 운영 capacity는 공개성이 낮아 scenario.",
         ),
@@ -590,8 +655,8 @@ def company_models() -> list[CompanyModel]:
             "Dense + MoE multilingual/code/reasoning family",
             "Alibaba Cloud GPU/China accelerator mix",
             "Alibaba-operated Qwen serving counted; open-source third-party self-hosting excluded",
-            "NVIDIA/China accelerators + cloud serving stack",
-            "SRC_QWEN3_GITHUB",
+            "GPU serving reference; operated accelerator mix undisclosed",
+            "SRC_QWEN3_GITHUB; SRC_ALIBABA_QWEN_GPU_DEPLOY",
             "High for Qwen3 parameters, Medium-Low for active capacity",
             "Qwen3 공개성이 높아 model band 신뢰도는 높고 power capacity는 별도 scenario.",
         ),
@@ -604,8 +669,8 @@ def company_models() -> list[CompanyModel]:
             "Closed dense/MoE + multimodal generation family",
             "Tencent Cloud GPU/China accelerator mix",
             "Tencent-operated Hunyuan/Yuanbao tokens counted; embedded non-LLM media generation separated",
-            "NVIDIA/China accelerators, Tencent Cloud inference",
-            "SRC_TENCENT_HUNYUAN; SRC_TENCENT_HY3",
+            "GPU serving reference; operated accelerator mix undisclosed",
+            "SRC_TENCENT_HUNYUAN; SRC_TENCENT_HY3; SRC_TENCENT_AI_INFRA_MOE",
             "Medium for Hunyuan published anchor, Medium-Low for active capacity",
             "Hunyuan 100B+와 2T+ pretraining token은 fact anchor, serving capacity는 scenario.",
         ),
@@ -614,15 +679,15 @@ def company_models() -> list[CompanyModel]:
 
 def scenarios() -> list[CompanyScenario]:
     return [
-        CompanyScenario("Microsoft", "US", "Phi / MAI / Copilot model mix", "Copilot + Azure AI", 4.0, 9.0, 1.8, 6.2, 0.55, 0.75, 1_050_000, 0.16, 0.54, 0.68, 1.20, 0.86, "Medium", "Estimate+Scenario", "SRC_MS_PHI; SRC_OPENAI_GPT41_DOCS; SRC_MS_PHI4_TECHREPORT", "ASSUMP_POWER_RAMP; ASSUMP_MS_OPENAI_ATTRIBUTION"),
-        CompanyScenario("Google", "US", "Gemini / Gemma", "Gemini + Workspace + Vertex", 4.5, 8.0, 2.2, 6.8, 0.55, 0.72, 1_250_000, 0.18, 0.56, 0.70, 1.18, 0.88, "Medium-High", "Estimate+Scenario", "SRC_GOOGLE_GEMINI_TOKENS; SRC_GOOGLE_IRONWOOD; SRC_GOOGLE_TPU_V6E", "ASSUMP_TPU_EFFICIENCY; ASSUMP_POWER_RAMP"),
-        CompanyScenario("Meta", "US", "Llama / Meta AI", "Meta AI + family apps", 3.5, 7.0, 1.6, 5.8, 0.58, 0.78, 1_120_000, 0.16, 0.55, 0.70, 1.20, 0.87, "Medium", "Estimate+Scenario", "SRC_META_LLAMA; SRC_META_LLAMA4_NVIDIA", "ASSUMP_CONSUMER_AI_UTILIZATION; ASSUMP_POWER_RAMP"),
-        CompanyScenario("xAI", "US", "Grok", "Grok + X + API", 1.0, 3.0, 0.35, 2.5, 0.45, 0.70, 950_000, 0.17, 0.50, 0.67, 1.22, 0.85, "Medium-Low", "Estimate+Scenario", "SRC_XAI_MODELS; SRC_XAI_NVIDIA_COLOSSUS", "ASSUMP_CLUSTER_RAMP; ASSUMP_CLOSED_MODEL_BAND"),
-        CompanyScenario("OpenAI", "US", "GPT / o-series / ChatGPT", "ChatGPT + API + enterprise", 5.0, 12.0, 1.4, 8.5, 0.58, 0.78, 1_050_000, 0.17, 0.57, 0.71, 1.20, 0.88, "Medium", "Estimate+Scenario", "SRC_OPENAI_GPT41_DOCS; SRC_OPENAI_STARGATE_ORACLE; SRC_OPENAI_STARGATE_PROGRESS", "ASSUMP_STARGATE_RAMP; ASSUMP_MS_OPENAI_ATTRIBUTION"),
-        CompanyScenario("Anthropic", "US", "Claude Opus / Sonnet / Haiku", "Claude + Bedrock + Vertex", 3.5, 7.0, 1.0, 5.5, 0.52, 0.74, 980_000, 0.16, 0.55, 0.70, 1.18, 0.86, "Medium", "Estimate+Scenario", "SRC_ANTHROPIC_CLAUDE_DOCS; SRC_ANTHROPIC_AMAZON_COMPUTE", "ASSUMP_POWER_RAMP; ASSUMP_CLOSED_MODEL_BAND"),
-        CompanyScenario("DeepSeek", "China", "DeepSeek-V3 / R1", "DeepSeek app/API", 0.5, 1.8, 0.15, 1.2, 0.62, 0.82, 1_450_000, 0.18, 0.48, 0.66, 1.24, 0.82, "Parameter High / Capacity Low-Medium", "Fact+Scenario", "SRC_DEEPSEEK_V3; SRC_DEEPSEEK_R1", "ASSUMP_MOE_EFFICIENCY; ASSUMP_CN_CAPACITY_TRANSPARENCY"),
-        CompanyScenario("Alibaba", "China", "Qwen / Qwen3", "Model Studio + Qwen API", 1.8, 4.0, 0.65, 3.2, 0.60, 0.80, 1_350_000, 0.17, 0.52, 0.68, 1.23, 0.84, "Medium", "Fact+Scenario", "SRC_QWEN3_GITHUB", "ASSUMP_MOE_EFFICIENCY; ASSUMP_CN_CAPACITY_TRANSPARENCY"),
-        CompanyScenario("Tencent", "China", "Hunyuan / Yuanbao", "Yuanbao + WeChat/Tencent Cloud", 1.2, 3.0, 0.45, 2.4, 0.60, 0.80, 1_200_000, 0.16, 0.52, 0.68, 1.23, 0.84, "Medium-Low", "Estimate+Scenario", "SRC_TENCENT_HUNYUAN; SRC_TENCENT_HY3", "ASSUMP_CN_CAPACITY_TRANSPARENCY; ASSUMP_APP_EMBEDDING"),
+        CompanyScenario("Microsoft", "US", "Phi / MAI / Copilot model mix", "Copilot + Azure AI", 4.0, 9.0, 1.8, 6.2, 0.55, 0.75, 0.16, 0.54, 0.68, 1.20, 0.86, "Medium", "Estimate+Scenario", "SRC_MS_PHI; SRC_OPENAI_GPT41_DOCS; SRC_MS_PHI4_TECHREPORT; SRC_MS_MAIA200", "ASSUMP_POWER_RAMP; ASSUMP_MS_OPENAI_ATTRIBUTION; ASSUMP_NUMERIC_ACCELERATOR_MIX"),
+        CompanyScenario("Google", "US", "Gemini / Gemma", "Gemini + Workspace + Vertex", 4.5, 8.0, 2.2, 6.8, 0.55, 0.72, 0.18, 0.56, 0.70, 1.18, 0.88, "Medium-High", "Estimate+Scenario", "SRC_GOOGLE_GEMINI_TOKENS; SRC_GOOGLE_IRONWOOD; SRC_GOOGLE_TPU_V6E", "ASSUMP_TPU_EFFICIENCY; ASSUMP_POWER_RAMP; ASSUMP_NUMERIC_ACCELERATOR_MIX"),
+        CompanyScenario("Meta", "US", "Llama / Meta AI", "Meta AI + family apps", 3.5, 7.0, 1.6, 5.8, 0.58, 0.78, 0.16, 0.55, 0.70, 1.20, 0.87, "Medium", "Estimate+Scenario", "SRC_META_LLAMA; SRC_META_LLAMA4_NVIDIA; SRC_META_MTIA_GENAI_2026", "ASSUMP_CONSUMER_AI_UTILIZATION; ASSUMP_POWER_RAMP; ASSUMP_NUMERIC_ACCELERATOR_MIX"),
+        CompanyScenario("xAI", "US", "Grok", "Grok + X + API", 1.0, 3.0, 0.35, 2.5, 0.45, 0.70, 0.17, 0.50, 0.67, 1.22, 0.85, "Medium-Low", "Estimate+Scenario", "SRC_XAI_MODELS; SRC_XAI_NVIDIA_COLOSSUS", "ASSUMP_CLUSTER_RAMP; ASSUMP_CLOSED_MODEL_BAND; ASSUMP_NUMERIC_ACCELERATOR_MIX"),
+        CompanyScenario("OpenAI", "US", "GPT / o-series / ChatGPT", "ChatGPT + API + enterprise", 5.0, 12.0, 1.4, 8.5, 0.58, 0.78, 0.17, 0.57, 0.71, 1.20, 0.88, "Medium", "Estimate+Scenario", "SRC_OPENAI_GPT41_DOCS; SRC_OPENAI_STARGATE_ORACLE; SRC_OPENAI_STARGATE_PROGRESS", "ASSUMP_STARGATE_RAMP; ASSUMP_MS_OPENAI_ATTRIBUTION; ASSUMP_NUMERIC_ACCELERATOR_MIX"),
+        CompanyScenario("Anthropic", "US", "Claude Opus / Sonnet / Haiku", "Claude + Bedrock + Vertex", 3.5, 7.0, 1.0, 5.5, 0.52, 0.74, 0.16, 0.55, 0.70, 1.18, 0.86, "Medium", "Estimate+Scenario", "SRC_ANTHROPIC_CLAUDE_DOCS; SRC_ANTHROPIC_AMAZON_COMPUTE; SRC_AWS_RAINIER_ACTIVE", "ASSUMP_POWER_RAMP; ASSUMP_CLOSED_MODEL_BAND; ASSUMP_NUMERIC_ACCELERATOR_MIX"),
+        CompanyScenario("DeepSeek", "China", "DeepSeek-V3 / R1", "DeepSeek app/API", 0.5, 1.8, 0.15, 1.2, 0.62, 0.82, 0.18, 0.48, 0.66, 1.24, 0.82, "Parameter High / Capacity Low-Medium", "Fact+Scenario", "SRC_DEEPSEEK_V3; SRC_DEEPSEEK_R1; SRC_DEEPSEEK_H800_INFERENCE", "ASSUMP_MOE_EFFICIENCY; ASSUMP_CN_CAPACITY_TRANSPARENCY; ASSUMP_NUMERIC_ACCELERATOR_MIX"),
+        CompanyScenario("Alibaba", "China", "Qwen / Qwen3", "Model Studio + Qwen API", 1.8, 4.0, 0.65, 3.2, 0.60, 0.80, 0.17, 0.52, 0.68, 1.23, 0.84, "Medium", "Fact+Scenario", "SRC_QWEN3_GITHUB; SRC_ALIBABA_QWEN_GPU_DEPLOY", "ASSUMP_MOE_EFFICIENCY; ASSUMP_CN_CAPACITY_TRANSPARENCY; ASSUMP_NUMERIC_ACCELERATOR_MIX"),
+        CompanyScenario("Tencent", "China", "Hunyuan / Yuanbao", "Yuanbao + WeChat/Tencent Cloud", 1.2, 3.0, 0.45, 2.4, 0.60, 0.80, 0.16, 0.52, 0.68, 1.23, 0.84, "Medium-Low", "Estimate+Scenario", "SRC_TENCENT_HUNYUAN; SRC_TENCENT_HY3; SRC_TENCENT_AI_INFRA_MOE", "ASSUMP_CN_CAPACITY_TRANSPARENCY; ASSUMP_APP_EMBEDDING; ASSUMP_NUMERIC_ACCELERATOR_MIX"),
     ]
 
 
@@ -676,7 +741,219 @@ def assumptions() -> list[dict[str, Any]]:
             "replacement_path": "업체별 cluster telemetry, AI workload scheduling logs, serving/training capex split disclosure로 대체.",
             "confidence": 0.70,
         },
+        {
+            "assumption_id": "ASSUMP_NUMERIC_ACCELERATOR_MIX",
+            "description_kr": "GPU/ASIC mix는 운영 fleet share 공개가 없는 경우 fact가 아니라 serving-platform anchor를 바탕으로 둔 숫자 시나리오다. 공식적으로 custom accelerator deployment가 확인된 Microsoft, Google, Meta, Anthropic만 purpose-built accelerator share 상승을 Base에 반영하고, 나머지는 GPU-reference Base로 둔다.",
+            "replacement_path": "업체별 inference fleet chip count, accelerator-hours, serving traffic allocation 또는 model별 production benchmark disclosure.",
+            "confidence": 0.42,
+        },
+        {
+            "assumption_id": "ASSUMP_CLUSTER_RAMP",
+            "description_kr": "xAI Colossus처럼 accelerator count와 expansion direction은 공개되지만 동일 범위의 contracted/active GW가 공개되지 않은 cluster는 staged operational power envelope로 모델링한다.",
+            "replacement_path": "사이트별 utility/onsite power, energized racks, accelerator deployment dates 및 serving allocation disclosure.",
+            "confidence": 0.46,
+        },
+        {
+            "assumption_id": "ASSUMP_CLOSED_MODEL_BAND",
+            "description_kr": "OpenAI, Anthropic, xAI 등 closed model은 공식 파라미터 수치가 공개되지 않으면 단일 정확값 대신 architecture/active-parameter band 또는 undisclosed 표시로만 사용한다.",
+            "replacement_path": "공식 model card, technical report 또는 vendor-published parameter/architecture disclosure.",
+            "confidence": 0.72,
+        },
+        {
+            "assumption_id": "ASSUMP_APP_EMBEDDING",
+            "description_kr": "Tencent Hunyuan/Yuanbao처럼 대규모 consumer/product surface 내 embedding direction은 inference allocation 상승 가능성의 scenario 근거로만 사용하며 실제 serving load share로 간주하지 않는다.",
+            "replacement_path": "제품별 AI 활성 사용자, 호출량, token volume 또는 workload-power allocation disclosure.",
+            "confidence": 0.45,
+        },
     ]
+
+
+def accelerator_mix_profiles() -> dict[str, dict[str, Any]]:
+    """Numeric accelerator-mix assumptions with explicit audit rationale.
+
+    The numeric shares are scenario inputs unless the company reports operated
+    fleet allocation. Official sources establish platform presence/direction;
+    they do not establish the exact share used below.
+    """
+    return {
+        "Microsoft": {
+            "gpu_label": "NVIDIA GPU / Azure GPU reference",
+            "asic_label": "Maia inference accelerator",
+            "gpu_share_2026": 0.90,
+            "gpu_share_2030": 0.55,
+            "asic_efficiency_factor": 1.15,
+            "architecture_workload_factor": 1.0345,
+            "source_ids": "SRC_MS_MAIA200; SRC_MS_PHI; SRC_OPENAI_GPT41_DOCS",
+            "mix_rationale": "Maia 200 is officially designated for inference, Azure AI Foundry and Microsoft 365 Copilot. Exact serving fleet share is undisclosed; gradual Maia adoption is modeled.",
+            "tps_rationale": "Weighted GPU/Maia bridge, calibrated to Microsoft mixed Copilot/model-routing workload rather than a disclosed production benchmark.",
+            "replacement_path": "Microsoft disclosure of Maia accelerator-hours or Copilot model/hardware routing mix.",
+        },
+        "Google": {
+            "gpu_label": "GPU reference",
+            "asic_label": "TPU / Ironwood",
+            "gpu_share_2026": 0.20,
+            "gpu_share_2030": 0.10,
+            "asic_efficiency_factor": 1.25,
+            "architecture_workload_factor": 1.0417,
+            "source_ids": "SRC_GOOGLE_IRONWOOD; SRC_GOOGLE_TPU_V6E; SRC_GOOGLE_GEMINI_TOKENS",
+            "mix_rationale": "Google officially positions Ironwood as an inference TPU and publicly documents TPU generations; TPU-heavy serving is modeled, not measured fleet share.",
+            "tps_rationale": "TPU-heavy weighted efficiency premium plus Gemini serving workload calibration.",
+            "replacement_path": "Gemini production serving throughput/power or TPU-versus-GPU serving allocation disclosure.",
+        },
+        "Meta": {
+            "gpu_label": "NVIDIA / external GPU reference",
+            "asic_label": "MTIA",
+            "gpu_share_2026": 0.90,
+            "gpu_share_2030": 0.55,
+            "asic_efficiency_factor": 1.18,
+            "architecture_workload_factor": 1.1002,
+            "source_ids": "SRC_META_MTIA_GENAI_2026; SRC_META_LLAMA; SRC_META_LLAMA4_NVIDIA",
+            "mix_rationale": "Meta discloses hundreds of thousands of MTIA chips for inference and an inference-first GenAI MTIA roadmap. LLM-serving mix remains undisclosed; adoption is scenario-based.",
+            "tps_rationale": "Weighted GPU/MTIA bridge adjusted for Llama/Meta AI serving mix and MoE/open-model direction.",
+            "replacement_path": "Meta AI production model-routing and MTIA-versus-GPU inference allocation disclosure.",
+        },
+        "xAI": {
+            "gpu_label": "NVIDIA Hopper/next-generation GPU",
+            "asic_label": "No disclosed operated ASIC share",
+            "gpu_share_2026": 1.00,
+            "gpu_share_2030": 1.00,
+            "asic_efficiency_factor": 1.00,
+            "architecture_workload_factor": 0.95,
+            "source_ids": "SRC_XAI_NVIDIA_COLOSSUS; SRC_XAI_MODELS",
+            "mix_rationale": "Official infrastructure anchor is NVIDIA GPU cluster scale. No xAI-operated custom inference ASIC share is used in Base.",
+            "tps_rationale": "GPU-only closed-model proxy with lower workload factor pending Grok serving benchmark.",
+            "replacement_path": "xAI serving hardware mix, Grok inference benchmark and active traffic disclosure.",
+        },
+        "OpenAI": {
+            "gpu_label": "NVIDIA GB200 / partner GPU capacity",
+            "asic_label": "No disclosed operated custom ASIC share",
+            "gpu_share_2026": 1.00,
+            "gpu_share_2030": 1.00,
+            "asic_efficiency_factor": 1.00,
+            "architecture_workload_factor": 1.05,
+            "source_ids": "SRC_OPENAI_STARGATE_PROGRESS; SRC_OPENAI_GPT41_DOCS",
+            "mix_rationale": "OpenAI states Oracle began delivering NVIDIA GB200 racks for Stargate. No operated custom-ASIC mix is publicly quantified in the model.",
+            "tps_rationale": "GPU-reference closed frontier model/router proxy; not direct ChatGPT/API telemetry.",
+            "replacement_path": "OpenAI hardware allocation and output-token throughput by model/product surface.",
+        },
+        "Anthropic": {
+            "gpu_label": "Partner GPU reference",
+            "asic_label": "AWS Trainium / hosted purpose-built accelerators",
+            "gpu_share_2026": 0.35,
+            "gpu_share_2030": 0.15,
+            "asic_efficiency_factor": 1.12,
+            "architecture_workload_factor": 0.9091,
+            "source_ids": "SRC_AWS_RAINIER_ACTIVE; SRC_ANTHROPIC_AMAZON_COMPUTE; SRC_ANTHROPIC_CLAUDE_DOCS",
+            "mix_rationale": "Project Rainier establishes large Anthropic-directed Trainium capacity. Exact Claude inference allocation across Trainium, TPU and GPU is undisclosed.",
+            "tps_rationale": "Purpose-built-heavy hosted mix adjusted downward for closed-model and serving-workload uncertainty.",
+            "replacement_path": "Anthropic/AWS production inference hardware allocation and Claude tokens/MW measurement.",
+        },
+        "DeepSeek": {
+            "gpu_label": "NVIDIA H800 GPU",
+            "asic_label": "No disclosed operated ASIC share",
+            "gpu_share_2026": 1.00,
+            "gpu_share_2030": 1.00,
+            "asic_efficiency_factor": 1.00,
+            "architecture_workload_factor": 1.45,
+            "source_ids": "SRC_DEEPSEEK_H800_INFERENCE; SRC_DEEPSEEK_V3; SRC_DEEPSEEK_R1",
+            "mix_rationale": "DeepSeek disclosed that V3/R1 inference services used H800 GPUs in its published infrastructure overview; no Base ASIC migration is assumed.",
+            "tps_rationale": "GPU reference receives a MoE/MLA architecture factor because 671B total and 37B active parameters are officially disclosed.",
+            "replacement_path": "Updated DeepSeek operated fleet hardware and measured V3/R1 output tokens per MW.",
+        },
+        "Alibaba": {
+            "gpu_label": "Alibaba Cloud GPU inference reference",
+            "asic_label": "No disclosed Qwen operated ASIC share",
+            "gpu_share_2026": 1.00,
+            "gpu_share_2030": 1.00,
+            "asic_efficiency_factor": 1.00,
+            "architecture_workload_factor": 1.35,
+            "source_ids": "SRC_QWEN3_GITHUB; SRC_ALIBABA_QWEN_GPU_DEPLOY",
+            "mix_rationale": "Alibaba Cloud officially documents GPU-based Qwen inference deployment, but not the operated Qwen GPU/ASIC fleet allocation. Base remains GPU-reference.",
+            "tps_rationale": "GPU reference receives Qwen3 MoE active-parameter architecture factor; no unverified local-ASIC uplift is used.",
+            "replacement_path": "Alibaba-operated Qwen fleet mix or production Model Studio output tokens/MW.",
+        },
+        "Tencent": {
+            "gpu_label": "Tencent Cloud GPU reference",
+            "asic_label": "No disclosed Hunyuan operated ASIC share",
+            "gpu_share_2026": 1.00,
+            "gpu_share_2030": 1.00,
+            "asic_efficiency_factor": 1.00,
+            "architecture_workload_factor": 1.20,
+            "source_ids": "SRC_TENCENT_HUNYUAN; SRC_TENCENT_AI_INFRA_MOE",
+            "mix_rationale": "Tencent discloses Hunyuan services, AI Infra and Hunyuan Turbo MoE efficiency direction, but not operated accelerator mix. Base remains GPU-reference.",
+            "tps_rationale": "GPU-reference scenario uplift reflects disclosed MoE/inference-cost direction, not measured Hunyuan tokens/MW.",
+            "replacement_path": "Tencent-operated Hunyuan hardware split and output-token serving benchmark.",
+        },
+    }
+
+
+def company_derivation_profiles() -> dict[str, dict[str, str]]:
+    """Company-specific rationale for power, workload allocation and utilization."""
+    return {
+        "Microsoft": {
+            "capacity_basis": "Scenario envelope for Microsoft-controlled/Copilot serving burden; not an official contracted-GW disclosure.",
+            "active_basis": "Active GW is a staged operational deployment fraction of modeled capacity, reflecting site energization and accelerator availability.",
+            "ai_workload_basis": "Azure/Copilot serving burden is AI-oriented but shares infrastructure with platform and reserve overhead; 86% is a scenario allocation.",
+            "inference_basis": "Copilot commercial serving growth supports rising inference allocation; OpenAI model-owner output must remain separately attributed.",
+            "utilization_basis": "Commercial interactive serving requires latency headroom, failover reserve and routing flexibility; utilization remains below installed capacity.",
+        },
+        "Google": {
+            "capacity_basis": "Scenario envelope for Gemini-serving capacity; official TPU hardware direction is disclosed, company-level contracted GW is not.",
+            "active_basis": "TPU generation availability supports ramp direction, while active GW remains a staged deployment estimate.",
+            "ai_workload_basis": "Gemini/Vertex TPU serving is AI-dedicated in the modeled capacity envelope; 88% excludes platform/reserve load.",
+            "inference_basis": "Ironwood is positioned for inference and Gemini is commercialized across products; inference share increases as a scenario.",
+            "utilization_basis": "Interactive and enterprise/API serving needs SLO reserve even on TPU-optimized infrastructure.",
+        },
+        "Meta": {
+            "capacity_basis": "Scenario envelope for Meta AI/Llama serving capacity; not an official contracted-GW figure.",
+            "active_basis": "MTIA deployment direction and consumer product distribution support active ramp, not exact powered GW.",
+            "ai_workload_basis": "The modeled fleet is focused on AI workloads across Meta AI surfaces; non-LLM ranking/platform overhead is excluded through the 87% share.",
+            "inference_basis": "Large consumer AI distribution and inference-first MTIA roadmap support a higher inference share scenario.",
+            "utilization_basis": "Consumer peaks, global availability and latency headroom reduce realized output utilization.",
+        },
+        "xAI": {
+            "capacity_basis": "Colossus GPU-count disclosure bounds capacity direction; contracted GW values are modeled power envelopes.",
+            "active_basis": "GPU cluster scale anchors operational possibility, while inference/training allocation and site power draw remain estimates.",
+            "ai_workload_basis": "Colossus is AI-centric; 85% retains cooling/IT allocation boundary and non-serving AI work.",
+            "inference_basis": "Grok product expansion is modeled to shift capacity toward inference after initial training-heavy operation.",
+            "utilization_basis": "Closed-model interactive serving and training competition require reserve; no production utilization disclosure exists.",
+        },
+        "OpenAI": {
+            "capacity_basis": "2030 envelope is bounded by official Stargate planned/committed capacity; 2026 and timing remain staged scenario values.",
+            "active_basis": "Official capacity announcements are converted to active GW only through energization/GPU-deployment ramp assumptions.",
+            "ai_workload_basis": "Stargate capacity is AI-oriented but includes reserve, platform and non-token AI activity; 88% is a scenario.",
+            "inference_basis": "ChatGPT/API/enterprise commercial surfaces support increasing inference allocation while training remains material.",
+            "utilization_basis": "Online product SLO, reasoning workload variability and reserve capacity prevent installed inference capacity from operating at peak output continuously.",
+        },
+        "Anthropic": {
+            "capacity_basis": "Hosted capacity envelope is anchored by Anthropic/AWS Project Rainier direction; it is attributed to Claude outputs, not AWS as a model owner.",
+            "active_basis": "Trainium cluster activation supports staged active ramp; Claude inference-versus-training use remains estimated.",
+            "ai_workload_basis": "Anthropic-directed hosted capacity is predominantly AI; 86% excludes platform, reserve and non-serving allocation.",
+            "inference_basis": "Claude API/product growth supports a rising inference share, while continued model training prevents full conversion.",
+            "utilization_basis": "Claude serving must maintain latency/availability reserve across hosted platforms; utilization is a scenario, not Trainium telemetry.",
+        },
+        "DeepSeek": {
+            "capacity_basis": "Capacity is a low-transparency scenario; official infrastructure evidence supports H800 inference hardware, not company GW.",
+            "active_basis": "Active GW is conservative because operated cluster scale beyond disclosed infrastructure is not public.",
+            "ai_workload_basis": "DeepSeek-operated service capacity is modeled as AI-focused, reduced for reserve and ancillary processing.",
+            "inference_basis": "API/app availability and inference-system disclosure support higher inference share; the value remains scenario.",
+            "utilization_basis": "Published node-occupancy evidence informs direction, but 2026-2030 sustained utilization is not disclosed.",
+        },
+        "Alibaba": {
+            "capacity_basis": "Alibaba Cloud/Qwen capacity is a scenario envelope; official model and deployment documentation does not state operated GW.",
+            "active_basis": "Active GW is staged below capacity due to undisclosed accelerator allocation and cloud multi-tenant use.",
+            "ai_workload_basis": "Model Studio/Qwen-serving envelope is AI-focused, while cloud platform/reserve allocation is excluded through 84%.",
+            "inference_basis": "Qwen API/enterprise commercialization and MoE architecture support increasing inference allocation scenario.",
+            "utilization_basis": "Multi-tenant cloud serving and SLO reserve require a utilization haircut absent direct telemetry.",
+        },
+        "Tencent": {
+            "capacity_basis": "Tencent Cloud/Hunyuan capacity is a scenario envelope because operated model-serving GW is undisclosed.",
+            "active_basis": "Active GW reflects staged Hunyuan/Yuanbao adoption rather than a reported powered fleet.",
+            "ai_workload_basis": "Modeled Hunyuan-serving capacity is AI-focused; 84% excludes cloud/platform and reserve overhead.",
+            "inference_basis": "Yuanbao and embedded product surfaces plus Hunyuan Turbo inference-cost direction support rising inference allocation.",
+            "utilization_basis": "Interactive consumer/cloud serving, reserve, and mixed workload routing justify utilization below installed capacity.",
+        },
+    }
 
 
 def fact_anchors() -> list[FactAnchor]:
@@ -719,7 +996,7 @@ def fact_anchors() -> list[FactAnchor]:
             "SRC_GOOGLE_IRONWOOD",
             "Tier 1",
             "Supports Google TPU-heavy serving platform and higher tokens/MW scenario.",
-            "Google tps_per_mw_2026 premium과 efficiency_cagr는 TPU/Ironwood inference-optimized hardware direction으로 정당화.",
+            "Google TPU/Ironwood platform direction은 accelerator mix bridge와 efficiency-growth scenario를 설정하는 근거이며, 공개 fleet share 또는 production tokens/MW fact가 아님.",
             0.88,
             "Gemini production serving benchmark by model/context/batch.",
         ),
@@ -836,6 +1113,34 @@ def fact_anchors() -> list[FactAnchor]:
             "MAI model public card and Copilot routing share.",
         ),
         FactAnchor(
+            "FACT_MS_MAIA_INFERENCE",
+            "Microsoft",
+            "Accelerator",
+            "Maia 200 inference deployment direction",
+            "Maia 200 designed for AI inference; deployed in Azure AI Foundry and Microsoft 365 Copilot",
+            "2026-01-26",
+            "SRC_MS_MAIA200",
+            "Tier 1",
+            "Establishes an official purpose-built inference accelerator in Microsoft serving platform; not a numeric fleet-share fact.",
+            "Microsoft GPU/ASIC mix에서 Maia share를 0보다 크게 둘 수 있는 방향성 anchor. share 자체는 scenario.",
+            0.91,
+            "Microsoft accelerator-hours or model-serving hardware allocation by product.",
+        ),
+        FactAnchor(
+            "FACT_META_MTIA_INFERENCE",
+            "Meta",
+            "Accelerator",
+            "MTIA inference-first deployment direction",
+            "Meta states hundreds of thousands of MTIA chips deployed for inference and next MTIA generations focus on GenAI inference",
+            "2026-03-11",
+            "SRC_META_MTIA_GENAI_2026",
+            "Tier 1",
+            "Establishes MTIA presence for inference; does not disclose LLM serving fleet share.",
+            "Meta GPU/ASIC mix에 MTIA share scenario를 추가하는 anchor. exact share와 tokens/MW는 공개되지 않음.",
+            0.92,
+            "Meta AI LLM-serving hardware allocation and production output token efficiency.",
+        ),
+        FactAnchor(
             "FACT_ANTHROPIC_AWS_5GW",
             "Anthropic",
             "Capacity",
@@ -848,6 +1153,34 @@ def fact_anchors() -> list[FactAnchor]:
             "Anthropic contracted_power_2030_gw와 active_power_2030_gw의 상한 anchor. AWS는 host이며 model-owner attribution은 Anthropic.",
             0.84,
             "AWS site-level energization, Trainium delivery, Anthropic serving/training split.",
+        ),
+        FactAnchor(
+            "FACT_ANTHROPIC_RAINIER_TRAINIUM",
+            "Anthropic",
+            "Accelerator",
+            "Project Rainier purpose-built accelerator direction",
+            "AWS activated an Anthropic AI compute cluster built on Trainium2 chips",
+            "2025-10-29",
+            "SRC_AWS_RAINIER_ACTIVE",
+            "Tier 1",
+            "Establishes Trainium in Anthropic-directed compute capacity; not Claude inference share.",
+            "Anthropic purpose-built accelerator mix share와 relative efficiency factor는 scenario로만 적용.",
+            0.90,
+            "Anthropic/AWS workload allocation and Claude output-token serving telemetry.",
+        ),
+        FactAnchor(
+            "FACT_DEEPSEEK_H800_SERVING",
+            "DeepSeek",
+            "Accelerator",
+            "Published V3/R1 inference service hardware",
+            "DeepSeek states online V3/R1 inference services ran entirely on H800 GPUs in its disclosed overview",
+            "2025-02-28",
+            "SRC_DEEPSEEK_H800_INFERENCE",
+            "Tier 1",
+            "Sets GPU-only Base hardware reference unless later operated-mix evidence replaces it.",
+            "DeepSeek Base GPU share를 100% reference로 두고 MoE 효율은 architecture factor로 분리.",
+            0.91,
+            "Updated production-serving hardware allocation or measured output tokens/MW.",
         ),
         FactAnchor(
             "FACT_TENCENT_HUNYUAN_100B",
@@ -911,6 +1244,20 @@ def fact_anchors() -> list[FactAnchor]:
 def formula_assumptions() -> list[dict[str, Any]]:
     return [
         {
+            "category": "Capacity definition - contracted or attributed ceiling",
+            "formula": "contracted_power_gw = announced/committed capacity where sourced; otherwise explicitly modeled capacity envelope",
+            "meaning_kr": "`contracted_power_gw`는 업체별 동일한 disclosure 수준의 fact가 아닙니다. OpenAI/Anthropic처럼 공개 capacity anchor가 있는 경우 상한 anchor이며, 미공개 업체는 model-owner serving capacity envelope scenario입니다.",
+            "evidence_type": "Fact anchor + Scenario boundary",
+            "source_ids": "SRC_OPENAI_STARGATE_ORACLE; SRC_OPENAI_STARGATE_PROGRESS; SRC_ANTHROPIC_AMAZON_COMPUTE; ASSUMP_POWER_RAMP",
+        },
+        {
+            "category": "Capacity definition - active relationship",
+            "formula": "active_power_gw = min(contracted_power_gw, modeled_operationally_deployed_power_gw)",
+            "meaning_kr": "active power는 계약/계획/귀속 capacity 중 실제로 energization, accelerator deployment, cooling/network readiness를 통과해 AI workload에 배치 가능한 power envelope입니다. 따라서 항상 contracted 이하이며 fact가 아닌 경우 scenario로 표기합니다.",
+            "evidence_type": "Model control rule",
+            "source_ids": "ASSUMP_POWER_RAMP; ASSUMP_STARGATE_RAMP",
+        },
+        {
             "category": "Token definition - forecast headline",
             "formula": "inference_tokens_per_day = generated output token equivalent, not input+output processed tokens",
             "meaning_kr": "임원 보고의 headline token은 사용자가 받는 생성 output token 기준으로 해석합니다. InferenceX의 total throughput과 비교할 때는 output_tput/output_tok_s_mw를 우선 대조합니다.",
@@ -927,9 +1274,9 @@ def formula_assumptions() -> list[dict[str, Any]]:
         {
             "category": "Token definition - training",
             "formula": "training_tokens_processed_per_day = training_gw * 1000 * training_tps_per_mw_equivalent * utilization * 86,400",
-            "meaning_kr": "training token은 모델 학습에서 처리된 corpus/token count이며 상용 서비스가 생성한 output token이 아닙니다. inference token과 합산하지 않습니다.",
-            "evidence_type": "Definition",
-            "source_ids": "SRC_DEEPSEEK_V3; SRC_TENCENT_HUNYUAN_PRETRAIN",
+            "meaning_kr": "training token은 모델 학습에서 처리된 corpus/token count이며 상용 서비스가 생성한 output token이 아닙니다. 본 모델의 training_tps_per_mw_equivalent = inference tokens/MW * 0.22는 별도 capacity sanity proxy이며 실제 training telemetry가 아닙니다.",
+            "evidence_type": "Definition + Scenario proxy",
+            "source_ids": "SRC_DEEPSEEK_V3; SRC_TENCENT_HUNYUAN; ASSUMP_POWER_RAMP",
         },
         {
             "category": "Power to AI IT load",
@@ -941,9 +1288,9 @@ def formula_assumptions() -> list[dict[str, Any]]:
         {
             "category": "AI workload allocation",
             "formula": "ai_it_load_gw = it_load_gw * ai_workload_share",
-            "meaning_kr": "데이터센터 전체 IT load 중 LLM serving/training에 쓰이는 AI load만 분리.",
+            "meaning_kr": "active capacity가 전부 LLM 계산으로 쓰이지 않으므로 데이터센터 IT load 중 modeled model-owner AI training/serving 몫만 분리합니다. 업체별 dedicated AI 방향은 공식 source로 확인하되, 구체적 share는 telemetry 부재 시 scenario입니다.",
             "evidence_type": "Scenario assumption",
-            "source_ids": "ASSUMP_POWER_RAMP",
+            "source_ids": "SRC_MS_MAIA200; SRC_GOOGLE_IRONWOOD; SRC_META_MTIA_GENAI_2026; SRC_AWS_RAINIER_ACTIVE; ASSUMP_POWER_RAMP",
         },
         {
             "category": "Training vs inference split",
@@ -953,11 +1300,32 @@ def formula_assumptions() -> list[dict[str, Any]]:
             "source_ids": "SRC_MCKINSEY_AI_WORKLOADS; SRC_DELOITTE_AI_POWER; SRC_EPRI_EPOCH_AI_POWER; ASSUMP_INFERENCE_SHARE_NOT_FACT_60",
         },
         {
+            "category": "Accelerator mix bridge",
+            "formula": "accelerator_mix_factor = gpu_share * 1.0 + purpose_built_share * purpose_built_relative_efficiency_factor",
+            "meaning_kr": "GPU/ASIC mix는 numeric scenario로 관리합니다. official source는 accelerator의 존재와 목적을 증명하지만 operated serving share는 대체로 공개하지 않으므로, share와 relative efficiency factor는 replacement evidence가 생기기 전까지 estimate/scenario입니다.",
+            "evidence_type": "Platform fact + Numeric scenario",
+            "source_ids": "SRC_MS_MAIA200; SRC_GOOGLE_IRONWOOD; SRC_META_MTIA_GENAI_2026; SRC_AWS_RAINIER_ACTIVE; ASSUMP_NUMERIC_ACCELERATOR_MIX",
+        },
+        {
+            "category": "Mix to serving efficiency",
+            "formula": "tokens_per_second_per_mw = gpu_reference_tps_per_mw * accelerator_mix_factor * architecture_workload_factor * software_efficiency_growth * scenario_multipliers",
+            "meaning_kr": "tokens/MW는 hardware mix alone이 아니라 모델 architecture(MoE/closed proxy), ISL/OSL, precision, batching, SLO와 software efficiency를 함께 반영합니다. InferenceX는 output-token benchmark calibration layer이며 company production fact가 아닙니다.",
+            "evidence_type": "Derived estimate + Benchmark calibration",
+            "source_ids": "SRC_SEMIANALYSIS_INFERENCEX; SRC_DEEPSEEK_V3; SRC_QWEN3_GITHUB; SRC_TENCENT_AI_INFRA_MOE; ASSUMP_NUMERIC_ACCELERATOR_MIX",
+        },
+        {
             "category": "Inference token capacity",
             "formula": "inference_tokens_per_day = inference_gw * 1000 * tokens_per_second_per_mw * utilization * 86,400",
             "meaning_kr": "전력 배정, serving 효율, 실제 utilization이 token 생성 capacity를 결정.",
             "evidence_type": "Model equation",
             "source_ids": "SRC_SEMIANALYSIS_INFERENCEX; SRC_ARXIV_INFERENCE_ENERGY",
+        },
+        {
+            "category": "Utilization interpretation",
+            "formula": "realized_output_capacity = theoretical_output_capacity * utilization",
+            "meaning_kr": "utilization은 전력이 켜져 있다는 뜻이 아니라 theoretical output throughput 중 실제 traffic으로 실현되는 비율입니다. latency SLO headroom, failover reserve, uneven arrivals, batch fill, maintenance, training competition 때문에 100%가 될 수 없습니다.",
+            "evidence_type": "Serving operations scenario",
+            "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_SEMIANALYSIS_INFERENCEX",
         },
         {
             "category": "Energy sanity check",
@@ -1058,7 +1426,11 @@ def is_moe_company(company: str) -> bool:
 def forecast_rows(scenario_case: str = "Base") -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     case = SCENARIO_CASES[scenario_case]
+    mix_profiles = accelerator_mix_profiles()
+    derivation_profiles = company_derivation_profiles()
     for scenario in scenarios():
+        mix = mix_profiles[scenario.company]
+        derivation = derivation_profiles[scenario.company]
         for idx, year in enumerate(YEARS):
             contracted = lerp(scenario.contracted_power_2026_gw, scenario.contracted_power_2030_gw, idx, len(YEARS))
             base_active = lerp(scenario.active_power_2026_gw, scenario.active_power_2030_gw, idx, len(YEARS))
@@ -1070,7 +1442,19 @@ def forecast_rows(scenario_case: str = "Base") -> list[dict[str, Any]]:
             training_share = 1 - inference_share
             utilization = min(0.84, lerp(scenario.utilization_2026, scenario.utilization_2030, idx, len(YEARS)) * case["utilization_multiplier"])
             moe_multiplier = case["moe_optimization_multiplier"] if is_moe_company(scenario.company) else 1.0
-            tps_per_mw = scenario.tps_per_mw_2026 * ((1 + scenario.efficiency_cagr) ** idx) * case["tokens_per_mw_multiplier"] * moe_multiplier
+            gpu_share = lerp(mix["gpu_share_2026"], mix["gpu_share_2030"], idx, len(YEARS))
+            purpose_built_share = 1 - gpu_share
+            accelerator_mix_factor = gpu_share + purpose_built_share * mix["asic_efficiency_factor"]
+            gpu_reference_tps_per_mw = 1_000_000
+            software_efficiency_growth = (1 + scenario.efficiency_cagr) ** idx
+            tps_per_mw = (
+                gpu_reference_tps_per_mw
+                * accelerator_mix_factor
+                * mix["architecture_workload_factor"]
+                * software_efficiency_growth
+                * case["tokens_per_mw_multiplier"]
+                * moe_multiplier
+            )
             it_load_gw = active / scenario.pue
             ai_it_load_gw = it_load_gw * scenario.ai_workload_share
             inference_gw = ai_it_load_gw * inference_share
@@ -1086,9 +1470,9 @@ def forecast_rows(scenario_case: str = "Base") -> list[dict[str, Any]]:
             utilization_r = round(utilization, 3)
             inference_mw = inference_gw_r * 1000
             tokens_per_day = inference_mw * tps_per_mw_r * utilization_r * 86400
-            annual_tokens = tokens_per_day * 365
+            annual_tokens = round(tokens_per_day) * 365
             joules_per_token = 1_000_000 / tps_per_mw_r
-            training_tps_per_mw_equivalent = tps_per_mw_r * 0.22
+            training_tps_per_mw_equivalent = round(tps_per_mw_r * 0.22, 4)
             training_tokens_processed_day = training_gw_r * 1000 * training_tps_per_mw_equivalent * utilization_r * 86400
             rows.append(
                 {
@@ -1104,10 +1488,21 @@ def forecast_rows(scenario_case: str = "Base") -> list[dict[str, Any]]:
                     "it_load_gw": it_load_r,
                     "ai_workload_share": scenario.ai_workload_share,
                     "ai_it_load_gw": ai_it_load_r,
+                    "gpu_share": round(gpu_share, 3),
+                    "purpose_built_accelerator_share": round(purpose_built_share, 3),
+                    "purpose_built_accelerator_label": mix["asic_label"],
+                    "gpu_reference_tps_per_mw": gpu_reference_tps_per_mw,
+                    "purpose_built_relative_efficiency_factor": mix["asic_efficiency_factor"],
+                    "accelerator_mix_factor": round(accelerator_mix_factor, 8),
+                    "architecture_workload_factor": mix["architecture_workload_factor"],
+                    "software_efficiency_growth": round(software_efficiency_growth, 8),
+                    "scenario_tokens_per_mw_multiplier": case["tokens_per_mw_multiplier"],
+                    "scenario_moe_optimization_multiplier": moe_multiplier,
                     "training_power_share": training_share_r,
                     "inference_power_share": inference_share_r,
                     "inference_gw": inference_gw_r,
                     "training_gw": training_gw_r,
+                    "training_tps_per_mw_equivalent": training_tps_per_mw_equivalent,
                     "tokens_per_second_per_mw": tps_per_mw_r,
                     "joules_per_token": round(joules_per_token, 4),
                     "utilization": utilization_r,
@@ -1118,9 +1513,232 @@ def forecast_rows(scenario_case: str = "Base") -> list[dict[str, Any]]:
                     "derivation_type": scenario.derivation_type,
                     "source_ids": scenario.source_ids,
                     "assumption_ids": scenario.assumption_ids + "; ASSUMP_INFERENCE_SHARE_NOT_FACT_60",
+                    "capacity_basis": derivation["capacity_basis"],
+                    "active_power_basis": derivation["active_basis"],
+                    "ai_workload_share_basis": derivation["ai_workload_basis"],
+                    "gpu_asic_mix_basis": mix["mix_rationale"],
+                    "tokens_per_mw_basis": mix["tps_rationale"],
+                    "inference_share_basis": derivation["inference_basis"],
+                    "utilization_basis": derivation["utilization_basis"],
+                    "replacement_path": mix["replacement_path"],
                 }
             )
     return rows
+
+
+def number_trace_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Return a company-year-field audit trail for every headline model number."""
+    capacity_sources = {
+        "Microsoft": "ASSUMP_POWER_RAMP; SRC_MS_MAIA200",
+        "Google": "ASSUMP_POWER_RAMP; SRC_GOOGLE_IRONWOOD; SRC_GOOGLE_TPU_V6E",
+        "Meta": "ASSUMP_POWER_RAMP; SRC_META_MTIA_GENAI_2026",
+        "xAI": "SRC_XAI_NVIDIA_COLOSSUS; ASSUMP_CLUSTER_RAMP",
+        "OpenAI": "SRC_OPENAI_STARGATE_ORACLE; SRC_OPENAI_STARGATE_PROGRESS; ASSUMP_STARGATE_RAMP",
+        "Anthropic": "SRC_ANTHROPIC_AMAZON_COMPUTE; SRC_AWS_RAINIER_ACTIVE; ASSUMP_POWER_RAMP",
+        "DeepSeek": "SRC_DEEPSEEK_H800_INFERENCE; ASSUMP_CN_CAPACITY_TRANSPARENCY",
+        "Alibaba": "SRC_ALIBABA_QWEN_GPU_DEPLOY; ASSUMP_CN_CAPACITY_TRANSPARENCY",
+        "Tencent": "SRC_TENCENT_AI_INFRA_MOE; ASSUMP_CN_CAPACITY_TRANSPARENCY",
+    }
+    trace: list[dict[str, Any]] = []
+
+    def add(row, metric, value, unit, derivation_type, formula, rationale, source_ids, replacement_path):
+        trace.append(
+            {
+                "company": row["company"],
+                "year": row["year"],
+                "scenario": row["scenario"],
+                "metric": metric,
+                "value": value,
+                "unit": unit,
+                "derivation_type": derivation_type,
+                "formula_or_rule": formula,
+                "why_this_number": rationale,
+                "source_ids": source_ids,
+                "assumption_ids": row["assumption_ids"],
+                "replacement_path": replacement_path,
+            }
+        )
+
+    for row in rows:
+        company_sources = row["source_ids"]
+        capacity_source_ids = capacity_sources[row["company"]]
+        add(
+            row, "contracted_power_gw", row["contracted_power_gw"], "GW",
+            "Fact anchor + scenario ceiling" if row["company"] in {"OpenAI", "Anthropic", "xAI"} else "Scenario capacity envelope",
+            "linear interpolation between 2026 and 2030 company capacity endpoints",
+            row["capacity_basis"], capacity_source_ids,
+            "Company/site-level committed MW/GW, interconnect and contract disclosure.",
+        )
+        add(
+            row, "active_power_gw", row["active_power_gw"], "GW", "Derived scenario",
+            "min(contracted_power_gw, base_active_power_gw * operational_deploy_multiplier)",
+            row["active_power_basis"], capacity_source_ids,
+            "Energization dates, accelerator deliveries and operational powered-rack telemetry.",
+        )
+        add(
+            row, "pue", row["pue"], "ratio", "Scenario parameter",
+            "it_load_gw = active_power_gw / pue",
+            "No provider-wide site-level PUE is used as a disclosed fact; PUE represents facility-to-IT conversion within the scenario.",
+            "ASSUMP_POWER_RAMP",
+            "Site-level measured PUE matched to attributed AI capacity.",
+        )
+        add(
+            row, "it_load_gw", row["it_load_gw"], "GW", "Derived formula",
+            "active_power_gw / pue",
+            "Facility power is converted to IT-deliverable power before attributing AI workloads.",
+            capacity_source_ids,
+            "Recompute once active power and PUE become site-observable.",
+        )
+        add(
+            row, "ai_workload_share", row["ai_workload_share"], "share", "Scenario allocation",
+            "ai_it_load_gw = it_load_gw * ai_workload_share",
+            row["ai_workload_share_basis"], company_sources,
+            "Model-owner AI workload allocation or cluster scheduling telemetry.",
+        )
+        add(
+            row, "ai_it_load_gw", row["ai_it_load_gw"], "GW", "Derived formula",
+            "it_load_gw * ai_workload_share",
+            "Only the AI-attributed portion of IT load enters training/inference allocation.",
+            company_sources,
+            "Recompute after ai_workload_share is replaced by telemetry.",
+        )
+        add(
+            row, "gpu_share", row["gpu_share"], "share of inference-serving accelerator load", "Numeric scenario",
+            "gpu_share interpolated from company 2026/2030 accelerator-mix endpoints",
+            row["gpu_asic_mix_basis"], company_sources + "; ASSUMP_NUMERIC_ACCELERATOR_MIX",
+            row["replacement_path"],
+        )
+        add(
+            row, "purpose_built_accelerator_share", row["purpose_built_accelerator_share"], "share of inference-serving accelerator load", "Numeric scenario",
+            "1 - gpu_share",
+            f"Purpose-built bucket: {row['purpose_built_accelerator_label']}. " + row["gpu_asic_mix_basis"],
+            company_sources + "; ASSUMP_NUMERIC_ACCELERATOR_MIX",
+            row["replacement_path"],
+        )
+        add(
+            row, "gpu_reference_tps_per_mw", row["gpu_reference_tps_per_mw"], "generated output tokens/sec/MW", "Benchmark-calibrated reference",
+            "baseline reference before company-specific mix and workload factors",
+            "A common GPU reference keeps company mix adjustments visible; it is not asserted as any provider's measured production throughput.",
+            "SRC_SEMIANALYSIS_INFERENCEX; ASSUMP_NUMERIC_ACCELERATOR_MIX",
+            "Comparable generated-output benchmark row at matched GPU, precision, ISL/OSL and SLO.",
+        )
+        add(
+            row, "purpose_built_relative_efficiency_factor", row["purpose_built_relative_efficiency_factor"], "relative efficiency factor", "Numeric scenario",
+            "purpose_built_efficiency / gpu_reference_efficiency",
+            "The factor represents modeled efficiency direction of the purpose-built bucket, not an official provider tokens/MW disclosure.",
+            company_sources + "; ASSUMP_NUMERIC_ACCELERATOR_MIX",
+            "Matched-workload generated-output benchmark for the provider purpose-built accelerator.",
+        )
+        add(
+            row, "accelerator_mix_factor", row["accelerator_mix_factor"], "relative efficiency factor", "Derived scenario",
+            "gpu_share * 1.0 + purpose_built_accelerator_share * purpose_built_relative_efficiency_factor",
+            "Transforms the numeric GPU/purpose-built mix into an efficiency bridge; the relative uplift remains a scenario until production measurements exist.",
+            company_sources + "; ASSUMP_NUMERIC_ACCELERATOR_MIX",
+            row["replacement_path"],
+        )
+        add(
+            row, "architecture_workload_factor", row["architecture_workload_factor"], "relative efficiency factor", "Architecture/workload proxy",
+            "model-family workload adjustment applied separately from hardware mix",
+            row["tokens_per_mw_basis"],
+            company_sources + "; SRC_SEMIANALYSIS_INFERENCEX",
+            "Model-family output-throughput benchmark matched for context, precision, routing and SLO.",
+        )
+        add(
+            row, "software_efficiency_growth", row["software_efficiency_growth"], "relative efficiency factor", "Scenario improvement",
+            "(1 + company efficiency_cagr) ** year_offset",
+            "Separates software/runtime serving improvement over time from accelerator migration.",
+            "SRC_SEMIANALYSIS_INFERENCEX; ASSUMP_POWER_RAMP",
+            "Historical comparable benchmark time series or disclosed production efficiency trend.",
+        )
+        add(
+            row, "scenario_tokens_per_mw_multiplier", row["scenario_tokens_per_mw_multiplier"], "relative efficiency factor", "Scenario lever",
+            "Bear/Base/Bull case multiplier",
+            "Applies explicit case-level serving efficiency stress after company-specific bridge factors.",
+            "ASSUMP_POWER_RAMP; SRC_SEMIANALYSIS_INFERENCEX",
+            "Approved scenario decision or measured efficiency range.",
+        )
+        add(
+            row, "scenario_moe_optimization_multiplier", row["scenario_moe_optimization_multiplier"], "relative efficiency factor", "Scenario lever",
+            "MoE case multiplier for MoE model owners; otherwise 1.0",
+            "MoE active-parameter efficiency is visible as a separate scenario lever and is not silently attributed to hardware mix.",
+            company_sources + "; ASSUMP_MOE_EFFICIENCY",
+            "Comparable MoE output-throughput results under matched serving conditions.",
+        )
+        add(
+            row, "inference_power_share", row["inference_power_share"], "share of AI IT load", "Scenario allocation",
+            "inference_gw = ai_it_load_gw * inference_power_share",
+            row["inference_share_basis"], company_sources + "; ASSUMP_INFERENCE_SHARE_NOT_FACT_60",
+            "Provider-specific inference/training workload power telemetry.",
+        )
+        add(
+            row, "inference_gw", row["inference_gw"], "GW", "Derived formula",
+            "ai_it_load_gw * inference_power_share",
+            "This is the power eligible to become commercial generated output tokens after utilization and serving-efficiency conversion.",
+            company_sources,
+            "Recompute after AI allocation or inference-share evidence changes.",
+        )
+        add(
+            row, "training_power_share", row["training_power_share"], "share of AI IT load", "Derived allocation",
+            "1 - inference_power_share",
+            "Training receives the complementary modeled AI IT allocation; it is not a disclosed company workload split.",
+            company_sources + "; ASSUMP_INFERENCE_SHARE_NOT_FACT_60",
+            "Provider-specific inference/training workload power telemetry.",
+        )
+        add(
+            row, "training_gw", row["training_gw"], "GW", "Derived formula",
+            "ai_it_load_gw * training_power_share",
+            "Training GW is shown separately so commercial inference token capacity is not overstated.",
+            company_sources,
+            "Recompute after AI allocation or workload-split evidence changes.",
+        )
+        add(
+            row, "tokens_per_second_per_mw", row["tokens_per_second_per_mw"], "generated output tokens/sec/MW", "Derived estimate + benchmark calibration",
+            "gpu_reference_tps_per_mw * accelerator_mix_factor * architecture_workload_factor * software_efficiency_growth * scenario multipliers",
+            row["tokens_per_mw_basis"], company_sources + "; SRC_SEMIANALYSIS_INFERENCEX; ASSUMP_NUMERIC_ACCELERATOR_MIX",
+            "Comparable production output-token throughput with model, hardware, precision, ISL/OSL and SLO matched.",
+        )
+        add(
+            row, "joules_per_token", row["joules_per_token"], "joules/generated output token", "Derived energy sanity metric",
+            "1,000,000 / tokens_per_second_per_mw",
+            "Energy reciprocal of output throughput per MW; used as a sanity check rather than company metered telemetry.",
+            company_sources + "; SRC_SEMIANALYSIS_INFERENCEX; SRC_ARXIV_INFERENCE_ENERGY",
+            "Matched production or benchmark joules per generated output token.",
+        )
+        add(
+            row, "utilization", row["utilization"], "realized serving fraction", "Scenario operations factor",
+            "theoretical output capacity * utilization = realized output capacity",
+            row["utilization_basis"], company_sources + "; SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026",
+            "Provider/model-surface serving telemetry including reserve, batch fill, latency SLO and failover.",
+        )
+        add(
+            row, "inference_tokens_per_day", row["inference_tokens_per_day"], "generated output tokens/day", "Derived headline metric",
+            "inference_gw * 1000 * tokens_per_second_per_mw * utilization * 86,400",
+            "Headline supply capacity; it is not observed commercial output volume and excludes input, billing and training tokens.",
+            company_sources + "; SRC_SEMIANALYSIS_INFERENCEX",
+            "Provider-disclosed generated output token volume or calibrated capacity telemetry.",
+        )
+        add(
+            row, "inference_tokens_per_year", row["inference_tokens_per_year"], "generated output tokens/year", "Derived headline metric",
+            "inference_tokens_per_day * 365",
+            "Annualized version of generated output token capacity; it is not observed annual demand or billable volume.",
+            company_sources + "; SRC_SEMIANALYSIS_INFERENCEX",
+            "Provider-disclosed annual generated-output volume or monthly utilization-calibrated telemetry.",
+        )
+        add(
+            row, "training_tps_per_mw_equivalent", row["training_tps_per_mw_equivalent"], "processed training tokens/sec/MW equivalent", "Scenario proxy",
+            "tokens_per_second_per_mw * 0.22",
+            "A separate training processing sanity proxy, not a claim about commercial generated output or metered training throughput.",
+            company_sources + "; ASSUMP_POWER_RAMP",
+            "Provider training throughput and power telemetry for comparable model runs.",
+        )
+        add(
+            row, "training_tokens_processed_per_day", row["training_tokens_processed_per_day"], "processed training tokens/day", "Derived reference metric",
+            "training_gw * 1000 * training_tps_per_mw_equivalent * utilization * 86,400",
+            "Training processing reference remains separated from commercial generated output token supply.",
+            company_sources + "; ASSUMP_POWER_RAMP",
+            "Provider training run throughput/power telemetry.",
+        )
+    return trace
 
 
 def sensitivity_rows(base_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -1521,6 +2139,46 @@ def hallucination_checklist() -> list[dict[str, Any]]:
             "severity": "High",
             "current_status": "Definition added; needs reviewer sign-off",
         },
+        {
+            "check_id": "HC17",
+            "area": "Capacity terminology",
+            "question_kr": "`contracted_power_gw`가 모든 회사에서 공식 계약 fact인 것처럼 해석되지 않도록 capacity ceiling과 scenario envelope를 구분했는가?",
+            "pass_criteria_kr": "02b_number_trace 및 03_power_capacity에 업체별 capacity_basis와 derivation_type이 존재.",
+            "risk_if_fail_kr": "공개되지 않은 GW를 계약 fact처럼 보고.",
+            "owner": "Model",
+            "severity": "High",
+            "current_status": "Implemented in trace layer",
+        },
+        {
+            "check_id": "HC18",
+            "area": "Numeric accelerator mix",
+            "question_kr": "GPU/ASIC mix 수치가 공식 platform presence와 실제 fleet share fact를 혼동하지 않는가?",
+            "pass_criteria_kr": "04_gpu_asic_mix에 numeric scenario, reason, source, replacement path가 있고 GPU+purpose-built share가 100%.",
+            "risk_if_fail_kr": "하드웨어 발표만으로 생산 효율을 과대 계산.",
+            "owner": "A11 / Model",
+            "severity": "High",
+            "current_status": "Implemented; telemetry replacement pending",
+        },
+        {
+            "check_id": "HC19",
+            "area": "Efficiency bridge reconstruction",
+            "question_kr": "tokens/sec/MW가 numeric mix와 architecture/workload factor에서 재구성되는가?",
+            "pass_criteria_kr": "05_inference_efficiency의 bridge fields로 각 row의 tokens/sec/MW를 재계산할 수 있고 validation이 통과.",
+            "risk_if_fail_kr": "설명과 결과 coefficient가 분리된 채 남음.",
+            "owner": "A08 / A11 / Logic Review",
+            "severity": "High",
+            "current_status": "Automated validation added",
+        },
+        {
+            "check_id": "HC20",
+            "area": "Complete numeric trace",
+            "question_kr": "최종 표와 보조 표의 output-driving 숫자마다 company-year-scenario별 이유와 교체 경로가 있는가?",
+            "pass_criteria_kr": "02b_number_trace에 26개 numeric metric별 formula, reason, source/assumption ID, replacement path가 존재.",
+            "risk_if_fail_kr": "질문을 받았을 때 숫자의 출처 또는 산출 이유를 설명할 수 없음.",
+            "owner": "Model / Logic Review",
+            "severity": "High",
+            "current_status": "Implemented in trace layer",
+        },
     ]
 
 
@@ -1574,6 +2232,32 @@ def validate(rows: list[dict[str, Any]]) -> dict[str, Any]:
             failures.append(f"{row['company']} {row['year']}: training+inference share={share_sum}")
         if row["tokens_per_second_per_mw"] <= 0 or row["joules_per_token"] <= 0:
             failures.append(f"{row['company']} {row['year']}: invalid efficiency")
+        if not math.isclose(row["gpu_share"] + row["purpose_built_accelerator_share"], 1.0, abs_tol=0.001):
+            failures.append(f"{row['company']} {row['year']}: gpu+purpose-built accelerator share != 1")
+
+        reconstructed_tps = round(
+            row["gpu_reference_tps_per_mw"]
+            * row["accelerator_mix_factor"]
+            * row["architecture_workload_factor"]
+            * row["software_efficiency_growth"]
+            * row["scenario_tokens_per_mw_multiplier"]
+            * row["scenario_moe_optimization_multiplier"]
+        )
+        if abs(reconstructed_tps - row["tokens_per_second_per_mw"]) > 2:
+            failures.append(f"{row['company']} {row['year']}: tokens/sec/MW bridge does not reconstruct")
+        reconstructed_joules = round(1_000_000 / row["tokens_per_second_per_mw"], 4)
+        if reconstructed_joules != row["joules_per_token"]:
+            failures.append(f"{row['company']} {row['year']}: joules/token does not reconstruct")
+        if row["inference_tokens_per_year"] != round(row["inference_tokens_per_day"] * 365):
+            failures.append(f"{row['company']} {row['year']}: annual output tokens do not reconstruct")
+        reconstructed_training_tps = round(row["tokens_per_second_per_mw"] * 0.22, 4)
+        if reconstructed_training_tps != row["training_tps_per_mw_equivalent"]:
+            failures.append(f"{row['company']} {row['year']}: training throughput proxy does not reconstruct")
+        reconstructed_training_tokens = round(
+            row["training_gw"] * 1000 * row["training_tps_per_mw_equivalent"] * row["utilization"] * 86400
+        )
+        if reconstructed_training_tokens != row["training_tokens_processed_per_day"]:
+            failures.append(f"{row['company']} {row['year']}: training processed tokens do not reconstruct")
 
         # Sanity bound: company-level generated tokens should remain within a broad
         # benchmark envelope for aggregate serving, not an exact model claim.
@@ -1589,6 +2273,8 @@ def validate(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "benchmark_layer": "PASS - GPU/effective-active-parameter benchmark reference is separated from the main tokens/sec/MW forecast.",
         "energy_sanity_layer": "PASS - Joule/IBM/2026 serving sources are separated as sanity/sensitivity layers, not Base production telemetry.",
         "utilization_slo_layer": "PASS - SLO/workload utilization sensitivity is separated from Base utilization band.",
+        "numeric_accelerator_mix_bridge": "PASS - GPU/purpose-built shares sum to 100% and reconstruct tokens/sec/MW through explicit bridge factors.",
+        "complete_numeric_trace_inputs": "PASS - joules/token, annual output tokens, training throughput proxy and training processed tokens are formula-reconstructable.",
     }
     return {
         "status": "PASS" if not failures else "FAIL",
@@ -1715,6 +2401,9 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
     fact_headers = list(asdict(fact_anchors()[0]).keys())
     append_rows(sheet("02a_fact_anchors"), [asdict(f) for f in fact_anchors()], fact_headers)
 
+    number_trace_headers = list(data["number_trace"][0].keys())
+    append_rows(sheet("02b_number_trace"), data["number_trace"], number_trace_headers)
+
     power_headers = [
         "company",
         "region",
@@ -1725,6 +2414,9 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
         "it_load_gw",
         "ai_workload_share",
         "ai_it_load_gw",
+        "capacity_basis",
+        "active_power_basis",
+        "ai_workload_share_basis",
         "source_ids",
         "assumption_ids",
         "confidence",
@@ -1733,22 +2425,39 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
 
     mix_rows = [
         {
-            "company": m.company,
-            "gpu_asic_mix": m.gpu_asic_mix,
-            "serving_platform": m.serving_platform,
-            "confidence": m.confidence,
-            "source_ids": m.source_ids,
+            "company": r["company"],
+            "year": r["year"],
+            "gpu_share": r["gpu_share"],
+            "purpose_built_accelerator_share": r["purpose_built_accelerator_share"],
+            "purpose_built_accelerator_label": r["purpose_built_accelerator_label"],
+            "purpose_built_relative_efficiency_factor": r["purpose_built_relative_efficiency_factor"],
+            "accelerator_mix_factor": r["accelerator_mix_factor"],
+            "derivation_type": "Numeric scenario - platform presence sourced; operated share not publicly disclosed",
+            "why_this_number": r["gpu_asic_mix_basis"],
+            "source_ids": r["source_ids"],
+            "assumption_ids": r["assumption_ids"],
+            "replacement_path": r["replacement_path"],
         }
-        for m in company_models()
+        for r in data["forecast"]
     ]
     append_rows(sheet("04_gpu_asic_mix"), mix_rows, list(mix_rows[0].keys()))
 
     eff_headers = [
         "company",
         "year",
+        "gpu_reference_tps_per_mw",
+        "gpu_share",
+        "purpose_built_accelerator_share",
+        "purpose_built_relative_efficiency_factor",
+        "accelerator_mix_factor",
+        "architecture_workload_factor",
+        "software_efficiency_growth",
         "tokens_per_second_per_mw",
         "joules_per_token",
         "utilization",
+        "tokens_per_mw_basis",
+        "gpu_asic_mix_basis",
+        "utilization_basis",
         "derivation_type",
         "source_ids",
         "assumption_ids",
@@ -1765,7 +2474,11 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
         "training_power_share",
         "inference_power_share",
         "training_gw",
+        "training_tps_per_mw_equivalent",
         "inference_gw",
+        "inference_share_basis",
+        "source_ids",
+        "assumption_ids",
         "confidence",
     ]
     append_rows(sheet("06_training_inference_split"), data["forecast"], split_headers)
@@ -1776,22 +2489,36 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
         "model_family",
         "commercial_surface",
         "year",
+        "contracted_power_gw",
+        "active_power_gw",
+        "ai_workload_share",
+        "ai_it_load_gw",
         "inference_gw",
+        "gpu_share",
+        "purpose_built_accelerator_share",
+        "accelerator_mix_factor",
         "tokens_per_second_per_mw",
         "joules_per_token",
         "utilization",
         "inference_tokens_per_day",
         "inference_tokens_per_year",
+        "training_tps_per_mw_equivalent",
         "training_tokens_processed_per_day",
         "confidence",
         "derivation_type",
         "source_ids",
         "assumption_ids",
+        "capacity_basis",
+        "gpu_asic_mix_basis",
+        "tokens_per_mw_basis",
+        "utilization_basis",
+        "replacement_path",
     ]
     forecast_ws = sheet("07_token_forecast_2026_2030")
     append_rows(forecast_ws, data["forecast"], forecast_headers)
+    forecast_token_col = get_column_letter(forecast_headers.index("inference_tokens_per_day") + 1)
     forecast_ws.conditional_formatting.add(
-        "J2:J41",
+        f"{forecast_token_col}2:{forecast_token_col}{forecast_ws.max_row}",
         ColorScaleRule(start_type="min", start_color="FDE2E2", mid_type="percentile", mid_value=50, mid_color="FFF1B8", end_type="max", end_color="B7E4C7"),
     )
 
@@ -2483,9 +3210,19 @@ def write_markdown(data: dict[str, Any], path: Path) -> None:
         "it_load_gw = active_power_gw / pue",
         "ai_it_load_gw = it_load_gw * ai_workload_share",
         "inference_gw = ai_it_load_gw * inference_power_share",
+        "accelerator_mix_factor = gpu_share * 1.0 + purpose_built_share * purpose_built_relative_efficiency_factor",
+        "tokens_per_second_per_mw = gpu_reference_tps_per_mw * accelerator_mix_factor * architecture_workload_factor * software_efficiency_growth * scenario_multipliers",
         "inference_tokens_per_day = inference_mw * tokens_per_second_per_mw * utilization * 86,400",
         "joules_per_token = 1,000,000 / tokens_per_second_per_mw",
         "```",
+        "",
+        "## Number Trace In Excel",
+        "",
+        "- Excel `02b_number_trace`는 모든 company-year-scenario 핵심 수치에 대해 `formula_or_rule`, `why_this_number`, `source_ids`, `assumption_ids`, `replacement_path`를 제공합니다.",
+        "- `contracted_power_gw`는 source가 있는 업체의 committed/planned ceiling anchor와, 공개 GW가 없는 업체의 scenario capacity envelope를 구분합니다.",
+        "- `active_power_gw`는 항상 capacity ceiling 이하이고 energization/deployment를 거친 modeled operational power입니다.",
+        "- `gpu_asic_mix`는 numeric scenario로 명시하며, 공식 platform presence를 실제 fleet share fact로 오인하지 않습니다.",
+        "- `utilization`은 power-on ratio가 아니라 SLO/reserve/traffic shape 이후 realized output-capacity fraction입니다.",
         "",
         "## Token 정의",
         "",
@@ -2556,7 +3293,7 @@ def write_markdown(data: dict[str, Any], path: Path) -> None:
         "",
         "## A08 Cycle 1: Energy Sanity Reference",
         "",
-        "- Base `tokens_per_second_per_mw` 값은 아직 변경하지 않았습니다.",
+        "- Base `tokens_per_second_per_mw`는 이제 numeric GPU/purpose-built mix bridge와 architecture/workload factor로 구성되며, production telemetry가 아닌 derived estimate입니다.",
         "- Joule/IBM/2026 serving sources는 company production telemetry가 아니라 energy/query, joules/token, prefill/decode trade-off 검증 레이어로 사용합니다.",
         "- Strict-SLO/agentic long-context는 energy/token을 악화시킬 수 있고, batchable optimized serving은 개선 가능성이 있으나 둘 다 sensitivity입니다.",
         "",
@@ -4435,7 +5172,7 @@ def write_ppt_compute_constraint(data: dict[str, Any], path: Path) -> None:
         text(slide, 0.92, y, 1.35, 0.24, area, 12, samsung_blue, True)
         rect(slide, 2.48, y + 0.11, 0.8, 0.02, silver)
         text(slide, 3.52, y, 8.65, 0.27, q, 11.4, body)
-    text(slide, 0.92, 5.78, 11.1, 0.42, "Workbook appendix: formula assumptions, company-year forecast, scenario sensitivity, source registry, and InferenceX benchmark tables.", 10.5, muted)
+    text(slide, 0.92, 5.78, 11.1, 0.42, "Workbook appendix: 02b number trace, 04 numeric accelerator mix, 05 efficiency bridge, formula assumptions, source registry, and InferenceX benchmark tables.", 10.5, muted)
     takeaway(slide, "Update the model by bottleneck type: deployment, allocation, architecture, efficiency, or demand absorption.")
     footer(slide)
 
@@ -4463,6 +5200,7 @@ def build_payload() -> dict[str, Any]:
         "hallucination_checklist": hallucination_checklist(),
         "scenario_definitions": scenario_definitions(),
         "forecast": rows,
+        "number_trace": number_trace_rows(scenario_rows),
         "scenario_forecast": scenario_rows,
         "scenario_summary": scenario_summary_rows(scenario_rows),
         "benchmark_reference": benchmark_reference_rows(rows),
@@ -4473,6 +5211,35 @@ def build_payload() -> dict[str, Any]:
         "exec_summary": exec_summary(rows),
     }
     data["validation"] = validate(scenario_rows)
+    registered_ids = {item["source_id"] for item in data["sources"]} | {
+        item["assumption_id"] for item in data["assumptions"]
+    }
+    referenced_ids: set[str] = set()
+    for collection in (
+        "fact_anchors",
+        "company_models",
+        "formula_assumptions",
+        "forecast",
+        "number_trace",
+        "scenario_forecast",
+    ):
+        for item in data[collection]:
+            for field in ("source_ids", "assumption_ids"):
+                referenced_ids.update(
+                    token.strip()
+                    for token in str(item.get(field, "")).split(";")
+                    if token.strip().startswith(("SRC_", "ASSUMP_"))
+                )
+    missing_ids = sorted(referenced_ids - registered_ids)
+    if missing_ids:
+        data["validation"]["status"] = "FAIL"
+        data["validation"]["failures"].append(
+            f"unregistered source/assumption IDs: {', '.join(missing_ids)}"
+        )
+    else:
+        data["validation"]["model_checks"]["source_assumption_registry"] = (
+            "PASS - Every source_id and assumption_id referenced by facts, formulas and forecast trace rows is registered."
+        )
     return data
 
 
