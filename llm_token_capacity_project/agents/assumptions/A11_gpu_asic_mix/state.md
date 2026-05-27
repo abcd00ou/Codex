@@ -33,9 +33,10 @@ The Base model uses numeric GPU/purpose-built accelerator shares only when they 
 |---|---|---|---|---|
 | 2026-05-26 | Add numeric accelerator mix and efficiency bridge into forecast model | Previous report described hardware without numerically tracing it into tokens/MW. | A11_E001-A11_E009 | implemented |
 | 2026-05-27 | Remove unsupported purpose-built accelerator efficiency premium from headline | Platform presence and modeled mix do not establish comparable generated-output TPS/MW uplift. | A11_E001-A11_E009; HC22 | implemented |
+| 2026-05-27 | Apply no-uplift rule after commercial-workload benchmark adjustment | Hardware mix must not cause public reference throughput to be read as closed-model production performance. | A11_E001-A11_E009; A08_E005; LR28 | implemented; purpose-built TPS equals serving reference until replaced |
 
 ## Downstream Impact Notes
 
 - A11 changes feed A08 `tokens_per_second_per_mw` and headline token supply.
-- Hardware-share changes remain visible, while unverified hardware or software uplift does not enter headline output.
+- Hardware-share changes remain visible, while unverified hardware or software uplift does not enter headline output. The upstream serving reference is now workload-adjusted before hardware weighting.
 - Replacement evidence priority is operated inference accelerator-hours or model-level output tokens/MW.

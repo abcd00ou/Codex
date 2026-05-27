@@ -12,12 +12,13 @@
 | 7 | 2026-05-27 | Confirmed-value vs modeled-value disclosure layer | Added company-by-metric fact/assumption audit; OpenAI 12GW and Anthropic 7GW endpoints explicitly classified as public-anchor extension scenarios | Source-line sign-off required for each numeric fact anchor before executive publication |
 | 8 | 2026-05-27 | Simple core token-capacity formula | Headline token output now uses operational deployment, PUE, AI/inference allocation and fixed-condition InferenceX output TPS/MW only; utilization/MoE/software/architecture multipliers removed from headline | Replace selected proxy rows with matched production telemetry when disclosed |
 | 9 | 2026-05-27 | Executive artifact simplification | Excel now exposes only Logic, Benchmark Input, Inputs, Calculation, Output and Checks; derived cells are formulas and research/audit detail stays in project records | Keep formula workbook synchronized with internal evidence ledger |
+| 10 | 2026-05-27 | Commercial-serving TPS/MW correction and aggressive upside view | Separated InferenceX public reference from company workload-fit assumptions; added formula-driven Bull and public-reference ceiling view | Replace fit factors with matched production/service benchmarks when disclosed |
 
 ## Open Flags
 
 - A01/A02: contracted vs active power conversion needs source-by-source review.
 - A05/A06: 2026 inference share must remain scenario, not fact.
-- A08/A09: 보고용 `01_Benchmark_Input`에 표시되는 InferenceX proxy가 headline TPS/MW를 구동하며, production utilization은 telemetry 확보 전까지 내부 sensitivity로만 유지.
+- A08/A09: 보고용 `01_Benchmark_Input`에서 InferenceX public reference와 commercial workload fit factor를 분리하고, production utilization은 telemetry 확보 전까지 내부 sensitivity로만 유지.
 - A10: OpenAI/Microsoft and Anthropic/AWS attribution rules need recurring audit.
 - AI 2027: aggressive capability/adoption scenario should be handled as a separate stress scenario, not folded into Base.
 - 2026 serving sources: IBM PD disaggregation, Joule inference energy, and 2026 arXiv serving papers should be reviewed by A08/A09 before changing tokens/MW or utilization.

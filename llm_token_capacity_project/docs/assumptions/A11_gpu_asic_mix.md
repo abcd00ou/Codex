@@ -18,12 +18,15 @@ Accordingly, this model separates two layers:
 ## Model Formula
 
 ```text
+reference_serving_tps_per_mw =
+  inferencex_reference_tps_per_mw * commercial_workload_fit_factor
+
 tokens_per_second_per_mw =
-  gpu_share * gpu_benchmark_tps_per_mw
+  gpu_share * reference_serving_tps_per_mw
   + purpose_built_accelerator_share * purpose_built_tps_per_mw
 ```
 
-Hardware mix remains visible because it matters to roadmap and allocation research. However, it creates no headline performance premium until the corresponding purpose-built hardware has a comparable generated-output benchmark under the adopted workload conditions. In the current core formula, `purpose_built_tps_per_mw` equals the selected GPU benchmark proxy where no matched public row is adopted.
+Hardware mix remains visible because it matters to roadmap and allocation research. However, it creates no headline performance premium until the corresponding purpose-built hardware has a comparable generated-output benchmark under the adopted workload conditions. In the current core formula, `purpose_built_tps_per_mw` equals the workload-adjusted serving reference where no matched public row is adopted.
 
 ## Current Numeric Mix Policy
 
@@ -44,7 +47,7 @@ Hardware mix remains visible because it matters to roadmap and allocation resear
 - A purpose-built share above zero means the platform direction is sourced, not that the exact percentage is publicly measured.
 - Keeping a company at 100% GPU reference does not claim it owns no ASICs. It means no audited model-owner serving allocation has been adopted into Base.
 - No relative efficiency uplift is applied in headline output without comparable output-token measurements at matched model, precision, input/output lengths and SLO.
-- The workbook shows every company-year mix in `04_gpu_asic_mix`, the resulting bridge in `05_inference_efficiency`, and every numeric rationale in `02b_number_trace`.
+- The executive workbook shows company-year mix in `02_Inputs`, the formula bridge in `03_Calculation`, and aggressive ceiling interpretation in `06_Aggressive_View`; detailed rationale remains in agent records.
 
 ## Replacement Evidence Required
 

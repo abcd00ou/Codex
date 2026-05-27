@@ -31,7 +31,7 @@ Use this checklist before publishing a new simulation cycle or presentation deck
 | LR13 | Does the forecast label benchmark-derived capacity correctly? | Selected benchmark output TPS/MW is not worded as observed commercial token volume. | blocker |
 | LR14 | Is latency relevant to the benchmark mapping? | TTFT/TPOT or SLO caveat is included when using InferenceX performance data. | major |
 | LR27 | Does numeric accelerator mix separate platform presence facts from operated fleet-share scenarios? | Executive Excel shows mix as input only; A11 internal record keeps reason and replacement evidence. | blocker |
-| LR28 | Can headline TPS/MW be reconstructed through the simple benchmark bridge? | `tokens_per_second_per_mw = gpu_share * gpu_benchmark_tps_per_mw + purpose_built_share * purpose_built_tps_per_mw`, with no unsupported purpose-built uplift. | blocker |
+| LR28 | Can headline TPS/MW be reconstructed through the simple benchmark bridge? | `reference_serving_tps_per_mw = inferencex_reference_tps_per_mw * commercial_workload_fit_factor`, then GPU/purpose-built weighting, with no unsupported hardware uplift. | blocker |
 | LR30 | Are hidden multipliers excluded from the headline formula? | Utilization, MoE, architecture and software CAGR do not multiply headline generated output token supply. | blocker |
 
 ## 4. Capacity Attribution
@@ -47,7 +47,7 @@ Use this checklist before publishing a new simulation cycle or presentation deck
 
 | Check ID | Question | Pass Criteria | Severity |
 |---|---|---|---|
-| LR19 | Do Bear/Base/Bull scenarios move the correct variables? | Operational deployment and inference share move transparently; headline TPS/MW remains the selected benchmark proxy. | major |
+| LR19 | Do Bear/Base/Bull scenarios move the correct variables? | Operational deployment, inference share and explicit commercial workload fit move transparently; public reference itself is unchanged. | major |
 | LR20 | Are scenario multipliers monotonic where expected? | Bear <= Base <= Bull for total token capacity unless a documented exception exists. | major |
 | LR21 | Is 2026 inference share above 60% treated as scenario, not fact? | No company-level disclosure is implied unless source exists. | blocker |
 | LR22 | Does sensitivity isolate one variable at a time where claimed? | A sensitivity table does not silently combine multiple variable changes. | major |
@@ -61,7 +61,8 @@ Use this checklist before publishing a new simulation cycle or presentation deck
 | LR25 | Are company rankings based on the same year and scenario? | Ranking labels specify Base 2030 or the applicable scenario/year. | major |
 | LR26 | Are source paths available for every input that might be challenged? | Project Markdown/agent records trace source IDs and replacement paths without cluttering the executive workbook. | major |
 | LR29 | Are public anchors separated from modeled endpoints internally? | Agent audit records nine core metric rows per company and labels public-anchor extension scenarios explicitly; executive workbook presents inputs as inputs only. | blocker |
-| LR31 | Is the executive workbook formula-driven and logic-only? | Visible tabs are `00_Logic` through `05_Checks`; all derived outputs are cell formulas. | blocker |
+| LR31 | Is the executive workbook formula-driven and logic-only? | Visible tabs are `00_Logic` through `06_Aggressive_View`; all derived outputs are cell formulas. | blocker |
+| LR32 | Is the aggressive upside view separated from Base? | Bull commercial case and 100% public-reference ceiling are separately labeled and formula-driven; ceiling is not presented as production fact. | blocker |
 
 ## Review Result Template
 

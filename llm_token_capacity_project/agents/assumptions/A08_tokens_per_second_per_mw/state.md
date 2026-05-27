@@ -7,7 +7,7 @@
 | current_starting_band | wide proxy band; company production fact unavailable |
 | confidence | Low-Medium; benchmark calibrated |
 | last_reviewed | 2026-05-27 |
-| status | Simple core mapping adopted: fixed-condition InferenceX output TPS/MW proxy; no unverified uplift |
+| status | Commercial serving reference adopted: fixed-condition InferenceX public reference x explicit workload fit; no unverified hardware uplift |
 
 ## Current Assumption
 
@@ -22,6 +22,7 @@ wide proxy band; company production fact unavailable
 | 2026-05-19 | Add InferenceX dump-derived benchmark profile table; keep Base tokens/MW unchanged | Full dump gives actual benchmark rows by model/GPU/framework/precision/ISL/OSL, but it is still benchmark/proxy rather than company production telemetry. Coefficient change needs a separate mapping from benchmark rows to model-owner serving mix. | A08_E005 | implemented as evidence layer; no Base change |
 | 2026-05-26 | Compute tokens/MW through explicit GPU/purpose-built accelerator mix factor and architecture/workload factor | Former workbook described GPU/ASIC platforms but did not numerically bridge mix into tokens/MW. | A08_E005; A11_E001-A11_E009 | implemented; coefficient remains derived estimate |
 | 2026-05-27 | Replace compounded efficiency bridge with fixed-condition InferenceX output-token selection | Executive headline needs reconstructable logic with the fewest unsupported coefficients. B200, single_turn, ISL/OSL 1024/1024 output TPS/MW p50 is directly inspectable in the normalized dump. | A08_E005; HC22 | implemented in headline model |
+| 2026-05-27 | Separate public benchmark reference from commercial-serving throughput with company workload fit factors | GPT-OSS throughput is too remote from multiple closed/reasoning/long-context commercial surfaces to be a Base coefficient without an explicit adjustment. | A08_E005; LR12; LR13 | implemented; Bear/Base/Bull fit inputs and aggressive ceiling sheet |
 
 ## Downstream Impact Notes
 
@@ -31,8 +32,8 @@ wide proxy band; company production fact unavailable
 ## Cycle 1 Notes
 
 - Do not promote InferenceX/Joule/IBM values into Base until exact benchmark assumptions are mapped to company/model workload mix.
-- `05b_inferencex_core_tps` is the direct headline TPS/MW lookup table: B200, single_turn, ISL/OSL 1024/1024, `output_tok_s_mw` p50.
+- `01_Benchmark_Input` exposes the public reference and commercial workload fit factors: B200, single_turn, ISL/OSL 1024/1024, `output_tok_s_mw` p50.
 - InferenceX tables to use first: `inferencex_metric_profile.csv` for p10/p50/p90 bands and `inferencex_benchmark_results.csv` for exact row-level audit.
-- New formula: `gpu_share * gpu_benchmark_tps_per_mw + purpose_built_share * purpose_built_tps_per_mw`.
-- Until a comparable purpose-built output-token row is adopted, `purpose_built_tps_per_mw = gpu_benchmark_tps_per_mw`; no TPU/Maia/MTIA/Trainium uplift enters headline output.
-- Every company-year bridge is traceable in Excel `02b_number_trace` and `05_inference_efficiency`.
+- New formula: `reference_serving_tps_per_mw = inferencex_reference_tps_per_mw * commercial_workload_fit_factor`, then `gpu_share * reference_serving_tps_per_mw + purpose_built_share * purpose_built_tps_per_mw`.
+- Until a comparable purpose-built output-token row is adopted, `purpose_built_tps_per_mw = reference_serving_tps_per_mw`; no TPU/Maia/MTIA/Trainium uplift enters headline output.
+- Every company-year bridge is visible in executive Excel `02_Inputs` and `03_Calculation`; upside is separated in `06_Aggressive_View`.

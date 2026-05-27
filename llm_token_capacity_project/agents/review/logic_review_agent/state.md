@@ -52,8 +52,8 @@ The weakest logic areas remain:
 
 | Field | Value |
 |---|---|
-| review_note | `agents/review/logic_review_agent/reviews/2026-05-27_simple_core_formula_review.md` |
-| overall_status | pass for formula integrity; proxy replacement open |
+| review_note | `agents/review/logic_review_agent/reviews/2026-05-27_commercial_workload_fit_review.md` |
+| overall_status | pass for formula integrity and commercial-fit separation; production replacement open |
 | blocker_count | 0 |
 | major_finding_count | 0 |
 | minor_finding_count | 0 |
@@ -72,6 +72,7 @@ The weakest logic areas remain:
 | LRQ04 | What evidence can bound company-specific inference/training split from 2026 to 2030? | A05/A06 | high |
 | LRQ05 | Which closed-model parameter proxy bands are defensible enough for FLOPs/token sanity checks? | A07 | medium |
 | LRQ06 | Which official disclosures can replace numeric GPU/purpose-built serving share scenarios? | A11 | high |
+| LRQ07 | Which commercial workload benchmarks can replace the explicit provider fit-factor scenarios? | A08 | high |
 
 ## Downstream Impact Notes
 
@@ -90,3 +91,4 @@ Review the current Base/Bear/Bull simulation and the `Token Supply Constraints b
 5. scenario monotonicity
 6. executive chart wording
 7. number trace completeness and hardware-mix bridge reconstruction
+8. commercial workload fit-factor bridge and aggressive ceiling labeling

@@ -1,13 +1,14 @@
 # 계산식과 가정 Methodology
 
-이 문서는 시뮬레이션의 계산 논리를 계속 점검하기 위한 기준 문서입니다. 보고용 Excel은 `00_Logic`, `01_Benchmark_Input`, `02_Inputs`, `03_Calculation`, `04_Output`, `05_Checks` 여섯 시트만 노출합니다. 상세 source/audit/agent 기록은 프로젝트 Markdown과 정규화 CSV에 보관하며 보고용 workbook 화면에는 싣지 않습니다.
+이 문서는 시뮬레이션의 계산 논리를 계속 점검하기 위한 기준 문서입니다. 보고용 Excel은 `00_Logic`, `01_Benchmark_Input`, `02_Inputs`, `03_Calculation`, `04_Output`, `05_Checks`, `06_Aggressive_View` 일곱 시트만 노출합니다. 상세 source/audit/agent 기록은 프로젝트 Markdown과 정규화 CSV에 보관하며 보고용 workbook 화면에는 싣지 않습니다.
 
 ## 보고용 Excel 원칙
 
-- 직접 입력되는 숫자는 `02_Inputs`의 scenario 입력값과 `01_Benchmark_Input`의 선택 benchmark 값뿐입니다.
-- `operational_power_gw`, `inference_gw`, `weighted_tps_per_mw`, `inference_tokens_per_day`, 연간 토큰 및 시나리오 합계는 Excel 수식으로 계산합니다.
+- 직접 입력되는 숫자는 `02_Inputs`의 scenario 입력값과 `01_Benchmark_Input`의 public InferenceX reference 및 Bear/Base/Bull commercial workload fit factor뿐입니다.
+- `reference_serving_tps_per_mw`, `operational_power_gw`, `inference_gw`, `weighted_tps_per_mw`, `inference_tokens_per_day`, 연간 토큰 및 시나리오 합계는 Excel 수식으로 계산합니다.
 - `03_Calculation`은 행 단위 계산 추적표이고, `04_Output`은 그 수식을 참조하는 출력표와 차트입니다.
-- `05_Checks`는 capacity bound, power split, accelerator share, purpose-built no-uplift 및 headline formula 범위를 수식으로 검증합니다.
+- `05_Checks`는 capacity bound, power split, accelerator share, workload-fit 수식, purpose-built no-uplift 및 headline formula 범위를 수식으로 검증합니다.
+- `06_Aggressive_View`는 Bull commercial case와 `fit factor = 100%`인 public benchmark ceiling을 구분하여 보여주는 upside 시트입니다. Ceiling은 strategic envelope이며 Base forecast가 아닙니다.
 
 ## Excel 근거 추적 방법
 
@@ -36,7 +37,7 @@ Fact/assumption audit는 내부 검수 기록으로 유지하고, 보고용 Exce
 | AI workload share | 공식 workload denominator가 있을 때만 fact 가능 | dedicated AI 방향성에서 추론한 share |
 | GPU/ASIC mix | Maia/TPU/MTIA/Trainium/H800 등 platform 존재 | serving fleet 비중 |
 | inference share | company-level workload power split 공시 | inference adoption 기반 share |
-| tokens/MW | matched production output throughput 공시 | 고정 조건 InferenceX `output_tok_s_mw` proxy |
+| tokens/MW | matched production output throughput 공시 | 고정 조건 InferenceX `output_tok_s_mw` public reference와 commercial workload fit scenario |
 | utilization | provider surface별 realized serving telemetry | 보조 sensitivity로만 보관하며 headline 계산에는 미적용 |
 | output tokens | 공개 output token volume | 본 simulation 계산 결과 |
 
@@ -53,7 +54,9 @@ contracted_power_gw
 -> AI workload load
 -> inference/training split
 -> inference MW
--> selected InferenceX output tokens/sec/MW
+-> InferenceX public reference output tokens/sec/MW
+-> commercial workload fit factor
+-> serving reference output tokens/sec/MW
 -> daily / annual tokens
 ```
 
@@ -131,22 +134,34 @@ ai_it_load_gw = it_load_gw * ai_workload_share
 
 ```text
 tokens_per_second_per_mw =
-  gpu_share * gpu_benchmark_tps_per_mw
+  gpu_share * reference_serving_tps_per_mw
   + purpose_built_accelerator_share * purpose_built_tps_per_mw
+
+reference_serving_tps_per_mw =
+  inferencex_reference_tps_per_mw
+  * commercial_workload_fit_factor
 ```
 
 중요한 구분:
 
 - Microsoft Maia, Google TPU/Ironwood, Meta MTIA, Anthropic/AWS Trainium처럼 official platform presence가 확인된 것은 fact anchor입니다.
 - 그 platform이 회사의 실제 inference serving load 중 차지하는 백분율은 대체로 미공개이므로 numeric scenario입니다.
-- TPU, Maia, MTIA, Trainium의 matched `output_tok_s_mw` 비교자료가 채택되기 전에는 `purpose_built_tps_per_mw = gpu_benchmark_tps_per_mw`로 두며 uplift를 만들지 않습니다.
+- TPU, Maia, MTIA, Trainium의 matched `output_tok_s_mw` 비교자료가 채택되기 전에는 `purpose_built_tps_per_mw = reference_serving_tps_per_mw`로 두며 uplift를 만들지 않습니다.
 - xAI, OpenAI, DeepSeek, Alibaba, Tencent는 Base에서 확인 가능한 GPU reference를 우선 적용하고, 공개되지 않은 ASIC share uplift를 억지로 넣지 않습니다.
 
 업체·연도별 `gpu_share`와 `purpose_built_share`는 보고용 Excel `02_Inputs`에 표시합니다. 산정 이유와 교체 경로는 `A11_gpu_asic_mix` agent 기록에서 관리합니다.
 
 ## 4. GPU/ASIC Mix에서 `tokens_per_second_per_mw`로 가는 식
 
-핵심 TPS/MW는 Excel `01_Benchmark_Input`에서 바로 읽습니다. 공통 비교 조건은 `B200`, `single_turn`, `ISL=1024`, `OSL=1024`, metric은 generated-output 기준 `output_tok_s_mw`의 중앙값입니다. 업체별 상용 모델과 가장 가까운 공개 proxy model을 매핑하되, 특정 업체의 sustained production fact라고 표현하지 않습니다.
+Excel `01_Benchmark_Input`은 두 층을 분리합니다. 공통 비교 조건 `B200`, `single_turn`, `ISL=1024`, `OSL=1024`, generated-output `output_tok_s_mw` 중앙값은 public InferenceX reference입니다. 그 위에 업체별 commercial workload class에 대응하는 Bear/Base/Bull fit factor를 입력하며, Excel 수식이 `reference_serving_tps_per_mw`를 계산합니다. 폐쇄형, reasoning-heavy, long-context 또는 strict-SLO 서비스는 공개 proxy benchmark와 동일한 production throughput이라고 표현하지 않습니다.
+
+| Workload mapping | Base treatment |
+|---|---|
+| Meta Llama, DeepSeek, Alibaba Qwen처럼 공개 proxy family가 상대적으로 가까운 경우 | Base fit을 높게 두되 commercial routing/SLO 차이는 남김 |
+| OpenAI GPT, Anthropic Claude, xAI Grok처럼 closed 또는 reasoning/agent workload가 큰 경우 | public reference를 Base에 직접 적용하지 않고 큰 haircut을 명시 |
+| Microsoft Copilot, Google Gemini, Tencent Hunyuan처럼 routing/hardware/model mix가 복합적인 경우 | 공개 reference 대비 중간 수준의 Base fit 적용 |
+
+`06_Aggressive_View`는 Bull power/inference/fit 결과와, 동일 Bull 전력에서 public reference를 100% 실현하는 ceiling을 동시에 제공합니다. 이 시트는 공격적 사업 기회 논의를 위한 범위 표시이며 공식 Base 결과를 대체하지 않습니다.
 
 MoE 구조, precision, batching, TTFT/TPOT, SLO, 소프트웨어 개선은 모두 중요합니다. 그러나 해당 영향을 선택 benchmark 위에 다시 곱하면 같은 효율을 중복 반영할 위험이 있으므로 headline 계산에서는 제외하고 후속 sensitivity 연구 대상으로 분리합니다.
 

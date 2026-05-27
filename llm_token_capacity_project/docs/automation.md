@@ -28,19 +28,21 @@ assert data['validation']['status'] == 'PASS'
 assert 'Anthropic' in data['metadata']['companies']
 assert 'scenario_forecast' in data
 assert 'core_inferencex_benchmarks' in data
+assert 'commercial_workload_benchmarks' in data
 
-wb = load_workbook(base + '.xlsx', data_only=True)
-assert wb.sheetnames == ['00_Logic', '01_Benchmark_Input', '02_Inputs', '03_Calculation', '04_Output', '05_Checks']
+wb = load_workbook(base + '.xlsx', data_only=False)
+assert wb.sheetnames == ['00_Logic', '01_Benchmark_Input', '02_Inputs', '03_Calculation', '04_Output', '05_Checks', '06_Aggressive_View']
 assert all(wb[name].sheet_state == 'visible' for name in wb.sheetnames)
 formula_count = sum(
-    1 for name in ['02_Inputs', '03_Calculation', '04_Output', '05_Checks']
+    1 for name in ['02_Inputs', '03_Calculation', '04_Output', '05_Checks', '06_Aggressive_View']
     for row in wb[name].iter_rows()
     for cell in row
     if isinstance(cell.value, str) and cell.value.startswith('=')
 )
 assert formula_count > 3000
-assert wb['03_Calculation']['S2'].value == '=L2*1000*R2*86400'
-assert wb['03_Calculation']['T2'].value == '=S2*365'
+assert wb['02_Inputs']['O2'].value == '=M2*N2'
+assert wb['03_Calculation']['U2'].value == '=L2*1000*T2*86400'
+assert wb['03_Calculation']['V2'].value == '=U2*365'
 
 prs = Presentation(base + '.pptx')
 assert len(prs.slides) >= 15

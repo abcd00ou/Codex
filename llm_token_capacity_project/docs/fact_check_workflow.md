@@ -52,7 +52,7 @@
 - `contracted_power_gw`가 공식 계약 수치인지, 공식 capacity ceiling인지, scenario envelope인지 구분됐는가?
 - `active_power_gw = contracted_power_gw * operational_deployment_share` 및 `active <= contracted` 통제가 적용됐는가?
 - GPU/purpose-built accelerator share 합이 100%이며, 실제 fleet disclosure가 없는 share를 fact로 표현하지 않았는가?
-- `tokens_per_second_per_mw`가 `01_Benchmark_Input`의 고정조건 output-token proxy와 `02_Inputs`의 GPU/purpose-built mix로 재계산되는가?
+- `reference_serving_tps_per_mw`가 `01_Benchmark_Input`의 public InferenceX reference와 commercial workload fit factor로 계산되고, `tokens_per_second_per_mw`가 GPU/purpose-built mix로 재계산되는가?
 - comparable benchmark가 없는 purpose-built accelerator에 추가 uplift가 적용되지 않았는가?
 - `utilization`, MoE uplift, software/architecture multiplier가 headline token 산식에서 제외됐는가?
 
@@ -82,7 +82,7 @@
 - PPT에 Hallucination 체크리스트 슬라이드 존재
 - JSON에 sources, fact_anchors, benchmark_reference, hallucination_checklist 존재
 - 변경된 숫자마다 source_id 또는 assumption_id 존재
-- Excel에는 `00_Logic`, `01_Benchmark_Input`, `02_Inputs`, `03_Calculation`, `04_Output`, `05_Checks`만 존재
+- Excel에는 `00_Logic`, `01_Benchmark_Input`, `02_Inputs`, `03_Calculation`, `04_Output`, `05_Checks`, `06_Aggressive_View`만 존재
 - 계산 결과 열과 output table이 값 붙여넣기가 아니라 formula로 저장됨
 - 내부 fact/assumption audit와 source trace는 Markdown/agent 기록에 유지됨
 - 변경 이유가 source log 또는 assumption log에 기록됨

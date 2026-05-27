@@ -2,7 +2,7 @@
 
 ## Mission
 
-Manage the numeric accelerator mix and the evidence threshold for replacing conservative TPS/MW proxy values.
+Manage the numeric accelerator mix and the evidence threshold for replacing conservative, workload-adjusted serving TPS/MW proxy values.
 
 ## Owned Field
 
@@ -10,6 +10,7 @@ Manage the numeric accelerator mix and the evidence threshold for replacing cons
 gpu_share
 purpose_built_accelerator_share
 purpose_built_tps_per_mw
+reference_serving_tps_per_mw
 ```
 
 ## Current Starting Band
@@ -32,6 +33,7 @@ Medium for platform existence; Low-Medium for numeric mix; no uplift confidence 
 
 - Describing a custom accelerator launch as a measured production fleet share.
 - Giving ASIC efficiency uplift without a comparable generated-output TPS/MW benchmark.
+- Treating a public open-model benchmark ceiling as measured closed-model commercial serving throughput.
 - Adding hidden efficiency or utilization multipliers to the headline token output.
 - Using total processed-token throughput where generated output-token throughput is required.
 
