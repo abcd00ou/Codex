@@ -1,6 +1,6 @@
 # Hallucination Double-Check Checklist
 
-보고 전 이 체크리스트를 사용해 값과 문구를 점검합니다. Excel의 `11_hallucination_checklist`와 같은 목적이지만, 이 MD는 작업 과정에서 계속 수정하는 운영용 문서입니다.
+보고 전 이 체크리스트를 사용해 값과 문구를 점검합니다. 보고용 Excel은 계산 로직만 보여주므로, 이 MD가 상세 검수 기록을 보유합니다.
 
 | ID | 체크 항목 | 확인 질문 | 통과 기준 | 실패 시 조치 |
 |---|---|---|---|---|
@@ -20,10 +20,12 @@
 | HC14 | China transparency | 중국 업체의 낮은 공개성을 숫자 penalty로 착각하지 않았는가? | confidence만 조정 | assumption note 수정 |
 | HC15 | Executive wording | 임원 보고 문구가 확정/추정/시나리오를 구분하는가? | 모든 chart subtitle에 기준 표시 | PPT/HTML/MD 수정 |
 | HC16 | Token definition | generated output, processed, training, billable token을 혼동하지 않았는가? | headline은 generated output token이며 InferenceX total throughput과 분리 | 산식/표기 수정 |
-| HC17 | Capacity terminology | contracted_power_gw가 모두 공식 계약 fact처럼 보이지 않는가? | sourced ceiling과 scenario envelope가 `02b_number_trace`에 명시 | capacity basis 재분류 |
-| HC18 | Accelerator mix | GPU/ASIC 숫자 mix가 platform presence fact와 fleet-share scenario를 구분하는가? | `04_gpu_asic_mix`에 reason/source/replacement path 및 share sum check | A11 검토 |
-| HC19 | Efficiency bridge | tokens/MW가 hardware mix와 architecture/workload factor로 재구성되는가? | `05_inference_efficiency` bridge 재계산과 validation PASS | A08/A11 검토 |
-| HC20 | Complete numeric trace | 최종 표와 보조 표의 모든 output-driving 숫자에 이유가 있는가? | `02b_number_trace`에 company-year-scenario별 26개 metric의 formula/reason/source/assumption/replacement path 존재 | trace 누락 field 추가 |
+| HC17 | Capacity terminology | contracted_power_gw가 모두 공식 계약 fact처럼 보이지 않는가? | `02_Inputs`는 입력값으로만 표시하고 상세 분류는 agent audit에 유지 | capacity basis 재분류 |
+| HC18 | Accelerator mix | GPU/ASIC 숫자 mix가 platform presence fact와 fleet-share scenario를 구분하는가? | `02_Inputs` share 합과 A11 내부 reason/replacement 기록 확인 | A11 검토 |
+| HC19 | Efficiency bridge | tokens/MW가 선택한 InferenceX output TPS/MW와 hardware mix로 단순 재구성되는가? | `01_Benchmark_Input`과 `03_Calculation` formula 재계산 및 validation PASS | A08/A11 검토 |
+| HC20 | Formula-driven output | 계산 결과가 값으로 붙여넣어져 있지 않은가? | `03_Calculation`, `04_Output`, `05_Checks` 결과 셀이 Excel formula | generator 수정 |
+| HC21 | Confirmed vs modeled | source가 있다는 이유만으로 scenario endpoint를 확인값으로 부르지 않았는가? | 내부 agent audit에서 공개 fact/gap, 모델값, evidence class, replacement path 분리 | 보고 문구와 모델 classification 수정 |
+| HC22 | No hidden headline multiplier | utilization, MoE, architecture 또는 software CAGR가 최종 token 생성량에 숨은 multiplier로 들어가지 않았는가? | headline formula와 validation은 operational inference GW x selected output TPS/MW x seconds/day만 사용 | 핵심 산식 단순화 |
 
 ## 수동 체크 메모
 
@@ -43,4 +45,4 @@
 6. China model owner의 실제 commercial serving scale
 7. benchmark_reference와 main forecast 괴리 row
 8. GPU/purpose-built accelerator operated serving share의 공개 근거
-9. tokens/MW bridge에서 hardware migration과 software CAGR 중복 반영 여부
+9. selected TPS/MW 위에 숨은 efficiency 또는 utilization multiplier가 중복 적용되지 않았는지 여부

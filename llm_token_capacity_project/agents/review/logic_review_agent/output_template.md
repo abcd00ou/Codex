@@ -40,7 +40,8 @@ One paragraph explaining whether the simulation is safe to present and what must
 - `it_load_gw = active_power_gw / pue`:
 - `ai_it_load_gw = it_load_gw * ai_workload_share`:
 - `inference_gw = ai_it_load_gw * inference_power_share`:
-- `tokens/day = inference_gw * 1000 * tokens/sec/MW * utilization * 86400`:
+- `active_power_gw = contracted_power_gw * operational_deployment_share`:
+- `tokens/day = inference_gw * 1000 * selected output tokens/sec/MW * 86400`:
 
 ## Token Definition Review
 
@@ -54,7 +55,7 @@ One paragraph explaining whether the simulation is safe to present and what must
 - InferenceX output throughput mapping:
 - InferenceX total processed throughput mapping:
 - J/token sanity layer:
-- Production haircut and utilization:
+- Production haircut and utilization sensitivity only:
 
 ## Attribution Review
 
@@ -68,8 +69,8 @@ One paragraph explaining whether the simulation is safe to present and what must
 - Bear/Base/Bull monotonicity:
 - Deployment speed:
 - Inference share:
-- MoE optimization:
-- Utilization:
+- Selected TPS/MW proxy mapping:
+- Hidden headline multiplier exclusion:
 
 ## PPT / Executive Output Review
 

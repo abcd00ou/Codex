@@ -7,23 +7,25 @@
 ## 먼저 외울 핵심 문장
 
 - 계약 GW는 token capacity가 아니라 상한선입니다.
-- active GW는 전력망, 변전, 냉각, 랙, accelerator 수급을 통과한 운영 capacity입니다.
+- operational deployment share는 계약 GW 중 전력망, 변전, 냉각, 랙, accelerator 수급을 통과한 비중입니다.
 - inference GW는 active AI IT load 중 inference에 배정된 부분입니다.
 - MoE 모델은 total parameter보다 active parameter가 token cost에 더 직접적입니다.
-- tokens/sec/MW는 hardware, model, software, traffic shape가 합쳐진 결과입니다.
+- headline tokens/sec/MW는 비교조건이 고정된 InferenceX output-token benchmark proxy에서 선택합니다.
 - benchmark는 sanity check이지 회사별 실제 성능 fact가 아닙니다.
 
 ## 1페이지 계산 지도
 
 ```text
 contracted GW
-  -> active GW
+  -> operational deployment share -> active GW
   -> IT load GW = active GW / PUE
   -> AI IT load GW = IT load GW * AI workload share
   -> inference GW = AI IT load GW * inference share
   -> inference MW
-  -> tokens/day = MW * tokens/sec/MW * utilization * 86,400
+  -> tokens/day = MW * selected output tokens/sec/MW * 86,400
 ```
+
+`utilization`, MoE 추가 uplift, architecture/software 개선률은 학습과 sensitivity에는 유효하지만 headline token 계산에는 곱하지 않습니다.
 
 ## Assumption Modules
 

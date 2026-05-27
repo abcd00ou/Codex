@@ -26,22 +26,21 @@ with open(base + '.json', encoding='utf-8') as f:
 
 assert data['validation']['status'] == 'PASS'
 assert 'Anthropic' in data['metadata']['companies']
-assert len(data['hallucination_checklist']) >= 20
-assert len(data['benchmark_reference']) == 45
-assert len(data['number_trace']) == len(data['scenario_forecast']) * 26
+assert 'scenario_forecast' in data
+assert 'core_inferencex_benchmarks' in data
 
 wb = load_workbook(base + '.xlsx', data_only=True)
-assert '00_formula_assumptions' in wb.sheetnames
-assert '02b_number_trace' in wb.sheetnames
-assert '04_gpu_asic_mix' in wb.sheetnames
-assert '05_inference_efficiency' in wb.sheetnames
-assert '08d_benchmark_reference' in wb.sheetnames
-assert '08e_energy_sanity_reference' in wb.sheetnames
-assert '08f_utilization_sensitivity' in wb.sheetnames
-assert '12_inferencex_source_index' in wb.sheetnames
-assert '12a_inferencex_schema' in wb.sheetnames
-assert '12b_inferencex_tab_rules' in wb.sheetnames
-assert '11_hallucination_checklist' in wb.sheetnames
+assert wb.sheetnames == ['00_Logic', '01_Benchmark_Input', '02_Inputs', '03_Calculation', '04_Output', '05_Checks']
+assert all(wb[name].sheet_state == 'visible' for name in wb.sheetnames)
+formula_count = sum(
+    1 for name in ['02_Inputs', '03_Calculation', '04_Output', '05_Checks']
+    for row in wb[name].iter_rows()
+    for cell in row
+    if isinstance(cell.value, str) and cell.value.startswith('=')
+)
+assert formula_count > 3000
+assert wb['03_Calculation']['S2'].value == '=L2*1000*R2*86400'
+assert wb['03_Calculation']['T2'].value == '=S2*365'
 
 prs = Presentation(base + '.pptx')
 assert len(prs.slides) >= 15
@@ -64,7 +63,7 @@ PY
 6. 변경 후 `docs/hallucination_checklist.md` 기준으로 review합니다.
 7. assumptions 변경은 `data/assumption_change_log.md`에 남깁니다.
 8. source 확인은 `data/source_review_log.md`에 남깁니다.
-9. 핵심 수치는 Excel `02b_number_trace`에서 company-year-scenario별 이유, source/assumption ID, replacement path가 존재하는지 확인합니다.
+9. 보고용 Excel에서는 `03_Calculation`의 formula chain과 `05_Checks`로 결과를 검수하며, source/assumption 상세는 Markdown/agent 기록에서 관리합니다.
 
 ## Assumption Agent 자동화
 
@@ -84,7 +83,7 @@ Agent loop:
 2. `agents/shared/evidence_rules.md`와 `source_quality.md`를 읽습니다.
 3. source를 확인하고 `evidence.md`에 evidence row를 추가합니다.
 4. 변경이 필요하면 `state.md`의 Proposed Changes에 후보를 기록합니다.
-5. active power, AI workload share, GPU/ASIC mix, inference share, tokens/MW, utilization, attribution 변경은 반드시 orchestrator review를 거칩니다.
+5. operational deployment share, AI workload share, GPU/ASIC mix, inference share, selected TPS/MW mapping, attribution 변경은 반드시 orchestrator review를 거칩니다. Utilization은 headline이 아닌 sensitivity 항목으로만 검토합니다.
 6. 승인 후 generator와 산출물을 업데이트합니다.
 
 ## 추후 자동화 후보
@@ -98,4 +97,4 @@ Agent loop:
 - 신규 official source가 발견되면 assumption replacement path 제안
 - `agent_learning_expansion_pack.md`의 source를 agent별 `evidence.md`로 승격하는 semi-automated review form
 - InferenceX DB dump/CSV export를 `data/inferencex/normalized/` 스키마로 full normalization
-- InferenceX `tok_s_mw`, ISL/OSL, precision, GPU별 outlier와 Base tokens/MW gap 자동 표시
+- InferenceX `output_tok_s_mw`, ISL/OSL, GPU별 선택조건과 Base proxy mapping 자동 표시

@@ -2,15 +2,14 @@
 
 ## Mission
 
-Manage the numeric accelerator mix used to bridge company serving platforms into `tokens_per_second_per_mw`.
+Manage the numeric accelerator mix and the evidence threshold for replacing conservative TPS/MW proxy values.
 
 ## Owned Field
 
 ```text
 gpu_share
 purpose_built_accelerator_share
-purpose_built_relative_efficiency_factor
-accelerator_mix_factor
+purpose_built_tps_per_mw
 ```
 
 ## Current Starting Band
@@ -19,7 +18,7 @@ Official platform presence plus numeric scenario allocation. Operated serving-fl
 
 ## Confidence Posture
 
-Medium for platform existence; Low-Medium for numeric mix and relative-efficiency factor.
+Medium for platform existence; Low-Medium for numeric mix; no uplift confidence is asserted without comparable benchmark.
 
 ## Required Reading
 
@@ -32,8 +31,8 @@ Medium for platform existence; Low-Medium for numeric mix and relative-efficienc
 ## Watchouts
 
 - Describing a custom accelerator launch as a measured production fleet share.
-- Giving ASIC efficiency uplift without identifying that it is scenario-calibrated.
-- Adding an accelerator mix uplift on top of an efficiency CAGR that already includes the same hardware migration.
+- Giving ASIC efficiency uplift without a comparable generated-output TPS/MW benchmark.
+- Adding hidden efficiency or utilization multipliers to the headline token output.
 - Using total processed-token throughput where generated output-token throughput is required.
 
 ## Learning Backlog Themes
@@ -45,4 +44,4 @@ Medium for platform existence; Low-Medium for numeric mix and relative-efficienc
 
 ## Update Authority
 
-This agent may propose changes to numeric GPU/purpose-built accelerator mix and its relative efficiency bridge only. Any resulting `tokens_per_second_per_mw` change must be reviewed jointly with A08 and the Logic Review Agent.
+This agent may propose changes to numeric GPU/purpose-built accelerator mix and matched purpose-built benchmark replacement only. Any resulting `tokens_per_second_per_mw` change must be reviewed jointly with A08 and the Logic Review Agent.

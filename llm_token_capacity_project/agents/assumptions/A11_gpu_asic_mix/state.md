@@ -3,11 +3,11 @@
 | Field | Value |
 |---|---|
 | agent_id | A11 |
-| owned_field | gpu_share; purpose_built_accelerator_share; purpose_built_relative_efficiency_factor; accelerator_mix_factor |
+| owned_field | gpu_share; purpose_built_accelerator_share; purpose_built_tps_per_mw benchmark replacement path |
 | current_starting_band | sourced platform presence with numeric scenario mix |
 | confidence | Medium for platform direction; Low-Medium for operated share |
-| last_reviewed | 2026-05-26 |
-| status | Numeric mix bridge implemented in workbook and model |
+| last_reviewed | 2026-05-27 |
+| status | Numeric mix visible; no purpose-built TPS/MW uplift in headline without comparable benchmark |
 
 ## Current Assumption
 
@@ -32,9 +32,10 @@ The Base model uses numeric GPU/purpose-built accelerator shares only when they 
 | Date | Proposed change | Reason | Evidence IDs | Status |
 |---|---|---|---|---|
 | 2026-05-26 | Add numeric accelerator mix and efficiency bridge into forecast model | Previous report described hardware without numerically tracing it into tokens/MW. | A11_E001-A11_E009 | implemented |
+| 2026-05-27 | Remove unsupported purpose-built accelerator efficiency premium from headline | Platform presence and modeled mix do not establish comparable generated-output TPS/MW uplift. | A11_E001-A11_E009; HC22 | implemented |
 
 ## Downstream Impact Notes
 
 - A11 changes feed A08 `tokens_per_second_per_mw` and headline token supply.
-- Hardware-share changes must be separately visible from software-efficiency CAGR to avoid double counting.
+- Hardware-share changes remain visible, while unverified hardware or software uplift does not enter headline output.
 - Replacement evidence priority is operated inference accelerator-hours or model-level output tokens/MW.

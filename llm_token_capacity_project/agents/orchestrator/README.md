@@ -12,6 +12,7 @@ Orchestrator는 11개 assumption agent의 업데이트를 모아 전체 숫자 �
 - benchmark_reference와 main forecast 괴리 검토
 - GPU/purpose-built accelerator numeric mix와 tokens/MW bridge 검토
 - executive wording에서 fact/estimate/proxy/scenario 구분 확인
+- official public anchor와 modeled endpoint 분리, public anchor를 넘는 endpoint의 scenario 표시 확인
 
 ## 입력
 
@@ -39,6 +40,7 @@ Orchestrator는 11개 assumption agent의 업데이트를 모아 전체 숫자 �
 5. executive summary 문구가 source confidence보다 강하지 않은가?
 6. Logic Review Agent가 단위, 산식, benchmark mapping, attribution 중 하나라도 `blocker`로 표시했는가?
 7. A11 numeric accelerator mix가 official platform presence와 scenario share를 혼동하지 않는가?
+8. `02c_fact_vs_assumption_audit`에서 공식 확인값, 공개 공백, 그리고 modeled endpoint가 분리됐는가?
 
 ## Approval Criteria
 
@@ -50,3 +52,4 @@ orchestrator는 다음 조건을 만족할 때만 generator 반영을 승인합�
 - validation rule 위반 없음
 - unresolved cross-agent conflict 없음
 - logic review blocker 없음
+- core company별 9개 `fact_vs_assumption_audit` row 존재

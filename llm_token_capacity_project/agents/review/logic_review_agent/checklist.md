@@ -6,7 +6,7 @@ Use this checklist before publishing a new simulation cycle or presentation deck
 
 | Check ID | Question | Pass Criteria | Severity |
 |---|---|---|---|
-| LR01 | Does every power conversion preserve units from GW to MW to joules/day? | `inference_gw * 1000 * tokens/sec/MW * utilization * 86400` is dimensionally valid. | blocker |
+| LR01 | Does every power conversion preserve units from GW to MW to generated output tokens/day? | `inference_gw * 1000 * selected output tokens/sec/MW * 86400` is dimensionally valid. | blocker |
 | LR02 | Is `active_power_gw <= contracted_power_gw` for every company-year-scenario? | No active power exceeds contracted/planned capacity. | blocker |
 | LR03 | Do `training_power_share + inference_power_share = 100%` after rounding tolerance? | Sum equals 1.0 within validation tolerance. | blocker |
 | LR04 | Is PUE applied only once? | `it_load_gw = active_power_gw / pue`; no second PUE adjustment later. | blocker |
@@ -18,7 +18,7 @@ Use this checklist before publishing a new simulation cycle or presentation deck
 |---|---|---|---|
 | LR06 | Is headline token supply generated output tokens only? | Headline `inference_tokens_per_day` excludes input, billable, cache, and training tokens. | blocker |
 | LR07 | Are processed-token benchmark metrics kept separate? | InferenceX total `tok_s_mw` is not directly used as headline output token supply. | blocker |
-| LR08 | Are training tokens separated from commercial inference output tokens? | `training_tokens_processed_per_day` is sanity/reference only. | blocker |
+| LR08 | Are training tokens separated from commercial inference output tokens? | Headline formula converts only inference GW into generated output tokens. | blocker |
 | LR09 | Are ISL/OSL assumptions visible when benchmark rows are used? | Benchmark mapping records input length, output length, precision, and latency context where available. | major |
 
 ## 3. LLM Architecture And Serving Logic
@@ -27,11 +27,12 @@ Use this checklist before publishing a new simulation cycle or presentation deck
 |---|---|---|---|
 | LR10 | Are MoE models using active parameters for per-token compute sanity checks? | Total and active parameters are separated; active parameters drive FLOPs/token sanity logic. | blocker |
 | LR11 | Are closed frontier models shown as bands or proxies? | No closed model uses a fake precise parameter count as fact. | major |
-| LR12 | Does tokens/MW account for production overhead? | Utilization or haircut reflects SLO, batching, routing, reserve capacity, and failover. | major |
-| LR13 | Does the forecast avoid peak-throughput-to-annual-average conversion errors? | Peak benchmark numbers are not treated as sustained fleet average without haircut. | blocker |
+| LR12 | Does headline tokens/MW avoid unsupported production adjustments? | Output TPS/MW is a named benchmark proxy; production overhead remains supplemental sensitivity, not a hidden multiplier. | major |
+| LR13 | Does the forecast label benchmark-derived capacity correctly? | Selected benchmark output TPS/MW is not worded as observed commercial token volume. | blocker |
 | LR14 | Is latency relevant to the benchmark mapping? | TTFT/TPOT or SLO caveat is included when using InferenceX performance data. | major |
-| LR27 | Does numeric accelerator mix separate platform presence facts from operated fleet-share scenarios? | `04_gpu_asic_mix` labels share values as scenario unless a denominated disclosure exists. | blocker |
-| LR28 | Can serving efficiency be reconstructed through the hardware bridge? | `tokens_per_second_per_mw = gpu_reference * accelerator_mix_factor * architecture_workload_factor * software_efficiency_growth * scenario_multipliers`. | blocker |
+| LR27 | Does numeric accelerator mix separate platform presence facts from operated fleet-share scenarios? | Executive Excel shows mix as input only; A11 internal record keeps reason and replacement evidence. | blocker |
+| LR28 | Can headline TPS/MW be reconstructed through the simple benchmark bridge? | `tokens_per_second_per_mw = gpu_share * gpu_benchmark_tps_per_mw + purpose_built_share * purpose_built_tps_per_mw`, with no unsupported purpose-built uplift. | blocker |
+| LR30 | Are hidden multipliers excluded from the headline formula? | Utilization, MoE, architecture and software CAGR do not multiply headline generated output token supply. | blocker |
 
 ## 4. Capacity Attribution
 
@@ -46,7 +47,7 @@ Use this checklist before publishing a new simulation cycle or presentation deck
 
 | Check ID | Question | Pass Criteria | Severity |
 |---|---|---|---|
-| LR19 | Do Bear/Base/Bull scenarios move the correct variables? | Deployment, inference share, tokens/MW, MoE optimization, and utilization move transparently. | major |
+| LR19 | Do Bear/Base/Bull scenarios move the correct variables? | Operational deployment and inference share move transparently; headline TPS/MW remains the selected benchmark proxy. | major |
 | LR20 | Are scenario multipliers monotonic where expected? | Bear <= Base <= Bull for total token capacity unless a documented exception exists. | major |
 | LR21 | Is 2026 inference share above 60% treated as scenario, not fact? | No company-level disclosure is implied unless source exists. | blocker |
 | LR22 | Does sensitivity isolate one variable at a time where claimed? | A sensitivity table does not silently combine multiple variable changes. | major |
@@ -58,7 +59,9 @@ Use this checklist before publishing a new simulation cycle or presentation deck
 | LR23 | Does PPT wording match derivation type? | Scenario/estimate/proxy values are not worded as disclosed production facts. | major |
 | LR24 | Are charts and tables using the same token definition? | PPT, Excel, JSON, and Markdown all use generated output tokens for headline supply. | blocker |
 | LR25 | Are company rankings based on the same year and scenario? | Ranking labels specify Base 2030 or the applicable scenario/year. | major |
-| LR26 | Are source paths available for every number that might be challenged? | Workbook `02b_number_trace` and source registry trace the number to source IDs or assumption IDs and a replacement path. | major |
+| LR26 | Are source paths available for every input that might be challenged? | Project Markdown/agent records trace source IDs and replacement paths without cluttering the executive workbook. | major |
+| LR29 | Are public anchors separated from modeled endpoints internally? | Agent audit records nine core metric rows per company and labels public-anchor extension scenarios explicitly; executive workbook presents inputs as inputs only. | blocker |
+| LR31 | Is the executive workbook formula-driven and logic-only? | Visible tabs are `00_Logic` through `05_Checks`; all derived outputs are cell formulas. | blocker |
 
 ## Review Result Template
 

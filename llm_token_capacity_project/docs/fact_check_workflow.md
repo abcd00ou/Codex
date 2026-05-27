@@ -11,7 +11,7 @@
 | Fact | 공식 출처에서 직접 확인되는 숫자 | 공개 model parameter, 공식 GW 발표, model card |
 | Estimate | fact를 기반으로 계산한 추정값 | active_power_gw, inference_gw |
 | Proxy | 유사 모델/벤치마크를 참조한 대체값 | closed model tokens/sec/GPU proxy |
-| Scenario | 2027-2030 ramp, mix, utilization 가정 | Bull/Base/Bear deployment multiplier |
+| Scenario | 2027-2030 operational ramp, mix, inference 배분 가정 | Bull/Base/Bear deployment multiplier |
 
 ## 2. 출처 확인 순서
 
@@ -33,7 +33,9 @@
 8. Excel, PPT, HTML, MD, JSON이 모두 재생성됐는지 확인합니다.
 9. `docs/hallucination_checklist.md`를 기준으로 보고 전 review를 합니다.
 
-업체별 숫자 검증은 Excel `02b_number_trace`에서 시작합니다. capacity, AI allocation, GPU/purpose-built mix, efficiency bridge의 모든 숫자, inference/training split, `tokens_per_second_per_mw`, `joules_per_token`, `utilization`, daily/annual inference token 및 별도 training processing proxy가 같은 company-year-scenario row 체계로 `formula_or_rule`, `why_this_number`, `source_ids`, `assumption_ids`, `replacement_path`를 가져야 합니다.
+보고용 Excel 숫자 검증은 `04_Output`에서 `03_Calculation`의 수식으로 내려가고, 다시 `02_Inputs` 및 `01_Benchmark_Input`을 확인하는 순서로 수행합니다. source_id, replacement path, fact/assumption 구분은 workbook을 복잡하게 만들지 않도록 프로젝트 Markdown과 agent 기록에서 유지합니다.
+
+그 다음 agent 기록의 fact-vs-assumption audit에서 주장 강도를 확인합니다. 공식 자료가 뒷받침하는 확인값과 모델 입력값은 분리하되, 이 긴 audit 표는 보고용 Excel에는 표시하지 않습니다.
 
 ## 4. 숫자 정합성 체크
 
@@ -42,16 +44,17 @@
 - active_power_gw가 contracted_power_gw보다 큰가?
 - PUE 적용 전후 GW/MW 변환이 맞는가?
 - inference share와 training share 합이 100%인가?
-- tokens/sec/MW, utilization, seconds/day 곱이 token/day와 일치하는가?
+- `inference_gw * 1,000 * tokens/sec/MW * seconds/day`가 token/day와 일치하는가?
 - annual token은 daily token * 365인가?
 - benchmark layer와 main forecast가 50% 이상 차이 나는 row가 있는가?
 - closed model parameter를 단일 precise number처럼 표현하지 않았는가?
 - hosting provider capacity를 model owner token capacity로 잘못 귀속하지 않았는가?
 - `contracted_power_gw`가 공식 계약 수치인지, 공식 capacity ceiling인지, scenario envelope인지 구분됐는가?
-- `active_power_gw = min(contracted_power_gw, operationally deployed capacity)` 통제가 적용됐는가?
+- `active_power_gw = contracted_power_gw * operational_deployment_share` 및 `active <= contracted` 통제가 적용됐는가?
 - GPU/purpose-built accelerator share 합이 100%이며, 실제 fleet disclosure가 없는 share를 fact로 표현하지 않았는가?
-- `tokens_per_second_per_mw`가 numeric accelerator mix, architecture/workload factor, software efficiency 및 scenario multiplier로 재계산되는가?
-- `utilization`이 장비 가동률이 아니라 SLO·reserve·traffic shape 이후 실현 output capacity 비율로 설명됐는가?
+- `tokens_per_second_per_mw`가 `01_Benchmark_Input`의 고정조건 output-token proxy와 `02_Inputs`의 GPU/purpose-built mix로 재계산되는가?
+- comparable benchmark가 없는 purpose-built accelerator에 추가 uplift가 적용되지 않았는가?
+- `utilization`, MoE uplift, software/architecture multiplier가 headline token 산식에서 제외됐는가?
 
 ## 5. 보고 문구 체크
 
@@ -75,9 +78,11 @@
 보고 전 다음 조건을 충족해야 합니다.
 
 - generator validation PASS
-- Excel에 `11_hallucination_checklist` 존재
+- 내부 Markdown hallucination checklist 검토 기록 존재
 - PPT에 Hallucination 체크리스트 슬라이드 존재
 - JSON에 sources, fact_anchors, benchmark_reference, hallucination_checklist 존재
 - 변경된 숫자마다 source_id 또는 assumption_id 존재
-- Excel에 `02b_number_trace`, `04_gpu_asic_mix`, `05_inference_efficiency`가 존재하고 수치 bridge가 재계산 가능
+- Excel에는 `00_Logic`, `01_Benchmark_Input`, `02_Inputs`, `03_Calculation`, `04_Output`, `05_Checks`만 존재
+- 계산 결과 열과 output table이 값 붙여넣기가 아니라 formula로 저장됨
+- 내부 fact/assumption audit와 source trace는 Markdown/agent 기록에 유지됨
 - 변경 이유가 source log 또는 assumption log에 기록됨

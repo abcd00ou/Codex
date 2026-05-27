@@ -2,7 +2,7 @@
 
 **Subtitle:** How numeric accelerator allocation bridges compute capacity into generated output tokens
 
-**Updated:** 2026-05-26
+**Updated:** 2026-05-27
 
 ## Why This Assumption Exists
 
@@ -18,19 +18,12 @@ Accordingly, this model separates two layers:
 ## Model Formula
 
 ```text
-accelerator_mix_factor =
-  gpu_share * 1.0
-  + purpose_built_accelerator_share * purpose_built_relative_efficiency_factor
-
 tokens_per_second_per_mw =
-  gpu_reference_tps_per_mw
-  * accelerator_mix_factor
-  * architecture_workload_factor
-  * software_efficiency_growth
-  * scenario_multipliers
+  gpu_share * gpu_benchmark_tps_per_mw
+  + purpose_built_accelerator_share * purpose_built_tps_per_mw
 ```
 
-The formula makes the source of efficiency visible. Hardware mix affects throughput through `accelerator_mix_factor`; model architecture and workload conditions affect it separately through `architecture_workload_factor`; software and operational improvements are handled separately so hardware migration is not silently double counted.
+Hardware mix remains visible because it matters to roadmap and allocation research. However, it creates no headline performance premium until the corresponding purpose-built hardware has a comparable generated-output benchmark under the adopted workload conditions. In the current core formula, `purpose_built_tps_per_mw` equals the selected GPU benchmark proxy where no matched public row is adopted.
 
 ## Current Numeric Mix Policy
 
@@ -50,7 +43,7 @@ The formula makes the source of efficiency visible. Hardware mix affects through
 
 - A purpose-built share above zero means the platform direction is sourced, not that the exact percentage is publicly measured.
 - Keeping a company at 100% GPU reference does not claim it owns no ASICs. It means no audited model-owner serving allocation has been adopted into Base.
-- Relative efficiency uplift is not a universal hardware benchmark. It is a scenario coefficient that must later be replaced with comparable output-token measurements at matched model, precision, input/output lengths and SLO.
+- No relative efficiency uplift is applied in headline output without comparable output-token measurements at matched model, precision, input/output lengths and SLO.
 - The workbook shows every company-year mix in `04_gpu_asic_mix`, the resulting bridge in `05_inference_efficiency`, and every numeric rationale in `02b_number_trace`.
 
 ## Replacement Evidence Required

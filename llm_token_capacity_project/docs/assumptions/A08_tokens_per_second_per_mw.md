@@ -38,23 +38,20 @@ tokens_per_second_per_mw는 active inference MW와 곱해져 token/day를 만든
 
 이 변수는 memory marketing에도 직접 연결된다. tokens/MW가 올라가면 같은 전력으로 더 많은 token을 만들 수 있어 HBM capacity pressure가 낮아질 수도 있지만, 실제로는 demand elasticity 때문에 더 많은 inference traffic이 생겨 전체 memory demand가 다시 증가할 수 있다.
 
-## 2026-05-26 Numeric Hardware Bridge
+## 2026-05-27 Simple Core Benchmark Mapping
 
-이제 `tokens_per_second_per_mw`는 company별 단일 시작값으로만 입력하지 않고 아래 구성요소를 공개합니다.
+최종 token 생성량 산식에서는 검증이 어려운 efficiency factor를 겹쳐 곱하지 않습니다. `tokens_per_second_per_mw`는 선택한 InferenceX output-token benchmark와 표시 가능한 accelerator mix만으로 재구성합니다.
 
 ```text
 tokens_per_second_per_mw =
-  gpu_reference_tps_per_mw
-  * accelerator_mix_factor
-  * architecture_workload_factor
-  * software_efficiency_growth
-  * scenario_multipliers
+  gpu_share * gpu_benchmark_tps_per_mw
+  + purpose_built_accelerator_share * purpose_built_tps_per_mw
 ```
 
-- `accelerator_mix_factor`는 A11이 관리하는 numeric GPU/purpose-built accelerator scenario에서 산출됩니다.
-- `architecture_workload_factor`는 MoE active parameter, closed-model proxy, product workload shape의 영향을 분리합니다.
-- `software_efficiency_growth`는 hardware migration 자체와 중복되지 않도록 별도 표시합니다.
-- Excel `05_inference_efficiency`와 `02b_number_trace`에서 모든 company-year 값을 재구성할 수 있습니다.
+- 공통 benchmark 조건은 `B200`, `single_turn`, `ISL=1024`, `OSL=1024`, generated output 기준 `output_tok_s_mw` p50입니다.
+- 업체별 proxy 선택 결과는 Excel `05b_inferencex_core_tps`에 row 수, median, min/max와 함께 기록합니다.
+- TPU, Maia, MTIA, Trainium의 comparable output-token/MW row가 채택되기 전에는 `purpose_built_tps_per_mw = gpu_benchmark_tps_per_mw`로 두어 uplift를 만들지 않습니다.
+- `architecture_workload_factor`, `software_efficiency_growth`, MoE uplift와 utilization은 headline 토큰 결과에 곱하지 않고 별도 연구/sensitivity로만 관리합니다.
 
 ## Hallucination 위험
 
