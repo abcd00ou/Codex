@@ -11,6 +11,9 @@ gpu_share
 purpose_built_accelerator_share
 purpose_built_tps_per_mw
 reference_serving_tps_per_mw
+h200_share
+b200_share
+gb200_share
 ```
 
 ## Current Starting Band
@@ -34,6 +37,7 @@ Medium for platform existence; Low-Medium for numeric mix; no uplift confidence 
 - Describing a custom accelerator launch as a measured production fleet share.
 - Giving ASIC efficiency uplift without a comparable generated-output TPS/MW benchmark.
 - Treating a public open-model benchmark ceiling as measured closed-model commercial serving throughput.
+- Treating editable H200/B200/GB200 scenario shares as reported company fleet inventory.
 - Adding hidden efficiency or utilization multipliers to the headline token output.
 - Using total processed-token throughput where generated output-token throughput is required.
 

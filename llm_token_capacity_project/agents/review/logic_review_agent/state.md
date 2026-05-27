@@ -8,7 +8,7 @@
 | current_scope | compute capacity -> inference GW -> generated output token supply simulation |
 | confidence | Medium for structure review; Low for undisclosed company production telemetry |
 | last_reviewed | 2026-05-27 |
-| status | simple headline formula and fact-versus-assumption audit validated; proxy replacement research remains open |
+| status | GPU-generation input bridge and simple headline formula validated; provider fleet replacement research remains open |
 
 ## Current Review Position
 
@@ -41,6 +41,7 @@ The weakest logic areas remain:
 | 2026-05-27 | Require `02c_fact_vs_assumption_audit` and LR29 | Registered public anchors and forecast endpoints need separate executive-readable classification. | A01; HC21; LR29 | implemented pending validation |
 | 2026-05-27 | Require simple headline formula and LR30 | Final token supply must be explainable from operational inference GW and selected output TPS/MW without weak compounded multipliers. | A08; A09; HC22; LR30 | implemented pending validation |
 | 2026-05-27 | Require logic-only formula workbook and LR31 | Executive workbook should expose calculation logic without audit/raw-data clutter and calculated outputs must be cell formulas. | Cycle 9; LR31 | implemented and structurally validated |
+| 2026-05-27 | Require editable H200/B200/GB200/purpose-built input and LR33 | Equal inference MW produces different token capacity as the deployed accelerator generation changes; undisclosed provider fleets must remain scenario inputs. | A08; A11; HC24; LR28; LR33 | implemented and structurally validated |
 
 ## Current Blocker Register
 
@@ -52,8 +53,8 @@ The weakest logic areas remain:
 
 | Field | Value |
 |---|---|
-| review_note | `agents/review/logic_review_agent/reviews/2026-05-27_commercial_workload_fit_review.md` |
-| overall_status | pass for formula integrity and commercial-fit separation; production replacement open |
+| review_note | `agents/review/logic_review_agent/reviews/2026-05-27_gpu_generation_mix_review.md` |
+| overall_status | pass for GPU-generation mix formula integrity and editable scenario separation; production fleet replacement open |
 | blocker_count | 0 |
 | major_finding_count | 0 |
 | minor_finding_count | 0 |
@@ -73,6 +74,7 @@ The weakest logic areas remain:
 | LRQ05 | Which closed-model parameter proxy bands are defensible enough for FLOPs/token sanity checks? | A07 | medium |
 | LRQ06 | Which official disclosures can replace numeric GPU/purpose-built serving share scenarios? | A11 | high |
 | LRQ07 | Which commercial workload benchmarks can replace the explicit provider fit-factor scenarios? | A08 | high |
+| LRQ08 | Which provider rack counts, accelerator-hour records or deployment disclosures can replace H200/B200/GB200 serving-load inputs? | A11 | high |
 
 ## Downstream Impact Notes
 
@@ -92,3 +94,4 @@ Review the current Base/Bear/Bull simulation and the `Token Supply Constraints b
 6. executive chart wording
 7. number trace completeness and hardware-mix bridge reconstruction
 8. commercial workload fit-factor bridge and aggressive ceiling labeling
+9. editable GPU-generation share replacement evidence and fleet-weighted TPS/MW reconstruction

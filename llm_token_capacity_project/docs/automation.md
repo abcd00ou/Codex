@@ -31,18 +31,20 @@ assert 'core_inferencex_benchmarks' in data
 assert 'commercial_workload_benchmarks' in data
 
 wb = load_workbook(base + '.xlsx', data_only=False)
-assert wb.sheetnames == ['00_Logic', '01_Benchmark_Input', '02_Inputs', '03_Calculation', '04_Output', '05_Checks', '06_Aggressive_View']
+assert wb.sheetnames == ['00_Logic', '01_Benchmark_Input', '02_Inputs', '02_GPU_Mix_Input', '03_Calculation', '04_Output', '05_Checks', '06_Aggressive_View']
 assert all(wb[name].sheet_state == 'visible' for name in wb.sheetnames)
 formula_count = sum(
-    1 for name in ['02_Inputs', '03_Calculation', '04_Output', '05_Checks', '06_Aggressive_View']
+    1 for name in ['02_Inputs', '02_GPU_Mix_Input', '03_Calculation', '04_Output', '05_Checks', '06_Aggressive_View']
     for row in wb[name].iter_rows()
     for cell in row
     if isinstance(cell.value, str) and cell.value.startswith('=')
 )
 assert formula_count > 3000
-assert wb['02_Inputs']['O2'].value == '=M2*N2'
-assert wb['03_Calculation']['U2'].value == '=L2*1000*T2*86400'
-assert wb['03_Calculation']['V2'].value == '=U2*365'
+assert wb['02_GPU_Mix_Input']['H2'].value == '=SUM(D2:G2)'
+assert wb['03_Calculation']['W2'].value == '=N2*R2+O2*S2+P2*T2+Q2*U2'
+assert wb['03_Calculation']['X2'].value == '=W2*V2'
+assert wb['03_Calculation']['Y2'].value == '=L2*1000*X2*86400'
+assert wb['03_Calculation']['Z2'].value == '=Y2*365'
 
 prs = Presentation(base + '.pptx')
 assert len(prs.slides) >= 15
@@ -85,7 +87,7 @@ Agent loop:
 2. `agents/shared/evidence_rules.md`와 `source_quality.md`를 읽습니다.
 3. source를 확인하고 `evidence.md`에 evidence row를 추가합니다.
 4. 변경이 필요하면 `state.md`의 Proposed Changes에 후보를 기록합니다.
-5. operational deployment share, AI workload share, GPU/ASIC mix, inference share, selected TPS/MW mapping, attribution 변경은 반드시 orchestrator review를 거칩니다. Utilization은 headline이 아닌 sensitivity 항목으로만 검토합니다.
+5. operational deployment share, AI workload share, GPU-generation/purpose-built mix, inference share, fleet-weighted TPS/MW mapping, attribution 변경은 반드시 orchestrator review를 거칩니다. Utilization은 headline이 아닌 sensitivity 항목으로만 검토합니다.
 6. 승인 후 generator와 산출물을 업데이트합니다.
 
 ## 추후 자동화 후보

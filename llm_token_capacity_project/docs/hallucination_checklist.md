@@ -22,8 +22,9 @@
 | HC16 | Token definition | generated output, processed, training, billable token을 혼동하지 않았는가? | headline은 generated output token이며 InferenceX total throughput과 분리 | 산식/표기 수정 |
 | HC17 | Capacity terminology | contracted_power_gw가 모두 공식 계약 fact처럼 보이지 않는가? | `02_Inputs`는 입력값으로만 표시하고 상세 분류는 agent audit에 유지 | capacity basis 재분류 |
 | HC18 | Accelerator mix | GPU/ASIC 숫자 mix가 platform presence fact와 fleet-share scenario를 구분하는가? | `02_Inputs` share 합과 A11 내부 reason/replacement 기록 확인 | A11 검토 |
-| HC19 | Efficiency bridge | public reference와 commercial-serving coefficient가 분리되어 있는가? | `reference_serving_tps_per_mw = inferencex_reference_tps_per_mw * commercial_workload_fit_factor`; `01_Benchmark_Input`과 `03_Calculation` formula 검산 | A08/A11 검토 |
-| HC20 | Formula-driven output | 계산 결과가 값으로 붙여넣어져 있지 않은가? | `03_Calculation`, `04_Output`, `05_Checks`, `06_Aggressive_View` 결과 셀이 Excel formula | generator 수정 |
+| HC19 | Efficiency bridge | GPU generation mix, public reference와 commercial-serving coefficient가 분리되어 있는가? | `serving_tps_per_mw = (H200_share*H200_ref + B200_share*B200_ref + GB200_share*GB200_ref + PB_share*PB_ref) * commercial_workload_fit_factor`; formula 검산 | A08/A11 검토 |
+| HC20 | Formula-driven output | 계산 결과가 값으로 붙여넣어져 있지 않은가? | `02_GPU_Mix_Input`의 share만 입력이고 `03_Calculation`, `04_Output`, `05_Checks`, `06_Aggressive_View` 결과 셀이 Excel formula | generator 수정 |
+| HC24 | GPU generation inventory | H200/B200/GB200 share를 공식 fleet fact처럼 표현하지 않는가? | generation mix는 editable scenario로 표기하고 company deployment evidence 발견 시 교체 | A11 검토 |
 | HC23 | Aggressive ceiling label | public benchmark 100% ceiling이 Base 또는 production fact처럼 읽히지 않는가? | `06_Aggressive_View`가 Bull commercial case와 strategic ceiling을 분리 표시 | 발표 문구 수정 |
 | HC21 | Confirmed vs modeled | source가 있다는 이유만으로 scenario endpoint를 확인값으로 부르지 않았는가? | 내부 agent audit에서 공개 fact/gap, 모델값, evidence class, replacement path 분리 | 보고 문구와 모델 classification 수정 |
 | HC22 | No hidden headline multiplier | utilization, MoE, architecture 또는 software CAGR가 최종 token 생성량에 숨은 multiplier로 들어가지 않았는가? | headline formula와 validation은 operational inference GW x selected output TPS/MW x seconds/day만 사용 | 핵심 산식 단순화 |
@@ -46,4 +47,4 @@
 6. China model owner의 실제 commercial serving scale
 7. benchmark_reference와 main forecast 괴리 row
 8. GPU/purpose-built accelerator operated serving share의 공개 근거
-9. selected TPS/MW 위에 숨은 efficiency 또는 utilization multiplier가 중복 적용되지 않았는지 여부
+9. fleet-weighted serving TPS/MW 위에 숨은 efficiency 또는 utilization multiplier가 중복 적용되지 않았는지 여부

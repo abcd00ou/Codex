@@ -1,12 +1,12 @@
 # A11 gpu_asic_mix
 
-**Subtitle:** How numeric accelerator allocation bridges compute capacity into generated output tokens
+**Subtitle:** How H200, B200, GB200 and purpose-built allocation bridges compute capacity into generated output tokens
 
 **Updated:** 2026-05-27
 
 ## Why This Assumption Exists
 
-The forecast cannot explain `tokens_per_second_per_mw` only by saying a company uses GPUs, TPUs, Trainium, Maia or MTIA. Hardware composition must be numeric if it affects token supply. At the same time, most model owners do not publish the actual percentage of production inference traffic served by each accelerator family.
+The forecast cannot explain `tokens_per_second_per_mw` only by saying a company uses GPUs, TPUs, Trainium, Maia or MTIA. It must distinguish GPU generations such as H200, B200 and GB200 because equal MW can create materially different token throughput. At the same time, most model owners do not publish the actual production inference fleet by generation.
 
 Accordingly, this model separates two layers:
 
@@ -14,19 +14,31 @@ Accordingly, this model separates two layers:
 |---|---|---|
 | Platform presence | An official source confirms that a provider uses or targets a hardware platform for AI/inference | Fact anchor |
 | Numeric serving mix | Percentage of modeled inference-serving accelerator load assigned to GPU versus purpose-built accelerators | Scenario until operated allocation is disclosed |
+| GPU generation mix | Percentage assigned to H200, B200 and GB200 within the modeled inference load | Editable scenario until company deployment data is disclosed |
 
 ## Model Formula
 
 ```text
-reference_serving_tps_per_mw =
-  inferencex_reference_tps_per_mw * commercial_workload_fit_factor
-
 tokens_per_second_per_mw =
-  gpu_share * reference_serving_tps_per_mw
-  + purpose_built_accelerator_share * purpose_built_tps_per_mw
+  (h200_share * h200_reference_tps_per_mw
+  + b200_share * b200_reference_tps_per_mw
+  + gb200_share * gb200_reference_tps_per_mw
+  + purpose_built_share * purpose_built_reference_tps_per_mw)
+  * commercial_workload_fit_factor
 ```
 
-Hardware mix remains visible because it matters to roadmap and allocation research. However, it creates no headline performance premium until the corresponding purpose-built hardware has a comparable generated-output benchmark under the adopted workload conditions. In the current core formula, `purpose_built_tps_per_mw` equals the workload-adjusted serving reference where no matched public row is adopted.
+Hardware mix remains visible because it matters to roadmap and allocation research. H200/B200/GB200 references can influence headline output where comparable public rows are available. Purpose-built hardware creates no premium until it has a comparable generated-output benchmark; the default purpose-built reference is B200 and is explicitly editable.
+
+## Default GPU Generation Input
+
+The first editable starting scenario applies the following migration inside the GPU portion of inference-serving load:
+
+| Year | H200 share of GPU portion | B200 share of GPU portion | GB200 share of GPU portion |
+|---|---:|---:|---:|
+| 2026 | 55% | 40% | 5% |
+| 2030 | 10% | 35% | 55% |
+
+Intermediate years interpolate linearly. These shares are not provider facts; they are scenario inputs in Excel `02_GPU_Mix_Input` to be replaced with procurement, deployment or accelerator-hour evidence.
 
 ## Current Numeric Mix Policy
 
@@ -47,7 +59,7 @@ Hardware mix remains visible because it matters to roadmap and allocation resear
 - A purpose-built share above zero means the platform direction is sourced, not that the exact percentage is publicly measured.
 - Keeping a company at 100% GPU reference does not claim it owns no ASICs. It means no audited model-owner serving allocation has been adopted into Base.
 - No relative efficiency uplift is applied in headline output without comparable output-token measurements at matched model, precision, input/output lengths and SLO.
-- The executive workbook shows company-year mix in `02_Inputs`, the formula bridge in `03_Calculation`, and aggressive ceiling interpretation in `06_Aggressive_View`; detailed rationale remains in agent records.
+- The executive workbook shows company-year GPU generation mix in `02_GPU_Mix_Input`, the formula bridge in `03_Calculation`, and aggressive ceiling interpretation in `06_Aggressive_View`; detailed rationale remains in agent records.
 
 ## Replacement Evidence Required
 

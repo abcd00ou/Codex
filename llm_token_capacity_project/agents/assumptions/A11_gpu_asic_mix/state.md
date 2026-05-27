@@ -3,11 +3,11 @@
 | Field | Value |
 |---|---|
 | agent_id | A11 |
-| owned_field | gpu_share; purpose_built_accelerator_share; purpose_built_tps_per_mw benchmark replacement path |
+| owned_field | h200_share; b200_share; gb200_share; purpose_built_accelerator_share; hardware reference TPS/MW replacement path |
 | current_starting_band | sourced platform presence with numeric scenario mix |
 | confidence | Medium for platform direction; Low-Medium for operated share |
 | last_reviewed | 2026-05-27 |
-| status | Numeric mix visible; no purpose-built TPS/MW uplift in headline without comparable benchmark |
+| status | GPU-generation mix editable; public H200/B200/GB200 reference bridge visible; no unsupported purpose-built uplift |
 
 ## Current Assumption
 
@@ -34,9 +34,10 @@ The Base model uses numeric GPU/purpose-built accelerator shares only when they 
 | 2026-05-26 | Add numeric accelerator mix and efficiency bridge into forecast model | Previous report described hardware without numerically tracing it into tokens/MW. | A11_E001-A11_E009 | implemented |
 | 2026-05-27 | Remove unsupported purpose-built accelerator efficiency premium from headline | Platform presence and modeled mix do not establish comparable generated-output TPS/MW uplift. | A11_E001-A11_E009; HC22 | implemented |
 | 2026-05-27 | Apply no-uplift rule after commercial-workload benchmark adjustment | Hardware mix must not cause public reference throughput to be read as closed-model production performance. | A11_E001-A11_E009; A08_E005; LR28 | implemented; purpose-built TPS equals serving reference until replaced |
+| 2026-05-27 | Split GPU bucket into editable H200/B200/GB200 generation mix | Equal inference MW yields materially different token capacity by installed GPU generation; prior GPU-versus-ASIC split could not express this. | A08_E005; A11_E001-A11_E009 | implemented in `02_GPU_Mix_Input`; provider fleet facts pending |
 
 ## Downstream Impact Notes
 
 - A11 changes feed A08 `tokens_per_second_per_mw` and headline token supply.
-- Hardware-share changes remain visible, while unverified hardware or software uplift does not enter headline output. The upstream serving reference is now workload-adjusted before hardware weighting.
+- Hardware-share changes remain visible, while unverified purpose-built or software uplift does not enter headline output. H200/B200/GB200 public references are weighted before commercial workload fit is applied.
 - Replacement evidence priority is operated inference accelerator-hours or model-level output tokens/MW.

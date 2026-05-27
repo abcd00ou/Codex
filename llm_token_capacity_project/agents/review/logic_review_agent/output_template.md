@@ -41,7 +41,9 @@ One paragraph explaining whether the simulation is safe to present and what must
 - `ai_it_load_gw = it_load_gw * ai_workload_share`:
 - `inference_gw = ai_it_load_gw * inference_power_share`:
 - `active_power_gw = contracted_power_gw * operational_deployment_share`:
-- `tokens/day = inference_gw * 1000 * selected output tokens/sec/MW * 86400`:
+- `fleet_reference_tps_per_mw = H200_share*H200_ref + B200_share*B200_ref + GB200_share*GB200_ref + purpose_built_share*purpose_ref`:
+- `serving_tps_per_mw = fleet_reference_tps_per_mw * commercial_workload_fit_factor`:
+- `tokens/day = inference_gw * 1000 * serving_tps_per_mw * 86400`:
 
 ## Token Definition Review
 
@@ -69,7 +71,7 @@ One paragraph explaining whether the simulation is safe to present and what must
 - Bear/Base/Bull monotonicity:
 - Deployment speed:
 - Inference share:
-- Selected TPS/MW proxy mapping:
+- Fleet-weighted TPS/MW proxy mapping and editable GPU-generation input:
 - Hidden headline multiplier exclusion:
 
 ## PPT / Executive Output Review

@@ -1,11 +1,12 @@
 # 계산식과 가정 Methodology
 
-이 문서는 시뮬레이션의 계산 논리를 계속 점검하기 위한 기준 문서입니다. 보고용 Excel은 `00_Logic`, `01_Benchmark_Input`, `02_Inputs`, `03_Calculation`, `04_Output`, `05_Checks`, `06_Aggressive_View` 일곱 시트만 노출합니다. 상세 source/audit/agent 기록은 프로젝트 Markdown과 정규화 CSV에 보관하며 보고용 workbook 화면에는 싣지 않습니다.
+이 문서는 시뮬레이션의 계산 논리를 계속 점검하기 위한 기준 문서입니다. 보고용 Excel은 `00_Logic`, `01_Benchmark_Input`, `02_Inputs`, `02_GPU_Mix_Input`, `03_Calculation`, `04_Output`, `05_Checks`, `06_Aggressive_View` 여덟 시트만 노출합니다. 상세 source/audit/agent 기록은 프로젝트 Markdown과 정규화 CSV에 보관하며 보고용 workbook 화면에는 싣지 않습니다.
 
 ## 보고용 Excel 원칙
 
-- 직접 입력되는 숫자는 `02_Inputs`의 scenario 입력값과 `01_Benchmark_Input`의 public InferenceX reference 및 Bear/Base/Bull commercial workload fit factor뿐입니다.
-- `reference_serving_tps_per_mw`, `operational_power_gw`, `inference_gw`, `weighted_tps_per_mw`, `inference_tokens_per_day`, 연간 토큰 및 시나리오 합계는 Excel 수식으로 계산합니다.
+- 직접 입력되는 숫자는 `02_Inputs`의 전력/배분 scenario 입력값, `01_Benchmark_Input`의 GPU 세대별 public reference 및 Bear/Base/Bull commercial workload fit factor, `02_GPU_Mix_Input`의 H200/B200/GB200/purpose-built share뿐입니다.
+- `fleet_reference_tps_per_mw`, `serving_tps_per_mw`, `operational_power_gw`, `inference_gw`, `inference_tokens_per_day`, 연간 토큰 및 시나리오 합계는 Excel 수식으로 계산합니다.
+- `02_GPU_Mix_Input`은 업체·연도·시나리오별 GPU generation mix를 사용자가 추후 교체할 수 있는 입력표입니다.
 - `03_Calculation`은 행 단위 계산 추적표이고, `04_Output`은 그 수식을 참조하는 출력표와 차트입니다.
 - `05_Checks`는 capacity bound, power split, accelerator share, workload-fit 수식, purpose-built no-uplift 및 headline formula 범위를 수식으로 검증합니다.
 - `06_Aggressive_View`는 Bull commercial case와 `fit factor = 100%`인 public benchmark ceiling을 구분하여 보여주는 upside 시트입니다. Ceiling은 strategic envelope이며 Base forecast가 아닙니다.
@@ -54,7 +55,8 @@ contracted_power_gw
 -> AI workload load
 -> inference/training split
 -> inference MW
--> InferenceX public reference output tokens/sec/MW
+-> H200 / B200 / GB200 / purpose-built power share
+-> fleet-weighted InferenceX public reference output tokens/sec/MW
 -> commercial workload fit factor
 -> serving reference output tokens/sec/MW
 -> daily / annual tokens
@@ -128,32 +130,36 @@ ai_it_load_gw = it_load_gw * ai_workload_share
 
 이 share를 fact로 승격하려면 model-owner별 cluster scheduling telemetry, allocated accelerator-hours 또는 공식 workload allocation disclosure가 필요합니다.
 
-## 3. Numeric GPU / ASIC Mix
+## 3. Numeric GPU Generation / ASIC Mix
 
-현재 모델은 GPU와 purpose-built accelerator 비중을 숫자로 명시합니다. 다만 mix를 보인다는 것과 성능 uplift를 주장한다는 것은 분리합니다.
+현재 모델은 GPU를 하나의 덩어리로 보지 않고 `H200`, `B200`, `GB200`, `purpose-built accelerator`의 inference-load share로 명시합니다. 이는 GPU 보급 대수를 직접 확인한 fact가 아니라, 같은 MW 안에서 어떤 세대가 배치되는지에 대한 editable scenario입니다.
 
 ```text
-tokens_per_second_per_mw =
-  gpu_share * reference_serving_tps_per_mw
-  + purpose_built_accelerator_share * purpose_built_tps_per_mw
+fleet_reference_tps_per_mw =
+  h200_share * h200_reference_tps_per_mw
+  + b200_share * b200_reference_tps_per_mw
+  + gb200_share * gb200_reference_tps_per_mw
+  + purpose_built_share * purpose_built_reference_tps_per_mw
 
-reference_serving_tps_per_mw =
-  inferencex_reference_tps_per_mw
-  * commercial_workload_fit_factor
+serving_tps_per_mw =
+  fleet_reference_tps_per_mw * commercial_workload_fit_factor
 ```
 
 중요한 구분:
 
-- Microsoft Maia, Google TPU/Ironwood, Meta MTIA, Anthropic/AWS Trainium처럼 official platform presence가 확인된 것은 fact anchor입니다.
-- 그 platform이 회사의 실제 inference serving load 중 차지하는 백분율은 대체로 미공개이므로 numeric scenario입니다.
-- TPU, Maia, MTIA, Trainium의 matched `output_tok_s_mw` 비교자료가 채택되기 전에는 `purpose_built_tps_per_mw = reference_serving_tps_per_mw`로 두며 uplift를 만들지 않습니다.
+- H200/B200/GB200의 업체별 실제 배치 대수와 inference 배정 비율은 일반적으로 공개되지 않으므로 numeric scenario입니다.
+- GPU generation share는 `02_GPU_Mix_Input`에서 노란색 입력 셀로 분리하여 실제 조달·배치 정보가 생기면 바로 교체합니다.
+- Microsoft Maia, Google TPU/Ironwood, Meta MTIA, Anthropic/AWS Trainium처럼 official platform presence가 확인된 것은 fact anchor지만 실제 serving share는 scenario입니다.
+- TPU, Maia, MTIA, Trainium의 matched `output_tok_s_mw` 비교자료가 채택되기 전에는 purpose-built reference를 B200 placeholder로 두며 uplift를 만들지 않습니다.
 - xAI, OpenAI, DeepSeek, Alibaba, Tencent는 Base에서 확인 가능한 GPU reference를 우선 적용하고, 공개되지 않은 ASIC share uplift를 억지로 넣지 않습니다.
 
-업체·연도별 `gpu_share`와 `purpose_built_share`는 보고용 Excel `02_Inputs`에 표시합니다. 산정 이유와 교체 경로는 `A11_gpu_asic_mix` agent 기록에서 관리합니다.
+업체·연도별 `h200_share`, `b200_share`, `gb200_share`, `purpose_built_share`는 보고용 Excel `02_GPU_Mix_Input`에 표시합니다. 산정 이유와 교체 경로는 `A11_gpu_asic_mix` agent 기록에서 관리합니다.
 
 ## 4. GPU/ASIC Mix에서 `tokens_per_second_per_mw`로 가는 식
 
-Excel `01_Benchmark_Input`은 두 층을 분리합니다. 공통 비교 조건 `B200`, `single_turn`, `ISL=1024`, `OSL=1024`, generated-output `output_tok_s_mw` 중앙값은 public InferenceX reference입니다. 그 위에 업체별 commercial workload class에 대응하는 Bear/Base/Bull fit factor를 입력하며, Excel 수식이 `reference_serving_tps_per_mw`를 계산합니다. 폐쇄형, reasoning-heavy, long-context 또는 strict-SLO 서비스는 공개 proxy benchmark와 동일한 production throughput이라고 표현하지 않습니다.
+Excel `01_Benchmark_Input`은 GPU 세대별 public reference와 commercial workload fit을 분리합니다. 공통 비교 조건은 `single_turn`, `ISL=1024`, `OSL=1024`, generated-output `output_tok_s_mw` 중앙값입니다. 같은 proxy model에서 H200/B200/GB200의 비교 행이 50개 이상이면 해당 public reference를 기본 입력으로 사용하고, 그렇지 않으면 B200 placeholder로 시작하여 사용자가 교체하도록 둡니다. 그 위에 업체별 commercial workload class의 Bear/Base/Bull fit factor를 적용합니다.
+
+현재 기본 GPU generation migration 가정은 GPU portion 내에서 2026년 `H200 55% / B200 40% / GB200 5%`에서 2030년 `H200 10% / B200 35% / GB200 55%`로 이동합니다. 목적은 fleet 세대교체 효과를 보이기 위한 starting scenario이며 업체별 사실로 주장하지 않습니다.
 
 | Workload mapping | Base treatment |
 |---|---|

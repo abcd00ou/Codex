@@ -13,6 +13,7 @@
 | 8 | 2026-05-27 | Simple core token-capacity formula | Headline token output now uses operational deployment, PUE, AI/inference allocation and fixed-condition InferenceX output TPS/MW only; utilization/MoE/software/architecture multipliers removed from headline | Replace selected proxy rows with matched production telemetry when disclosed |
 | 9 | 2026-05-27 | Executive artifact simplification | Excel now exposes only Logic, Benchmark Input, Inputs, Calculation, Output and Checks; derived cells are formulas and research/audit detail stays in project records | Keep formula workbook synchronized with internal evidence ledger |
 | 10 | 2026-05-27 | Commercial-serving TPS/MW correction and aggressive upside view | Separated InferenceX public reference from company workload-fit assumptions; added formula-driven Bull and public-reference ceiling view | Replace fit factors with matched production/service benchmarks when disclosed |
+| 11 | 2026-05-27 | Editable GPU generation mix | Added H200/B200/GB200/purpose-built inference-load share inputs and fleet-weighted TPS/MW bridge | Replace default migration shares with company fleet deployment or accelerator-hour evidence |
 
 ## Open Flags
 
@@ -24,4 +25,5 @@
 - 2026 serving sources: IBM PD disaggregation, Joule inference energy, and 2026 arXiv serving papers should be reviewed by A08/A09 before changing tokens/MW or utilization.
 - InferenceX: full dump normalized; fixed B200/single_turn/ISL-OSL 1024/1024 output TPS/MW p50 proxy is used transparently in headline while remaining non-production telemetry.
 - A11: numeric GPU/purpose-built accelerator mix is now explicit but remains scenario unless operated fleet-share disclosure is found.
+- A11 GPU generations: H200/B200/GB200 shares are editable starting assumptions; they are not confirmed provider fleet counts or power allocations.
 - Fact-vs-assumption audit: do not call OpenAI 12GW or Anthropic 7GW endpoints confirmed values unless new official disclosure replaces the current anchor gap.

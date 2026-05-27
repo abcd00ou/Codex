@@ -1284,15 +1284,15 @@ def formula_assumptions() -> list[dict[str, Any]]:
         },
         {
             "category": "Benchmark-selected accelerator mix",
-            "formula": "weighted_tps_per_mw = gpu_share * reference_serving_tps_per_mw + purpose_built_share * purpose_built_tps_per_mw",
-            "meaning_kr": "GPU/ASIC mix는 수치로 보이되, comparable output-token benchmark가 없는 TPU/Maia/MTIA/Trainium에는 임의 uplift를 주지 않습니다. purpose_built_tps_per_mw는 workload-adjusted serving reference와 같게 두어 숨은 hardware premium을 제거합니다.",
+            "formula": "fleet_reference_tps_per_mw = h200_share*h200_ref + b200_share*b200_ref + gb200_share*gb200_ref + purpose_built_share*purpose_built_ref",
+            "meaning_kr": "H200/B200/GB200/purpose-built 구성비를 직접 입력하여 같은 inference MW라도 fleet 구성에 따라 public reference TPS/MW가 달라지게 합니다. Purpose-built는 comparable benchmark가 없으면 B200 placeholder를 사용하며 editable input으로 남깁니다.",
             "evidence_type": "Platform fact + Conservative benchmark mapping",
             "source_ids": "SRC_MS_MAIA200; SRC_GOOGLE_IRONWOOD; SRC_META_MTIA_GENAI_2026; SRC_AWS_RAINIER_ACTIVE; ASSUMP_NUMERIC_ACCELERATOR_MIX",
         },
         {
             "category": "InferenceX TPS/MW selection",
-            "formula": "reference_serving_tps_per_mw = inferencex_reference_tps_per_mw * commercial_workload_fit_factor",
-            "meaning_kr": "InferenceX generated-output TPS/MW 중앙값은 공개 reference ceiling으로 사용하며, 상용 서비스의 closed/reasoning/long-context/SLO workload 적합성은 명시적 Bear/Base/Bull fit factor로 분리합니다. MoE, software CAGR, utilization은 추가 multiplier로 중복 적용하지 않습니다.",
+            "formula": "reference_serving_tps_per_mw = fleet_reference_tps_per_mw * commercial_workload_fit_factor",
+            "meaning_kr": "InferenceX generated-output TPS/MW는 GPU 세대별 공개 reference로 사용하며, 상용 서비스의 closed/reasoning/long-context/SLO workload 적합성은 명시적 Bear/Base/Bull fit factor로 분리합니다. MoE, software CAGR, utilization은 추가 multiplier로 중복 적용하지 않습니다.",
             "evidence_type": "Benchmark proxy selection",
             "source_ids": "SRC_SEMIANALYSIS_INFERENCEX; SRC_DEEPSEEK_V3; SRC_QWEN3_GITHUB; SRC_TENCENT_AI_INFRA_MOE; ASSUMP_NUMERIC_ACCELERATOR_MIX",
         },
@@ -1721,6 +1721,61 @@ def commercial_workload_benchmark_rows() -> list[dict[str, Any]]:
     return rows
 
 
+def gpu_generation_mix_default(year_index: int) -> dict[str, float]:
+    """Editable default split within the GPU portion of modeled inference load."""
+    points = len(YEARS)
+    return {
+        "h200": lerp(0.55, 0.10, year_index, points),
+        "b200": lerp(0.40, 0.35, year_index, points),
+        "gb200": lerp(0.05, 0.55, year_index, points),
+    }
+
+
+def hardware_reference_profiles() -> dict[str, dict[str, Any]]:
+    """Build selected output-token TPS/MW references by proxy model and GPU generation.
+
+    A model/hardware row is selected only where at least 50 comparable public
+    observations exist under the fixed filter. Otherwise B200 is used as an
+    explicit conservative placeholder until the user supplies a replacement.
+    """
+    source_path = ROOT / "data" / "inferencex" / "normalized" / "inferencex_benchmark_results.csv"
+    models = ["gptoss120b", "llama70b", "dsr1", "qwen3.5"]
+    hardware = ["h200", "b200", "gb200"]
+    samples: dict[tuple[str, str], list[float]] = {(model, gpu): [] for model in models for gpu in hardware}
+    with source_path.open(newline="", encoding="utf-8") as handle:
+        for row in csv.DictReader(handle):
+            key = (row.get("model", ""), row.get("gpu", ""))
+            if (
+                key in samples
+                and row.get("benchmark_type") == "single_turn"
+                and row.get("isl") == "1024"
+                and row.get("osl") == "1024"
+                and row.get("output_tok_s_mw")
+            ):
+                samples[key].append(float(row["output_tok_s_mw"]))
+    profiles: dict[str, dict[str, Any]] = {}
+    for model in models:
+        b200_vals = samples[(model, "b200")]
+        if not b200_vals:
+            raise ValueError(f"Missing B200 reference for {model}")
+        b200_value = round(statistics.median(b200_vals))
+        profile: dict[str, Any] = {"proxy_model": model}
+        for gpu in hardware:
+            vals = samples[(model, gpu)]
+            observed = round(statistics.median(vals)) if vals else None
+            selected = observed if len(vals) >= 50 else b200_value
+            profile[f"{gpu}_row_count"] = len(vals)
+            profile[f"{gpu}_observed_tps_per_mw"] = observed
+            profile[f"{gpu}_selected_tps_per_mw"] = selected
+            profile[f"{gpu}_selection_status"] = (
+                "Public reference selected"
+                if len(vals) >= 50
+                else "B200 placeholder - insufficient/missing matched rows; editable input"
+            )
+        profiles[model] = profile
+    return profiles
+
+
 def forecast_rows(scenario_case: str = "Base") -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     case = SCENARIO_CASES[scenario_case]
@@ -1728,6 +1783,7 @@ def forecast_rows(scenario_case: str = "Base") -> list[dict[str, Any]]:
     derivation_profiles = company_derivation_profiles()
     benchmark_profiles = company_core_benchmark_map()
     workload_profiles = commercial_workload_profiles()
+    hardware_profiles = hardware_reference_profiles()
     for scenario in scenarios():
         mix = mix_profiles[scenario.company]
         derivation = derivation_profiles[scenario.company]
@@ -1744,13 +1800,27 @@ def forecast_rows(scenario_case: str = "Base") -> list[dict[str, Any]]:
             training_share = 1 - inference_share
             utilization_reference = round(lerp(scenario.utilization_2026, scenario.utilization_2030, idx, len(YEARS)), 3)
             gpu_share = lerp(mix["gpu_share_2026"], mix["gpu_share_2030"], idx, len(YEARS))
-            purpose_built_share = 1 - gpu_share
-            inferencex_reference_tps_per_mw = benchmark["output_tok_s_mw_p50"]
+            purpose_built_share = round(1 - gpu_share, 3)
+            generation_mix = gpu_generation_mix_default(idx)
+            h200_share = round(gpu_share * generation_mix["h200"], 3)
+            b200_share = round(gpu_share * generation_mix["b200"], 3)
+            gb200_share = round(1 - purpose_built_share - h200_share - b200_share, 3)
+            hardware = hardware_profiles[benchmark["proxy_model"]]
+            h200_reference_tps_per_mw = hardware["h200_selected_tps_per_mw"]
+            b200_reference_tps_per_mw = hardware["b200_selected_tps_per_mw"]
+            gb200_reference_tps_per_mw = hardware["gb200_selected_tps_per_mw"]
+            purpose_built_reference_tps_per_mw = b200_reference_tps_per_mw
+            inferencex_reference_tps_per_mw = round(
+                h200_share * h200_reference_tps_per_mw
+                + b200_share * b200_reference_tps_per_mw
+                + gb200_share * gb200_reference_tps_per_mw
+                + purpose_built_share * purpose_built_reference_tps_per_mw
+            )
             fit_key = "bear_fit_factor" if scenario_case == "Bear" else "bull_fit_factor" if scenario_case == "Bull" else "base_fit_factor"
             commercial_workload_fit_factor = workload[fit_key]
             reference_serving_tps_per_mw = round(inferencex_reference_tps_per_mw * commercial_workload_fit_factor)
-            purpose_built_tps_per_mw = reference_serving_tps_per_mw
-            tps_per_mw = gpu_share * reference_serving_tps_per_mw + purpose_built_share * purpose_built_tps_per_mw
+            purpose_built_tps_per_mw = round(purpose_built_reference_tps_per_mw * commercial_workload_fit_factor)
+            tps_per_mw = reference_serving_tps_per_mw
             it_load_gw = active / scenario.pue
             ai_it_load_gw = it_load_gw * scenario.ai_workload_share
             inference_gw = ai_it_load_gw * inference_share
@@ -1787,14 +1857,22 @@ def forecast_rows(scenario_case: str = "Base") -> list[dict[str, Any]]:
                     "gpu_share": round(gpu_share, 3),
                     "purpose_built_accelerator_share": round(purpose_built_share, 3),
                     "purpose_built_accelerator_label": mix["asic_label"],
+                    "h200_share": round(h200_share, 3),
+                    "b200_share": round(b200_share, 3),
+                    "gb200_share": round(gb200_share, 3),
                     "gpu_benchmark_proxy_model": benchmark["proxy_model"],
                     "commercial_workload_class": workload["workload_class"],
+                    "h200_reference_tps_per_mw": h200_reference_tps_per_mw,
+                    "b200_reference_tps_per_mw": b200_reference_tps_per_mw,
+                    "gb200_reference_tps_per_mw": gb200_reference_tps_per_mw,
+                    "purpose_built_reference_tps_per_mw": purpose_built_reference_tps_per_mw,
+                    "fleet_reference_tps_per_mw": inferencex_reference_tps_per_mw,
                     "inferencex_reference_tps_per_mw": inferencex_reference_tps_per_mw,
                     "commercial_workload_fit_factor": commercial_workload_fit_factor,
                     "reference_serving_tps_per_mw": reference_serving_tps_per_mw,
                     "gpu_benchmark_tps_per_mw": reference_serving_tps_per_mw,
                     "purpose_built_tps_per_mw": purpose_built_tps_per_mw,
-                    "purpose_built_benchmark_status": "No comparable public output-token/MW row adopted; equal to workload-adjusted serving reference with no uplift.",
+                    "purpose_built_benchmark_status": "No comparable public output-token/MW row adopted; B200 public reference placeholder is used and remains editable.",
                     "training_power_share": training_share_r,
                     "inference_power_share": inference_share_r,
                     "inference_gw": inference_gw_r,
@@ -1911,6 +1989,14 @@ def number_trace_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             row["gpu_asic_mix_basis"], company_sources + "; ASSUMP_NUMERIC_ACCELERATOR_MIX",
             row["replacement_path"],
         )
+        for gpu in ("h200", "b200", "gb200"):
+            add(
+                row, f"{gpu}_share", row[f"{gpu}_share"], "share of inference-serving accelerator load", "Editable numeric scenario",
+                f"{gpu}_share = gpu_share * default_gpu_generation_mix_{gpu}",
+                "Default GPU-generation migration assumption; executive workbook allows later manual replacement by company/year/scenario.",
+                "SRC_SEMIANALYSIS_INFERENCEX; ASSUMP_NUMERIC_ACCELERATOR_MIX",
+                "Company fleet inventory, accelerator-hours or procurement/deployment records by GPU generation.",
+            )
         add(
             row, "purpose_built_accelerator_share", row["purpose_built_accelerator_share"], "share of inference-serving accelerator load", "Numeric scenario",
             "1 - gpu_share",
@@ -1919,29 +2005,29 @@ def number_trace_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             row["replacement_path"],
         )
         add(
-            row, "inferencex_reference_tps_per_mw", row["inferencex_reference_tps_per_mw"], "generated output tokens/sec/MW", "Public benchmark reference",
-            "p50(output_tok_s_mw | B200, single_turn, ISL=1024, OSL=1024, selected proxy model)",
-            f"Selected InferenceX proxy model: {row['gpu_benchmark_proxy_model']}. It is a public reference ceiling, not measured company production throughput.",
+            row, "fleet_reference_tps_per_mw", row["fleet_reference_tps_per_mw"], "generated output tokens/sec/MW", "Fleet-weighted public benchmark reference",
+            "h200_share*h200_reference + b200_share*b200_reference + gb200_share*gb200_reference + purpose_built_share*purpose_built_reference",
+            f"Selected InferenceX proxy model: {row['gpu_benchmark_proxy_model']}. Each GPU-generation reference is public benchmark input or documented B200 placeholder, not measured company production throughput.",
             "SRC_SEMIANALYSIS_INFERENCEX; ASSUMP_NUMERIC_ACCELERATOR_MIX",
             "Comparable production output-token throughput or a more closely matched benchmark.",
         )
         add(
             row, "commercial_workload_fit_factor", row["commercial_workload_fit_factor"], "share of public reference throughput", "Scenario assumption",
-            "reference_serving_tps_per_mw = inferencex_reference_tps_per_mw * commercial_workload_fit_factor",
+            "reference_serving_tps_per_mw = fleet_reference_tps_per_mw * commercial_workload_fit_factor",
             f"Commercial workload class: {row['commercial_workload_class']}. Closed-model, reasoning, long-context and SLO mismatch is made explicit rather than hiding it in the benchmark.",
             "SRC_SEMIANALYSIS_INFERENCEX; ASSUMP_NUMERIC_ACCELERATOR_MIX",
             "Matched commercial serving benchmark by product surface, context shape and latency SLO.",
         )
         add(
             row, "reference_serving_tps_per_mw", row["reference_serving_tps_per_mw"], "generated output tokens/sec/MW", "Workload-adjusted benchmark proxy",
-            "inferencex_reference_tps_per_mw * commercial_workload_fit_factor",
+            "fleet_reference_tps_per_mw * commercial_workload_fit_factor",
             "This is the coefficient used for headline token generation; it is intentionally below the raw public reference unless the commercial workload is closely matched.",
             "SRC_SEMIANALYSIS_INFERENCEX; ASSUMP_NUMERIC_ACCELERATOR_MIX",
             "Provider production output-token throughput with comparable workload/SLO.",
         )
         add(
             row, "purpose_built_tps_per_mw", row["purpose_built_tps_per_mw"], "generated output tokens/sec/MW", "Conservative no-uplift proxy",
-            "purpose_built_tps_per_mw = reference_serving_tps_per_mw until comparable output-token benchmark is adopted",
+            "purpose_built_tps_per_mw = purpose_built_reference_tps_per_mw * commercial_workload_fit_factor until comparable output-token benchmark is adopted",
             row["purpose_built_benchmark_status"],
             company_sources + "; ASSUMP_NUMERIC_ACCELERATOR_MIX",
             "Matched-workload generated-output benchmark for the provider purpose-built accelerator.",
@@ -1975,7 +2061,7 @@ def number_trace_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         )
         add(
             row, "tokens_per_second_per_mw", row["tokens_per_second_per_mw"], "generated output tokens/sec/MW", "Derived estimate + benchmark calibration",
-            "gpu_share * reference_serving_tps_per_mw + purpose_built_accelerator_share * purpose_built_tps_per_mw",
+            "fleet_reference_tps_per_mw * commercial_workload_fit_factor",
             row["tokens_per_mw_basis"], company_sources + "; SRC_SEMIANALYSIS_INFERENCEX; ASSUMP_NUMERIC_ACCELERATOR_MIX",
             "Comparable production output-token throughput with model, hardware, precision, ISL/OSL and SLO matched.",
         )
@@ -2509,12 +2595,21 @@ def validate(rows: list[dict[str, Any]]) -> dict[str, Any]:
             failures.append(f"{row['company']} {row['year']}: training+inference share={share_sum}")
         if row["tokens_per_second_per_mw"] <= 0 or row["joules_per_token"] <= 0:
             failures.append(f"{row['company']} {row['year']}: invalid efficiency")
-        if not math.isclose(row["gpu_share"] + row["purpose_built_accelerator_share"], 1.0, abs_tol=0.001):
-            failures.append(f"{row['company']} {row['year']}: gpu+purpose-built accelerator share != 1")
+        component_share = (
+            row["h200_share"] + row["b200_share"] + row["gb200_share"]
+            + row["purpose_built_accelerator_share"]
+        )
+        if not math.isclose(component_share, 1.0, abs_tol=0.002):
+            failures.append(f"{row['company']} {row['year']}: H200+B200+GB200+purpose-built share != 1")
 
         reconstructed_tps = round(
-            row["gpu_share"] * row["gpu_benchmark_tps_per_mw"]
-            + row["purpose_built_accelerator_share"] * row["purpose_built_tps_per_mw"]
+            (
+                row["h200_share"] * row["h200_reference_tps_per_mw"]
+                + row["b200_share"] * row["b200_reference_tps_per_mw"]
+                + row["gb200_share"] * row["gb200_reference_tps_per_mw"]
+                + row["purpose_built_accelerator_share"] * row["purpose_built_reference_tps_per_mw"]
+            )
+            * row["commercial_workload_fit_factor"]
         )
         if abs(reconstructed_tps - row["tokens_per_second_per_mw"]) > 2:
             failures.append(f"{row['company']} {row['year']}: tokens/sec/MW bridge does not reconstruct")
@@ -2540,8 +2635,8 @@ def validate(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "energy_sanity_layer": "PASS - Joule/IBM/2026 serving sources are separated as sanity/sensitivity layers, not Base production telemetry.",
         "simple_headline_formula": "PASS - headline output tokens use operational inference GW and workload-adjusted serving reference TPS/MW only; no utilization/MoE/software/architecture multiplier is applied.",
         "utilization_slo_layer": "PASS - SLO/workload utilization remains supplemental sensitivity only and is not multiplied into headline output.",
-        "numeric_accelerator_mix_bridge": "PASS - GPU/purpose-built shares sum to 100%; serving reference is explicit and purpose-built TPS/MW receives no unsupported uplift.",
-        "complete_numeric_trace_inputs": "PASS - operational deployment, public TPS/MW reference, commercial workload fit and annual output tokens are formula-reconstructable.",
+        "numeric_accelerator_mix_bridge": "PASS - H200/B200/GB200/purpose-built shares sum to 100%; fleet-weighted reference is explicit and purpose-built TPS/MW receives no unsupported uplift.",
+        "complete_numeric_trace_inputs": "PASS - operational deployment, GPU-generation mix, public TPS/MW reference, commercial workload fit and annual output tokens are formula-reconstructable.",
     }
     return {
         "status": "PASS" if not failures else "FAIL",
@@ -2722,6 +2817,9 @@ def write_excel_full_archive(data: dict[str, Any], path: Path) -> None:
         "gpu_benchmark_proxy_model",
         "gpu_benchmark_tps_per_mw",
         "gpu_share",
+        "h200_share",
+        "b200_share",
+        "gb200_share",
         "purpose_built_accelerator_share",
         "purpose_built_tps_per_mw",
         "purpose_built_benchmark_status",
@@ -2775,6 +2873,11 @@ def write_excel_full_archive(data: dict[str, Any], path: Path) -> None:
         "purpose_built_accelerator_share",
         "gpu_benchmark_proxy_model",
         "commercial_workload_class",
+        "h200_reference_tps_per_mw",
+        "b200_reference_tps_per_mw",
+        "gb200_reference_tps_per_mw",
+        "purpose_built_reference_tps_per_mw",
+        "fleet_reference_tps_per_mw",
         "inferencex_reference_tps_per_mw",
         "commercial_workload_fit_factor",
         "reference_serving_tps_per_mw",
@@ -2929,43 +3032,34 @@ def write_excel_full_archive(data: dict[str, Any], path: Path) -> None:
 
 
 def write_excel(data: dict[str, Any], path: Path) -> None:
-    """Write the executive workbook as a compact, formula-driven core model.
-
-    Only direct input assumptions and selected benchmark values are stored as
-    numeric inputs. Operational conversion and token outputs are Excel
-    formulas, so an executive reviewer can follow the calculation in-cell.
-    Detailed evidence, normalized dump rows and review logs remain in the
-    project source files rather than appearing as workbook tabs. The public
-    benchmark and commercial-service workload-fit assumption are separated so
-    the report never treats a proxy benchmark as production telemetry.
-    """
+    """Write a compact formula workbook with editable GPU-generation mix inputs."""
     wb = Workbook()
     wb.remove(wb.active)
     wb.calculation.fullCalcOnLoad = True
     wb.calculation.forceFullCalc = True
     wb.calculation.calcMode = "auto"
+    input_fill = PatternFill("solid", fgColor="FFF2CC")
+    formula_fill = PatternFill("solid", fgColor="E2F0D9")
 
     logic = wb.create_sheet("00_Logic")
     logic_rows = [
         ["AI LLM Token Capacity Simulation - Core Formula Model", ""],
-        ["목적", "최종 generated output tokens/day를 최소한의 설명 가능한 변수로 계산"],
-        ["입력 원칙", "노란색 셀만 직접 입력값입니다. 파생값과 결과값은 Excel formula입니다."],
+        ["목적", "최종 generated output tokens/day를 설명 가능한 전력, GPU 세대 mix, commercial workload 가정으로 계산"],
+        ["입력 원칙", "노란색 셀만 직접 입력합니다. GPU mix는 `02_GPU_Mix_Input`에서 나중에 교체 가능합니다."],
         ["Step 1", "operational_power_gw = contracted_power_gw * operational_deployment_share"],
-        ["Step 2", "it_load_gw = operational_power_gw / pue"],
-        ["Step 3", "ai_it_load_gw = it_load_gw * ai_workload_share"],
-        ["Step 4", "inference_gw = ai_it_load_gw * inference_power_share"],
-        ["Step 5", "reference_serving_tps_per_mw = inferencex_reference_tps_per_mw * commercial_workload_fit_factor"],
-        ["Step 6", "weighted_tps_per_mw = gpu_share * reference_serving_tps_per_mw + purpose_built_share * purpose_built_tps_per_mw"],
-        ["Step 7", "inference_tokens_per_day = inference_gw * 1,000 * weighted_tps_per_mw * 86,400"],
-        ["Benchmark rule", "InferenceX output_tok_s_mw p50; B200 / single_turn / ISL 1024 / OSL 1024는 public reference ceiling"],
-        ["Fit-factor rule", "Bear/Base/Bull fit factor는 closed/reasoning/long-context/SLO 차이를 드러내는 scenario input"],
-        ["Conservative rule", "Comparable purpose-built benchmark가 없으면 purpose_built_tps_per_mw = reference_serving_tps_per_mw"],
-        ["Excluded", "utilization, MoE uplift, architecture factor, software CAGR는 headline 계산에서 제외"],
+        ["Step 2", "inference_gw = operational_power_gw / pue * ai_workload_share * inference_power_share"],
+        ["Step 3", "fleet_reference_tps_per_mw = H200_share*H200_ref + B200_share*B200_ref + GB200_share*GB200_ref + purpose_built_share*purpose_ref"],
+        ["Step 4", "serving_tps_per_mw = fleet_reference_tps_per_mw * commercial_workload_fit_factor"],
+        ["Step 5", "generated_output_tokens_per_day = inference_gw * 1,000 * serving_tps_per_mw * 86,400"],
+        ["GPU mix rule", "H200/B200/GB200/purpose-built share의 합은 100%이며, 같은 inference MW 내 구성 차이가 token capacity를 바꿉니다."],
+        ["Benchmark rule", "InferenceX output_tok_s_mw p50; single_turn / ISL 1024 / OSL 1024. 50행 미만/미존재 조합은 B200 placeholder로 시작합니다."],
+        ["Purpose-built rule", "Comparable TPS/MW가 없으면 B200 placeholder를 사용하며 사용자 입력으로 교체합니다."],
+        ["Excluded", "utilization, MoE uplift, software CAGR는 headline 계산에서 제외합니다."],
     ]
     for row in logic_rows:
         logic.append(row)
     logic.column_dimensions["A"].width = 24
-    logic.column_dimensions["B"].width = 118
+    logic.column_dimensions["B"].width = 126
     logic["A1"].font = Font(size=16, bold=True, color="FFFFFF")
     logic["B1"].font = Font(size=16, bold=True, color="FFFFFF")
     for cell in logic[1]:
@@ -2974,181 +3068,132 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
         logic[f"A{row}"].font = Font(bold=True, color="14213D")
         logic[f"A{row}"].fill = PatternFill("solid", fgColor="EAF0F7")
         logic[f"B{row}"].alignment = Alignment(wrap_text=True, vertical="top")
-        logic.row_dimensions[row].height = 28
+        logic.row_dimensions[row].height = 30
     logic.freeze_panes = "A2"
 
     benchmark_ws = wb.create_sheet("01_Benchmark_Input")
-    benchmark_headers = [
-        "company",
-        "commercial_workload_class",
-        "proxy_model",
-        "benchmark_condition",
-        "inferencex_reference_tps_per_mw",
-        "bear_fit_factor",
-        "base_fit_factor",
-        "bull_fit_factor",
-        "logic_use",
-        "rationale",
-    ]
-    benchmark_ws.append(benchmark_headers)
-    profiles = company_core_benchmark_map()
-    workload_profiles = commercial_workload_profiles()
+    benchmark_ws.append([
+        "company", "commercial_workload_class", "proxy_model",
+        "h200_reference_tps_per_mw", "h200_status",
+        "b200_reference_tps_per_mw", "b200_status",
+        "gb200_reference_tps_per_mw", "gb200_status",
+        "purpose_built_reference_tps_per_mw",
+        "bear_fit_factor", "base_fit_factor", "bull_fit_factor",
+    ])
+    hardware = hardware_reference_profiles()
+    workloads = commercial_workload_profiles()
+    proxy_map = company_core_benchmark_map()
     for company in [scenario.company for scenario in scenarios()]:
-        row = profiles[company]
-        workload = workload_profiles[company]
-        benchmark_ws.append(
-            [
-                company,
-                workload["workload_class"],
-                row["proxy_model"],
-                f"B200 / single_turn / ISL {row['isl']} / OSL {row['osl']} / output tok/s/MW p50",
-                row["output_tok_s_mw_p50"],
-                workload["bear_fit_factor"],
-                workload["base_fit_factor"],
-                workload["bull_fit_factor"],
-                "serving reference = InferenceX reference x fit factor",
-                workload["rationale"],
-            ]
-        )
+        workload = workloads[company]
+        proxy = proxy_map[company]["proxy_model"]
+        hw = hardware[proxy]
+        benchmark_ws.append([
+            company, workload["workload_class"], proxy,
+            hw["h200_selected_tps_per_mw"], hw["h200_selection_status"],
+            hw["b200_selected_tps_per_mw"], hw["b200_selection_status"],
+            hw["gb200_selected_tps_per_mw"], hw["gb200_selection_status"],
+            hw["b200_selected_tps_per_mw"],
+            workload["bear_fit_factor"], workload["base_fit_factor"], workload["bull_fit_factor"],
+        ])
     style_sheet(benchmark_ws)
-    for row in benchmark_ws.iter_rows(min_row=2, min_col=5, max_col=8):
-        for cell in row:
-            cell.fill = PatternFill("solid", fgColor="FFF2CC")
-            cell.font = Font(color="0000FF")
-    for col in ("F", "G", "H"):
+    for row in benchmark_ws.iter_rows(min_row=2):
+        for col in (4, 6, 8, 10, 11, 12, 13):
+            row[col - 1].fill = input_fill
+            row[col - 1].font = Font(color="0000FF")
+    for col in ("K", "L", "M"):
         for cell in benchmark_ws[col][1:]:
             cell.number_format = "0.0%"
-    benchmark_ws.column_dimensions["B"].width = 46
-    benchmark_ws.column_dimensions["D"].width = 54
-    benchmark_ws.column_dimensions["I"].width = 50
-    benchmark_ws.column_dimensions["J"].width = 86
+    for col, width in {"B": 43, "D": 24, "E": 52, "F": 24, "G": 42, "H": 25, "I": 58, "J": 30}.items():
+        benchmark_ws.column_dimensions[col].width = width
 
     inputs = wb.create_sheet("02_Inputs")
-    input_headers = [
-        "scenario",
-        "company",
-        "year",
-        "contracted_power_gw",
-        "operational_deployment_share",
-        "pue",
-        "ai_workload_share",
-        "inference_power_share",
-        "gpu_share",
-        "purpose_built_share",
-        "commercial_workload_class",
-        "benchmark_proxy_model",
-        "inferencex_reference_tps_per_mw",
-        "commercial_workload_fit_factor",
-        "reference_serving_tps_per_mw",
-        "purpose_built_tps_per_mw",
-    ]
-    inputs.append(input_headers)
+    inputs.append([
+        "scenario", "company", "year", "contracted_power_gw",
+        "operational_deployment_share", "pue", "ai_workload_share",
+        "inference_power_share", "commercial_workload_class",
+        "benchmark_proxy_model", "commercial_workload_fit_factor",
+    ])
     for excel_row, row in enumerate(data["scenario_forecast"], start=2):
-        inputs.append(
-            [
-                row["scenario"],
-                row["company"],
-                row["year"],
-                row["contracted_power_gw"],
-                row["operational_deployment_share"],
-                row["pue"],
-                row["ai_workload_share"],
-                row["inference_power_share"],
-                row["gpu_share"],
-                row["purpose_built_accelerator_share"],
-                f"=INDEX('01_Benchmark_Input'!$B$2:$B$10,MATCH(B{excel_row},'01_Benchmark_Input'!$A$2:$A$10,0))",
-                f"=INDEX('01_Benchmark_Input'!$C$2:$C$10,MATCH(B{excel_row},'01_Benchmark_Input'!$A$2:$A$10,0))",
-                f"=INDEX('01_Benchmark_Input'!$E$2:$E$10,MATCH(B{excel_row},'01_Benchmark_Input'!$A$2:$A$10,0))",
-                f'=IF(A{excel_row}="Bear",INDEX(\'01_Benchmark_Input\'!$F$2:$F$10,MATCH(B{excel_row},\'01_Benchmark_Input\'!$A$2:$A$10,0)),IF(A{excel_row}="Bull",INDEX(\'01_Benchmark_Input\'!$H$2:$H$10,MATCH(B{excel_row},\'01_Benchmark_Input\'!$A$2:$A$10,0)),INDEX(\'01_Benchmark_Input\'!$G$2:$G$10,MATCH(B{excel_row},\'01_Benchmark_Input\'!$A$2:$A$10,0))))',
-                f"=M{excel_row}*N{excel_row}",
-                f"=O{excel_row}",
-            ]
-        )
+        inputs.append([
+            row["scenario"], row["company"], row["year"], row["contracted_power_gw"],
+            row["operational_deployment_share"], row["pue"], row["ai_workload_share"],
+            row["inference_power_share"],
+            f"=INDEX('01_Benchmark_Input'!$B$2:$B$10,MATCH(B{excel_row},'01_Benchmark_Input'!$A$2:$A$10,0))",
+            f"=INDEX('01_Benchmark_Input'!$C$2:$C$10,MATCH(B{excel_row},'01_Benchmark_Input'!$A$2:$A$10,0))",
+            f'=IF(A{excel_row}="Bear",INDEX(\'01_Benchmark_Input\'!$K$2:$K$10,MATCH(B{excel_row},\'01_Benchmark_Input\'!$A$2:$A$10,0)),IF(A{excel_row}="Bull",INDEX(\'01_Benchmark_Input\'!$M$2:$M$10,MATCH(B{excel_row},\'01_Benchmark_Input\'!$A$2:$A$10,0)),INDEX(\'01_Benchmark_Input\'!$L$2:$L$10,MATCH(B{excel_row},\'01_Benchmark_Input\'!$A$2:$A$10,0))))',
+        ])
     style_sheet(inputs)
-    input_fill = PatternFill("solid", fgColor="FFF2CC")
-    formula_fill = PatternFill("solid", fgColor="E2F0D9")
     for row in inputs.iter_rows(min_row=2):
-        for col in (4, 5, 6, 7, 8, 9, 10):
+        for col in (4, 5, 6, 7, 8):
             row[col - 1].fill = input_fill
-        for col in (11, 12, 13, 14, 15, 16):
+        for col in (9, 10, 11):
             row[col - 1].fill = formula_fill
-    for col in ("E", "G", "H", "I", "J", "N"):
+    for col in ("E", "G", "H", "K"):
         for cell in inputs[col][1:]:
             cell.number_format = "0.0%"
-    inputs.column_dimensions["K"].width = 42
-    inputs.column_dimensions["L"].width = 23
-    inputs.column_dimensions["M"].width = 29
-    inputs.column_dimensions["N"].width = 29
-    inputs.column_dimensions["O"].width = 31
-    inputs.column_dimensions["P"].width = 27
+    inputs.column_dimensions["I"].width = 45
+    inputs.column_dimensions["J"].width = 24
+    inputs.column_dimensions["K"].width = 29
+
+    gpu_mix = wb.create_sheet("02_GPU_Mix_Input")
+    gpu_mix.append(["scenario", "company", "year", "h200_share", "b200_share", "gb200_share", "purpose_built_share", "share_sum_check"])
+    for excel_row, row in enumerate(data["scenario_forecast"], start=2):
+        gpu_mix.append([
+            row["scenario"], row["company"], row["year"],
+            row["h200_share"], row["b200_share"], row["gb200_share"],
+            row["purpose_built_accelerator_share"], f"=SUM(D{excel_row}:G{excel_row})",
+        ])
+    style_sheet(gpu_mix)
+    for row in gpu_mix.iter_rows(min_row=2):
+        for col in (4, 5, 6, 7):
+            row[col - 1].fill = input_fill
+            row[col - 1].font = Font(color="0000FF")
+        row[7].fill = formula_fill
+    for col in ("D", "E", "F", "G", "H"):
+        for cell in gpu_mix[col][1:]:
+            cell.number_format = "0.0%"
+    gpu_mix.column_dimensions["A"].width = 32
+    for col in ("D", "E", "F", "G", "H"):
+        gpu_mix.column_dimensions[col].width = 22
 
     calc = wb.create_sheet("03_Calculation")
-    calc_headers = [
-        "scenario",
-        "company",
-        "year",
-        "contracted_power_gw",
-        "operational_deployment_share",
-        "operational_power_gw",
-        "pue",
-        "it_load_gw",
-        "ai_workload_share",
-        "ai_it_load_gw",
-        "inference_power_share",
-        "inference_gw",
-        "training_gw",
-        "gpu_share",
-        "purpose_built_share",
-        "inferencex_reference_tps_per_mw",
-        "commercial_workload_fit_factor",
-        "reference_serving_tps_per_mw",
-        "purpose_built_tps_per_mw",
-        "weighted_tps_per_mw",
-        "inference_tokens_per_day",
-        "inference_tokens_per_year",
-    ]
-    calc.append(calc_headers)
+    calc.append([
+        "scenario", "company", "year", "contracted_power_gw", "operational_deployment_share",
+        "operational_power_gw", "pue", "it_load_gw", "ai_workload_share", "ai_it_load_gw",
+        "inference_power_share", "inference_gw", "training_gw",
+        "h200_share", "b200_share", "gb200_share", "purpose_built_share",
+        "h200_reference_tps_per_mw", "b200_reference_tps_per_mw", "gb200_reference_tps_per_mw",
+        "purpose_built_reference_tps_per_mw", "commercial_workload_fit_factor",
+        "fleet_reference_tps_per_mw", "serving_tps_per_mw", "inference_tokens_per_day", "inference_tokens_per_year",
+    ])
     for row_idx in range(2, len(data["scenario_forecast"]) + 2):
-        calc.append(
-            [
-                f"='02_Inputs'!A{row_idx}",
-                f"='02_Inputs'!B{row_idx}",
-                f"='02_Inputs'!C{row_idx}",
-                f"='02_Inputs'!D{row_idx}",
-                f"='02_Inputs'!E{row_idx}",
-                f"=D{row_idx}*E{row_idx}",
-                f"='02_Inputs'!F{row_idx}",
-                f"=F{row_idx}/G{row_idx}",
-                f"='02_Inputs'!G{row_idx}",
-                f"=H{row_idx}*I{row_idx}",
-                f"='02_Inputs'!H{row_idx}",
-                f"=J{row_idx}*K{row_idx}",
-                f"=J{row_idx}*(1-K{row_idx})",
-                f"='02_Inputs'!I{row_idx}",
-                f"='02_Inputs'!J{row_idx}",
-                f"='02_Inputs'!M{row_idx}",
-                f"='02_Inputs'!N{row_idx}",
-                f"='02_Inputs'!O{row_idx}",
-                f"='02_Inputs'!P{row_idx}",
-                f"=N{row_idx}*R{row_idx}+O{row_idx}*S{row_idx}",
-                f"=L{row_idx}*1000*T{row_idx}*86400",
-                f"=U{row_idx}*365",
-            ]
-        )
+        calc.append([
+            f"='02_Inputs'!A{row_idx}", f"='02_Inputs'!B{row_idx}", f"='02_Inputs'!C{row_idx}",
+            f"='02_Inputs'!D{row_idx}", f"='02_Inputs'!E{row_idx}", f"=D{row_idx}*E{row_idx}",
+            f"='02_Inputs'!F{row_idx}", f"=F{row_idx}/G{row_idx}", f"='02_Inputs'!G{row_idx}",
+            f"=H{row_idx}*I{row_idx}", f"='02_Inputs'!H{row_idx}", f"=J{row_idx}*K{row_idx}",
+            f"=J{row_idx}*(1-K{row_idx})", f"='02_GPU_Mix_Input'!D{row_idx}",
+            f"='02_GPU_Mix_Input'!E{row_idx}", f"='02_GPU_Mix_Input'!F{row_idx}",
+            f"='02_GPU_Mix_Input'!G{row_idx}",
+            f"=INDEX('01_Benchmark_Input'!$D$2:$D$10,MATCH(B{row_idx},'01_Benchmark_Input'!$A$2:$A$10,0))",
+            f"=INDEX('01_Benchmark_Input'!$F$2:$F$10,MATCH(B{row_idx},'01_Benchmark_Input'!$A$2:$A$10,0))",
+            f"=INDEX('01_Benchmark_Input'!$H$2:$H$10,MATCH(B{row_idx},'01_Benchmark_Input'!$A$2:$A$10,0))",
+            f"=INDEX('01_Benchmark_Input'!$J$2:$J$10,MATCH(B{row_idx},'01_Benchmark_Input'!$A$2:$A$10,0))",
+            f"='02_Inputs'!K{row_idx}",
+            f"=N{row_idx}*R{row_idx}+O{row_idx}*S{row_idx}+P{row_idx}*T{row_idx}+Q{row_idx}*U{row_idx}",
+            f"=W{row_idx}*V{row_idx}", f"=L{row_idx}*1000*X{row_idx}*86400", f"=Y{row_idx}*365",
+        ])
     style_sheet(calc)
     for row in calc.iter_rows(min_row=2):
         for cell in row:
             cell.fill = formula_fill
-    for col in ("E", "I", "K", "N", "O", "Q"):
+    for col in ("E", "I", "K", "N", "O", "P", "Q", "V"):
         for cell in calc[col][1:]:
             cell.number_format = "0.0%"
     for col in ("D", "F", "H", "J", "L", "M"):
         for cell in calc[col][1:]:
             cell.number_format = "0.000"
-    for col in ("P", "R", "S", "T"):
-        for cell in calc[col][1:]:
-            cell.number_format = "#,##0"
-    for col in ("U", "V"):
+    for col in ("R", "S", "T", "U", "W", "X", "Y", "Z"):
         for cell in calc[col][1:]:
             cell.number_format = "#,##0"
 
@@ -3173,9 +3218,9 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
                 f"='03_Calculation'!C{calc_row}",
                 f"='03_Calculation'!F{calc_row}",
                 f"='03_Calculation'!L{calc_row}",
-                f"='03_Calculation'!T{calc_row}",
-                f"='03_Calculation'!U{calc_row}/1000000000000000",
-                f"='03_Calculation'!V{calc_row}/1000000000000000",
+                f"='03_Calculation'!X{calc_row}",
+                f"='03_Calculation'!Y{calc_row}/1000000000000000",
+                f"='03_Calculation'!Z{calc_row}/1000000000000000",
             ]
         )
         for cell in output[out_row]:
@@ -3191,7 +3236,7 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
         output.append(
             [year]
             + [
-                f'=SUMIFS(\'03_Calculation\'!$U:$U,\'03_Calculation\'!$A:$A,{get_column_letter(col)}${scenario_header_row},\'03_Calculation\'!$C:$C,$A{row_idx})/1000000000000000'
+                f'=SUMIFS(\'03_Calculation\'!$Y:$Y,\'03_Calculation\'!$A:$A,{get_column_letter(col)}${scenario_header_row},\'03_Calculation\'!$C:$C,$A{row_idx})/1000000000000000'
                 for col, _scenario in enumerate(SCENARIO_CASES, start=2)
             ]
         )
@@ -3235,23 +3280,23 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
         ),
         (
             "Accelerator shares sum to 100%",
-            '=IF(SUMPRODUCT(--(ABS(1-(\'03_Calculation\'!$N$2:$N$181+\'03_Calculation\'!$O$2:$O$181))>0.001))=0,"PASS","FAIL")',
+            '=IF(SUMPRODUCT(--(ABS(1-(\'03_Calculation\'!$N$2:$N$181+\'03_Calculation\'!$O$2:$O$181+\'03_Calculation\'!$P$2:$P$181+\'03_Calculation\'!$Q$2:$Q$181))>0.002))=0,"PASS","FAIL")',
         ),
         (
             "Commercial workload fit factors stay within 0%-100%",
-            '=IF(AND(MIN(\'02_Inputs\'!$N$2:$N$181)>0,MAX(\'02_Inputs\'!$N$2:$N$181)<=1),"PASS","FAIL")',
+            '=IF(AND(MIN(\'02_Inputs\'!$K$2:$K$181)>0,MAX(\'02_Inputs\'!$K$2:$K$181)<=1),"PASS","FAIL")',
         ),
         (
-            "Serving reference equals public reference x workload fit",
-            '=IF(SUMPRODUCT(--(ABS(\'02_Inputs\'!$O$2:$O$181-(\'02_Inputs\'!$M$2:$M$181*\'02_Inputs\'!$N$2:$N$181))>0.01))=0,"PASS","FAIL")',
+            "Serving reference equals fleet reference x workload fit",
+            '=IF(SUMPRODUCT(--(ABS(\'03_Calculation\'!$X$2:$X$181-(\'03_Calculation\'!$W$2:$W$181*\'03_Calculation\'!$V$2:$V$181))>0.01))=0,"PASS","FAIL")',
         ),
         (
-            "Purpose-built TPS has no unsupported uplift",
-            '=IF(SUMPRODUCT(--(\'02_Inputs\'!$P$2:$P$181<>\'02_Inputs\'!$O$2:$O$181))=0,"PASS","FAIL")',
+            "Purpose-built reference defaults to B200 without unsupported uplift",
+            '=IF(SUMPRODUCT(--(\'01_Benchmark_Input\'!$J$2:$J$10<>\'01_Benchmark_Input\'!$F$2:$F$10))=0,"PASS","FAIL")',
         ),
         (
             "Headline excludes utilization/MoE/software multipliers",
-            '="PASS - formula uses inference GW x workload-adjusted serving TPS/MW x seconds/day only"',
+            '="PASS - formula uses inference GW x fleet-weighted serving TPS/MW x seconds/day only"',
         ),
     ]
     for label, formula in check_rows:
@@ -3286,11 +3331,11 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
         aggressive.append(
             [
                 f"='03_Calculation'!B{bull_row}",
-                f"='03_Calculation'!U{base_row}/1000000000000000",
-                f"='03_Calculation'!U{bull_row}/1000000000000000",
+                f"='03_Calculation'!Y{base_row}/1000000000000000",
+                f"='03_Calculation'!Y{bull_row}/1000000000000000",
                 f"=C{out_row}/B{out_row}-1",
-                f"='03_Calculation'!Q{bull_row}",
-                f"='03_Calculation'!T{bull_row}",
+                f"='03_Calculation'!V{bull_row}",
+                f"='03_Calculation'!X{bull_row}",
                 f"=C{out_row}/E{out_row}",
                 "Public-reference conditions become commercially repeatable",
             ]
@@ -3308,9 +3353,9 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
         aggressive.append(
             [
                 year,
-                f'=SUMIFS(\'03_Calculation\'!$U:$U,\'03_Calculation\'!$A:$A,"Base",\'03_Calculation\'!$C:$C,$A{out_row})/1000000000000000',
-                f'=SUMIFS(\'03_Calculation\'!$U:$U,\'03_Calculation\'!$A:$A,"Bull",\'03_Calculation\'!$C:$C,$A{out_row})/1000000000000000',
-                f'=SUMPRODUCT((\'03_Calculation\'!$A$2:$A$181="Bull")*(\'03_Calculation\'!$C$2:$C$181=$A{out_row})*(\'03_Calculation\'!$U$2:$U$181/\'03_Calculation\'!$Q$2:$Q$181))/1000000000000000',
+                f'=SUMIFS(\'03_Calculation\'!$Y:$Y,\'03_Calculation\'!$A:$A,"Base",\'03_Calculation\'!$C:$C,$A{out_row})/1000000000000000',
+                f'=SUMIFS(\'03_Calculation\'!$Y:$Y,\'03_Calculation\'!$A:$A,"Bull",\'03_Calculation\'!$C:$C,$A{out_row})/1000000000000000',
+                f'=SUMPRODUCT((\'03_Calculation\'!$A$2:$A$181="Bull")*(\'03_Calculation\'!$C$2:$C$181=$A{out_row})*(\'03_Calculation\'!$Y$2:$Y$181/\'03_Calculation\'!$V$2:$V$181))/1000000000000000',
             ]
         )
         for cell in aggressive[out_row][1:]:
@@ -5150,7 +5195,7 @@ def write_ppt_samsung_style(data: dict[str, Any], path: Path) -> None:
         text(slide, x, 3.18, 1.55, 0.36, note, 8.1, muted, False, PP_ALIGN.CENTER)
         if i < len(steps) - 1:
             text(slide, x + 1.72, 2.42, 0.35, 0.25, "→", 16, muted, True, PP_ALIGN.CENTER)
-    text(slide, 1.0, 4.28, 11.35, 0.43, "output tokens/day = inference GW x 1,000 x selected output tokens/sec/MW x 86,400", 15, samsung_blue, True, PP_ALIGN.CENTER)
+    text(slide, 1.0, 4.28, 11.35, 0.43, "output tokens/day = inference GW x 1,000 x fleet-weighted serving tokens/sec/MW x 86,400", 15, samsung_blue, True, PP_ALIGN.CENTER)
     bullets(
         slide,
         1.18,
@@ -5159,7 +5204,7 @@ def write_ppt_samsung_style(data: dict[str, Any], path: Path) -> None:
         0.72,
         [
             "Contracted power is an upper bound; token capacity begins only after power is energized and assigned to AI IT load.",
-            "Inference share is a capacity allocation variable; output TPS/MW is selected from a fixed-condition InferenceX proxy table.",
+            "Inference share is a capacity allocation variable; output TPS/MW is weighted by H200/B200/GB200/purpose-built mix and workload fit.",
         ],
         10.4,
         body,
@@ -5527,7 +5572,7 @@ def write_ppt_compute_constraint(data: dict[str, Any], path: Path) -> None:
         text(slide, x, 3.16, 1.7, 0.46, note, 8.0, muted, False, PP_ALIGN.CENTER)
         if i < len(steps) - 1:
             text(slide, x + 1.84, 2.43, 0.25, 0.24, "→", 15.5, muted, True, PP_ALIGN.CENTER)
-    text(slide, 0.95, 4.25, 11.5, 0.45, "generated output tokens/day = inference GW x 1,000 x selected output tokens/sec/MW x 86,400", 15, samsung_blue, True, PP_ALIGN.CENTER)
+    text(slide, 0.95, 4.25, 11.5, 0.45, "generated output tokens/day = inference GW x 1,000 x fleet-weighted serving tokens/sec/MW x 86,400", 15, samsung_blue, True, PP_ALIGN.CENTER)
     bullets(
         slide,
         1.18,
@@ -5758,8 +5803,8 @@ def write_ppt_compute_constraint(data: dict[str, Any], path: Path) -> None:
     set_bg(slide)
     header(
         slide,
-        "The third input adjusts a public InferenceX reference to commercial workload reality",
-        "A fixed B200 output-throughput median is the public reference ceiling; explicit workload-fit assumptions account for closed, reasoning and long-context serving.",
+        "The third input weights H200, B200, GB200 and purpose-built capacity into serving throughput",
+        "GPU-generation mix is an editable scenario input; public reference rows are then adjusted for commercial workload fit.",
     )
     chart_data = CategoryChartData()
     chart_data.categories = [r["company"] for r in rows_2030]
@@ -5773,8 +5818,8 @@ def write_ppt_compute_constraint(data: dict[str, Any], path: Path) -> None:
     text(slide, 8.18, 1.92, 3.95, 0.28, "Commercial serving reference", 10.6, muted, True)
     add_small_table(
         slide,
-        [[r["company"], r["gpu_benchmark_proxy_model"], f"{r['commercial_workload_fit_factor']:.0%}", f"{r['tokens_per_second_per_mw']/1e6:.2f}"] for r in table_rows],
-        ["Provider", "Proxy", "Fit", "M tok/s/MW"],
+        [[r["company"], f"{r['h200_share']:.0%}/{r['b200_share']:.0%}/{r['gb200_share']:.0%}", f"{r['commercial_workload_fit_factor']:.0%}", f"{r['tokens_per_second_per_mw']/1e6:.2f}"] for r in table_rows],
+        ["Provider", "H/B/GB", "Fit", "M tok/s/MW"],
         8.18,
         2.30,
         4.25,
@@ -5783,7 +5828,7 @@ def write_ppt_compute_constraint(data: dict[str, Any], path: Path) -> None:
         6.9,
     )
     text(slide, 8.18, 4.98, 4.05, 0.60, "Purpose-built mix remains visible, but no hardware premium is added without a comparable output-token benchmark.", 9.4, body)
-    takeaway(slide, "Base TPS/MW is a workload-adjusted serving reference, while the raw public benchmark defines upside ceiling.")
+    takeaway(slide, "Base TPS/MW reflects an editable GPU-generation mix and workload fit; public benchmark values define the reference layer.")
     footer(slide)
 
     # 10. Provider constraint map
@@ -5895,7 +5940,7 @@ def write_ppt_compute_constraint(data: dict[str, Any], path: Path) -> None:
         text(slide, 0.92, y, 1.35, 0.24, area, 12, samsung_blue, True)
         rect(slide, 2.48, y + 0.11, 0.8, 0.02, silver)
         text(slide, 3.52, y, 8.65, 0.27, q, 11.4, body)
-    text(slide, 0.92, 5.78, 11.1, 0.42, "Workbook tabs: Logic, Benchmark Input, Inputs, Calculation, Output, Checks, Aggressive View. Derived output cells use Excel formulas.", 10.5, muted)
+    text(slide, 0.92, 5.78, 11.1, 0.42, "Workbook tabs: Logic, Benchmark Input, Inputs, GPU Mix Input, Calculation, Output, Checks, Aggressive View. Derived output cells use Excel formulas.", 10.5, muted)
     takeaway(slide, "Update only visible inputs; the workbook recalculates token supply through the same core formula.")
     footer(slide)
 
@@ -5920,27 +5965,28 @@ def write_core_markdown(data: dict[str, Any], path: Path) -> None:
         "```text",
         "operational_power_gw = contracted_power_gw * operational_deployment_share",
         "inference_gw = operational_power_gw / pue * ai_workload_share * inference_power_share",
-        "reference_serving_tps_per_mw = inferencex_reference_tps_per_mw * commercial_workload_fit_factor",
-        "weighted_tps_per_mw = gpu_share * reference_serving_tps_per_mw + purpose_built_share * purpose_built_tps_per_mw",
-        "generated_output_tokens_per_day = inference_gw * 1,000 * weighted_tps_per_mw * 86,400",
+        "fleet_reference_tps_per_mw = h200_share*h200_ref + b200_share*b200_ref + gb200_share*gb200_ref + purpose_built_share*purpose_ref",
+        "serving_tps_per_mw = fleet_reference_tps_per_mw * commercial_workload_fit_factor",
+        "generated_output_tokens_per_day = inference_gw * 1,000 * serving_tps_per_mw * 86,400",
         "```",
         "",
         "- Headline 계산에는 `utilization`, MoE uplift, architecture multiplier, software CAGR를 적용하지 않습니다.",
-        "- InferenceX raw value는 public reference ceiling이며, 상용 서비스에 쓰는 TPS/MW는 workload fit factor를 반영합니다.",
-        "- Purpose-built accelerator의 comparable benchmark가 없으면 workload-adjusted serving reference와 동일한 TPS/MW를 사용합니다.",
+        "- GPU 세대 mix는 `H200`, `B200`, `GB200`, `purpose-built`의 inference-load share이며 Excel에서 별도 입력합니다.",
+        "- InferenceX GPU별 값은 public reference이며, 상용 서비스 TPS/MW는 workload fit factor를 반영합니다.",
+        "- Purpose-built accelerator의 comparable benchmark가 없으면 B200 placeholder를 사용하며 이후 입력으로 교체합니다.",
         "",
-        "## Public Benchmark Reference And Commercial Fit",
+        "## GPU Generation Mix And Commercial Fit",
         "",
-        "| Provider | Workload class | Proxy model | Public reference TPS/MW | Base fit | Base serving reference TPS/MW |",
-        "|---|---|---|---:|---:|---:|",
+        "| Provider | Proxy | 2030 default H200/B200/GB200/PB | Base fleet ref TPS/MW | Base fit | Base serving TPS/MW |",
+        "|---|---|---:|---:|---:|---:|",
     ]
     benchmark_map = company_core_benchmark_map()
     workload_map = commercial_workload_profiles()
     for company in [scenario.company for scenario in scenarios()]:
-        row = benchmark_map[company]
+        row = next(item for item in data["forecast"] if item["company"] == company and item["year"] == 2030)
         workload = workload_map[company]
         lines.append(
-            f"| {company} | {workload['workload_class']} | {row['proxy_model']} | {row['output_tok_s_mw_p50']:,} | {workload['base_fit_factor']:.0%} | {round(row['output_tok_s_mw_p50'] * workload['base_fit_factor']):,} |"
+            f"| {company} | {row['gpu_benchmark_proxy_model']} | {row['h200_share']:.0%}/{row['b200_share']:.0%}/{row['gb200_share']:.0%}/{row['purpose_built_accelerator_share']:.0%} | {row['fleet_reference_tps_per_mw']:,} | {workload['base_fit_factor']:.0%} | {row['reference_serving_tps_per_mw']:,} |"
         )
     lines += [
         "",
@@ -5975,8 +6021,9 @@ def write_core_markdown(data: dict[str, Any], path: Path) -> None:
         "## Workbook",
         "",
         "- `00_Logic`: calculation steps only.",
-        "- `01_Benchmark_Input`: public InferenceX reference와 commercial workload fit scenario 입력.",
-        "- `02_Inputs`: direct model inputs; serving reference TPS/MW cells are formulas.",
+        "- `01_Benchmark_Input`: GPU 세대별 public reference TPS/MW와 commercial workload fit 입력.",
+        "- `02_Inputs`: 전력 및 workload allocation 입력.",
+        "- `02_GPU_Mix_Input`: H200/B200/GB200/purpose-built share를 나중에 직접 교체하는 입력 시트.",
         "- `03_Calculation`: formula-only calculation chain.",
         "- `04_Output`: formula-driven output tables and chart.",
         "- `05_Checks`: formula checks.",
@@ -6017,12 +6064,12 @@ select {{ padding:7px; }}
 <main>
 <section><h2>Core Formula</h2><pre>operational_power_gw = contracted_power_gw * operational_deployment_share
 inference_gw = operational_power_gw / pue * ai_workload_share * inference_power_share
-reference_serving_tps_per_mw = inferencex_reference_tps_per_mw * commercial_workload_fit_factor
-weighted_tps_per_mw = gpu_share * reference_serving_tps_per_mw + purpose_built_share * purpose_built_tps_per_mw
-generated_output_tokens_per_day = inference_gw * 1,000 * weighted_tps_per_mw * 86,400</pre>
-<div class="note">InferenceX raw TPS/MW는 public reference ceiling입니다. Headline은 commercial workload fit을 적용하며 utilization, MoE uplift, architecture multiplier, software CAGR는 추가 적용하지 않습니다.</div></section>
+fleet_reference_tps_per_mw = H200_share*H200_ref + B200_share*B200_ref + GB200_share*GB200_ref + purpose_built_share*purpose_ref
+serving_tps_per_mw = fleet_reference_tps_per_mw * commercial_workload_fit_factor
+generated_output_tokens_per_day = inference_gw * 1,000 * serving_tps_per_mw * 86,400</pre>
+<div class="note">GPU generation mix는 동일 inference MW 내 hardware composition 차이를 반영합니다. InferenceX는 public reference이며, headline은 commercial workload fit을 적용합니다.</div></section>
 <section><h2>Output View</h2><div class="controls"><label>Scenario <select id="scenario"></select></label><label>Year <select id="year"></select></label></div><div id="bars"></div></section>
-<section><h2>Public Benchmark Reference And Commercial Fit</h2><table id="bench"></table></section>
+<section><h2>Default 2030 GPU Mix And Serving Reference</h2><table id="bench"></table></section>
 </main>
 <script>
 const DATA = {payload}; const $ = id => document.getElementById(id);
@@ -6032,8 +6079,9 @@ function init() {{
   $("scenario").innerHTML = scenarios.map(s => `<option>${{s}}</option>`).join(""); $("scenario").value="Base";
   $("year").innerHTML = years.map(y => `<option>${{y}}</option>`).join(""); $("year").value="2030";
   $("scenario").oninput=render; $("year").oninput=render; render();
-  $("bench").innerHTML = `<tr><th>Provider</th><th>Commercial workload class</th><th>Proxy model</th><th>Public ref TPS/MW</th><th>Base fit</th><th>Base serving ref TPS/MW</th></tr>` +
-    DATA.commercial_workload_benchmarks.map(b => `<tr><td>${{b.company}}</td><td>${{b.commercial_workload_class}}</td><td>${{b.proxy_model}}</td><td>${{b.inferencex_reference_tps_per_mw.toLocaleString()}}</td><td>${{(b.base_fit_factor*100).toFixed(0)}}%</td><td>${{b.base_reference_serving_tps_per_mw.toLocaleString()}}</td></tr>`).join("");
+  const b2030=DATA.forecast.filter(r=>r.year===2030);
+  $("bench").innerHTML = `<tr><th>Provider</th><th>Proxy model</th><th>H200/B200/GB200/PB</th><th>Fleet ref TPS/MW</th><th>Fit</th><th>Serving TPS/MW</th></tr>` +
+    b2030.map(b => `<tr><td>${{b.company}}</td><td>${{b.gpu_benchmark_proxy_model}}</td><td>${{(b.h200_share*100).toFixed(0)}}% / ${{(b.b200_share*100).toFixed(0)}}% / ${{(b.gb200_share*100).toFixed(0)}}% / ${{(b.purpose_built_accelerator_share*100).toFixed(0)}}%</td><td>${{b.fleet_reference_tps_per_mw.toLocaleString()}}</td><td>${{(b.commercial_workload_fit_factor*100).toFixed(0)}}%</td><td>${{b.reference_serving_tps_per_mw.toLocaleString()}}</td></tr>`).join("");
 }}
 function render() {{
   const rows=DATA.scenario_forecast.filter(r=>r.scenario===$("scenario").value && r.year===Number($("year").value)).sort((a,b)=>b.inference_tokens_per_day-a.inference_tokens_per_day);
@@ -6136,9 +6184,17 @@ def lightweight_payload(data: dict[str, Any]) -> dict[str, Any]:
         "inference_gw",
         "training_gw",
         "gpu_share",
+        "h200_share",
+        "b200_share",
+        "gb200_share",
         "purpose_built_accelerator_share",
         "gpu_benchmark_proxy_model",
         "commercial_workload_class",
+        "h200_reference_tps_per_mw",
+        "b200_reference_tps_per_mw",
+        "gb200_reference_tps_per_mw",
+        "purpose_built_reference_tps_per_mw",
+        "fleet_reference_tps_per_mw",
         "inferencex_reference_tps_per_mw",
         "commercial_workload_fit_factor",
         "reference_serving_tps_per_mw",
@@ -6158,6 +6214,7 @@ def lightweight_payload(data: dict[str, Any]) -> dict[str, Any]:
         "scenario_definitions": data["scenario_definitions"],
         "core_inferencex_benchmarks": data["core_inferencex_benchmarks"],
         "commercial_workload_benchmarks": commercial_workload_benchmark_rows(),
+        "hardware_reference_profiles": hardware_reference_profiles(),
         "forecast": core_rows(data["forecast"]),
         "scenario_forecast": core_rows(data["scenario_forecast"]),
         "scenario_summary": data["scenario_summary"],

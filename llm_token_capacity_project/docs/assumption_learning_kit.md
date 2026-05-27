@@ -22,7 +22,8 @@ contracted GW
   -> AI IT load GW = IT load GW * AI workload share
   -> inference GW = AI IT load GW * inference share
   -> inference MW
-  -> tokens/day = MW * selected output tokens/sec/MW * 86,400
+  -> fleet TPS/MW = H200/B200/GB200/purpose-built share-weighted reference
+  -> tokens/day = MW * fleet TPS/MW * commercial workload fit * 86,400
 ```
 
 `utilization`, MoE 추가 uplift, architecture/software 개선률은 학습과 sensitivity에는 유효하지만 headline token 계산에는 곱하지 않습니다.
