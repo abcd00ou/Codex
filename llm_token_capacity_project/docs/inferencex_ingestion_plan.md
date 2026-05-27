@@ -3,6 +3,7 @@
 - 기준일: 2026-05-19
 - 목적: InferenceX의 공개 benchmark/app/dump 자료를 A08 tokens/sec/MW, A09 utilization, A11 gpu_asic_mix의 성능 bridge, GPU spec, TCO sanity layer로 반복 수집합니다.
 - 핵심 원칙: dashboard DOM 크롤링보다 GitHub repo, API route, weekly DB dump release, raw CSV/export를 우선합니다.
+- 초보자용 benchmark 해설과 실제 row 해석 방법은 `docs/inferencex_benchmark_learning_guide.md`를 참고합니다.
 
 ## 확인된 공개 소스
 
