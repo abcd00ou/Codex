@@ -63,6 +63,6 @@ generated_output_tokens_per_day = inference_gw * 1,000 * serving_tps_per_mw * 86
 - `02_Inputs`: 전력 및 workload allocation 입력.
 - `02_GPU_Mix_Input`: H200/B200/GB200/purpose-built share를 나중에 직접 교체하는 입력 시트.
 - `03_Calculation`: formula-only calculation chain.
-- `04_Output`: formula-driven output tables and chart.
+- `04_Output`: formula-driven 2026-2030 provider/scenario tables for tokens/day and tokens/year with charts.
 - `05_Checks`: formula checks.
 - `06_Aggressive_View`: Bull commercial case와 public benchmark ceiling의 formula-driven upside view.

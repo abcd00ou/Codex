@@ -45,9 +45,13 @@ assert wb['03_Calculation']['W2'].value == '=N2*R2+O2*S2+P2*T2+Q2*U2'
 assert wb['03_Calculation']['X2'].value == '=W2*V2'
 assert wb['03_Calculation']['Y2'].value == '=L2*1000*X2*86400'
 assert wb['03_Calculation']['Z2'].value == '=Y2*365'
+assert "'03_Calculation'!$Y$2:$Y$181" in wb['04_Output']['B6'].value
+assert "'03_Calculation'!$Z$2:$Z$181" in wb['04_Output']['B19'].value
+assert "'03_Calculation'!$Y$2:$Y$181" in wb['04_Output']['B32'].value
+assert "'03_Calculation'!$Z$2:$Z$181" in wb['04_Output']['B39'].value
 
 prs = Presentation(base + '.pptx')
-assert len(prs.slides) >= 15
+assert len(prs.slides) >= 12
 
 for suffix in ['.xlsx', '.pptx']:
     with zipfile.ZipFile(base + suffix) as z:

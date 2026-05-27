@@ -33,7 +33,7 @@
 8. Excel, PPT, HTML, MD, JSON이 모두 재생성됐는지 확인합니다.
 9. `docs/hallucination_checklist.md`를 기준으로 보고 전 review를 합니다.
 
-보고용 Excel 숫자 검증은 `04_Output`에서 `03_Calculation`의 수식으로 내려가고, 다시 `02_Inputs` 및 `01_Benchmark_Input`을 확인하는 순서로 수행합니다. source_id, replacement path, fact/assumption 구분은 workbook을 복잡하게 만들지 않도록 프로젝트 Markdown과 agent 기록에서 유지합니다.
+보고용 Excel 숫자 검증은 `04_Output`의 업체별·시나리오별 2026-2030 `tokens/day` 및 `tokens/year` 결과에서 `03_Calculation`의 수식으로 내려가고, 다시 `02_Inputs` 및 `01_Benchmark_Input`을 확인하는 순서로 수행합니다. source_id, replacement path, fact/assumption 구분은 workbook을 복잡하게 만들지 않도록 프로젝트 Markdown과 agent 기록에서 유지합니다.
 
 그 다음 agent 기록의 fact-vs-assumption audit에서 주장 강도를 확인합니다. 공식 자료가 뒷받침하는 확인값과 모델 입력값은 분리하되, 이 긴 audit 표는 보고용 Excel에는 표시하지 않습니다.
 

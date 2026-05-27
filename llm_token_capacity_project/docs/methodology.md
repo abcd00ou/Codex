@@ -7,7 +7,7 @@
 - 직접 입력되는 숫자는 `02_Inputs`의 전력/배분 scenario 입력값, `01_Benchmark_Input`의 GPU 세대별 public reference 및 Bear/Base/Bull commercial workload fit factor, `02_GPU_Mix_Input`의 H200/B200/GB200/purpose-built share뿐입니다.
 - `fleet_reference_tps_per_mw`, `serving_tps_per_mw`, `operational_power_gw`, `inference_gw`, `inference_tokens_per_day`, 연간 토큰 및 시나리오 합계는 Excel 수식으로 계산합니다.
 - `02_GPU_Mix_Input`은 업체·연도·시나리오별 GPU generation mix를 사용자가 추후 교체할 수 있는 입력표입니다.
-- `03_Calculation`은 행 단위 계산 추적표이고, `04_Output`은 그 수식을 참조하는 출력표와 차트입니다.
+- `03_Calculation`은 행 단위 계산 추적표이고, `04_Output`은 Base 업체별 및 시나리오 합계별 `2026-2030` `tokens/day`와 `tokens/year` 시계열 표와 차트를 수식으로 표시합니다.
 - `05_Checks`는 capacity bound, power split, accelerator share, workload-fit 수식, purpose-built no-uplift 및 headline formula 범위를 수식으로 검증합니다.
 - `06_Aggressive_View`는 Bull commercial case와 `fit factor = 100%`인 public benchmark ceiling을 구분하여 보여주는 upside 시트입니다. Ceiling은 strategic envelope이며 Base forecast가 아닙니다.
 

@@ -18,6 +18,7 @@ from typing import Any
 
 from openpyxl import Workbook
 from openpyxl.chart import BarChart, LineChart, Reference
+from openpyxl.chart.series import SeriesLabel
 from openpyxl.formatting.rule import ColorScaleRule
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
@@ -3198,74 +3199,162 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
             cell.number_format = "#,##0"
 
     output = wb.create_sheet("04_Output")
-    output["A1"] = "Base Scenario: Generated Output Token Capacity"
+    output["A1"] = "Base Scenario: Generated Output Token Capacity, 2026-2030"
     output["A1"].font = Font(size=16, bold=True, color="FFFFFF")
     output["A1"].fill = PatternFill("solid", fgColor="14213D")
-    output.merge_cells("A1:G1")
-    output.append(["Provider", "Year", "Operational GW", "Inference GW", "Selected TPS/MW", "Tokens/Day (Q)", "Tokens/Year (Q)"])
-    for cell in output[2]:
-        cell.fill = PatternFill("solid", fgColor="14213D")
-        cell.font = Font(color="FFFFFF", bold=True)
+    output.merge_cells("A1:F1")
+    output["A2"] = "업체별 output은 Base scenario 기준이며, 모든 수치는 `03_Calculation`의 generated output token formula를 직접 참조합니다. 단위는 Quadrillion (Q) tokens입니다."
+    output.merge_cells("A2:F2")
+    output["A2"].alignment = Alignment(wrap_text=True, vertical="top")
+    output.row_dimensions[2].height = 34
+
+    company_order = [scenario.company for scenario in scenarios()]
     base_2030 = [
         idx for idx, row in enumerate(data["scenario_forecast"], start=2)
         if row["scenario"] == "Base" and row["year"] == 2030
     ]
-    for calc_row in base_2030:
-        out_row = output.max_row + 1
-        output.append(
-            [
-                f"='03_Calculation'!B{calc_row}",
-                f"='03_Calculation'!C{calc_row}",
-                f"='03_Calculation'!F{calc_row}",
-                f"='03_Calculation'!L{calc_row}",
-                f"='03_Calculation'!X{calc_row}",
-                f"='03_Calculation'!Y{calc_row}/1000000000000000",
-                f"='03_Calculation'!Z{calc_row}/1000000000000000",
-            ]
-        )
-        for cell in output[out_row]:
-            cell.fill = formula_fill
-    output.append([])
-    scenario_header_row = output.max_row + 1
-    output.append(["Scenario Time Series (Q generated output tokens/day)"] + list(SCENARIO_CASES.keys()))
-    for cell in output[scenario_header_row]:
+
+    day_title_row = 4
+    output[f"A{day_title_row}"] = "Base Provider Time Series - Generated Output Tokens/Day (Q)"
+    output[f"A{day_title_row}"].font = Font(bold=True, color="14213D", size=12)
+    day_header_row = day_title_row + 1
+    output.append(["Provider"] + YEARS)
+    for cell in output[day_header_row]:
         cell.fill = PatternFill("solid", fgColor="14213D")
         cell.font = Font(color="FFFFFF", bold=True)
-    for year in YEARS:
-        row_idx = output.max_row + 1
+    for company in company_order:
+        out_row = output.max_row + 1
         output.append(
-            [year]
+            [company]
             + [
-                f'=SUMIFS(\'03_Calculation\'!$Y:$Y,\'03_Calculation\'!$A:$A,{get_column_letter(col)}${scenario_header_row},\'03_Calculation\'!$C:$C,$A{row_idx})/1000000000000000'
-                for col, _scenario in enumerate(SCENARIO_CASES, start=2)
+                f'=SUMIFS(\'03_Calculation\'!$Y$2:$Y$181,\'03_Calculation\'!$A$2:$A$181,"Base",\'03_Calculation\'!$B$2:$B$181,$A{out_row},\'03_Calculation\'!$C$2:$C$181,{get_column_letter(col)}${day_header_row})/1000000000000000'
+                for col, _year in enumerate(YEARS, start=2)
             ]
         )
-        for cell in output[row_idx][1:]:
+        for cell in output[out_row][1:]:
             cell.fill = formula_fill
-    output.freeze_panes = "A3"
-    for col, width in {"A": 27, "B": 12, "C": 21, "D": 18, "E": 21, "F": 18, "G": 18}.items():
+            cell.number_format = "0.000"
+    day_total_row = output.max_row + 1
+    output.append(["Total"] + [f"=SUM({get_column_letter(col)}{day_header_row + 1}:{get_column_letter(col)}{day_total_row - 1})" for col in range(2, 2 + len(YEARS))])
+    for cell in output[day_total_row]:
+        cell.fill = PatternFill("solid", fgColor="D9EAF7")
+        cell.font = Font(bold=True, color="14213D")
+    for cell in output[day_total_row][1:]:
+        cell.number_format = "0.000"
+
+    output.append([])
+    year_title_row = output.max_row + 1
+    output.append(["Base Provider Time Series - Generated Output Tokens/Year (Q)"])
+    output[f"A{year_title_row}"].font = Font(bold=True, color="14213D", size=12)
+    year_header_row = output.max_row + 1
+    output.append(["Provider"] + YEARS)
+    for cell in output[year_header_row]:
+        cell.fill = PatternFill("solid", fgColor="14213D")
+        cell.font = Font(color="FFFFFF", bold=True)
+    for company in company_order:
+        out_row = output.max_row + 1
+        output.append(
+            [company]
+            + [
+                f'=SUMIFS(\'03_Calculation\'!$Z$2:$Z$181,\'03_Calculation\'!$A$2:$A$181,"Base",\'03_Calculation\'!$B$2:$B$181,$A{out_row},\'03_Calculation\'!$C$2:$C$181,{get_column_letter(col)}${year_header_row})/1000000000000000'
+                for col, _year in enumerate(YEARS, start=2)
+            ]
+        )
+        for cell in output[out_row][1:]:
+            cell.fill = formula_fill
+            cell.number_format = "0.000"
+    year_total_row = output.max_row + 1
+    output.append(["Total"] + [f"=SUM({get_column_letter(col)}{year_header_row + 1}:{get_column_letter(col)}{year_total_row - 1})" for col in range(2, 2 + len(YEARS))])
+    for cell in output[year_total_row]:
+        cell.fill = PatternFill("solid", fgColor="D9EAF7")
+        cell.font = Font(bold=True, color="14213D")
+    for cell in output[year_total_row][1:]:
+        cell.number_format = "0.000"
+
+    output.append([])
+    scenario_day_title_row = output.max_row + 1
+    output.append(["Scenario Total Time Series - Generated Output Tokens/Day (Q)"])
+    output[f"A{scenario_day_title_row}"].font = Font(bold=True, color="14213D", size=12)
+    scenario_day_header_row = output.max_row + 1
+    output.append(["Scenario"] + YEARS)
+    for cell in output[scenario_day_header_row]:
+        cell.fill = PatternFill("solid", fgColor="14213D")
+        cell.font = Font(color="FFFFFF", bold=True)
+    for scenario_name in SCENARIO_CASES:
+        out_row = output.max_row + 1
+        output.append(
+            [scenario_name]
+            + [
+                f'=SUMIFS(\'03_Calculation\'!$Y$2:$Y$181,\'03_Calculation\'!$A$2:$A$181,$A{out_row},\'03_Calculation\'!$C$2:$C$181,{get_column_letter(col)}${scenario_day_header_row})/1000000000000000'
+                for col, _year in enumerate(YEARS, start=2)
+            ]
+        )
+        for cell in output[out_row][1:]:
+            cell.fill = formula_fill
+            cell.number_format = "0.000"
+
+    output.append([])
+    scenario_year_title_row = output.max_row + 1
+    output.append(["Scenario Total Time Series - Generated Output Tokens/Year (Q)"])
+    output[f"A{scenario_year_title_row}"].font = Font(bold=True, color="14213D", size=12)
+    scenario_year_header_row = output.max_row + 1
+    output.append(["Scenario"] + YEARS)
+    for cell in output[scenario_year_header_row]:
+        cell.fill = PatternFill("solid", fgColor="14213D")
+        cell.font = Font(color="FFFFFF", bold=True)
+    for scenario_name in SCENARIO_CASES:
+        out_row = output.max_row + 1
+        output.append(
+            [scenario_name]
+            + [
+                f'=SUMIFS(\'03_Calculation\'!$Z$2:$Z$181,\'03_Calculation\'!$A$2:$A$181,$A{out_row},\'03_Calculation\'!$C$2:$C$181,{get_column_letter(col)}${scenario_year_header_row})/1000000000000000'
+                for col, _year in enumerate(YEARS, start=2)
+            ]
+        )
+        for cell in output[out_row][1:]:
+            cell.fill = formula_fill
+            cell.number_format = "0.000"
+
+    output.freeze_panes = "B6"
+    for col, width in {"A": 46, "B": 15, "C": 15, "D": 15, "E": 15, "F": 15}.items():
         output.column_dimensions[col].width = width
-    for row in output.iter_rows(min_row=3):
+    for row in output.iter_rows(min_row=3, max_col=6):
         for cell in row:
             cell.alignment = Alignment(vertical="top", wrap_text=True)
-    for col in ("C", "D", "F", "G"):
-        for cell in output[col][2:11]:
-            cell.number_format = "0.000"
-    for row in output.iter_rows(min_row=scenario_header_row + 1, min_col=2, max_col=1 + len(SCENARIO_CASES)):
-        for cell in row:
-            cell.number_format = "0.000"
+
+    provider_chart = LineChart()
+    provider_chart.title = "Base Provider Token Capacity (Q tokens/day)"
+    provider_chart.y_axis.title = "Q tokens/day"
+    provider_chart.y_axis.numFmt = "0.000"
+    provider_chart.x_axis.title = "Year"
+    provider_chart.add_data(
+        Reference(output, min_col=1, max_col=1 + len(YEARS), min_row=day_header_row + 1, max_row=day_total_row - 1),
+        titles_from_data=True,
+        from_rows=True,
+    )
+    provider_chart.set_categories(Reference(output, min_col=2, max_col=1 + len(YEARS), min_row=day_header_row))
+    for series, company in zip(provider_chart.series, company_order):
+        series.tx = SeriesLabel(v=company)
+    provider_chart.height = 8
+    provider_chart.width = 18
+    output.add_chart(provider_chart, "H4")
+
     scenario_chart = LineChart()
-    scenario_chart.title = "Scenario Token Capacity (Q tokens/day)"
+    scenario_chart.title = "Scenario Total Token Capacity (Q tokens/day)"
     scenario_chart.y_axis.title = "Q tokens/day"
+    scenario_chart.y_axis.numFmt = "0.000"
     scenario_chart.x_axis.title = "Year"
     scenario_chart.add_data(
-        Reference(output, min_col=2, max_col=1 + len(SCENARIO_CASES), min_row=scenario_header_row, max_row=scenario_header_row + len(YEARS)),
+        Reference(output, min_col=1, max_col=1 + len(YEARS), min_row=scenario_day_header_row + 1, max_row=scenario_day_header_row + len(SCENARIO_CASES)),
         titles_from_data=True,
+        from_rows=True,
     )
-    scenario_chart.set_categories(Reference(output, min_col=1, min_row=scenario_header_row + 1, max_row=scenario_header_row + len(YEARS)))
+    scenario_chart.set_categories(Reference(output, min_col=2, max_col=1 + len(YEARS), min_row=scenario_day_header_row))
+    for series, scenario_name in zip(scenario_chart.series, SCENARIO_CASES):
+        series.tx = SeriesLabel(v=scenario_name)
     scenario_chart.height = 8
     scenario_chart.width = 18
-    output.add_chart(scenario_chart, "I2")
+    output.add_chart(scenario_chart, "H22")
 
     checks = wb.create_sheet("05_Checks")
     checks.append(["Check", "Formula", "Result"])
@@ -6025,7 +6114,7 @@ def write_core_markdown(data: dict[str, Any], path: Path) -> None:
         "- `02_Inputs`: 전력 및 workload allocation 입력.",
         "- `02_GPU_Mix_Input`: H200/B200/GB200/purpose-built share를 나중에 직접 교체하는 입력 시트.",
         "- `03_Calculation`: formula-only calculation chain.",
-        "- `04_Output`: formula-driven output tables and chart.",
+        "- `04_Output`: formula-driven 2026-2030 provider/scenario tables for tokens/day and tokens/year with charts.",
         "- `05_Checks`: formula checks.",
         "- `06_Aggressive_View`: Bull commercial case와 public benchmark ceiling의 formula-driven upside view.",
     ]

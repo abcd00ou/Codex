@@ -14,6 +14,7 @@
 | 9 | 2026-05-27 | Executive artifact simplification | Excel now exposes only Logic, Benchmark Input, Inputs, Calculation, Output and Checks; derived cells are formulas and research/audit detail stays in project records | Keep formula workbook synchronized with internal evidence ledger |
 | 10 | 2026-05-27 | Commercial-serving TPS/MW correction and aggressive upside view | Separated InferenceX public reference from company workload-fit assumptions; added formula-driven Bull and public-reference ceiling view | Replace fit factors with matched production/service benchmarks when disclosed |
 | 11 | 2026-05-27 | Editable GPU generation mix | Added H200/B200/GB200/purpose-built inference-load share inputs and fleet-weighted TPS/MW bridge | Replace default migration shares with company fleet deployment or accelerator-hour evidence |
+| 12 | 2026-05-28 | Formula-driven output time series expansion | Expanded executive Excel output to show provider and scenario totals for both generated tokens/day and tokens/year across 2026-2030 | Keep annualization and scenario tables linked to the same calculation chain |
 
 ## Open Flags
 
