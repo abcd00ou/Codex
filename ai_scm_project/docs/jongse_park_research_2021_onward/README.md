@@ -11,6 +11,7 @@
 | `papers_by_title.md` | 2021년 이후 논문을 제목별로 정리한 최대한 자세한 독해본 |
 | `technical_terms_and_structure.md` | 기술 용어, LLM serving 구조, accelerator/memory/scheduler 개념 설명 |
 | `llmservingsim_deep_dive.md` | LLMServingSim과 LLMServingSim 2.0 상세 독해 |
+| `llmservingsim_benchmark_integration.md` | InferenceX benchmark를 LLMServingSim 2.0으로 고도화하기 위한 구조와 수집 데이터 |
 | `original_sources.md` | 원문 제목과 공식 링크 모음 |
 | `source_index.md` | 연도별 논문 목록 |
 
