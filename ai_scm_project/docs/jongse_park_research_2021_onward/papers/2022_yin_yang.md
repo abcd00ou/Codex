@@ -1,21 +1,31 @@
 # Yin-Yang: Programming Abstraction for Cross-Domain Multi-Acceleration
 
-## Original English Notes
+## Source and Scope
 
 Venue: IEEE Micro 2022  
-Source: https://jongse-park.github.io/publications/
+Source: https://jongse-park.github.io/publications/  
+Copyright note: This note is a paraphrased research reading, not a reproduction of the original paper.
 
-Yin-Yang proposes programming abstractions for cross-domain multi-acceleration.
+## Detailed English Reading
 
-## 한글 번역 요약
+This paper focuses on cross-domain multi-acceleration abstraction. Its detailed relevance comes from the way it treats AI performance as a systems problem rather than a raw arithmetic problem. The main technical themes are software abstractions for heterogeneous accelerators.
 
-이 논문은 여러 domain의 accelerator를 함께 쓰기 위한 programming abstraction을 다룬다. accelerator가 많아질수록 hardware보다 software abstraction과 runtime이 병목이 될 수 있다.
+A useful reading is to view the paper as part of Professor Park's continuing research arc. The group repeatedly takes an AI workload, identifies the real bottleneck hidden beneath headline compute numbers, and then connects algorithmic structure with hardware, memory, runtime, or scheduler design. Even when the workload is not a text LLM, the same style appears: characterize the workload carefully, find the limiting resource, and design a system mechanism that turns theoretical efficiency into actual performance.
+
+For this project, the paper should not be used as a direct numerical forecast unless a specific benchmark setup is later extracted from the full text. Its immediate value is conceptual. It identifies which hidden variables should be added to AI infrastructure modeling: SLO, memory hierarchy, security overhead, precision, sparse execution, video data movement, multi-tenancy, or accelerator software maturity.
+
+## 상세 한글 독해 및 번역 요약
+
+이 논문은 cross-domain multi-acceleration abstraction을 다룬다. 세부적으로는 software abstractions for heterogeneous accelerators. 같은 요소가 핵심이다. 단순히 연산량을 줄이는 것이 아니라, 실제 시스템에서 병목이 어디에서 생기는지를 찾고 그 병목을 줄이는 구조를 제안한다는 점이 중요하다.
+
+박종세 교수님 연구의 반복되는 특징은 AI workload를 겉으로 보이는 FLOPS나 peak throughput으로 보지 않는다는 것이다. workload를 세분화하고, memory, scheduler, runtime, security, precision, data movement, interconnect 같은 실제 제한 요인을 찾아낸다. 그 다음 algorithm과 hardware/software mechanism을 함께 설계한다.
+
+이 논문은 현재 프로젝트에서 직접 계수로 쓰기보다는 hidden bottleneck을 찾는 reference로 쓰는 편이 적절하다. GPU 수요, HBM 수요, power 수요, token capacity를 계산할 때 어떤 변수를 빠뜨리면 안 되는지 알려주는 자료다.
 
 ## 박종세 교수 전문성 관점
 
-박 교수님은 hardware만이 아니라 compiler/runtime/programming abstraction까지 포함한 full-stack acceleration을 연구한다.
+박 교수님은 AI workload characterization, hardware/software co-design, memory-system-aware architecture, and SLO-aware scheduling을 연결하는 시스템 아키텍처 전문가로 볼 수 있다.
 
-## 내 프로젝트 연결점
+## 내 프로젝트와의 연결점
 
-GPU, TPU, Trainium, Maia, MTIA, PIM, CXL이 섞인 AI datacenter에서는 software stack이 efficiency를 좌우한다. purpose-built accelerator share가 늘어도 software maturity가 낮으면 effective capacity가 낮을 수 있다.
-
+현재 프로젝트에서는 이 논문을 직접 수치 anchor로 쓰기보다, capacity model의 보조 factor와 risk layer를 정교화하는 근거로 쓰는 것이 적절하다. 특히 public benchmark와 production capacity 사이의 차이를 설명하는 데 도움이 된다.

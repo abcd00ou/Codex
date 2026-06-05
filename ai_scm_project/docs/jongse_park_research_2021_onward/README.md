@@ -2,23 +2,27 @@
 
 이 폴더는 KAIST 박종세 교수님의 2021년 이후 논문을 논문별 Markdown으로 정리한 작업 폴더입니다.
 
-범위는 publications page에 공개된 2021-2026년 논문입니다. 각 파일은 원문 제목과 영어 핵심 노트, 한글 번역 요약, 그리고 현재 프로젝트와의 연결점만 담습니다. 교수님께 드릴 질문 리스트는 의도적으로 제외했습니다.
+저작권 때문에 논문 전문 원문을 복제하거나 전문 번역본을 만들지는 않습니다. 대신 각 논문마다 다음을 분리해 최대한 자세히 작성했습니다.
 
-## 왜 이 연구자가 중요한가
+- `Detailed English Reading`: 원문 내용을 베끼지 않는 영어 상세 독해본
+- `상세 한글 독해 및 번역 요약`: 원문 전문 번역이 아닌 한국어 상세 해설/번역 요약
+- `박종세 교수 전문성 관점`: 논문을 통해 보이는 연구자의 전문 영역
+- `내 프로젝트와의 연결점`: AI SCM 및 LLM token capacity 프로젝트와 연결되는 지점
 
-박종세 교수님의 최근 연구는 LLM inference serving, NPU/PIM/CXL/ASIC 기반 이기종 가속, AI workload simulator, edge/video/multimodal AI systems에 집중되어 있습니다. 이 조합은 현재 프로젝트가 다루는 GPU, HBM, CoWoS, 전력, networking, token capacity, serving efficiency 가정과 직접 맞닿아 있습니다.
+## 박종세 교수님은 어떤 전문가인가
 
-핵심 전문성은 다음과 같습니다.
+박종세 교수님의 2021년 이후 연구는 LLM inference serving, NPU/PIM/CXL/ASIC 기반 이기종 가속, AI workload simulator, memory-centric acceleration, secure AI architecture, video/multimodal/edge AI systems로 이어진다. 한마디로 정리하면 **AI workload를 hardware, software, memory, scheduler, simulator, security까지 포함한 end-to-end systems problem으로 분석하는 computer architecture 전문가**다.
 
-| 전문 영역 | 의미 | 프로젝트 연결 |
+특히 현재 프로젝트와 직접 맞닿는 전문성은 다음 네 가지다.
+
+| 전문 영역 | 설명 | 프로젝트 의미 |
 |---|---|---|
-| LLM inference systems | LLM serving의 TTFT, TPOT, throughput, KV cache, batching, scheduler 병목을 시스템 관점에서 분석 | `llm_token_capacity_project`의 `tokens/sec/MW`, workload fit factor, inference power share 검증 |
-| Hardware/software co-design | 알고리즘, runtime, accelerator, memory system을 같이 설계 | `ai_scm_project`의 GPU/HBM/PIM/CXL/ASIC 병목 레이어 세분화 |
-| Simulation methodology | LLMServingSim, PyTorchSim, ONNXim처럼 빠르면서도 fidelity가 있는 simulator 구축 | public benchmark를 production serving capacity로 바꾸는 중간 검증 계층 |
-| Memory-centric acceleration | KV cache, HBM bandwidth/capacity, PIM, CXL memory pool, quantization을 중심으로 inference 병목 완화 | HBM 수급, memory bandwidth, context length sensitivity 반영 |
-| Multimodal/edge AI | video-language, continuous learning, robotics, 3D workload를 edge/datacenter 관점에서 분석 | text output token만으로는 설명되지 않는 AI compute demand 확장 |
+| LLM serving systems | TTFT, TPOT, throughput, batching, KV cache, parallelism, disaggregated serving을 함께 분석 | `tokens/sec/MW`를 public benchmark에서 production capacity로 변환하는 방법론 |
+| Memory-centric acceleration | HBM bandwidth/capacity, KV cache, CXL, PIM, quantization을 중심으로 병목을 해석 | HBM, CXL, PIM, context length sensitivity를 supply-demand 모델에 반영 |
+| Simulator methodology | LLMServingSim, PyTorchSim, ONNXim 등 fast/fidelity simulator 구축 | vendor benchmark와 실제 serving performance 사이의 evidence layer |
+| Heterogeneous and edge AI | GPU/NPU/PIM/ASIC, video-language, continuous learning, robotics workload 분석 | text token capacity 밖의 multimodal/edge compute demand 확장 |
 
-## 읽는 순서
+## 가장 먼저 볼 논문
 
 1. `papers/2024_llmservingsim.md`
 2. `papers/2026_llmservingsim_2_0.md`
@@ -36,4 +40,3 @@
 - Publications page: https://jongse-park.github.io/publications/
 - LLMServingSim website: https://llmservingsim.ai/
 - LLMServingSim code: https://github.com/casys-kaist/LLMServingSim
-

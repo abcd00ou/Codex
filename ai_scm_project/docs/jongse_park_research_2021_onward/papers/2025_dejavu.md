@@ -1,21 +1,31 @@
 # Deja Vu: Efficient Video-Language Query Engine with Learning-based Inter-Frame Computation Reuse
 
-## Original English Notes
+## Source and Scope
 
 Venue: VLDB 2025  
-Source: https://jongse-park.github.io/files/paper/2025-vldb-dejavu.pdf
+Source: https://jongse-park.github.io/files/paper/2025-vldb-dejavu.pdf  
+Copyright note: This note is a paraphrased research reading, not a reproduction of the original paper.
 
-Deja Vu targets Video-Language Model query systems. It reduces repeated ViT embedding generation across many video frames by learning inter-frame reuse opportunities and using memory-compute compaction so FLOP savings translate into speedup.
+## Detailed English Reading
 
-## 한글 번역 요약
+Deja Vu studies video-language query systems. Modern VideoLM pipelines often use Vision Transformers to generate embeddings for many frames. A long video sampled at even a modest frame rate creates thousands of frame-level inference calls. The paper’s idea is to exploit similarity across adjacent frames. Instead of recomputing visual embeddings independently for every frame, the system learns where computation can be reused and then uses memory-compute compaction to translate theoretical FLOP savings into real speedup.
 
-Deja Vu는 VideoLM이 많은 video frame을 반복적으로 ViT에 통과시키는 병목을 줄이는 query engine이다. 프레임 사이의 유사성을 학습해 계산을 재사용하고, GPU에서 실제 성능 향상으로 이어지도록 memory-compute compaction을 결합한다.
+The system perspective is important. Many ML optimizations reduce FLOPs on paper but fail to improve GPU runtime because memory layout, batching, and kernel execution overheads dominate. Deja Vu addresses that gap by coupling model-level reuse with systems-level compaction.
+
+This paper is outside text LLM serving, but it is highly relevant to multimodal AI infrastructure. Video-language workloads can consume enormous compute before any text output token is produced.
+
+## 상세 한글 독해 및 번역 요약
+
+Deja Vu는 VideoLM query engine을 위한 연구다. VideoLM은 video frame에서 visual embedding을 만들고, 그 embedding을 기반으로 retrieval, question answering, grounding 같은 작업을 수행한다. 문제는 video frame 수가 매우 많다는 점이다. 한 시간짜리 영상을 낮은 FPS로 sampling해도 수천 개 frame이 생기며, 각 frame마다 ViT inference를 돌리면 비용이 매우 크다.
+
+논문은 인접 frame 사이의 유사성을 이용한다. 매 frame을 독립적으로 계산하지 않고, 어떤 계산을 재사용할 수 있는지 학습한다. 또한 FLOP 절감이 실제 GPU speedup으로 이어지도록 memory-compute compaction을 결합한다.
+
+이 논문은 멀티모달 AI capacity를 이해하는 데 중요하다. 사용자가 받는 output token은 적어 보여도, 그 전에 video embedding generation에서 막대한 compute가 소모될 수 있다.
 
 ## 박종세 교수 전문성 관점
 
-박 교수님은 LLM text serving뿐 아니라 video-language workload를 database/query system 관점에서도 다룬다.
+박 교수님은 AI model inference뿐 아니라 database/query engine 관점의 video-language system까지 연구한다.
 
-## 내 프로젝트 연결점
+## 내 프로젝트와의 연결점
 
-멀티모달 AI는 output token만으로 capacity를 설명하기 어렵다. visual embedding generation, frame sampling, storage bandwidth, reuse ratio가 별도 compute driver가 된다. Gemini/GPT-4o류 멀티모달 surface를 모델링할 때 text token capacity와 분리할 필요가 있다.
-
+LLM token capacity 프로젝트가 text output token만 계산하면 multimodal compute burden을 놓친다. video ingestion, visual embedding, frame reuse ratio, storage bandwidth를 별도 demand layer로 둬야 한다.
