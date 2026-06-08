@@ -95,7 +95,7 @@ llm_token_capacity_project/
 - `docs/reference_research_landscape.md`: 전문 리포트/논문/시장자료 reference landscape
 - `docs/expert_learning_pack.md`: 52개 전문 source 기반의 6-module 심화 학습자료
 - `outputs/reports/expert_learning_pack_kr.docx`: 심화 학습자료 Word 보고서
-- `docs/agent_learning_expansion_pack.md`: 10개 agent별 2026-05-18 학습 확장 커리큘럼
+- `docs/agent_learning_expansion_pack.md`: 11개 agent별 학습 확장 커리큘럼
 - `outputs/reports/agent_learning_expansion_pack_kr.docx`: agent 학습 확장 Word 보고서
 
 추천 학습 순서:

@@ -6,7 +6,7 @@ Role: 1MW inference load가 초당 몇 generated output token을 만들 수 있�
 
 Headline use: 직접 사용
 
-Confidence rule: InferenceX는 proxy/benchmark이며 production telemetry가 아니므로 workload fit factor와 source caveat를 같이 붙인다.
+Confidence rule: InferenceX/MLPerf/vendor serving stack은 proxy/benchmark이며 production telemetry가 아니므로 workload fit factor와 source caveat를 같이 붙인다.
 
 ## Metrics covered
 
@@ -14,10 +14,10 @@ Confidence rule: InferenceX는 proxy/benchmark이며 production telemetry가 아
 
 ## 숫자 결정 로직
 
-- TPS/MW는 InferenceX 공개 benchmark를 그대로 생산 telemetry로 간주하지 않고, H200/B200/GB200 reference 성능을 상용 workload에 맞게 낮춘 proxy로 사용한다.
+- TPS/MW는 InferenceX, MLPerf, vendor serving stack을 그대로 생산 telemetry로 간주하지 않고, H200/B200/GB200 reference 성능을 상용 workload에 맞게 낮춘 proxy로 사용한다.
 - fleet_reference_tps_per_mw는 GPU generation mix에서 나온 raw benchmark 기준이고, commercial_workload_fit_factor는 closed model, 긴 context, SLO, batching 제약, prefill/decode 불균형을 반영하는 보정 계수다.
 - tokens_per_second_per_mw는 reference_serving_tps_per_mw와 purpose_built_tps_per_mw를 fleet mix로 결합한 최종 입력값이다.
-- LLMServingSim 2.0 방식의 trace-driven prefill/decode simulation, KV cache pressure, interconnect contention, scheduling 정책이 확보되면 fit factor를 더 구조적인 계수로 쪼갤 수 있다.
+- LLMServingSim 2.0 방식의 trace-driven prefill/decode simulation, KV cache pressure, interconnect contention, scheduling 정책 또는 MLPerf/serving-stack matched benchmark가 확보되면 fit factor를 더 구조적인 계수로 쪼갤 수 있다.
 
 ### 링크를 숫자로 읽는 방식
 

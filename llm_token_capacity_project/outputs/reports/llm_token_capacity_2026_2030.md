@@ -66,3 +66,4 @@ generated_output_tokens_per_day = inference_gw * 1,000 * serving_tps_per_mw * 86
 - `04_Output`: formula-driven 2026-2030 provider/scenario tables for tokens/day and tokens/year with charts.
 - `05_Checks`: formula checks.
 - `06_Aggressive_View`: Bull commercial case와 public benchmark ceiling의 formula-driven upside view.
+- `07_Source_Registry`, `08_Provenance_Trace`, `09_Fact_Assumption_Audit`: expanded source/provenance layer.

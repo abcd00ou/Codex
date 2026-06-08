@@ -29,9 +29,16 @@ Confidence rule: headline에는 곱하지 않는다. 중복 보정 방지를 위
 | SRC_ARXIV_PREFILL_AS_SERVICE_2026 | https://arxiv.org/abs/2604.15039 | Agentic/long-context placement and network sensitivity for utilization | 0.6 |
 | SRC_ARXIV_SLO_PD_2026 | https://arxiv.org/abs/2603.04716 | Utilization caveat for TTFT/TPOT SLO constrained serving | 0.62 |
 | SRC_ARXIV_SPEC_DECODING_LATENCY_2026 | https://arxiv.org/abs/2605.15051 | Speculative decoding latency and throughput trade-off mechanism | 0.6 |
+| SRC_EPOCH_INFERENCE_PRICE | https://epoch.ai/data-insights/llm-inference-price-trends | Inference cost trend proxy and commercial efficiency context | 0.66 |
 | SRC_IBM_PD_DISAGG_2026 | https://research.ibm.com/publications/revisiting-disaggregated-large-language-model-serving-for-performance-and-energy-implications | Prefill/decode disaggregation performance and energy trade-off mechanism | 0.72 |
 | SRC_JOULE_INFERENCE_ENERGY_2026 | https://www.sciencedirect.com/science/article/pii/S2542435126001145 | Energy/query and joules/token sanity layer for inference forecasts | 0.7 |
+| SRC_MLPERF_INFERENCE | https://mlcommons.org/benchmarks/inference-datacenter/ | Official inference submission anchor for hardware/software comparisons | 0.74 |
+| SRC_MLPERF_INFERENCE_DOCS | https://docs.mlcommons.org/inference/ | Benchmark rules, scenarios, loadgen and divisions | 0.72 |
+| SRC_ORCA_SERVING | https://www.usenix.org/conference/osdi22/presentation/yu | Iteration-level scheduling and batching foundation | 0.66 |
+| SRC_SARATHI_SERVE | https://arxiv.org/abs/2403.02310 | Chunked prefill and decode scheduling mechanism | 0.64 |
 | SRC_SEMIANALYSIS_INFERENCEX | https://inferencex.semianalysis.com/about | Benchmark layer for tokens/sec/MW sensitivity, not company capacity | 0.7 |
+| SRC_SGLANG_DOCS | https://docs.sglang.ai/ | Serving runtime, structured generation and batching behavior | 0.64 |
+| SRC_VLLM_DOCS | https://docs.vllm.ai/ | Production serving mechanism, scheduler and KV cache behavior | 0.66 |
 
 ### 행 단위 결정 샘플
 
@@ -39,55 +46,55 @@ Confidence rule: headline에는 곱하지 않는다. 중복 보정 방지를 위
 
 | Company | Metric | Value | 왜 이 숫자인가 | Formula/rule | 교체 경로 | Source IDs |
 |---|---|---|---|---|---|---|
-| Microsoft | utilization_sensitivity | 0.421 | TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026 |
-| Microsoft | utilization_sensitivity | 0.54 | 메인 forecast 기준 | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX |
-| Microsoft | utilization_sensitivity | 0.605 | batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026 |
-| Microsoft | utilization_sensitivity | 0.475 | 긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026 |
-| Google | utilization_sensitivity | 0.437 | TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026 |
-| Google | utilization_sensitivity | 0.56 | 메인 forecast 기준 | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX |
-| Google | utilization_sensitivity | 0.627 | batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026 |
-| Google | utilization_sensitivity | 0.493 | 긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026 |
-| Meta | utilization_sensitivity | 0.429 | TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026 |
-| Meta | utilization_sensitivity | 0.55 | 메인 forecast 기준 | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX |
-| Meta | utilization_sensitivity | 0.616 | batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026 |
-| Meta | utilization_sensitivity | 0.484 | 긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026 |
-| xAI | utilization_sensitivity | 0.39 | TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026 |
-| xAI | utilization_sensitivity | 0.5 | 메인 forecast 기준 | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX |
+| Microsoft | utilization_sensitivity | 0.421 | TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS |
+| Microsoft | utilization_sensitivity | 0.54 | 메인 forecast 기준 | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE |
+| Microsoft | utilization_sensitivity | 0.605 | batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING |
+| Microsoft | utilization_sensitivity | 0.475 | 긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE |
+| Google | utilization_sensitivity | 0.437 | TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS |
+| Google | utilization_sensitivity | 0.56 | 메인 forecast 기준 | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE |
+| Google | utilization_sensitivity | 0.627 | batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING |
+| Google | utilization_sensitivity | 0.493 | 긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE |
+| Meta | utilization_sensitivity | 0.429 | TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS |
+| Meta | utilization_sensitivity | 0.55 | 메인 forecast 기준 | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE |
+| Meta | utilization_sensitivity | 0.616 | batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING |
+| Meta | utilization_sensitivity | 0.484 | 긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE |
+| xAI | utilization_sensitivity | 0.39 | TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS |
+| xAI | utilization_sensitivity | 0.5 | 메인 forecast 기준 | adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier | Provider utilization telemetry and SLO-level serving traces. | SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE |
 
 ## Base scenario 2026 -> 2030 endpoint view
 
 | Company | Year | Metric | Value | Confidence | Source IDs |
 |---|---|---|---|---|---|
-| Microsoft | 2026 | utilization_sensitivity | 0.421 | Reference-only | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026 |
-| Microsoft | 2026 | utilization_sensitivity | 0.54 | Reference-only | SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX |
-| Microsoft | 2026 | utilization_sensitivity | 0.605 | Reference-only | SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026 |
-| Microsoft | 2026 | utilization_sensitivity | 0.475 | Reference-only | SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026 |
-| Microsoft | 2030 | utilization_sensitivity | 0.53 | Reference-only | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026 |
-| Microsoft | 2030 | utilization_sensitivity | 0.68 | Reference-only | SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX |
-| Microsoft | 2030 | utilization_sensitivity | 0.762 | Reference-only | SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026 |
-| Microsoft | 2030 | utilization_sensitivity | 0.598 | Reference-only | SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026 |
-| Google | 2026 | utilization_sensitivity | 0.437 | Reference-only | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026 |
-| Google | 2026 | utilization_sensitivity | 0.56 | Reference-only | SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX |
-| Google | 2026 | utilization_sensitivity | 0.627 | Reference-only | SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026 |
-| Google | 2026 | utilization_sensitivity | 0.493 | Reference-only | SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026 |
-| Google | 2030 | utilization_sensitivity | 0.546 | Reference-only | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026 |
-| Google | 2030 | utilization_sensitivity | 0.7 | Reference-only | SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX |
-| Google | 2030 | utilization_sensitivity | 0.784 | Reference-only | SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026 |
-| Google | 2030 | utilization_sensitivity | 0.616 | Reference-only | SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026 |
-| Meta | 2026 | utilization_sensitivity | 0.429 | Reference-only | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026 |
-| Meta | 2026 | utilization_sensitivity | 0.55 | Reference-only | SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX |
-| Meta | 2026 | utilization_sensitivity | 0.616 | Reference-only | SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026 |
-| Meta | 2026 | utilization_sensitivity | 0.484 | Reference-only | SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026 |
-| Meta | 2030 | utilization_sensitivity | 0.546 | Reference-only | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026 |
-| Meta | 2030 | utilization_sensitivity | 0.7 | Reference-only | SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX |
-| Meta | 2030 | utilization_sensitivity | 0.784 | Reference-only | SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026 |
-| Meta | 2030 | utilization_sensitivity | 0.616 | Reference-only | SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026 |
-| xAI | 2026 | utilization_sensitivity | 0.39 | Reference-only | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026 |
-| xAI | 2026 | utilization_sensitivity | 0.5 | Reference-only | SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX |
-| xAI | 2026 | utilization_sensitivity | 0.56 | Reference-only | SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026 |
-| xAI | 2026 | utilization_sensitivity | 0.44 | Reference-only | SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026 |
-| xAI | 2030 | utilization_sensitivity | 0.523 | Reference-only | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026 |
-| xAI | 2030 | utilization_sensitivity | 0.67 | Reference-only | SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX |
+| Microsoft | 2026 | utilization_sensitivity | 0.421 | Reference-only | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS |
+| Microsoft | 2026 | utilization_sensitivity | 0.54 | Reference-only | SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE |
+| Microsoft | 2026 | utilization_sensitivity | 0.605 | Reference-only | SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING |
+| Microsoft | 2026 | utilization_sensitivity | 0.475 | Reference-only | SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE |
+| Microsoft | 2030 | utilization_sensitivity | 0.53 | Reference-only | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS |
+| Microsoft | 2030 | utilization_sensitivity | 0.68 | Reference-only | SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE |
+| Microsoft | 2030 | utilization_sensitivity | 0.762 | Reference-only | SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING |
+| Microsoft | 2030 | utilization_sensitivity | 0.598 | Reference-only | SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE |
+| Google | 2026 | utilization_sensitivity | 0.437 | Reference-only | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS |
+| Google | 2026 | utilization_sensitivity | 0.56 | Reference-only | SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE |
+| Google | 2026 | utilization_sensitivity | 0.627 | Reference-only | SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING |
+| Google | 2026 | utilization_sensitivity | 0.493 | Reference-only | SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE |
+| Google | 2030 | utilization_sensitivity | 0.546 | Reference-only | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS |
+| Google | 2030 | utilization_sensitivity | 0.7 | Reference-only | SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE |
+| Google | 2030 | utilization_sensitivity | 0.784 | Reference-only | SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING |
+| Google | 2030 | utilization_sensitivity | 0.616 | Reference-only | SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE |
+| Meta | 2026 | utilization_sensitivity | 0.429 | Reference-only | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS |
+| Meta | 2026 | utilization_sensitivity | 0.55 | Reference-only | SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE |
+| Meta | 2026 | utilization_sensitivity | 0.616 | Reference-only | SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING |
+| Meta | 2026 | utilization_sensitivity | 0.484 | Reference-only | SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE |
+| Meta | 2030 | utilization_sensitivity | 0.546 | Reference-only | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS |
+| Meta | 2030 | utilization_sensitivity | 0.7 | Reference-only | SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE |
+| Meta | 2030 | utilization_sensitivity | 0.784 | Reference-only | SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING |
+| Meta | 2030 | utilization_sensitivity | 0.616 | Reference-only | SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE |
+| xAI | 2026 | utilization_sensitivity | 0.39 | Reference-only | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS |
+| xAI | 2026 | utilization_sensitivity | 0.5 | Reference-only | SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE |
+| xAI | 2026 | utilization_sensitivity | 0.56 | Reference-only | SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING |
+| xAI | 2026 | utilization_sensitivity | 0.44 | Reference-only | SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE |
+| xAI | 2030 | utilization_sensitivity | 0.523 | Reference-only | SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS |
+| xAI | 2030 | utilization_sensitivity | 0.67 | Reference-only | SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE |
 
 ## Formula/rule examples
 
@@ -103,9 +110,16 @@ Confidence rule: headline에는 곱하지 않는다. 중복 보정 방지를 위
 | SRC_ARXIV_PREFILL_AS_SERVICE_2026 | Prefill-as-a-Service | arXiv | 2026 | Tier 2 | 0.6 | https://arxiv.org/abs/2604.15039 |
 | SRC_ARXIV_SLO_PD_2026 | SLO-Aware Compute Resource Allocation for Prefill-Decode Disaggregated LLM Inference | arXiv | 2026 | Tier 2 | 0.62 | https://arxiv.org/abs/2603.04716 |
 | SRC_ARXIV_SPEC_DECODING_LATENCY_2026 | An Interpretable Latency Model for Speculative Decoding in LLM Serving | arXiv | 2026 | Tier 2 | 0.6 | https://arxiv.org/abs/2605.15051 |
+| SRC_EPOCH_INFERENCE_PRICE | LLM inference price trends | Epoch AI | 2026-06-09 accessed | Tier 2 | 0.66 | https://epoch.ai/data-insights/llm-inference-price-trends |
 | SRC_IBM_PD_DISAGG_2026 | Revisiting Disaggregated Large Language Model Serving for Performance and Energy Implications | IBM Research / EuroSys | 2026 | Tier 2 | 0.72 | https://research.ibm.com/publications/revisiting-disaggregated-large-language-model-serving-for-performance-and-energy-implications |
 | SRC_JOULE_INFERENCE_ENERGY_2026 | Energy use of AI inference, efficiency pathways, and test-time scaling | Joule / Cell Press | 2026 | Tier 2 | 0.7 | https://www.sciencedirect.com/science/article/pii/S2542435126001145 |
+| SRC_MLPERF_INFERENCE | MLPerf Inference datacenter benchmark results | MLCommons | 2026-06-09 accessed | Tier 2 | 0.74 | https://mlcommons.org/benchmarks/inference-datacenter/ |
+| SRC_MLPERF_INFERENCE_DOCS | MLPerf Inference documentation | MLCommons | 2026-06-09 accessed | Tier 2 | 0.72 | https://docs.mlcommons.org/inference/ |
+| SRC_ORCA_SERVING | Orca: A Distributed Serving System for Transformer-Based Generative Models | OSDI | 2022 | Tier 2 | 0.66 | https://www.usenix.org/conference/osdi22/presentation/yu |
+| SRC_SARATHI_SERVE | Sarathi-Serve | arXiv | 2024 | Tier 2 | 0.64 | https://arxiv.org/abs/2403.02310 |
 | SRC_SEMIANALYSIS_INFERENCEX | InferenceX / InferenceMAX benchmark methodology | SemiAnalysis | 2025-2026 | Tier 2 | 0.7 | https://inferencex.semianalysis.com/about |
+| SRC_SGLANG_DOCS | SGLang documentation | SGLang project | 2026-06-09 accessed | Tier 2 | 0.64 | https://docs.sglang.ai/ |
+| SRC_VLLM_DOCS | vLLM documentation | vLLM project | 2026-06-09 accessed | Tier 2 | 0.66 | https://docs.vllm.ai/ |
 
 ## Linked assumption IDs
 

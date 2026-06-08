@@ -112,7 +112,7 @@ ASSUMPTIONS: tuple[AssumptionSpec, ...] = (
             "tokens_per_second_per_mw",
         ),
         "1MW inference load가 초당 몇 generated output token을 만들 수 있는지 결정한다.",
-        "InferenceX는 proxy/benchmark이며 production telemetry가 아니므로 workload fit factor와 source caveat를 같이 붙인다.",
+        "InferenceX/MLPerf/vendor serving stack은 proxy/benchmark이며 production telemetry가 아니므로 workload fit factor와 source caveat를 같이 붙인다.",
         "직접 사용",
     ),
     AssumptionSpec(
@@ -204,10 +204,10 @@ DECISION_LOGIC_KR = {
         "공식 model card, architecture disclosure, serving kernel trace가 나오면 closed model band를 교체한다.",
     ],
     "A08": [
-        "TPS/MW는 InferenceX 공개 benchmark를 그대로 생산 telemetry로 간주하지 않고, H200/B200/GB200 reference 성능을 상용 workload에 맞게 낮춘 proxy로 사용한다.",
+        "TPS/MW는 InferenceX, MLPerf, vendor serving stack을 그대로 생산 telemetry로 간주하지 않고, H200/B200/GB200 reference 성능을 상용 workload에 맞게 낮춘 proxy로 사용한다.",
         "fleet_reference_tps_per_mw는 GPU generation mix에서 나온 raw benchmark 기준이고, commercial_workload_fit_factor는 closed model, 긴 context, SLO, batching 제약, prefill/decode 불균형을 반영하는 보정 계수다.",
         "tokens_per_second_per_mw는 reference_serving_tps_per_mw와 purpose_built_tps_per_mw를 fleet mix로 결합한 최종 입력값이다.",
-        "LLMServingSim 2.0 방식의 trace-driven prefill/decode simulation, KV cache pressure, interconnect contention, scheduling 정책이 확보되면 fit factor를 더 구조적인 계수로 쪼갤 수 있다.",
+        "LLMServingSim 2.0 방식의 trace-driven prefill/decode simulation, KV cache pressure, interconnect contention, scheduling 정책 또는 MLPerf/serving-stack matched benchmark가 확보되면 fit factor를 더 구조적인 계수로 쪼갤 수 있다.",
     ],
     "A09": [
         "utilization은 headline 산식에 곱하지 않는다. 이미 A08의 commercial workload fit factor가 sustained serving 성능을 낮추기 때문이다.",
@@ -668,7 +668,7 @@ def write_readme(rows: list[dict[str, Any]], data: dict[str, Any]) -> None:
         "",
         "- `Fact anchor` does not mean every value in the row is a public fact; it means the scenario is anchored to a public source.",
         "- `Scenario capacity envelope` means the numeric value is model-created and must not be quoted as company disclosure.",
-        "- InferenceX is benchmark/proxy evidence, not company production telemetry.",
+        "- InferenceX, MLPerf and vendor serving-stack docs are benchmark/proxy evidence, not company production telemetry.",
         "- A09 utilization is intentionally excluded from the headline token formula to avoid double counting.",
         "- A11 purpose-built accelerator share is a numeric scenario unless company accelerator-hours or fleet split is disclosed.",
         "",

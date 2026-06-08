@@ -435,6 +435,105 @@ def sources() -> list[Source]:
             "tokens/sec/MW benchmark calibration. 업체별 capacity fact로 직접 사용하지 않음.",
         ),
         Source(
+            "SRC_MLPERF_INFERENCE",
+            "MLPerf Inference datacenter benchmark results",
+            "MLCommons",
+            "2026-06-09 accessed",
+            "https://mlcommons.org/benchmarks/inference-datacenter/",
+            "Tier 2",
+            "Official inference submission anchor for hardware/software comparisons",
+            0.74,
+            "규칙화된 official benchmark anchor. LLM serving 조건은 InferenceX와 별도 비교 필요.",
+        ),
+        Source(
+            "SRC_MLPERF_POWER",
+            "MLPerf Power methodology and results",
+            "MLCommons",
+            "2026-06-09 accessed",
+            "https://mlcommons.org/benchmarks/power/",
+            "Tier 2",
+            "Optional measured power/performance benchmark anchor",
+            0.72,
+            "power 측정이 포함된 benchmark anchor. company production telemetry는 아님.",
+        ),
+        Source(
+            "SRC_MLPERF_INFERENCE_DOCS",
+            "MLPerf Inference documentation",
+            "MLCommons",
+            "2026-06-09 accessed",
+            "https://docs.mlcommons.org/inference/",
+            "Tier 2",
+            "Benchmark rules, scenarios, loadgen and divisions",
+            0.72,
+            "Server/Offline/SUT 규칙과 latency scenario를 해석하는 기준 문서.",
+        ),
+        Source(
+            "SRC_VLLM_DOCS",
+            "vLLM documentation",
+            "vLLM project",
+            "2026-06-09 accessed",
+            "https://docs.vllm.ai/",
+            "Tier 2",
+            "Production serving mechanism, scheduler and KV cache behavior",
+            0.66,
+            "serving stack mechanism source. 특정 업체 tokens/MW fact는 아님.",
+        ),
+        Source(
+            "SRC_TENSORRT_LLM",
+            "NVIDIA TensorRT-LLM documentation",
+            "NVIDIA",
+            "2026-06-09 accessed",
+            "https://nvidia.github.io/TensorRT-LLM/",
+            "Tier 2",
+            "Vendor-optimized inference stack and deployment mechanism",
+            0.68,
+            "NVIDIA stack 최적화 근거. workload matched benchmark 없이는 uplift로 직접 적용하지 않음.",
+        ),
+        Source(
+            "SRC_SGLANG_DOCS",
+            "SGLang documentation",
+            "SGLang project",
+            "2026-06-09 accessed",
+            "https://docs.sglang.ai/",
+            "Tier 2",
+            "Serving runtime, structured generation and batching behavior",
+            0.64,
+            "batching/structured generation mechanism source. production telemetry는 아님.",
+        ),
+        Source(
+            "SRC_FLASHINFER",
+            "FlashInfer documentation",
+            "FlashInfer project",
+            "2026-06-09 accessed",
+            "https://docs.flashinfer.ai/",
+            "Tier 2",
+            "Attention/decode kernel mechanism for serving efficiency",
+            0.62,
+            "kernel-level efficiency mechanism source. company-level throughput fact로 승격하지 않음.",
+        ),
+        Source(
+            "SRC_SARATHI_SERVE",
+            "Sarathi-Serve",
+            "arXiv",
+            "2024",
+            "https://arxiv.org/abs/2403.02310",
+            "Tier 2",
+            "Chunked prefill and decode scheduling mechanism",
+            0.64,
+            "prefill/decode scheduling sensitivity source.",
+        ),
+        Source(
+            "SRC_ORCA_SERVING",
+            "Orca: A Distributed Serving System for Transformer-Based Generative Models",
+            "OSDI",
+            "2022",
+            "https://www.usenix.org/conference/osdi22/presentation/yu",
+            "Tier 2",
+            "Iteration-level scheduling and batching foundation",
+            0.66,
+            "LLM serving scheduling foundation. modern hardware TPS/MW fact는 아님.",
+        ),
+        Source(
             "SRC_ARXIV_INFERENCE_ENERGY",
             "LLM inference energy and serving efficiency literature set",
             "arXiv",
@@ -532,6 +631,193 @@ def sources() -> list[Source]:
             "Current AI power allocation sanity check across training, experiments, and inference",
             0.70,
             "현재 power allocation은 training/experiments/inference가 대략 나뉜다는 관점. 60%+ inference fact 주장에 대한 반대 anchor.",
+        ),
+        Source(
+            "SRC_EPOCH_TRAIN",
+            "Training compute of frontier AI models grows by 4-5x per year",
+            "Epoch AI",
+            "2024",
+            "https://epoch.ai/blog/training-compute-of-frontier-ai-models-grows-by-4-5x-per-year",
+            "Tier 2",
+            "Frontier training compute growth anchor",
+            0.70,
+            "training reserve를 남겨야 하는 장기 compute-growth 근거.",
+        ),
+        Source(
+            "SRC_EPOCH_SCALING_2030",
+            "Can AI scaling continue through 2030?",
+            "Epoch AI",
+            "2024/2026 accessed",
+            "https://epoch.ai/publications/can-ai-scaling-continue-through-2030",
+            "Tier 2",
+            "Scaling bottlenecks across power, data, capex and hardware supply",
+            0.70,
+            "2030 scaling feasibility와 병목 source. 업체별 active power fact는 아님.",
+        ),
+        Source(
+            "SRC_EPOCH_INFERENCE_PRICE",
+            "LLM inference price trends",
+            "Epoch AI",
+            "2026-06-09 accessed",
+            "https://epoch.ai/data-insights/llm-inference-price-trends",
+            "Tier 2",
+            "Inference cost trend proxy and commercial efficiency context",
+            0.66,
+            "API price/performance trend proxy. tokens/MW 생산 telemetry로 직접 사용하지 않음.",
+        ),
+        Source(
+            "SRC_EIA_DC_POWER",
+            "U.S. electricity data and data center power context",
+            "U.S. EIA",
+            "2026-06-09 accessed",
+            "https://www.eia.gov/",
+            "Tier 2",
+            "Electricity demand and regional power baseline",
+            0.68,
+            "macro grid plausibility source. company contracted GW를 직접 바꾸지 않음.",
+        ),
+        Source(
+            "SRC_FERC_INTERCONNECT",
+            "FERC interconnection and grid reliability proceedings",
+            "FERC",
+            "2026-06-09 accessed",
+            "https://www.ferc.gov/",
+            "Tier 2",
+            "Interconnection, transmission and reliability context",
+            0.66,
+            "grid constraint context. model-owner capacity attribution fact는 아님.",
+        ),
+        Source(
+            "SRC_UPTIME_GLOBAL_DC",
+            "Uptime Institute Global Data Center Survey",
+            "Uptime Institute",
+            "2026-06-09 accessed",
+            "https://uptimeinstitute.com/resources/research-and-reports",
+            "Tier 2",
+            "PUE, cooling, outage and density operating context",
+            0.68,
+            "facility/PUE context. company site-level PUE가 있으면 교체.",
+        ),
+        Source(
+            "SRC_ASHRAE_TC99",
+            "ASHRAE TC 9.9 data center thermal guidance",
+            "ASHRAE",
+            "2026-06-09 accessed",
+            "https://www.ashrae.org/technical-resources/bookstore/datacom-series",
+            "Tier 2",
+            "Thermal envelope and cooling design reference",
+            0.64,
+            "cooling design reference. PUE 숫자 자체의 direct fact는 아님.",
+        ),
+        Source(
+            "SRC_MISTRAL_MODELS",
+            "Mistral AI model documentation",
+            "Mistral AI",
+            "2026-06-09 accessed",
+            "https://docs.mistral.ai/",
+            "Tier 1/2",
+            "Dense/MoE open model family and context anchor",
+            0.72,
+            "open/served model family 비교 anchor. 본 모델의 core company row에는 직접 포함하지 않음.",
+        ),
+        Source(
+            "SRC_DBRX_MODEL",
+            "Introducing DBRX",
+            "Databricks",
+            "2024",
+            "https://www.databricks.com/blog/introducing-dbrx-new-state-art-open-llm",
+            "Tier 1/2",
+            "Open MoE parameter anchor",
+            0.70,
+            "MoE total/active parameter 읽기용 비교 source.",
+        ),
+        Source(
+            "SRC_OPENAI_API_PRICING",
+            "OpenAI API pricing",
+            "OpenAI",
+            "2026-06-09 accessed",
+            "https://openai.com/api/pricing/",
+            "Tier 1",
+            "Commercial token surface and price proxy",
+            0.78,
+            "price surface proxy. output volume 또는 tokens/MW production fact는 아님.",
+        ),
+        Source(
+            "SRC_ANTHROPIC_PRICING",
+            "Anthropic API pricing",
+            "Anthropic",
+            "2026-06-09 accessed",
+            "https://www.anthropic.com/pricing",
+            "Tier 1",
+            "Commercial token surface and price proxy",
+            0.78,
+            "price surface proxy. Claude production output volume은 공개하지 않음.",
+        ),
+        Source(
+            "SRC_AZURE_OPENAI",
+            "Azure OpenAI Service documentation",
+            "Microsoft",
+            "2026-06-09 accessed",
+            "https://learn.microsoft.com/azure/ai-services/openai/",
+            "Tier 1",
+            "Microsoft host/product surface vs OpenAI model attribution",
+            0.78,
+            "OpenAI model owner와 Azure product/host surface 분리용.",
+        ),
+        Source(
+            "SRC_GOOGLE_CLOUD_ANTHROPIC",
+            "Google Cloud and Anthropic partnership",
+            "Google Cloud",
+            "2026-06-09 accessed",
+            "https://cloud.google.com/blog/products/ai-machine-learning/google-cloud-anthropic-ai-partnership",
+            "Tier 1/2",
+            "Third-party model hosted on cloud provider",
+            0.72,
+            "Google host capacity와 Anthropic model-owner attribution 분리용.",
+        ),
+        Source(
+            "SRC_ARTIFICIAL_ANALYSIS",
+            "Artificial Analysis model and API benchmarks",
+            "Artificial Analysis",
+            "2026-06-09 accessed",
+            "https://artificialanalysis.ai/",
+            "Tier 2",
+            "Public API price/performance and latency proxy",
+            0.64,
+            "commercial API price/latency proxy. company capacity fact 아님.",
+        ),
+        Source(
+            "SRC_OPENROUTER_RANKINGS",
+            "OpenRouter model pricing and usage market signals",
+            "OpenRouter",
+            "2026-06-09 accessed",
+            "https://openrouter.ai/rankings",
+            "Tier 2",
+            "API price and demand mix proxy",
+            0.58,
+            "market routing proxy. 전체 production traffic fact로 해석하지 않음.",
+        ),
+        Source(
+            "SRC_SEMI_100K_CLUSTER",
+            "SemiAnalysis AI infrastructure and 100k H100 cluster analysis",
+            "SemiAnalysis",
+            "2026-06-09 accessed",
+            "https://semianalysis.com/",
+            "Tier 2",
+            "Accelerator cluster, networking and non-GPU overhead context",
+            0.62,
+            "cluster architecture context. specific company active GW fact는 아님.",
+        ),
+        Source(
+            "SRC_DELLORO_AI_NETWORKS",
+            "AI networks and data center switch market context",
+            "Dell'Oro Group",
+            "2026-06-09 accessed",
+            "https://www.delloro.com/",
+            "Tier 2",
+            "Network/power overhead and AI cluster infrastructure context",
+            0.58,
+            "network overhead/context source. model equation에는 직접 계수로 넣지 않음.",
         ),
     ]
 
@@ -1260,14 +1546,14 @@ def formula_assumptions() -> list[dict[str, Any]]:
             "formula": "processed_tokens = input_tokens + output_tokens; benchmark total tput may include both",
             "meaning_kr": "benchmark의 total tokens/sec 또는 tok_s_mw는 prompt input 처리량과 생성 output 처리량이 섞일 수 있습니다. processed token을 generated token forecast로 직접 치환하지 않습니다.",
             "evidence_type": "Definition",
-            "source_ids": "SRC_SEMIANALYSIS_INFERENCEX",
+            "source_ids": "SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE_DOCS",
         },
         {
             "category": "Power to AI IT load",
             "formula": "it_load_gw = operational_power_gw / pue",
             "meaning_kr": "계약/계획 전력이 아니라 실제 operational deploy된 전력에서 PUE를 차감해 IT load를 산출.",
             "evidence_type": "Formula",
-            "source_ids": "SRC_MCKINSEY_AI_WORKLOADS; SRC_EPRI_EPOCH_AI_POWER",
+            "source_ids": "SRC_MCKINSEY_AI_WORKLOADS; SRC_EPRI_EPOCH_AI_POWER; SRC_EIA_DC_POWER; SRC_FERC_INTERCONNECT; SRC_UPTIME_GLOBAL_DC; SRC_ASHRAE_TC99",
         },
         {
             "category": "AI workload allocation",
@@ -1288,35 +1574,35 @@ def formula_assumptions() -> list[dict[str, Any]]:
             "formula": "fleet_reference_tps_per_mw = h200_share*h200_ref + b200_share*b200_ref + gb200_share*gb200_ref + purpose_built_share*purpose_built_ref",
             "meaning_kr": "H200/B200/GB200/purpose-built 구성비를 직접 입력하여 같은 inference MW라도 fleet 구성에 따라 public reference TPS/MW가 달라지게 합니다. Purpose-built는 comparable benchmark가 없으면 B200 placeholder를 사용하며 editable input으로 남깁니다.",
             "evidence_type": "Platform fact + Conservative benchmark mapping",
-            "source_ids": "SRC_MS_MAIA200; SRC_GOOGLE_IRONWOOD; SRC_META_MTIA_GENAI_2026; SRC_AWS_RAINIER_ACTIVE; ASSUMP_NUMERIC_ACCELERATOR_MIX",
+            "source_ids": "SRC_MS_MAIA200; SRC_GOOGLE_IRONWOOD; SRC_GOOGLE_TPU_V6E; SRC_META_MTIA_GENAI_2026; SRC_AWS_RAINIER_ACTIVE; SRC_MLPERF_INFERENCE; SRC_MLPERF_POWER; SRC_TENSORRT_LLM; ASSUMP_NUMERIC_ACCELERATOR_MIX",
         },
         {
             "category": "InferenceX TPS/MW selection",
             "formula": "reference_serving_tps_per_mw = fleet_reference_tps_per_mw * commercial_workload_fit_factor",
             "meaning_kr": "InferenceX generated-output TPS/MW는 GPU 세대별 공개 reference로 사용하며, 상용 서비스의 closed/reasoning/long-context/SLO workload 적합성은 명시적 Bear/Base/Bull fit factor로 분리합니다. MoE, software CAGR, utilization은 추가 multiplier로 중복 적용하지 않습니다.",
             "evidence_type": "Benchmark proxy selection",
-            "source_ids": "SRC_SEMIANALYSIS_INFERENCEX; SRC_DEEPSEEK_V3; SRC_QWEN3_GITHUB; SRC_TENCENT_AI_INFRA_MOE; ASSUMP_NUMERIC_ACCELERATOR_MIX",
+            "source_ids": "SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE; SRC_VLLM_DOCS; SRC_TENSORRT_LLM; SRC_SGLANG_DOCS; SRC_FLASHINFER; SRC_DEEPSEEK_V3; SRC_QWEN3_GITHUB; SRC_META_LLAMA; SRC_META_LLAMA4_NVIDIA; SRC_TENCENT_AI_INFRA_MOE; ASSUMP_NUMERIC_ACCELERATOR_MIX",
         },
         {
             "category": "Headline inference token capacity",
             "formula": "inference_tokens_per_day = contracted_power_gw * operational_deployment_share / pue * ai_workload_share * inference_power_share * 1,000 * weighted_tps_per_mw * 86,400",
             "meaning_kr": "최종 생성 토큰 capacity는 공개 또는 명시적 capacity envelope, 운영 투입 비율, PUE, AI/inference 배분, 선택 benchmark TPS/MW만으로 계산합니다.",
             "evidence_type": "Model equation",
-            "source_ids": "SRC_SEMIANALYSIS_INFERENCEX; SRC_ARXIV_INFERENCE_ENERGY",
+            "source_ids": "SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE; SRC_ARXIV_INFERENCE_ENERGY; SRC_EPOCH_INFERENCE_PRICE",
         },
         {
             "category": "Excluded from headline - operational serving sensitivities",
             "formula": "utilization, MoE uplift, architecture multiplier and software CAGR = sensitivity/reference only",
             "meaning_kr": "이 항목들은 중요한 연구 주제이지만 업체별 production telemetry가 부족합니다. 동일한 효과를 TPS/MW와 다시 곱해 과도한 정밀도를 만들지 않기 위해 headline token 생성량에서는 제외합니다.",
             "evidence_type": "Scope control rule",
-            "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_SEMIANALYSIS_INFERENCEX",
+            "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING; SRC_SEMIANALYSIS_INFERENCEX",
         },
         {
             "category": "Energy sanity check",
             "formula": "joules_per_token = 1,000,000 / tokens_per_second_per_mw",
             "meaning_kr": "MW를 J/s로 환산해 tokens/sec/MW와 에너지/token이 상호 일관되는지 확인.",
             "evidence_type": "Sanity check",
-            "source_ids": "SRC_ARXIV_INFERENCE_ENERGY",
+            "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_JOULE_INFERENCE_ENERGY_2026; SRC_MLPERF_POWER",
         },
     ]
 
@@ -2217,21 +2503,21 @@ def energy_sanity_reference_rows(base_rows: list[dict[str, Any]]) -> list[dict[s
             "profile": "Strict-SLO / long-context agentic",
             "joules_per_token_multiplier": 1.85,
             "input_output_context_note": "long prompt, tool-use trace, low-latency SLA, limited batching",
-            "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SLO_PD_2026",
+            "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SLO_PD_2026; SRC_MLPERF_INFERENCE_DOCS",
             "interpretation_kr": "agentic/test-time compute가 증가하면 같은 MW에서 token output이 낮아질 수 있음",
         },
         {
             "profile": "Base serving mix",
             "joules_per_token_multiplier": 1.00,
             "input_output_context_note": "mixed chatbot/API/enterprise serving with moderate batching",
-            "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX",
+            "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_POWER",
             "interpretation_kr": "메인 forecast와 일치시키는 기준 energy view",
         },
         {
             "profile": "Batchable / optimized serving",
             "joules_per_token_multiplier": 0.68,
             "input_output_context_note": "batchable workloads, KV-cache efficiency, P/D scheduling, relaxed latency",
-            "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_SEMIANALYSIS_INFERENCEX",
+            "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_SEMIANALYSIS_INFERENCEX; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_FLASHINFER",
             "interpretation_kr": "serving stack 최적화가 energy/token을 낮출 수 있으나 company fact는 아님",
         },
     ]
@@ -2272,28 +2558,28 @@ def utilization_sensitivity_rows(base_rows: list[dict[str, Any]]) -> list[dict[s
             "utilization_multiplier": 0.78,
             "tokens_per_mw_multiplier": 0.92,
             "description_kr": "TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving",
-            "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026",
+            "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS",
         },
         {
             "profile": "Base mixed serving",
             "utilization_multiplier": 1.00,
             "tokens_per_mw_multiplier": 1.00,
             "description_kr": "메인 forecast 기준",
-            "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX",
+            "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE",
         },
         {
             "profile": "Batchable optimized",
             "utilization_multiplier": 1.12,
             "tokens_per_mw_multiplier": 1.10,
             "description_kr": "batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving",
-            "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026",
+            "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING",
         },
         {
             "profile": "Agentic long-context stress",
             "utilization_multiplier": 0.88,
             "tokens_per_mw_multiplier": 0.82,
             "description_kr": "긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress",
-            "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026",
+            "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE",
         },
     ]
     rows: list[dict[str, Any]] = []
@@ -3490,6 +3776,70 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
         for cell in row:
             cell.number_format = "0.000"
 
+    source_ws = wb.create_sheet("07_Source_Registry")
+    source_headers = list(asdict(sources()[0]).keys())
+    append_rows(source_ws, [asdict(s) for s in sources()], source_headers)
+    style_sheet(source_ws)
+    for col, width in {
+        "A": 34,
+        "B": 56,
+        "C": 24,
+        "D": 20,
+        "E": 64,
+        "F": 14,
+        "G": 58,
+        "H": 12,
+        "I": 72,
+    }.items():
+        source_ws.column_dimensions[col].width = width
+    for row in source_ws.iter_rows(min_row=2):
+        for cell in row:
+            cell.alignment = Alignment(vertical="top", wrap_text=True)
+
+    provenance_ws = wb.create_sheet("08_Provenance_Trace")
+    provenance_headers = list(data["number_trace"][0].keys())
+    append_rows(provenance_ws, data["number_trace"], provenance_headers)
+    style_sheet(provenance_ws)
+    for col, width in {
+        "A": 22,
+        "B": 18,
+        "C": 12,
+        "D": 28,
+        "E": 18,
+        "F": 18,
+        "G": 26,
+        "H": 44,
+        "I": 54,
+        "J": 34,
+        "K": 46,
+        "L": 34,
+        "M": 46,
+    }.items():
+        provenance_ws.column_dimensions[col].width = width
+    for row in provenance_ws.iter_rows(min_row=2, max_row=min(provenance_ws.max_row, 200)):
+        for cell in row:
+            cell.alignment = Alignment(vertical="top", wrap_text=True)
+
+    audit_ws = wb.create_sheet("09_Fact_Assumption_Audit")
+    audit_headers = list(data["company_input_audit"][0].keys())
+    append_rows(audit_ws, data["company_input_audit"], audit_headers)
+    style_sheet(audit_ws)
+    for col, width in {
+        "A": 18,
+        "B": 28,
+        "C": 30,
+        "D": 28,
+        "E": 42,
+        "F": 58,
+        "G": 50,
+        "H": 42,
+        "I": 36,
+    }.items():
+        audit_ws.column_dimensions[col].width = width
+    for row in audit_ws.iter_rows(min_row=2):
+        for cell in row:
+            cell.alignment = Alignment(vertical="top", wrap_text=True)
+
     for ws in wb.worksheets:
         ws.sheet_view.showGridLines = False
     wb.active = wb.sheetnames.index("04_Output")
@@ -3920,7 +4270,7 @@ def write_html(data: dict[str, Any], path: Path) -> None:
     <section>
       <h2>InferenceX ingestion layer</h2>
       <table id="inferencex"></table>
-      <div class="note">InferenceX는 company production telemetry가 아니라 benchmark/proxy layer입니다. DB dump/CSV 정규화 후 A08/A09 sensitivity로만 승격합니다.</div>
+      <div class="note">InferenceX와 MLPerf는 company production telemetry가 아니라 benchmark/proxy layer입니다. DB dump/CSV 정규화, official benchmark submission, vendor serving stack docs는 A08/A09/A11 provenance로 승격합니다.</div>
     </section>
     <section>
       <h2>Hallucination 체크리스트</h2>
@@ -4203,7 +4553,7 @@ def write_markdown(data: dict[str, Any], path: Path) -> None:
         "",
         "## InferenceX Ingestion Layer",
         "",
-        "- InferenceX는 company production telemetry가 아니라 benchmark/proxy layer입니다.",
+        "- InferenceX와 MLPerf는 company production telemetry가 아니라 benchmark/proxy layer입니다.",
         "- Dashboard DOM 크롤링보다 GitHub release DB dump, benchmark repo, app API/schema를 우선합니다.",
         f"- 최신 확인 DB dump: `{latest.get('tag_name', 'not refreshed')}` / `{latest.get('asset_name', '')}` / `{latest.get('asset_size_bytes', '')}` bytes.",
         f"- Full dump parse: `{parsed.get('status', 'not_run')}` / benchmark rows `{parsed.get('benchmark_rows', 0)}` / metric profile rows `{parsed.get('metric_profile_rows', 0)}` / SHA-256 `{parsed.get('sha256', '')}`.",
@@ -4579,7 +4929,7 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
     parsed = data["inferencex"]["manifest"].get("parsed_dump", {})
-    add_title(slide, "InferenceX로 보정하는 것: tokens/MW, J/token, SLO 조건", "InferenceX benchmark는 serving 효율과 latency 조건을 수치화해 tokens/MW 가정을 좁혀줍니다.")
+    add_title(slide, "Benchmark layer로 보정하는 것: tokens/MW, J/token, SLO 조건", "InferenceX, MLPerf, vLLM/SGLang/TensorRT-LLM 문서는 serving 효율과 latency 조건을 수치화해 tokens/MW 가정을 좁혀줍니다.")
     add_label(slide, 0.85, 1.35, 2.8, 0.32, "Full dump normalized", 11, muted, True)
     add_label(slide, 0.85, 1.78, 3.4, 0.72, f"{parsed.get('benchmark_rows', 0):,}", 34, blue, True)
     add_label(slide, 0.88, 2.48, 3.7, 0.3, "inference performance rows", 10, muted)
@@ -4600,7 +4950,7 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
         ],
         12,
     )
-    takeaway_band(slide, "이 장의 메시지: InferenceX는 serving 효율 계수를 더 현실적인 범위로 조정하는 데이터 레이어입니다.")
+    takeaway_band(slide, "이 장의 메시지: benchmark와 serving-stack source는 효율 계수를 더 현실적인 범위로 조정하는 데이터 레이어입니다.")
     add_footer(slide)
 
     # 8. Key uncertainties
@@ -4669,7 +5019,7 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
     set_bg(slide)
     add_title(slide, "다음 운영 방식: 매주 source-refresh → model-update → account-action", "가정이 바뀌면 모델 숫자와 영업 액션이 같은 주에 같이 업데이트되도록 운영합니다.")
     loop = [
-        ("월", "source refresh", "official IR / filings / model cards / InferenceX dump"),
+        ("월", "source refresh", "official IR / filings / model cards / InferenceX / MLPerf / serving-stack docs"),
         ("화", "model update", "token definition, active GW, routing, utilization"),
         ("수", "account translation", "customer pain → product fit → proof"),
         ("목", "sales review", "pipeline impact, objection, win/loss signal"),
@@ -4697,7 +5047,7 @@ def write_ppt(data: dict[str, Any], path: Path) -> None:
             "00_formula_assumptions / 00a_token_definitions: 계산식과 token 정의.",
             "02a_fact_anchors: 공개 numeric anchor와 모델 반영 방식.",
             "08a-08f: scenario, benchmark, energy, utilization sensitivity.",
-            "12d-12f: InferenceX benchmark rows, metric profile, accuracy evals.",
+            "07-09: source registry, provenance trace, fact audit; 12d-12f: InferenceX benchmark rows, metric profile, accuracy evals.",
             "07/08 sheets: company-year forecast와 sensitivity 결과.",
         ],
         14,
@@ -4976,7 +5326,7 @@ def write_ppt_samsung_style(data: dict[str, Any], path: Path) -> None:
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
     parsed = data["inferencex"]["manifest"].get("parsed_dump", {})
-    add_header(slide, "InferenceX는 serving 효율 가정을 실제 benchmark 범위로 좁힌다")
+    add_header(slide, "Benchmark stack은 serving 효율 가정을 실제 측정 범위로 좁힌다")
     stat(slide, 0.92, 1.92, "Performance rows", f"{parsed.get('benchmark_rows', 0):,}", "model × GPU × precision × ISL/OSL", samsung_blue)
     stat(slide, 4.75, 1.92, "Metric profiles", f"{parsed.get('metric_profile_rows', 0):,}", "GPU/framework/profile groups", cyan)
     stat(slide, 8.55, 1.92, "Accuracy evals", f"{parsed.get('accuracy_eval_rows', 0):,}", "quality trade-off layer", green)
@@ -5022,7 +5372,7 @@ def write_ppt_samsung_style(data: dict[str, Any], path: Path) -> None:
     set_bg(slide)
     add_header(slide, "운영 방식은 source refresh에서 account action까지 일주일 단위로 닫는다")
     days = [
-        ("Mon", "Source refresh", "IR / filings / model cards / InferenceX"),
+        ("Mon", "Source refresh", "IR / filings / model cards / InferenceX / MLPerf / serving docs"),
         ("Tue", "Model update", "active GW, inference share, tokens/MW"),
         ("Wed", "Account translation", "pain → product fit → message"),
         ("Thu", "Sales review", "pipeline, objections, win/loss"),
@@ -5034,7 +5384,7 @@ def write_ppt_samsung_style(data: dict[str, Any], path: Path) -> None:
         rect(slide, 1.88, y + 0.12, 1.0, 0.02, silver)
         text(slide, 3.1, y, 2.6, 0.25, task, 13, ink, True)
         text(slide, 5.9, y, 5.8, 0.25, desc, 11.5, body)
-    text(slide, 0.92, 5.95, 11.1, 0.3, "Workbook: core formula, benchmark inputs, scenario inputs, outputs, checks, and aggressive upside view", 10.5, muted)
+    text(slide, 0.92, 5.95, 11.1, 0.3, "Workbook: core formula, benchmark inputs, scenario inputs, outputs, checks, source registry, provenance trace, and aggressive upside view", 10.5, muted)
     underline_takeaway(slide, "PPT는 결론 전달, Excel은 계산 검증, MD/agents는 가정 업데이트와 반복 학습에 사용합니다.")
     add_footer(slide)
 
@@ -5376,8 +5726,8 @@ def write_ppt_samsung_style(data: dict[str, Any], path: Path) -> None:
     parsed = data["inferencex"]["manifest"].get("parsed_dump", {})
     header(
         slide,
-        "InferenceX calibrates the serving-efficiency assumptions",
-        "The benchmark layer narrows the plausible range for tokens/MW, joules/token, latency conditions, and workload shape.",
+        "InferenceX, MLPerf, and serving-stack docs calibrate the efficiency assumptions",
+        "The benchmark layer narrows the plausible range for tokens/MW, joules/token, latency conditions, workload shape, and accelerator replacement.",
     )
     stat(slide, 0.92, 1.96, "Performance rows", f"{parsed.get('benchmark_rows', 0):,}", "model x GPU x precision x ISL/OSL", samsung_blue)
     stat(slide, 4.75, 1.96, "Metric profiles", f"{parsed.get('metric_profile_rows', 0):,}", "GPU, framework, and profile groups", cyan)
@@ -5435,7 +5785,7 @@ def write_ppt_samsung_style(data: dict[str, Any], path: Path) -> None:
         "The same assumptions should update market intelligence, account briefs, and sales enablement in the same weekly cycle.",
     )
     days = [
-        ("Mon", "Source refresh", "IR, filings, model cards, technical reports, InferenceX benchmark updates"),
+        ("Mon", "Source refresh", "IR, filings, model cards, technical reports, InferenceX, MLPerf, and serving-stack updates"),
         ("Tue", "Model update", "active GW, inference share, accelerator mix, tokens/MW, utilization"),
         ("Wed", "Account translation", "customer pain, product fit, urgency, value message, proof package"),
         ("Thu", "Sales review", "pipeline impact, objections, pricing/mix discussion, win/loss signal"),
@@ -5447,7 +5797,7 @@ def write_ppt_samsung_style(data: dict[str, Any], path: Path) -> None:
         rect(slide, 1.88, y + 0.11, 1.0, 0.02, silver)
         text(slide, 3.1, y, 2.55, 0.24, task, 13, ink, True)
         text(slide, 5.85, y, 6.25, 0.24, desc, 10.8, body)
-    text(slide, 0.92, 5.78, 11.1, 0.42, "Workbook: core formula, public benchmark inputs, scenario inputs, calculations, outputs, checks, and an aggressive upside view.", 10.5, muted)
+    text(slide, 0.92, 5.78, 11.1, 0.42, "Workbook: core formula, public benchmark inputs, scenario inputs, calculations, outputs, checks, source registry, provenance trace, and an aggressive upside view.", 10.5, muted)
     takeaway(slide, "Presentation for the executive story, workbook for the math, Markdown/agents for continuous assumption learning.")
     footer(slide)
 
@@ -6024,7 +6374,37 @@ def write_ppt_compute_constraint(data: dict[str, Any], path: Path) -> None:
     takeaway(slide, "The same provider can move from constrained to advantaged if deployment and serving conversion improve together.")
     footer(slide)
 
-    # 12. Operating questions
+    # 12. Source and provenance coverage
+    slide = prs.slides.add_slide(blank)
+    set_bg(slide)
+    header(
+        slide,
+        "Evidence base now separates official submissions, serving proxies, and provenance",
+        "The workbook carries the source registry and number-level provenance so benchmark evidence is visible without changing the headline formula.",
+    )
+    evidence_rows = [
+        ["Official benchmark", "MLPerf Inference / MLPerf Power", "hardware and power/performance anchor; not production telemetry"],
+        ["LLM serving proxy", "InferenceX DB dump", "model x GPU x precision x ISL/OSL output TPS/MW reference"],
+        ["Serving stack", "vLLM / SGLang / TensorRT-LLM / FlashInfer", "mechanism layer for batching, KV cache, kernel and runtime behavior"],
+        ["Scheduling papers", "Orca / Sarathi / DistServe / Splitwise", "utilization, prefill/decode and TTFT/TPOT sensitivity"],
+        ["Trend context", "Epoch AI", "training scale, inference price trend, power and scaling bottlenecks"],
+    ]
+    add_small_table(
+        slide,
+        evidence_rows,
+        ["Layer", "Source set", "How it is used"],
+        0.82,
+        1.9,
+        11.7,
+        3.35,
+        [2.05, 3.55, 6.1],
+        8.0,
+    )
+    text(slide, 0.92, 5.55, 11.05, 0.42, "Excel tabs 07_Source_Registry, 08_Provenance_Trace, and 09_Fact_Assumption_Audit expose source IDs, formula/rule, replacement path, and evidence class for review.", 10.5, body)
+    takeaway(slide, "MLPerf and InferenceX are benchmark anchors; provider-specific production telemetry remains the replacement path.")
+    footer(slide)
+
+    # 13. Operating questions
     slide = prs.slides.add_slide(blank)
     set_bg(slide)
     header(
@@ -6044,7 +6424,7 @@ def write_ppt_compute_constraint(data: dict[str, Any], path: Path) -> None:
         text(slide, 0.92, y, 1.35, 0.24, area, 12, samsung_blue, True)
         rect(slide, 2.48, y + 0.11, 0.8, 0.02, silver)
         text(slide, 3.52, y, 8.65, 0.27, q, 11.4, body)
-    text(slide, 0.92, 5.78, 11.1, 0.42, "Workbook tabs: Logic, Benchmark Input, Inputs, GPU Mix Input, Calculation, Output, Checks, Aggressive View. Derived output cells use Excel formulas.", 10.5, muted)
+    text(slide, 0.92, 5.78, 11.1, 0.42, "Workbook tabs: Logic, Benchmark Input, Inputs, GPU Mix Input, Calculation, Output, Checks, Aggressive View, Source Registry, Provenance Trace, Fact Audit. Derived output cells use Excel formulas.", 10.5, muted)
     takeaway(slide, "Update only visible inputs; the workbook recalculates token supply through the same core formula.")
     footer(slide)
 
@@ -6132,6 +6512,7 @@ def write_core_markdown(data: dict[str, Any], path: Path) -> None:
         "- `04_Output`: formula-driven 2026-2030 provider/scenario tables for tokens/day and tokens/year with charts.",
         "- `05_Checks`: formula checks.",
         "- `06_Aggressive_View`: Bull commercial case와 public benchmark ceiling의 formula-driven upside view.",
+        "- `07_Source_Registry`, `08_Provenance_Trace`, `09_Fact_Assumption_Audit`: expanded source/provenance layer.",
     ]
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -6171,7 +6552,7 @@ inference_gw = operational_power_gw / pue * ai_workload_share * inference_power_
 fleet_reference_tps_per_mw = H200_share*H200_ref + B200_share*B200_ref + GB200_share*GB200_ref + purpose_built_share*purpose_ref
 serving_tps_per_mw = fleet_reference_tps_per_mw * commercial_workload_fit_factor
 generated_output_tokens_per_day = inference_gw * 1,000 * serving_tps_per_mw * 86,400</pre>
-<div class="note">GPU generation mix는 동일 inference MW 내 hardware composition 차이를 반영합니다. InferenceX는 public reference이며, headline은 commercial workload fit을 적용합니다.</div></section>
+<div class="note">GPU generation mix는 동일 inference MW 내 hardware composition 차이를 반영합니다. InferenceX/MLPerf/vendor serving stack은 public reference이며, headline은 commercial workload fit을 적용합니다.</div></section>
 <section><h2>Output View</h2><div class="controls"><label>Scenario <select id="scenario"></select></label><label>Year <select id="year"></select></label></div><div id="bars"></div></section>
 <section><h2>Default 2030 GPU Mix And Serving Reference</h2><table id="bench"></table></section>
 </main>

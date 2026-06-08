@@ -219,12 +219,13 @@ def build_docx(markdown: str, path: Path) -> None:
 def main() -> None:
     DOCS.mkdir(parents=True, exist_ok=True)
     OUT.mkdir(parents=True, exist_ok=True)
-    markdown = build_markdown()
     md_path = DOCS / "agent_learning_expansion_pack.md"
+    # Preserve the manually curated Markdown as the source of truth.
+    markdown = md_path.read_text(encoding="utf-8") if md_path.exists() else build_markdown()
     docx_path = OUT / "agent_learning_expansion_pack_kr.docx"
     md_path.write_text(markdown, encoding="utf-8")
     build_docx(markdown, docx_path)
-    print({"status": "PASS", "sources": len(SOURCES), "agents": len(AGENT_EXPANSIONS), "markdown": str(md_path), "docx": str(docx_path)})
+    print({"status": "PASS", "markdown": str(md_path), "docx": str(docx_path)})
 
 
 if __name__ == "__main__":

@@ -1,0 +1,4 @@
+# Keep downloaded Epoch AI source package local; commit generated analysis only.
+*.csv
+README.md
+!epoch_ai_chip_sales_analysis_report.html

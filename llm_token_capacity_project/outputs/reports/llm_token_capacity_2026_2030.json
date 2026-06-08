@@ -49,7 +49,7 @@
       "formula": "it_load_gw = operational_power_gw / pue",
       "meaning_kr": "계약/계획 전력이 아니라 실제 operational deploy된 전력에서 PUE를 차감해 IT load를 산출.",
       "evidence_type": "Formula",
-      "source_ids": "SRC_MCKINSEY_AI_WORKLOADS; SRC_EPRI_EPOCH_AI_POWER"
+      "source_ids": "SRC_MCKINSEY_AI_WORKLOADS; SRC_EPRI_EPOCH_AI_POWER; SRC_EIA_DC_POWER; SRC_FERC_INTERCONNECT; SRC_UPTIME_GLOBAL_DC; SRC_ASHRAE_TC99"
     },
     {
       "category": "AI workload allocation",
@@ -70,28 +70,28 @@
       "formula": "fleet_reference_tps_per_mw = h200_share*h200_ref + b200_share*b200_ref + gb200_share*gb200_ref + purpose_built_share*purpose_built_ref",
       "meaning_kr": "H200/B200/GB200/purpose-built 구성비를 직접 입력하여 같은 inference MW라도 fleet 구성에 따라 public reference TPS/MW가 달라지게 합니다. Purpose-built는 comparable benchmark가 없으면 B200 placeholder를 사용하며 editable input으로 남깁니다.",
       "evidence_type": "Platform fact + Conservative benchmark mapping",
-      "source_ids": "SRC_MS_MAIA200; SRC_GOOGLE_IRONWOOD; SRC_META_MTIA_GENAI_2026; SRC_AWS_RAINIER_ACTIVE; ASSUMP_NUMERIC_ACCELERATOR_MIX"
+      "source_ids": "SRC_MS_MAIA200; SRC_GOOGLE_IRONWOOD; SRC_GOOGLE_TPU_V6E; SRC_META_MTIA_GENAI_2026; SRC_AWS_RAINIER_ACTIVE; SRC_MLPERF_INFERENCE; SRC_MLPERF_POWER; SRC_TENSORRT_LLM; ASSUMP_NUMERIC_ACCELERATOR_MIX"
     },
     {
       "category": "InferenceX TPS/MW selection",
       "formula": "reference_serving_tps_per_mw = fleet_reference_tps_per_mw * commercial_workload_fit_factor",
       "meaning_kr": "InferenceX generated-output TPS/MW는 GPU 세대별 공개 reference로 사용하며, 상용 서비스의 closed/reasoning/long-context/SLO workload 적합성은 명시적 Bear/Base/Bull fit factor로 분리합니다. MoE, software CAGR, utilization은 추가 multiplier로 중복 적용하지 않습니다.",
       "evidence_type": "Benchmark proxy selection",
-      "source_ids": "SRC_SEMIANALYSIS_INFERENCEX; SRC_DEEPSEEK_V3; SRC_QWEN3_GITHUB; SRC_TENCENT_AI_INFRA_MOE; ASSUMP_NUMERIC_ACCELERATOR_MIX"
+      "source_ids": "SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE; SRC_VLLM_DOCS; SRC_TENSORRT_LLM; SRC_SGLANG_DOCS; SRC_FLASHINFER; SRC_DEEPSEEK_V3; SRC_QWEN3_GITHUB; SRC_META_LLAMA; SRC_META_LLAMA4_NVIDIA; SRC_TENCENT_AI_INFRA_MOE; ASSUMP_NUMERIC_ACCELERATOR_MIX"
     },
     {
       "category": "Headline inference token capacity",
       "formula": "inference_tokens_per_day = contracted_power_gw * operational_deployment_share / pue * ai_workload_share * inference_power_share * 1,000 * weighted_tps_per_mw * 86,400",
       "meaning_kr": "최종 생성 토큰 capacity는 공개 또는 명시적 capacity envelope, 운영 투입 비율, PUE, AI/inference 배분, 선택 benchmark TPS/MW만으로 계산합니다.",
       "evidence_type": "Model equation",
-      "source_ids": "SRC_SEMIANALYSIS_INFERENCEX; SRC_ARXIV_INFERENCE_ENERGY"
+      "source_ids": "SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE; SRC_ARXIV_INFERENCE_ENERGY; SRC_EPOCH_INFERENCE_PRICE"
     },
     {
       "category": "Excluded from headline - operational serving sensitivities",
       "formula": "utilization, MoE uplift, architecture multiplier and software CAGR = sensitivity/reference only",
       "meaning_kr": "이 항목들은 중요한 연구 주제이지만 업체별 production telemetry가 부족합니다. 동일한 효과를 TPS/MW와 다시 곱해 과도한 정밀도를 만들지 않기 위해 headline token 생성량에서는 제외합니다.",
       "evidence_type": "Scope control rule",
-      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_SEMIANALYSIS_INFERENCEX"
+      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING; SRC_SEMIANALYSIS_INFERENCEX"
     }
   ],
   "scenario_definitions": [

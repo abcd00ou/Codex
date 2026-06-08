@@ -107,7 +107,7 @@
         "tokens_per_second_per_mw"
       ],
       "role_kr": "1MW inference load가 초당 몇 generated output token을 만들 수 있는지 결정한다.",
-      "confidence_rule_kr": "InferenceX는 proxy/benchmark이며 production telemetry가 아니므로 workload fit factor와 source caveat를 같이 붙인다.",
+      "confidence_rule_kr": "InferenceX/MLPerf/vendor serving stack은 proxy/benchmark이며 production telemetry가 아니므로 workload fit factor와 source caveat를 같이 붙인다.",
       "direct_headline_use": "직접 사용"
     },
     {
@@ -437,6 +437,105 @@
       "note_kr": "tokens/sec/MW benchmark calibration. 업체별 capacity fact로 직접 사용하지 않음."
     },
     {
+      "source_id": "SRC_MLPERF_INFERENCE",
+      "title": "MLPerf Inference datacenter benchmark results",
+      "publisher": "MLCommons",
+      "date": "2026-06-09 accessed",
+      "url_or_report": "https://mlcommons.org/benchmarks/inference-datacenter/",
+      "tier": "Tier 2",
+      "use_in_model": "Official inference submission anchor for hardware/software comparisons",
+      "confidence": 0.74,
+      "note_kr": "규칙화된 official benchmark anchor. LLM serving 조건은 InferenceX와 별도 비교 필요."
+    },
+    {
+      "source_id": "SRC_MLPERF_POWER",
+      "title": "MLPerf Power methodology and results",
+      "publisher": "MLCommons",
+      "date": "2026-06-09 accessed",
+      "url_or_report": "https://mlcommons.org/benchmarks/power/",
+      "tier": "Tier 2",
+      "use_in_model": "Optional measured power/performance benchmark anchor",
+      "confidence": 0.72,
+      "note_kr": "power 측정이 포함된 benchmark anchor. company production telemetry는 아님."
+    },
+    {
+      "source_id": "SRC_MLPERF_INFERENCE_DOCS",
+      "title": "MLPerf Inference documentation",
+      "publisher": "MLCommons",
+      "date": "2026-06-09 accessed",
+      "url_or_report": "https://docs.mlcommons.org/inference/",
+      "tier": "Tier 2",
+      "use_in_model": "Benchmark rules, scenarios, loadgen and divisions",
+      "confidence": 0.72,
+      "note_kr": "Server/Offline/SUT 규칙과 latency scenario를 해석하는 기준 문서."
+    },
+    {
+      "source_id": "SRC_VLLM_DOCS",
+      "title": "vLLM documentation",
+      "publisher": "vLLM project",
+      "date": "2026-06-09 accessed",
+      "url_or_report": "https://docs.vllm.ai/",
+      "tier": "Tier 2",
+      "use_in_model": "Production serving mechanism, scheduler and KV cache behavior",
+      "confidence": 0.66,
+      "note_kr": "serving stack mechanism source. 특정 업체 tokens/MW fact는 아님."
+    },
+    {
+      "source_id": "SRC_TENSORRT_LLM",
+      "title": "NVIDIA TensorRT-LLM documentation",
+      "publisher": "NVIDIA",
+      "date": "2026-06-09 accessed",
+      "url_or_report": "https://nvidia.github.io/TensorRT-LLM/",
+      "tier": "Tier 2",
+      "use_in_model": "Vendor-optimized inference stack and deployment mechanism",
+      "confidence": 0.68,
+      "note_kr": "NVIDIA stack 최적화 근거. workload matched benchmark 없이는 uplift로 직접 적용하지 않음."
+    },
+    {
+      "source_id": "SRC_SGLANG_DOCS",
+      "title": "SGLang documentation",
+      "publisher": "SGLang project",
+      "date": "2026-06-09 accessed",
+      "url_or_report": "https://docs.sglang.ai/",
+      "tier": "Tier 2",
+      "use_in_model": "Serving runtime, structured generation and batching behavior",
+      "confidence": 0.64,
+      "note_kr": "batching/structured generation mechanism source. production telemetry는 아님."
+    },
+    {
+      "source_id": "SRC_FLASHINFER",
+      "title": "FlashInfer documentation",
+      "publisher": "FlashInfer project",
+      "date": "2026-06-09 accessed",
+      "url_or_report": "https://docs.flashinfer.ai/",
+      "tier": "Tier 2",
+      "use_in_model": "Attention/decode kernel mechanism for serving efficiency",
+      "confidence": 0.62,
+      "note_kr": "kernel-level efficiency mechanism source. company-level throughput fact로 승격하지 않음."
+    },
+    {
+      "source_id": "SRC_SARATHI_SERVE",
+      "title": "Sarathi-Serve",
+      "publisher": "arXiv",
+      "date": "2024",
+      "url_or_report": "https://arxiv.org/abs/2403.02310",
+      "tier": "Tier 2",
+      "use_in_model": "Chunked prefill and decode scheduling mechanism",
+      "confidence": 0.64,
+      "note_kr": "prefill/decode scheduling sensitivity source."
+    },
+    {
+      "source_id": "SRC_ORCA_SERVING",
+      "title": "Orca: A Distributed Serving System for Transformer-Based Generative Models",
+      "publisher": "OSDI",
+      "date": "2022",
+      "url_or_report": "https://www.usenix.org/conference/osdi22/presentation/yu",
+      "tier": "Tier 2",
+      "use_in_model": "Iteration-level scheduling and batching foundation",
+      "confidence": 0.66,
+      "note_kr": "LLM serving scheduling foundation. modern hardware TPS/MW fact는 아님."
+    },
+    {
       "source_id": "SRC_ARXIV_INFERENCE_ENERGY",
       "title": "LLM inference energy and serving efficiency literature set",
       "publisher": "arXiv",
@@ -534,6 +633,193 @@
       "use_in_model": "Current AI power allocation sanity check across training, experiments, and inference",
       "confidence": 0.7,
       "note_kr": "현재 power allocation은 training/experiments/inference가 대략 나뉜다는 관점. 60%+ inference fact 주장에 대한 반대 anchor."
+    },
+    {
+      "source_id": "SRC_EPOCH_TRAIN",
+      "title": "Training compute of frontier AI models grows by 4-5x per year",
+      "publisher": "Epoch AI",
+      "date": "2024",
+      "url_or_report": "https://epoch.ai/blog/training-compute-of-frontier-ai-models-grows-by-4-5x-per-year",
+      "tier": "Tier 2",
+      "use_in_model": "Frontier training compute growth anchor",
+      "confidence": 0.7,
+      "note_kr": "training reserve를 남겨야 하는 장기 compute-growth 근거."
+    },
+    {
+      "source_id": "SRC_EPOCH_SCALING_2030",
+      "title": "Can AI scaling continue through 2030?",
+      "publisher": "Epoch AI",
+      "date": "2024/2026 accessed",
+      "url_or_report": "https://epoch.ai/publications/can-ai-scaling-continue-through-2030",
+      "tier": "Tier 2",
+      "use_in_model": "Scaling bottlenecks across power, data, capex and hardware supply",
+      "confidence": 0.7,
+      "note_kr": "2030 scaling feasibility와 병목 source. 업체별 active power fact는 아님."
+    },
+    {
+      "source_id": "SRC_EPOCH_INFERENCE_PRICE",
+      "title": "LLM inference price trends",
+      "publisher": "Epoch AI",
+      "date": "2026-06-09 accessed",
+      "url_or_report": "https://epoch.ai/data-insights/llm-inference-price-trends",
+      "tier": "Tier 2",
+      "use_in_model": "Inference cost trend proxy and commercial efficiency context",
+      "confidence": 0.66,
+      "note_kr": "API price/performance trend proxy. tokens/MW 생산 telemetry로 직접 사용하지 않음."
+    },
+    {
+      "source_id": "SRC_EIA_DC_POWER",
+      "title": "U.S. electricity data and data center power context",
+      "publisher": "U.S. EIA",
+      "date": "2026-06-09 accessed",
+      "url_or_report": "https://www.eia.gov/",
+      "tier": "Tier 2",
+      "use_in_model": "Electricity demand and regional power baseline",
+      "confidence": 0.68,
+      "note_kr": "macro grid plausibility source. company contracted GW를 직접 바꾸지 않음."
+    },
+    {
+      "source_id": "SRC_FERC_INTERCONNECT",
+      "title": "FERC interconnection and grid reliability proceedings",
+      "publisher": "FERC",
+      "date": "2026-06-09 accessed",
+      "url_or_report": "https://www.ferc.gov/",
+      "tier": "Tier 2",
+      "use_in_model": "Interconnection, transmission and reliability context",
+      "confidence": 0.66,
+      "note_kr": "grid constraint context. model-owner capacity attribution fact는 아님."
+    },
+    {
+      "source_id": "SRC_UPTIME_GLOBAL_DC",
+      "title": "Uptime Institute Global Data Center Survey",
+      "publisher": "Uptime Institute",
+      "date": "2026-06-09 accessed",
+      "url_or_report": "https://uptimeinstitute.com/resources/research-and-reports",
+      "tier": "Tier 2",
+      "use_in_model": "PUE, cooling, outage and density operating context",
+      "confidence": 0.68,
+      "note_kr": "facility/PUE context. company site-level PUE가 있으면 교체."
+    },
+    {
+      "source_id": "SRC_ASHRAE_TC99",
+      "title": "ASHRAE TC 9.9 data center thermal guidance",
+      "publisher": "ASHRAE",
+      "date": "2026-06-09 accessed",
+      "url_or_report": "https://www.ashrae.org/technical-resources/bookstore/datacom-series",
+      "tier": "Tier 2",
+      "use_in_model": "Thermal envelope and cooling design reference",
+      "confidence": 0.64,
+      "note_kr": "cooling design reference. PUE 숫자 자체의 direct fact는 아님."
+    },
+    {
+      "source_id": "SRC_MISTRAL_MODELS",
+      "title": "Mistral AI model documentation",
+      "publisher": "Mistral AI",
+      "date": "2026-06-09 accessed",
+      "url_or_report": "https://docs.mistral.ai/",
+      "tier": "Tier 1/2",
+      "use_in_model": "Dense/MoE open model family and context anchor",
+      "confidence": 0.72,
+      "note_kr": "open/served model family 비교 anchor. 본 모델의 core company row에는 직접 포함하지 않음."
+    },
+    {
+      "source_id": "SRC_DBRX_MODEL",
+      "title": "Introducing DBRX",
+      "publisher": "Databricks",
+      "date": "2024",
+      "url_or_report": "https://www.databricks.com/blog/introducing-dbrx-new-state-art-open-llm",
+      "tier": "Tier 1/2",
+      "use_in_model": "Open MoE parameter anchor",
+      "confidence": 0.7,
+      "note_kr": "MoE total/active parameter 읽기용 비교 source."
+    },
+    {
+      "source_id": "SRC_OPENAI_API_PRICING",
+      "title": "OpenAI API pricing",
+      "publisher": "OpenAI",
+      "date": "2026-06-09 accessed",
+      "url_or_report": "https://openai.com/api/pricing/",
+      "tier": "Tier 1",
+      "use_in_model": "Commercial token surface and price proxy",
+      "confidence": 0.78,
+      "note_kr": "price surface proxy. output volume 또는 tokens/MW production fact는 아님."
+    },
+    {
+      "source_id": "SRC_ANTHROPIC_PRICING",
+      "title": "Anthropic API pricing",
+      "publisher": "Anthropic",
+      "date": "2026-06-09 accessed",
+      "url_or_report": "https://www.anthropic.com/pricing",
+      "tier": "Tier 1",
+      "use_in_model": "Commercial token surface and price proxy",
+      "confidence": 0.78,
+      "note_kr": "price surface proxy. Claude production output volume은 공개하지 않음."
+    },
+    {
+      "source_id": "SRC_AZURE_OPENAI",
+      "title": "Azure OpenAI Service documentation",
+      "publisher": "Microsoft",
+      "date": "2026-06-09 accessed",
+      "url_or_report": "https://learn.microsoft.com/azure/ai-services/openai/",
+      "tier": "Tier 1",
+      "use_in_model": "Microsoft host/product surface vs OpenAI model attribution",
+      "confidence": 0.78,
+      "note_kr": "OpenAI model owner와 Azure product/host surface 분리용."
+    },
+    {
+      "source_id": "SRC_GOOGLE_CLOUD_ANTHROPIC",
+      "title": "Google Cloud and Anthropic partnership",
+      "publisher": "Google Cloud",
+      "date": "2026-06-09 accessed",
+      "url_or_report": "https://cloud.google.com/blog/products/ai-machine-learning/google-cloud-anthropic-ai-partnership",
+      "tier": "Tier 1/2",
+      "use_in_model": "Third-party model hosted on cloud provider",
+      "confidence": 0.72,
+      "note_kr": "Google host capacity와 Anthropic model-owner attribution 분리용."
+    },
+    {
+      "source_id": "SRC_ARTIFICIAL_ANALYSIS",
+      "title": "Artificial Analysis model and API benchmarks",
+      "publisher": "Artificial Analysis",
+      "date": "2026-06-09 accessed",
+      "url_or_report": "https://artificialanalysis.ai/",
+      "tier": "Tier 2",
+      "use_in_model": "Public API price/performance and latency proxy",
+      "confidence": 0.64,
+      "note_kr": "commercial API price/latency proxy. company capacity fact 아님."
+    },
+    {
+      "source_id": "SRC_OPENROUTER_RANKINGS",
+      "title": "OpenRouter model pricing and usage market signals",
+      "publisher": "OpenRouter",
+      "date": "2026-06-09 accessed",
+      "url_or_report": "https://openrouter.ai/rankings",
+      "tier": "Tier 2",
+      "use_in_model": "API price and demand mix proxy",
+      "confidence": 0.58,
+      "note_kr": "market routing proxy. 전체 production traffic fact로 해석하지 않음."
+    },
+    {
+      "source_id": "SRC_SEMI_100K_CLUSTER",
+      "title": "SemiAnalysis AI infrastructure and 100k H100 cluster analysis",
+      "publisher": "SemiAnalysis",
+      "date": "2026-06-09 accessed",
+      "url_or_report": "https://semianalysis.com/",
+      "tier": "Tier 2",
+      "use_in_model": "Accelerator cluster, networking and non-GPU overhead context",
+      "confidence": 0.62,
+      "note_kr": "cluster architecture context. specific company active GW fact는 아님."
+    },
+    {
+      "source_id": "SRC_DELLORO_AI_NETWORKS",
+      "title": "AI networks and data center switch market context",
+      "publisher": "Dell'Oro Group",
+      "date": "2026-06-09 accessed",
+      "url_or_report": "https://www.delloro.com/",
+      "tier": "Tier 2",
+      "use_in_model": "Network/power overhead and AI cluster infrastructure context",
+      "confidence": 0.58,
+      "note_kr": "network overhead/context source. model equation에는 직접 계수로 넣지 않음."
     }
   ],
   "registered_assumptions": [
@@ -65190,7 +65476,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving",
-      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026",
+      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65207,7 +65493,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "메인 forecast 기준",
-      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX",
+      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65224,7 +65510,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving",
-      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026",
+      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65241,7 +65527,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress",
-      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026",
+      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65258,7 +65544,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving",
-      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026",
+      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65275,7 +65561,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "메인 forecast 기준",
-      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX",
+      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65292,7 +65578,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving",
-      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026",
+      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65309,7 +65595,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress",
-      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026",
+      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65326,7 +65612,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving",
-      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026",
+      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65343,7 +65629,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "메인 forecast 기준",
-      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX",
+      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65360,7 +65646,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving",
-      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026",
+      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65377,7 +65663,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress",
-      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026",
+      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65394,7 +65680,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving",
-      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026",
+      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65411,7 +65697,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "메인 forecast 기준",
-      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX",
+      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65428,7 +65714,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving",
-      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026",
+      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65445,7 +65731,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress",
-      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026",
+      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65462,7 +65748,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving",
-      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026",
+      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65479,7 +65765,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "메인 forecast 기준",
-      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX",
+      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65496,7 +65782,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving",
-      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026",
+      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65513,7 +65799,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress",
-      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026",
+      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65530,7 +65816,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving",
-      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026",
+      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65547,7 +65833,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "메인 forecast 기준",
-      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX",
+      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65564,7 +65850,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving",
-      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026",
+      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65581,7 +65867,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress",
-      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026",
+      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65598,7 +65884,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving",
-      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026",
+      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65615,7 +65901,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "메인 forecast 기준",
-      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX",
+      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65632,7 +65918,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving",
-      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026",
+      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65649,7 +65935,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress",
-      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026",
+      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65666,7 +65952,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving",
-      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026",
+      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65683,7 +65969,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "메인 forecast 기준",
-      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX",
+      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65700,7 +65986,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving",
-      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026",
+      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65717,7 +66003,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress",
-      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026",
+      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65734,7 +66020,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving",
-      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026",
+      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65751,7 +66037,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "메인 forecast 기준",
-      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX",
+      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65768,7 +66054,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving",
-      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026",
+      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65785,7 +66071,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress",
-      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026",
+      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65802,7 +66088,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving",
-      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026",
+      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65819,7 +66105,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "메인 forecast 기준",
-      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX",
+      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65836,7 +66122,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving",
-      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026",
+      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65853,7 +66139,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress",
-      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026",
+      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65870,7 +66156,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving",
-      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026",
+      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65887,7 +66173,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "메인 forecast 기준",
-      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX",
+      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65904,7 +66190,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving",
-      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026",
+      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65921,7 +66207,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress",
-      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026",
+      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65938,7 +66224,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving",
-      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026",
+      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65955,7 +66241,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "메인 forecast 기준",
-      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX",
+      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65972,7 +66258,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving",
-      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026",
+      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -65989,7 +66275,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress",
-      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026",
+      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -66006,7 +66292,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving",
-      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026",
+      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -66023,7 +66309,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "메인 forecast 기준",
-      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX",
+      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -66040,7 +66326,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving",
-      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026",
+      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -66057,7 +66343,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress",
-      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026",
+      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -66074,7 +66360,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving",
-      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026",
+      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -66091,7 +66377,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "메인 forecast 기준",
-      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX",
+      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -66108,7 +66394,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving",
-      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026",
+      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -66125,7 +66411,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress",
-      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026",
+      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -66142,7 +66428,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving",
-      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026",
+      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -66159,7 +66445,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "메인 forecast 기준",
-      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX",
+      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -66176,7 +66462,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving",
-      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026",
+      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -66193,7 +66479,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress",
-      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026",
+      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -66210,7 +66496,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving",
-      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026",
+      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -66227,7 +66513,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "메인 forecast 기준",
-      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX",
+      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -66244,7 +66530,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving",
-      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026",
+      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -66261,7 +66547,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress",
-      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026",
+      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -66278,7 +66564,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving",
-      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026",
+      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -66295,7 +66581,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "메인 forecast 기준",
-      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX",
+      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -66312,7 +66598,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving",
-      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026",
+      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -66329,7 +66615,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress",
-      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026",
+      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -66346,7 +66632,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "TTFT/TPOT와 failover reserve가 높아 평균 utilization이 낮은 serving",
-      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026",
+      "source_ids": "SRC_ARXIV_SLO_PD_2026; SRC_IBM_PD_DISAGG_2026; SRC_MLPERF_INFERENCE_DOCS",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -66363,7 +66649,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "메인 forecast 기준",
-      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX",
+      "source_ids": "SRC_ARXIV_INFERENCE_ENERGY; SRC_SEMIANALYSIS_INFERENCEX; SRC_MLPERF_INFERENCE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -66380,7 +66666,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "batching, KV cache, P/D scheduling, speculative decoding이 일부 작동하는 serving",
-      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026",
+      "source_ids": "SRC_IBM_PD_DISAGG_2026; SRC_ARXIV_SPEC_DECODING_LATENCY_2026; SRC_VLLM_DOCS; SRC_SGLANG_DOCS; SRC_SARATHI_SERVE; SRC_ORCA_SERVING",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     },
@@ -66397,7 +66683,7 @@
       "confidence": "Reference-only",
       "formula_or_rule": "adjusted_tokens_per_second_per_mw = base_tps_per_mw * tokens_per_mw_multiplier",
       "why_this_number": "긴 context, tool-use loop, network placement 제약으로 effective throughput이 낮아지는 stress",
-      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026",
+      "source_ids": "SRC_JOULE_INFERENCE_ENERGY_2026; SRC_ARXIV_PREFILL_AS_SERVICE_2026; SRC_EPOCH_INFERENCE_PRICE",
       "assumption_ids": "A09_utilization",
       "replacement_path": "Provider utilization telemetry and SLO-level serving traces."
     }

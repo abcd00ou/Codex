@@ -30,6 +30,6 @@ This folder separates each 2026-2030 model assumption into auditable provenance 
 
 - `Fact anchor` does not mean every value in the row is a public fact; it means the scenario is anchored to a public source.
 - `Scenario capacity envelope` means the numeric value is model-created and must not be quoted as company disclosure.
-- InferenceX is benchmark/proxy evidence, not company production telemetry.
+- InferenceX, MLPerf and vendor serving-stack docs are benchmark/proxy evidence, not company production telemetry.
 - A09 utilization is intentionally excluded from the headline token formula to avoid double counting.
 - A11 purpose-built accelerator share is a numeric scenario unless company accelerator-hours or fleet split is disclosed.
