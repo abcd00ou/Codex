@@ -86,6 +86,7 @@ llm_token_capacity_project/
 - `docs/llm_compute_power_theory_reader.md`: 계약 전력, compute allocation, training/inference 비중, prefill/decode, scheduler 관점의 이론 리더
 - `outputs/reports/llm_compute_power_theory_reader_kr.docx`: 이론 리더의 Word 보고서 버전
 - `docs/assumptions/`: 10개 핵심 가정별 장문 전문 리포트 Markdown
+- `docs/provenance/`: 2026-2030 입력값을 가정별로 source, confidence, derivation, replacement path까지 추적하는 provenance pack
 - `outputs/reports/assumptions/`: 10개 핵심 가정별 Word 보고서
 - `agents/`: 각 가정을 agent처럼 계속 학습·검증·업데이트하기 위한 운영 폴더
 - `docs/agent_learning_playbook.md`: agent를 실제로 학습시키고 업데이트하는 운영 playbook
@@ -132,6 +133,12 @@ Agent 구조가 깨지지 않았는지 확인합니다.
 
 ```bash
 .venv/bin/python llm_token_capacity_project/tools/validate_assumption_agents.py
+```
+
+가정별 2026-2030 source/confidence trace를 다시 만들려면:
+
+```bash
+.venv/bin/python llm_token_capacity_project/tools/generate_assumption_provenance.py
 ```
 
 ## InferenceX 데이터 수집
