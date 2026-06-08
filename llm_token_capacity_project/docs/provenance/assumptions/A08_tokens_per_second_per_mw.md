@@ -12,6 +12,63 @@ Confidence rule: InferenceX는 proxy/benchmark이며 production telemetry가 아
 
 `commercial_workload_fit_factor`, `fleet_reference_tps_per_mw`, `purpose_built_tps_per_mw`, `reference_serving_tps_per_mw`, `tokens_per_second_per_mw`
 
+## 숫자 결정 로직
+
+- TPS/MW는 InferenceX 공개 benchmark를 그대로 생산 telemetry로 간주하지 않고, H200/B200/GB200 reference 성능을 상용 workload에 맞게 낮춘 proxy로 사용한다.
+- fleet_reference_tps_per_mw는 GPU generation mix에서 나온 raw benchmark 기준이고, commercial_workload_fit_factor는 closed model, 긴 context, SLO, batching 제약, prefill/decode 불균형을 반영하는 보정 계수다.
+- tokens_per_second_per_mw는 reference_serving_tps_per_mw와 purpose_built_tps_per_mw를 fleet mix로 결합한 최종 입력값이다.
+- LLMServingSim 2.0 방식의 trace-driven prefill/decode simulation, KV cache pressure, interconnect contention, scheduling 정책이 확보되면 fit factor를 더 구조적인 계수로 쪼갤 수 있다.
+
+### 링크를 숫자로 읽는 방식
+
+아래 표는 링크 자체를 그대로 숫자로 옮긴 것이 아니라, 각 출처가 어떤 판단에 쓰였는지를 기록한다. URL이 capacity 방향성만 확인해주는 경우와 실제 수치 anchor를 제공하는 경우를 구분해서 읽어야 한다.
+
+| ID | URL/report | 숫자 결정에 쓰인 방식 | Confidence |
+|---|---|---|---|
+| ASSUMP_NUMERIC_ACCELERATOR_MIX |  | GPU/ASIC mix는 운영 fleet share 공개가 없는 경우 fact가 아니라 serving-platform anchor를 바탕으로 둔 숫자 시나리오다. 공식적으로 custom accelerator deployment가 확인된 Microsoft, Google, Meta, Anthropic만 purpose-built accelerator share 상승을 Base에 반영하고, 나머지는 GPU-reference Base로 둔다. | 0.42 |
+| SRC_ALIBABA_QWEN_GPU_DEPLOY | https://www.alibabacloud.com/help/doc-detail/2921971.html | Confirms an official Alibaba Cloud GPU deployment path for Qwen inference; not an operated fleet-share disclosure | 0.78 |
+| SRC_ANTHROPIC_AMAZON_COMPUTE | https://www.anthropic.com/news/anthropic-amazon-compute | Anthropic contracted/hosted capacity anchor; capacity attributed to Anthropic model owner | 0.84 |
+| SRC_ANTHROPIC_CLAUDE_DOCS | https://docs.anthropic.com/en/docs/about-claude/models/overview | Claude commercial model family and closed-model disclosure boundary | 0.86 |
+| SRC_AWS_RAINIER_ACTIVE | https://www.aboutamazon.com/news/aws/aws-project-rainier-ai-trainium-chips-compute-cluster | Confirms Anthropic-dedicated Trainium2 capacity direction and purpose-built accelerator presence | 0.9 |
+| SRC_DEEPSEEK_H800_INFERENCE | https://github.com/deepseek-ai/open-infra-index/blob/main/202502OpenSourceWeek/day_6_one_more_thing_deepseekV3R1_inference_system_overview.md | Confirms disclosed DeepSeek-operated V3/R1 inference services used H800 GPUs and reports peak/average node occupancy | 0.91 |
+| SRC_DEEPSEEK_R1 | https://github.com/deepseek-ai/DeepSeek-R1 | Reasoning model family and distillation ecosystem anchor | 0.88 |
+| SRC_DEEPSEEK_V3 | https://github.com/deepseek-ai/DeepSeek-V3 | MoE total and active parameter anchor | 0.92 |
+| SRC_GOOGLE_GEMINI_TOKENS | https://ai.google.dev/gemini-api/docs/tokens | Token accounting and context handling anchor for Gemini surfaces | 0.9 |
+| SRC_GOOGLE_IRONWOOD | https://blog.google/products/google-cloud/ironwood-tpu-age-of-inference/ | Google TPU serving platform and inference-optimized hardware direction | 0.88 |
+| SRC_GOOGLE_TPU_V6E | https://cloud.google.com/tpu/docs/v6e | Google TPU serving/training platform generation anchor | 0.84 |
+| SRC_META_LLAMA | https://www.llama.com/ | Llama model family and open model parameter disclosures where available | 0.82 |
+| SRC_META_LLAMA4_NVIDIA | https://developer.nvidia.com/blog/meta-llama-4-first-nvidia-optimized-mixture-of-experts-models/ | Llama 4 Scout/Maverick total-active parameter anchor when official Meta page is less accessible | 0.74 |
+| SRC_META_MTIA_GENAI_2026 | https://about.fb.com/news/2026/03/expanding-metas-custom-silicon-to-power-our-ai-workloads/ | Confirms hundreds of thousands of MTIA deployed for inference and MTIA 400/450/500 focus on GenAI inference production | 0.92 |
+| SRC_MS_MAIA200 | https://news.microsoft.com/source/emea/2026/01/microsoft-introduces-maia-200-new-inference-accelerator-enhances-ai-performance-in-azure/ | Confirms Maia 200 is an inference accelerator deployed for Microsoft AI models, Azure AI Foundry and Microsoft 365 Copilot | 0.91 |
+| SRC_MS_PHI | https://learn.microsoft.com/en-us/azure/ai-foundry/model-inference/concepts/models | Microsoft-owned small language model family anchor | 0.78 |
+| SRC_MS_PHI4_TECHREPORT | https://arxiv.org/abs/2412.08905 | Microsoft-owned Phi-4 14B parameter anchor | 0.82 |
+| SRC_OPENAI_GPT41_DOCS | https://platform.openai.com/docs/models/gpt-4.1 | OpenAI commercial model family and closed-model parameter disclosure boundary | 0.9 |
+| SRC_OPENAI_STARGATE_ORACLE | https://openai.com/index/stargate-advances-with-partnership-with-oracle/ | OpenAI hosting capacity ramp anchor, not a precise active IT load | 0.85 |
+| SRC_OPENAI_STARGATE_PROGRESS | https://openai.com/index/five-new-stargate-sites/ | OpenAI 2030 contracted/planned capacity upper-bound anchor | 0.86 |
+| SRC_QWEN3_GITHUB | https://github.com/QwenLM/Qwen3 | Qwen3 dense/MoE family and active parameter anchor | 0.9 |
+| SRC_SEMIANALYSIS_INFERENCEX | https://inferencex.semianalysis.com/about | Benchmark layer for tokens/sec/MW sensitivity, not company capacity | 0.7 |
+| SRC_TENCENT_AI_INFRA_MOE | https://www.tencent.com/en-us/articles/2201930.html | Confirms Tencent AI Infra and Hunyuan Turbo MoE service with stated inference-cost reduction | 0.84 |
+| SRC_TENCENT_HUNYUAN | https://www.tencent.com/en-us/articles/2201460.html | Tencent Hunyuan parameter and pretraining token anchor | 0.82 |
+| SRC_TENCENT_HY3 | https://www.tencent.com/en-us/articles/2202320.html | Tencent Hunyuan commercial surface and model-family anchor | 0.78 |
+| SRC_XAI_MODELS | https://docs.x.ai/docs/models | Grok commercial model surface and closed-model disclosure boundary | 0.78 |
+| SRC_XAI_NVIDIA_COLOSSUS | https://blogs.nvidia.com/blog/xai-colossus/ | xAI GPU cluster scale anchor for active power and serving/training capacity scenarios | 0.82 |
+
+### 행 단위 결정 샘플
+
+대표 metric 행을 기준으로, 실제 trace에서 가져온 `why_this_number`, 산식, 교체 경로를 함께 붙였다. 이 표의 값은 모델 입력값이며, 공시 숫자와 scenario 숫자가 섞여 있을 수 있다.
+
+| Company | Metric | Value | 왜 이 숫자인가 | Formula/rule | 교체 경로 | Source IDs |
+|---|---|---|---|---|---|---|
+| Microsoft | tokens_per_second_per_mw | 329354 | GPT-OSS 120B B200 output-token benchmark proxy. Maia has no adopted comparable output-token/MW row, so no uplift is applied. Common filter: B200, single_turn, ISL=1024, OSL=1024, output_tok_s_mw p50. Commercial workload fit factor: Copilot traffic mixes routed proprietary models and interactive SLOs; GPT-OSS is a reference ceiling, not direct telemetry. | fleet_reference_tps_per_mw * commercial_workload_fit_factor | Comparable production output-token throughput with model, hardware, precision, ISL/OSL and SLO matched. | SRC_MS_PHI; SRC_OPENAI_GPT41_DOCS; SRC_MS_PHI4_TECHREPORT; SRC_MS_MAIA200; SRC_SEMIANALYSIS_INFERENCEX; ASSUMP_NUMERIC_ACCELERATOR_MIX |
+| Google | tokens_per_second_per_mw | 411495 | GPT-OSS 120B B200 output-token benchmark proxy. TPU/Ironwood presence is shown, but no unmatched efficiency premium is applied. Common filter: B200, single_turn, ISL=1024, OSL=1024, output_tok_s_mw p50. Commercial workload fit factor: Gemini serving is closed and TPU-heavy with product and multimodal routing; no matched production TPS/MW is adopted. | fleet_reference_tps_per_mw * commercial_workload_fit_factor | Comparable production output-token throughput with model, hardware, precision, ISL/OSL and SLO matched. | SRC_GOOGLE_GEMINI_TOKENS; SRC_GOOGLE_IRONWOOD; SRC_GOOGLE_TPU_V6E; SRC_SEMIANALYSIS_INFERENCEX; ASSUMP_NUMERIC_ACCELERATOR_MIX |
+| Meta | tokens_per_second_per_mw | 255367 | Llama 70B B200 output-token benchmark proxy. MTIA presence is shown, but no unmatched efficiency premium is applied. Common filter: B200, single_turn, ISL=1024, OSL=1024, output_tok_s_mw p50. Commercial workload fit factor: Llama benchmark family is comparatively close to Meta AI serving, while fleet routing and MTIA performance remain unmeasured. | fleet_reference_tps_per_mw * commercial_workload_fit_factor | Comparable production output-token throughput with model, hardware, precision, ISL/OSL and SLO matched. | SRC_META_LLAMA; SRC_META_LLAMA4_NVIDIA; SRC_META_MTIA_GENAI_2026; SRC_SEMIANALYSIS_INFERENCEX; ASSUMP_NUMERIC_ACCELERATOR_MIX |
+| xAI | tokens_per_second_per_mw | 291152 | GPT-OSS 120B B200 output-token benchmark proxy pending a comparable Grok serving benchmark. Common filter: B200, single_turn, ISL=1024, OSL=1024, output_tok_s_mw p50. Commercial workload fit factor: Grok is closed and reasoning/product workload mix is not matched to the GPT-OSS benchmark row. | fleet_reference_tps_per_mw * commercial_workload_fit_factor | Comparable production output-token throughput with model, hardware, precision, ISL/OSL and SLO matched. | SRC_XAI_MODELS; SRC_XAI_NVIDIA_COLOSSUS; SRC_SEMIANALYSIS_INFERENCEX; ASSUMP_NUMERIC_ACCELERATOR_MIX |
+| OpenAI | tokens_per_second_per_mw | 264684 | GPT-OSS 120B B200 output-token benchmark proxy; not direct ChatGPT/API telemetry. Common filter: B200, single_turn, ISL=1024, OSL=1024, output_tok_s_mw p50. Commercial workload fit factor: ChatGPT/API demand includes reasoning and latency-sensitive surfaces; GPT-OSS throughput is not GPT production telemetry. | fleet_reference_tps_per_mw * commercial_workload_fit_factor | Comparable production output-token throughput with model, hardware, precision, ISL/OSL and SLO matched. | SRC_OPENAI_GPT41_DOCS; SRC_OPENAI_STARGATE_ORACLE; SRC_OPENAI_STARGATE_PROGRESS; SRC_SEMIANALYSIS_INFERENCEX; ASSUMP_NUMERIC_ACCELERATOR_MIX |
+| Anthropic | tokens_per_second_per_mw | 328156 | GPT-OSS 120B B200 output-token benchmark proxy. Trainium presence is shown, but no unmatched efficiency premium is applied. Common filter: B200, single_turn, ISL=1024, OSL=1024, output_tok_s_mw p50. Commercial workload fit factor: Claude usage is materially coding/agent/long-context oriented and no comparable production serving row is public. | fleet_reference_tps_per_mw * commercial_workload_fit_factor | Comparable production output-token throughput with model, hardware, precision, ISL/OSL and SLO matched. | SRC_ANTHROPIC_CLAUDE_DOCS; SRC_ANTHROPIC_AMAZON_COMPUTE; SRC_AWS_RAINIER_ACTIVE; SRC_SEMIANALYSIS_INFERENCEX; ASSUMP_NUMERIC_ACCELERATOR_MIX |
+| DeepSeek | tokens_per_second_per_mw | 93823 | DeepSeek-R1 B200 output-token benchmark proxy; official MoE structure informs mapping but does not add a second multiplier. Common filter: B200, single_turn, ISL=1024, OSL=1024, output_tok_s_mw p50. Commercial workload fit factor: DeepSeek benchmark family is matched, but commercial R1 reasoning traffic can consume more serving capacity than a fixed test. | fleet_reference_tps_per_mw * commercial_workload_fit_factor | Comparable production output-token throughput with model, hardware, precision, ISL/OSL and SLO matched. | SRC_DEEPSEEK_V3; SRC_DEEPSEEK_R1; SRC_DEEPSEEK_H800_INFERENCE; SRC_SEMIANALYSIS_INFERENCEX; ASSUMP_NUMERIC_ACCELERATOR_MIX |
+| Alibaba | tokens_per_second_per_mw | 161230 | Qwen3.5 B200 output-token benchmark proxy; MoE is represented by selected benchmark, with no additional uplift. Common filter: B200, single_turn, ISL=1024, OSL=1024, output_tok_s_mw p50. Commercial workload fit factor: Qwen benchmark family is relatively direct; remaining adjustment represents commercial context and SLO mix. | fleet_reference_tps_per_mw * commercial_workload_fit_factor | Comparable production output-token throughput with model, hardware, precision, ISL/OSL and SLO matched. | SRC_QWEN3_GITHUB; SRC_ALIBABA_QWEN_GPU_DEPLOY; SRC_SEMIANALYSIS_INFERENCEX; ASSUMP_NUMERIC_ACCELERATOR_MIX |
+| Tencent | tokens_per_second_per_mw | 317620 | GPT-OSS 120B B200 output-token benchmark proxy pending a comparable Hunyuan output-token benchmark. Common filter: B200, single_turn, ISL=1024, OSL=1024, output_tok_s_mw p50. Commercial workload fit factor: Hunyuan is not represented by a matched public TPS/MW row; GPT-OSS is used only as a reference ceiling. | fleet_reference_tps_per_mw * commercial_workload_fit_factor | Comparable production output-token throughput with model, hardware, precision, ISL/OSL and SLO matched. | SRC_TENCENT_HUNYUAN; SRC_TENCENT_HY3; SRC_TENCENT_AI_INFRA_MOE; SRC_SEMIANALYSIS_INFERENCEX; ASSUMP_NUMERIC_ACCELERATOR_MIX |
+
 ## Base scenario 2026 -> 2030 endpoint view
 
 | Company | Metric | 2026 -> 2030 | Derivation | Confidence | Source IDs |

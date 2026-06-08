@@ -145,6 +145,91 @@ ASSUMPTIONS: tuple[AssumptionSpec, ...] = (
 )
 
 
+PRIMARY_METRIC_BY_ASSUMPTION = {
+    "A01": "contracted_power_gw",
+    "A02": "active_power_gw",
+    "A03": "pue",
+    "A04": "ai_workload_share",
+    "A05": "inference_power_share",
+    "A06": "training_power_share",
+    "A07": "model_parameter",
+    "A08": "tokens_per_second_per_mw",
+    "A09": "utilization_sensitivity",
+    "A10": "attribution_rule",
+    "A11": "gpu_share",
+}
+
+
+DECISION_LOGIC_KR = {
+    "A01": [
+        "출처 링크는 각 회사가 어느 cloud/AI platform, 데이터센터, accelerator 조달 방향을 갖는지 확인하는 fact anchor로 사용한다.",
+        "공식 MW/GW 수치가 있는 경우에는 그 값을 capacity ceiling의 강한 anchor로 두고, 공개 수치가 없는 회사는 model-owner가 접근 가능한 전력 envelope를 scenario로 둔다.",
+        "2026과 2030 endpoint를 먼저 정하고, 중간 연도는 capacity ramp가 매년 일정하게 진행된다는 보수적 보간 규칙으로 만든다.",
+        "따라서 이 숫자는 회사가 직접 공시한 전력 예측치가 아니라, 공개 근거와 scenario ceiling을 결합한 벤치마크용 입력값이다.",
+    ],
+    "A02": [
+        "계약/발표 capacity 전체가 바로 inference에 투입된다고 보지 않고, energization, 냉각, 네트워크, accelerator 설치, 클러스터 bring-up을 통과한 몫만 active power로 전환한다.",
+        "operational_deployment_share는 공개 telemetry가 없는 부분을 메우는 scenario 계수이며, 출처 링크는 capacity ramp가 존재하는지와 플랫폼 확장 방향을 확인하는 용도다.",
+        "active_power_gw는 contracted_power_gw에 operational_deployment_share를 곱해 만들며, 이후 PUE를 통해 IT load로 내려간다.",
+        "site-level 전력 계량, GPU cluster 가동률, 실제 energized MW가 확보되면 이 계수와 active power는 우선 교체 대상이다.",
+    ],
+    "A03": [
+        "PUE는 facility power를 IT load로 변환하는 계수다. 링크가 데이터센터 효율 또는 인프라 방향을 보여주더라도, 회사/사이트별 measured PUE가 없으면 수치는 scenario다.",
+        "전력 총량을 accelerator가 소비하는 IT load로 과대 해석하지 않기 위해 PUE를 별도 assumption으로 분리했다.",
+        "it_load_gw는 active_power_gw / pue로 계산한다. 낮은 PUE일수록 같은 facility power에서 더 많은 IT load가 나온다.",
+        "실제 site PUE, 냉각 방식, 계절별 PUE가 확보되면 이 값은 사이트별로 교체해야 한다.",
+    ],
+    "A04": [
+        "AI workload share는 IT load 중 model training, inference, evaluation, embedding, safety pipeline 등 AI workload에 귀속되는 몫이다.",
+        "출처는 회사가 AI 제품/모델/인프라를 확장하고 있다는 방향성 확인에 쓰고, 정확한 workload split은 공개 telemetry가 아니므로 scenario로 둔다.",
+        "ai_it_load_gw는 it_load_gw에 ai_workload_share를 곱해 만든다.",
+        "cluster scheduler 로그, accelerator-hour accounting, business unit별 power allocation이 나오면 이 assumption을 교체한다.",
+    ],
+    "A05": [
+        "inference_power_share는 AI IT load 중 상용 generated output token을 만드는 serving 영역의 몫이다.",
+        "링크는 상용 서비스, API, assistant, cloud AI product가 존재한다는 근거로 쓰며, 회사별 inference/training 전력 분할을 직접 공시한 것으로 보지 않는다.",
+        "inference_gw는 ai_it_load_gw에 inference_power_share를 곱한다. 이 값이 TPS/MW와 곱해져 headline token capacity가 된다.",
+        "실제 serving accelerator-hour, request mix, prefill/decode 분리 telemetry가 확보되면 우선 교체해야 한다.",
+    ],
+    "A06": [
+        "training_power_share는 A05와 짝을 이루는 보완 계수다. 모든 AI 전력이 바로 inference token으로 변환된다는 과대계산을 막기 위해 남겨둔다.",
+        "frontier training, post-training, evaluation, synthetic data generation, reserve capacity는 generated output headline에 직접 넣지 않는다.",
+        "기본 구조는 training_power_share = 1 - inference_power_share다.",
+        "회사별 training/inference accelerator-hour split이나 workload accounting이 나오면 A05와 함께 다시 맞춰야 한다.",
+    ],
+    "A07": [
+        "모델 parameter 정보는 직접 토큰 수식에 곱하는 값이라기보다, 어떤 InferenceX benchmark proxy가 더 가까운지 판단하는 구조적 근거다.",
+        "open model card처럼 total/active parameter가 공개된 경우에는 높은 confidence의 fact anchor로 쓰고, closed model은 공개 추정 범위와 제품 특성을 반영한 scenario band로 둔다.",
+        "dense와 MoE는 token당 계산량이 다르므로 total parameter와 active parameter를 분리해서 기록한다.",
+        "공식 model card, architecture disclosure, serving kernel trace가 나오면 closed model band를 교체한다.",
+    ],
+    "A08": [
+        "TPS/MW는 InferenceX 공개 benchmark를 그대로 생산 telemetry로 간주하지 않고, H200/B200/GB200 reference 성능을 상용 workload에 맞게 낮춘 proxy로 사용한다.",
+        "fleet_reference_tps_per_mw는 GPU generation mix에서 나온 raw benchmark 기준이고, commercial_workload_fit_factor는 closed model, 긴 context, SLO, batching 제약, prefill/decode 불균형을 반영하는 보정 계수다.",
+        "tokens_per_second_per_mw는 reference_serving_tps_per_mw와 purpose_built_tps_per_mw를 fleet mix로 결합한 최종 입력값이다.",
+        "LLMServingSim 2.0 방식의 trace-driven prefill/decode simulation, KV cache pressure, interconnect contention, scheduling 정책이 확보되면 fit factor를 더 구조적인 계수로 쪼갤 수 있다.",
+    ],
+    "A09": [
+        "utilization은 headline 산식에 곱하지 않는다. 이미 A08의 commercial workload fit factor가 sustained serving 성능을 낮추기 때문이다.",
+        "이 assumption은 공부와 sensitivity 분석을 위한 reference layer이며, 같은 보정을 두 번 적용하는 double counting을 막기 위해 headline_utilization_applied를 False로 둔다.",
+        "utilization_sensitivity는 특정 운영 profile에서 TPS/MW가 얼마나 달라지는지 보는 보조 테이블이다.",
+        "실제 SLO별 cluster utilization, queueing, admission control, idle reserve telemetry가 나오면 sensitivity profile을 교체한다.",
+    ],
+    "A10": [
+        "attribution_rule은 host capacity와 model-owner output을 중복 계산하지 않기 위한 규칙이다.",
+        "출처는 AWS, Oracle, CoreWeave 같은 host와 model owner 사이의 platform/hosting 관계를 확인하는 데 쓰고, 정확한 capacity split을 직접 뜻하지는 않는다.",
+        "headline forecast는 model owner가 상용 output token을 만들어내는 capacity만 세며, host-only rows는 별도 supply-side 근거로 분리한다.",
+        "공식 capacity ownership, reserved instance 계약, accelerator-hour attribution telemetry가 나오면 이 규칙을 더 세밀하게 바꿀 수 있다.",
+    ],
+    "A11": [
+        "GPU/ASIC mix는 같은 MW라도 H200, B200, GB200, purpose-built accelerator 비중에 따라 TPS/MW가 달라지기 때문에 필요하다.",
+        "출처 링크는 특정 platform이나 accelerator generation이 존재한다는 fact anchor이고, exact fleet share는 공개되지 않으면 scenario다.",
+        "purpose-built accelerator share는 비교 가능한 public serving benchmark가 부족하면 별도 uplift를 과하게 주지 않고 보수적으로 둔다.",
+        "fleet inventory, accelerator-hour split, per-generation serving benchmark가 나오면 A08의 TPS/MW와 함께 다시 계산해야 한다.",
+    ],
+}
+
+
 def load_generator_payload() -> dict[str, Any]:
     module_path = TOOLS / "generate_llm_token_capacity_report.py"
     spec = importlib.util.spec_from_file_location("llm_capacity_generator_for_provenance", module_path)
@@ -294,7 +379,8 @@ def write_csv(rows: list[dict[str, Any]], path: Path) -> None:
 def md_table(headers: list[str], rows: list[list[Any]]) -> str:
     lines = ["| " + " | ".join(headers) + " |", "|" + "|".join(["---"] * len(headers)) + "|"]
     for row in rows:
-        lines.append("| " + " | ".join(str(cell).replace("\n", " ") for cell in row) + " |")
+        cells = [str(cell).replace("\n", " ").replace("|", "\\|") for cell in row]
+        lines.append("| " + " | ".join(cells) + " |")
     return "\n".join(lines)
 
 
@@ -309,6 +395,71 @@ def source_summary(source_ids: str, lookup: dict[str, dict[str, Any]]) -> str:
         tier = item.get("tier") or item.get("category", "")
         parts.append(f"`{sid}`: {title} ({tier})")
     return "<br>".join(parts)
+
+
+def compact_text(value: Any, limit: int = 420) -> str:
+    text = " ".join(str(value or "").split())
+    if len(text) <= limit:
+        return text
+    return text[: limit - 3].rstrip() + "..."
+
+
+def source_use_detail(item: dict[str, Any]) -> str:
+    return compact_text(
+        item.get("use_in_model")
+        or item.get("note_kr")
+        or item.get("description_kr")
+        or item.get("category")
+        or "",
+        360,
+    )
+
+
+def decision_sample_rows(spec: AssumptionSpec, items: list[dict[str, Any]]) -> list[list[Any]]:
+    primary_metric = PRIMARY_METRIC_BY_ASSUMPTION.get(spec.assumption_id)
+    candidates = [r for r in items if r["metric"] == primary_metric]
+    base_candidates = [r for r in candidates if r["scenario"] == "Base" and r["year"] in (2026, "2026-2030")]
+    if base_candidates:
+        candidates = base_candidates
+    if not candidates:
+        candidates = items
+
+    rows = []
+    seen: set[tuple[Any, Any, Any]] = set()
+    for row in candidates:
+        key = (row["company"], row["metric"], row["scenario"])
+        if key in seen:
+            continue
+        seen.add(key)
+        rows.append(
+            [
+                row["company"],
+                row["metric"],
+                row["value"],
+                compact_text(row["why_this_number"], 360),
+                compact_text(row["formula_or_rule"], 220),
+                compact_text(row["replacement_path"], 260),
+                row["source_ids"],
+            ]
+        )
+        if len(rows) >= 14:
+            break
+    return rows
+
+
+def source_logic_rows(source_ids: list[str], lookup: dict[str, dict[str, Any]]) -> list[list[Any]]:
+    rows = []
+    for sid in source_ids:
+        item = lookup.get(sid, {})
+        rows.append(
+            [
+                sid,
+                item.get("url_or_report", ""),
+                source_use_detail(item),
+                item.get("confidence", ""),
+            ]
+        )
+    return rows
 
 
 def write_assumption_docs(rows: list[dict[str, Any]], data: dict[str, Any]) -> None:
@@ -340,6 +491,48 @@ def write_assumption_docs(rows: list[dict[str, Any]], data: dict[str, Any]) -> N
             "",
             ", ".join(f"`{metric}`" for metric in metrics) if metrics else "No rows.",
             "",
+            "## 숫자 결정 로직",
+            "",
+        ]
+
+        for bullet in DECISION_LOGIC_KR.get(spec.assumption_id, []):
+            lines.append(f"- {bullet}")
+
+        source_logic = source_logic_rows(source_ids, lookup)
+        if source_logic:
+            lines += [
+                "",
+                "### 링크를 숫자로 읽는 방식",
+                "",
+                "아래 표는 링크 자체를 그대로 숫자로 옮긴 것이 아니라, 각 출처가 어떤 판단에 쓰였는지를 기록한다. URL이 capacity 방향성만 확인해주는 경우와 실제 수치 anchor를 제공하는 경우를 구분해서 읽어야 한다.",
+                "",
+                md_table(["ID", "URL/report", "숫자 결정에 쓰인 방식", "Confidence"], source_logic),
+                "",
+            ]
+
+        sample_rows = decision_sample_rows(spec, items)
+        if sample_rows:
+            lines += [
+                "### 행 단위 결정 샘플",
+                "",
+                "대표 metric 행을 기준으로, 실제 trace에서 가져온 `why_this_number`, 산식, 교체 경로를 함께 붙였다. 이 표의 값은 모델 입력값이며, 공시 숫자와 scenario 숫자가 섞여 있을 수 있다.",
+                "",
+                md_table(
+                    [
+                        "Company",
+                        "Metric",
+                        "Value",
+                        "왜 이 숫자인가",
+                        "Formula/rule",
+                        "교체 경로",
+                        "Source IDs",
+                    ],
+                    sample_rows,
+                ),
+                "",
+            ]
+
+        lines += [
             "## Base scenario 2026 -> 2030 endpoint view",
             "",
         ]
