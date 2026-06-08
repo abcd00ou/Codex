@@ -174,6 +174,147 @@ def line_svg(df: pd.DataFrame, title: str, value_col: str, width: int = 920, hei
     return "".join(parts)
 
 
+def category_line_svg(
+    df: pd.DataFrame,
+    title: str,
+    category_col: str,
+    value_col: str,
+    width: int = 920,
+    height: int = 340,
+) -> str:
+    pivot = df.pivot_table(index="quarter", columns=category_col, values=value_col, aggfunc="sum").fillna(0)
+    if pivot.empty:
+        return ""
+    pivot = pivot.loc[:, pivot.sum().sort_values(ascending=False).index[:8]]
+    quarters = list(pivot.index)
+    categories = list(pivot.columns)
+    max_v = pivot.to_numpy().max()
+    if max_v <= 0:
+        return ""
+    margin_left, margin_right, margin_top, margin_bottom = 74, 172, 36, 62
+    chart_w = width - margin_left - margin_right
+    chart_h = height - margin_top - margin_bottom
+    palette = ["#2b6cb0", "#319795", "#dd6b20", "#805ad5", "#d53f8c", "#718096", "#0f766e", "#9a3412"]
+    x_step = chart_w / max(len(quarters) - 1, 1)
+
+    parts = [
+        f'<svg viewBox="0 0 {width} {height}" role="img" aria-label="{esc(title)}">',
+        f'<text x="{margin_left}" y="22" class="chart-title">{esc(title)}</text>',
+        f'<line x1="{margin_left}" y1="{margin_top + chart_h}" x2="{margin_left + chart_w}" y2="{margin_top + chart_h}" class="axis"/>',
+        f'<line x1="{margin_left}" y1="{margin_top}" x2="{margin_left}" y2="{margin_top + chart_h}" class="axis"/>',
+    ]
+    for i, q in enumerate(quarters):
+        if i % max(1, len(quarters) // 6) == 0 or i == len(quarters) - 1:
+            x = margin_left + i * x_step
+            parts.append(f'<text x="{x:.1f}" y="{margin_top + chart_h + 20}" text-anchor="middle" class="x-label">{esc(q)}</text>')
+    for idx, category in enumerate(categories):
+        points = []
+        for i, q in enumerate(quarters):
+            value = pivot.loc[q, category]
+            x = margin_left + i * x_step
+            y = margin_top + chart_h - chart_h * value / max_v
+            points.append(f"{x:.1f},{y:.1f}")
+        color = palette[idx % len(palette)]
+        parts.append(f'<polyline points="{" ".join(points)}" fill="none" stroke="{color}" stroke-width="2.5"/>')
+        lx = margin_left + chart_w + 18
+        ly = margin_top + 18 + idx * 22
+        parts.append(f'<rect x="{lx}" y="{ly - 10}" width="11" height="11" fill="{color}" rx="2"/>')
+        parts.append(f'<text x="{lx + 18}" y="{ly}" class="legend">{esc(category)}</text>')
+    parts.append("</svg>")
+    return "".join(parts)
+
+
+def company_readout(
+    maker: str,
+    group: pd.DataFrame,
+    chip_group: pd.DataFrame,
+    total_h100e: float,
+    total_units: float,
+    organizations: pd.DataFrame,
+) -> dict[str, object]:
+    q = group.groupby("quarter", as_index=False).agg(
+        units=(METRICS["units"], "sum"),
+        h100e=(METRICS["h100e"], "sum"),
+        cost_usd=(METRICS["cost"], "sum"),
+        power_mw=("power_mw", "sum"),
+        incomplete=("Incomplete", "sum"),
+    )
+    q = q.sort_values("quarter")
+    latest = q.iloc[-1]
+    first = q[q["h100e"] > 0].iloc[0]
+    peak = q.loc[q["h100e"].idxmax()]
+    prev = q.iloc[-2] if len(q) > 1 else latest
+    top_chip = chip_group.sort_values("h100e", ascending=False).iloc[0]
+    country = ""
+    org_match = organizations[organizations["Name"].astype(str).str.lower() == maker.lower()]
+    if not org_match.empty:
+        country = str(org_match.iloc[0].get("Country", ""))
+    latest_delta = (latest["h100e"] / prev["h100e"] - 1) if prev["h100e"] else 0
+    growth_multiple = latest["h100e"] / first["h100e"] if first["h100e"] else 0
+    return {
+        "maker": maker,
+        "country": country,
+        "first_quarter": first["quarter"],
+        "latest_quarter": latest["quarter"],
+        "peak_quarter": peak["quarter"],
+        "latest_h100e": latest["h100e"],
+        "peak_h100e": peak["h100e"],
+        "latest_delta": latest_delta,
+        "growth_multiple": growth_multiple,
+        "total_units": group[METRICS["units"]].sum(),
+        "total_h100e": group[METRICS["h100e"]].sum(),
+        "total_cost": group[METRICS["cost"]].sum(),
+        "total_power_mw": group["power_mw"].sum(),
+        "h100e_share": group[METRICS["h100e"]].sum() / total_h100e if total_h100e else 0,
+        "unit_share": group[METRICS["units"]].sum() / total_units if total_units else 0,
+        "top_chip": top_chip["Chip type"],
+        "top_chip_share": top_chip["h100e"] / chip_group["h100e"].sum() if chip_group["h100e"].sum() else 0,
+        "records": len(group),
+        "incomplete_records": int(group["Incomplete"].sum()),
+        "chip_count": group["Chip type"].nunique(),
+    }
+
+
+def company_narrative(maker: str, readout: dict[str, object], product_df: pd.DataFrame) -> list[str]:
+    top_products = product_df.sort_values("h100e", ascending=False).head(3)
+    product_phrase = ", ".join(
+        f"{row['Chip type']} ({fmt_pct(row['designer_h100e_share'])})"
+        for _, row in top_products.iterrows()
+    )
+    base = [
+        f"누적 H100e share는 {fmt_pct(float(readout['h100e_share']))}이고, unit share는 {fmt_pct(float(readout['unit_share']))}다. compute 기준으로는 {readout['top_chip']}가 회사 내 핵심 제품이며 제품 비중은 {fmt_pct(float(readout['top_chip_share']))}다.",
+        f"판매/출하 추정치는 {readout['first_quarter']}부터 {readout['latest_quarter']}까지 이어지며, 최신 분기 H100e는 {fmt_num(float(readout['latest_h100e']), 1)}다. 첫 유의미 분기 대비 최신 분기 배율은 {float(readout['growth_multiple']):.1f}x다.",
+        f"제품 포트폴리오 상위 라인은 {product_phrase} 순서다.",
+    ]
+    specific = {
+        "Nvidia": [
+            "Hopper(H100/H200)에서 Blackwell(B200/B300)로 무게중심이 이동한다. 누적 H100e에서는 B300과 B200이 가장 큰 축이고, H100/H200은 2023-2025 ramp의 핵심 기반으로 남아 있다.",
+            "A800/H800/H20은 중국향·수출규제 관련 변형 제품으로 별도 집계되어 있어, Nvidia 내 제품 믹스 해석에서 mainstream accelerator와 구분해서 읽어야 한다.",
+        ],
+        "Google": [
+            "TPU v6e가 누적 compute의 중심이고 TPU v7이 빠르게 붙으면서 2025Q4 peak 이후 2026Q1에도 높은 stock addition을 유지한다.",
+            "Google TPU 수치는 공개 chip sales라기보다 Broadcom revenue와 TPU spending model에 근거한 추정이라는 점이 중요하다.",
+        ],
+        "AMD": [
+            "MI300X가 누적 주력 제품이지만, 2025년 말에는 MI350X/MI355X/MI325X가 함께 올라오며 제품 세대 전환이 보인다.",
+            "AMD는 Nvidia 대비 절대 H100e 규모는 작지만, 2024Q1 이후 최신 분기까지 증가세가 뚜렷한 challenger profile이다.",
+        ],
+        "Amazon": [
+            "Trainium2가 Amazon 누적 H100e의 대부분을 차지한다. Trainium1은 초기 기반, Trainium2는 2025년 ramp의 중심으로 읽힌다.",
+            "Epoch 문서상 Amazon은 대규모 Trainium data center와 analyst estimate 의존도가 높아, 외부 판매량이라기보다 internal deployment floor에 가까운 해석이 필요하다.",
+        ],
+        "Huawei": [
+            "Ascend 910C가 Ascend 910B를 넘어 누적 compute의 중심으로 잡힌다. 2025년 내내 비교적 일정한 분기 H100e가 반복되는 구조다.",
+            "Huawei 수치는 third-party analyst volume synthesis 성격이 강해 shipment/production/delivery 구분의 불확실성이 크다.",
+        ],
+        "Cambricon": [
+            "Siyuan 590 단일 제품 중심의 작은 규모 포지션이다. 전체 H100e share는 낮지만 중국 내 dedicated accelerator coverage를 보완하는 항목으로 의미가 있다.",
+            "Cambricon은 2025 annual report disclosure와 analyst/media corroboration에 기반한 revenue/volume model로 읽어야 한다.",
+        ],
+    }
+    return base + specific.get(maker, [])
+
+
 def build_report() -> str:
     timelines = clean_timelines(read_csv("timelines_by_chip.csv"))
     chip_types = read_csv("chip_types.csv")
@@ -314,6 +455,73 @@ def build_report() -> str:
         out["China-market flag"] = out["Primarily for Chinese market"].fillna("").map(lambda x: "Y" if str(x).strip().lower() in ["true", "1", "yes"] else "")
         return out.drop(columns=["Primarily for Chinese market"])
 
+    def display_company_products(df: pd.DataFrame) -> pd.DataFrame:
+        out = df.sort_values("h100e", ascending=False).copy()
+        out["Units"] = out["units"].map(lambda x: fmt_num(x, 1))
+        out["H100e"] = out["h100e"].map(lambda x: fmt_num(x, 1))
+        out["Cost"] = out["cost_usd"].map(lambda x: "$" + fmt_num(x, 1))
+        out["Power"] = out["power_mw"].map(lambda x: fmt_num(x, 1) + " MW")
+        out["H100e share"] = out["designer_h100e_share"].map(fmt_pct)
+        return out[["Chip type", "Units", "H100e", "H100e share", "Cost", "Power", "first_quarter", "last_quarter", "records"]]
+
+    def display_company_quarters(df: pd.DataFrame) -> pd.DataFrame:
+        out = (
+            df.groupby(["quarter", "Chip type"], as_index=False)
+            .agg(
+                units=("units", "sum"),
+                h100e=("h100e", "sum"),
+                cost_usd=("cost_usd", "sum"),
+                power_mw=("power_mw", "sum"),
+                incomplete=("incomplete", "max"),
+            )
+            .sort_values(["quarter", "h100e"], ascending=[False, False])
+        )
+        out["Units"] = out["units"].map(lambda x: fmt_num(x, 1))
+        out["H100e"] = out["h100e"].map(lambda x: fmt_num(x, 1))
+        out["Cost"] = out["cost_usd"].map(lambda x: "$" + fmt_num(x, 1))
+        out["Power"] = out["power_mw"].map(lambda x: fmt_num(x, 1) + " MW")
+        out["Incomplete"] = out["incomplete"].map(lambda x: "Y" if x else "")
+        return out[["quarter", "Chip type", "Units", "H100e", "Cost", "Power", "Incomplete"]]
+
+    company_sections = []
+    for maker in by_designer["Chip manufacturer"]:
+        maker_rows = timelines[timelines["Chip manufacturer"] == maker].copy()
+        maker_quarterly = quarterly[quarterly["Chip manufacturer"] == maker].copy()
+        maker_products = by_chip[by_chip["Chip manufacturer"] == maker].copy()
+        readout = company_readout(maker, maker_rows, maker_products, total_h100e, total_units, organizations)
+        narrative = company_narrative(maker, readout, maker_products)
+        product_labels = maker_products.sort_values("h100e", ascending=False)["Chip type"].tolist()
+        product_h100e = maker_products.sort_values("h100e", ascending=False)["h100e"].tolist()
+        latest_direction = "증가" if float(readout["latest_delta"]) >= 0 else "감소"
+        section = f"""
+    <section class="section company-section" id="company-{esc(maker).lower()}">
+      <h2>{esc(maker)} 기업별 분석</h2>
+      <p class="small">Headquarters: {esc(readout["country"])} · coverage: {esc(readout["first_quarter"])} to {esc(readout["latest_quarter"])} · products: {readout["chip_count"]} · source records: {readout["records"]}</p>
+      <div class="grid company-kpis">
+        <div class="card"><div class="label">Cumulative H100e</div><div class="value">{fmt_num(float(readout["total_h100e"]), 1)}</div><p class="small">Global share {fmt_pct(float(readout["h100e_share"]))}</p></div>
+        <div class="card"><div class="label">Cumulative units</div><div class="value">{fmt_num(float(readout["total_units"]), 1)}</div><p class="small">Global unit share {fmt_pct(float(readout["unit_share"]))}</p></div>
+        <div class="card"><div class="label">Estimated spend</div><div class="value">${fmt_num(float(readout["total_cost"]), 1)}</div><p class="small">chip purchase-price proxy</p></div>
+        <div class="card"><div class="label">Latest quarter</div><div class="value">{fmt_num(float(readout["latest_h100e"]), 1)}</div><p class="small">{esc(readout["latest_quarter"])} · QoQ {latest_direction} {fmt_pct(abs(float(readout["latest_delta"])))}</p></div>
+      </div>
+      <div class="analysis-grid">
+        <div>
+          <h3>해석</h3>
+          <ul>
+            {''.join(f'<li>{esc(item)}</li>' for item in narrative)}
+          </ul>
+          <p class="small">Peak quarter: {esc(readout["peak_quarter"])} / {fmt_num(float(readout["peak_h100e"]), 1)} H100e. Incomplete records: {readout["incomplete_records"]}.</p>
+        </div>
+        <div class="chart">{bar_svg(product_labels, product_h100e, f"{maker} cumulative H100e by product", width=760, height=300)}</div>
+      </div>
+      <div class="chart">{category_line_svg(maker_quarterly, f"{maker} quarterly product mix by H100e", "Chip type", "h100e")}</div>
+      <h3>{esc(maker)} 제품별 누적 요약</h3>
+      {table_html(display_company_products(maker_products))}
+      <h3>{esc(maker)} 분기별 제품 상세</h3>
+      <div class="wide-table">{table_html(display_company_quarters(maker_quarterly))}</div>
+    </section>
+"""
+        company_sections.append(section)
+
     inventory_df = pd.DataFrame(
         [
             {
@@ -333,7 +541,7 @@ def build_report() -> str:
     latest_h100e_values = latest_summary["h100e"].tolist()
 
     top_designer = by_designer.iloc[0]
-    top_chip = by_chip.iloc[0]
+    top_chip = by_chip.sort_values("h100e", ascending=False).iloc[0]
     latest_top = latest_summary.iloc[0]
     incomplete_count = int(timelines["Incomplete"].sum())
 
@@ -394,7 +602,12 @@ def build_report() -> str:
     .kpi {{ background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.24); color: white; }}
     .kpi .label {{ color: #c7d7e8; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }}
     .kpi .value {{ font-size: 26px; font-weight: 700; margin-top: 4px; }}
+    .label {{ color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }}
+    .value {{ font-size: 22px; font-weight: 700; margin-top: 4px; }}
     .section {{ background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 20px; margin: 18px 0; }}
+    .company-section {{ border-left: 5px solid var(--accent); }}
+    .company-kpis {{ grid-template-columns: repeat(4, minmax(0, 1fr)); }}
+    .analysis-grid {{ display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(360px, .9fr); gap: 16px; align-items: start; }}
     .callout {{ border-left: 4px solid var(--accent2); background: #eefaf9; padding: 12px 14px; margin: 16px 0; }}
     .small {{ color: var(--muted); font-size: 13px; }}
     table {{ border-collapse: collapse; width: 100%; margin: 10px 0 20px; font-size: 13px; }}
@@ -411,6 +624,8 @@ def build_report() -> str:
     footer {{ color: var(--muted); padding: 26px 0 40px; font-size: 13px; }}
     @media (max-width: 860px) {{
       .grid {{ grid-template-columns: repeat(2, 1fr); }}
+      .company-kpis {{ grid-template-columns: repeat(2, 1fr); }}
+      .analysis-grid {{ grid-template-columns: 1fr; }}
       .wrap {{ padding: 18px; }}
       h1 {{ font-size: 28px; }}
     }}
@@ -472,6 +687,14 @@ def build_report() -> str:
     </section>
 
     <section class="section">
+      <h2>기업별 Deep Dive 읽는 순서</h2>
+      <p>아래 기업별 섹션은 같은 구조로 반복된다. 먼저 누적 H100e와 units로 상대 규모를 보고, 그 다음 최신 분기와 peak quarter를 비교한 뒤, 제품별 bar/line chart로 세대 전환을 확인하면 된다.</p>
+      <p>해석상 가장 중요한 축은 <strong>제품 믹스 전환</strong>이다. Nvidia는 Hopper에서 Blackwell, Google은 TPU v6e/v7, Amazon은 Trainium2, AMD는 MI300X 이후 MI350/MI355, Huawei는 Ascend 910C, Cambricon은 Siyuan 590 중심으로 읽힌다.</p>
+    </section>
+
+    {''.join(company_sections)}
+
+    <section class="section">
       <h2>제품 스펙 분포</h2>
       <p>chip_types.csv 기준의 H100e, TDP, memory, bandwidth, approximate cost를 함께 붙였다. 실제 판매량 테이블과 별도로, 제품별 성능/가격 스펙의 분포를 보는 보조 테이블이다.</p>
       <div class="wide-table">{table_html(display_specs(spec_table))}</div>
@@ -499,7 +722,7 @@ def build_report() -> str:
 
 
 def main() -> None:
-    html_doc = build_report()
+    html_doc = "\n".join(line.rstrip() for line in build_report().splitlines()) + "\n"
     OUTPUT_PATH.write_text(html_doc, encoding="utf-8")
     print(f"Wrote {OUTPUT_PATH}")
 
