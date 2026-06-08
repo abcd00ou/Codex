@@ -15,6 +15,7 @@ import json
 import os
 import re
 import shutil
+import tarfile
 import urllib.error
 import urllib.request
 import zipfile
@@ -32,7 +33,7 @@ META_DIR = DATA_DIR / "metadata"
 DOC_PATH = ROOT / "docs" / "inferencex_ingestion_plan.md"
 
 USER_AGENT = "llm-token-capacity-project/0.1"
-RUN_DATE = "2026-05-19"
+RUN_DATE = datetime.now(timezone.utc).date().isoformat()
 
 BENCHMARK_REPO = "SemiAnalysisAI/InferenceX"
 APP_REPO = "SemiAnalysisAI/InferenceX-app"
@@ -134,6 +135,10 @@ NORMALIZED_HEADERS = [
     "framework",
     "runtime",
     "precision",
+    "main_framework",
+    "main_precision",
+    "is_main_model_config",
+    "main_config_reason",
     "isl",
     "osl",
     "concurrency",
@@ -187,6 +192,9 @@ DUMP_SUMMARY_HEADERS = [
     "gpu_vendor",
     "framework",
     "precision",
+    "main_framework",
+    "main_precision",
+    "is_main_model_config",
     "isl",
     "osl",
     "row_count",
@@ -206,6 +214,28 @@ DUMP_SUMMARY_HEADERS = [
     "j_output_token_p50",
     "source_id",
     "caveat",
+]
+
+MODEL_MAIN_CONFIG_HEADERS = [
+    "model",
+    "main_framework",
+    "main_precision",
+    "distinct_gpu_count",
+    "row_count",
+    "date_min",
+    "date_max",
+    "selection_rule",
+]
+
+MODEL_CONFIG_VALIDATION_HEADERS = [
+    "model",
+    "status",
+    "main_framework",
+    "main_precision",
+    "main_rows",
+    "non_main_rows",
+    "distinct_framework_precision_pairs",
+    "reason",
 ]
 
 DUMP_EVAL_HEADERS = [
@@ -365,12 +395,53 @@ def read_json_from_zip(zip_path: Path, member: str) -> Any:
         return json.loads(zf.read(member).decode("utf-8"))
 
 
-def dump_prefix(zip_path: Path) -> str:
-    with zipfile.ZipFile(zip_path) as zf:
-        for name in zf.namelist():
-            if name.endswith("/benchmark_results.json"):
-                return name.rsplit("/", 1)[0]
-    raise FileNotFoundError("benchmark_results.json not found in InferenceX dump zip")
+def archive_names(path: Path) -> list[str]:
+    if zipfile.is_zipfile(path):
+        with zipfile.ZipFile(path) as zf:
+            return [name for name in zf.namelist() if not name.endswith("/")]
+    with tarfile.open(path, "r:*") as tf:
+        return [member.name for member in tf.getmembers() if member.isfile()]
+
+
+def read_json_from_archive(path: Path, member: str) -> Any:
+    if zipfile.is_zipfile(path):
+        with zipfile.ZipFile(path) as zf:
+            return json.loads(zf.read(member).decode("utf-8"))
+    with tarfile.open(path, "r:*") as tf:
+        extracted = tf.extractfile(member)
+        if extracted is None:
+            raise FileNotFoundError(member)
+        return json.loads(extracted.read().decode("utf-8"))
+
+
+def read_json_members_from_archive(path: Path, members: list[str]) -> dict[str, Any]:
+    wanted = set(members)
+    if zipfile.is_zipfile(path):
+        with zipfile.ZipFile(path) as zf:
+            return {member: json.loads(zf.read(member).decode("utf-8")) for member in members}
+
+    out: dict[str, Any] = {}
+    with tarfile.open(path, "r:*") as tf:
+        for member in tf:
+            if not member.isfile() or member.name not in wanted:
+                continue
+            extracted = tf.extractfile(member)
+            if extracted is None:
+                continue
+            out[member.name] = json.loads(extracted.read().decode("utf-8"))
+            if len(out) == len(wanted):
+                break
+    missing = wanted - set(out)
+    if missing:
+        raise FileNotFoundError(f"missing archive members: {sorted(missing)}")
+    return out
+
+
+def dump_prefix(path: Path) -> str:
+    for name in archive_names(path):
+        if name.endswith("/benchmark_results.json"):
+            return name.rsplit("/", 1)[0]
+    raise FileNotFoundError("benchmark_results.json not found in InferenceX dump archive")
 
 
 def as_float(value: Any) -> float | None:
@@ -401,6 +472,10 @@ def money_per_mtok(cost_per_gpu_hour: float | None, output_tok_s_gpu: float | No
     return cost_per_gpu_hour / (output_tok_s_gpu * 3600) * 1_000_000
 
 
+def date_key(value: Any) -> str:
+    return str(value or "")[:10]
+
+
 def build_config_maps(configs: list[dict[str, Any]]) -> dict[int, dict[str, Any]]:
     return {int(row["id"]): row for row in configs if row.get("id") is not None}
 
@@ -412,6 +487,11 @@ def normalize_hardware_key(hardware: Any) -> str:
 def source_url_for_dump(tag_name: str | None) -> str:
     tag = tag_name or "db-dump/2026-05-11"
     return f"https://github.com/{APP_REPO}/releases/tag/{tag}"
+
+
+def source_id_for_release(tag_name: str | None) -> str:
+    suffix = safe_name(str(tag_name or "db-dump_unknown")).upper()
+    return f"INFERENCEX_{suffix}"
 
 
 def normalize_inferencex_benchmark_row(
@@ -445,6 +525,10 @@ def normalize_inferencex_benchmark_row(
         "framework": config.get("framework"),
         "runtime": record.get("image") or "",
         "precision": config.get("precision"),
+        "main_framework": "",
+        "main_precision": "",
+        "is_main_model_config": "",
+        "main_config_reason": "",
         "isl": record.get("isl"),
         "osl": record.get("osl"),
         "concurrency": record.get("conc"),
@@ -489,14 +573,127 @@ def normalize_inferencex_benchmark_row(
     }
 
 
-def summarize_benchmark_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def infer_model_main_configs(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    groups: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        model = str(row.get("model") or "")
+        framework = str(row.get("framework") or "")
+        precision = str(row.get("precision") or "")
+        if not model or not framework or not precision:
+            continue
+        groups[(model, framework, precision)].append(row)
+
+    by_model: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for (model, framework, precision), items in groups.items():
+        dates = [date_key(row.get("benchmark_date")) for row in items if row.get("benchmark_date")]
+        by_model[model].append(
+            {
+                "model": model,
+                "main_framework": framework,
+                "main_precision": precision,
+                "distinct_gpu_count": len({row.get("gpu") for row in items if row.get("gpu")}),
+                "row_count": len(items),
+                "date_min": min(dates) if dates else "",
+                "date_max": max(dates) if dates else "",
+                "selection_rule": "max distinct GPUs, then max row count, then latest benchmark date",
+            }
+        )
+
+    selected = []
+    for model, candidates in by_model.items():
+        candidates.sort(
+            key=lambda row: (
+                int(row["distinct_gpu_count"]),
+                int(row["row_count"]),
+                str(row["date_max"]),
+                str(row["main_framework"]),
+                str(row["main_precision"]),
+            ),
+            reverse=True,
+        )
+        selected.append(candidates[0])
+    return sorted(selected, key=lambda row: row["model"])
+
+
+def apply_model_main_configs(
+    rows: list[dict[str, Any]],
+    main_configs: list[dict[str, Any]],
+) -> None:
+    by_model = {row["model"]: row for row in main_configs}
+    for row in rows:
+        config = by_model.get(row.get("model"))
+        if not config:
+            row["main_framework"] = ""
+            row["main_precision"] = ""
+            row["is_main_model_config"] = "unknown"
+            row["main_config_reason"] = "no model-level main config could be inferred"
+            continue
+        row["main_framework"] = config["main_framework"]
+        row["main_precision"] = config["main_precision"]
+        is_main = row.get("framework") == config["main_framework"] and row.get("precision") == config["main_precision"]
+        row["is_main_model_config"] = "yes" if is_main else "no"
+        row["main_config_reason"] = (
+            "model-level canonical framework/precision for GPU comparison; "
+            f"selected by {config['selection_rule']}"
+        )
+
+
+def validate_model_main_configs(
+    rows: list[dict[str, Any]],
+    main_configs: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    by_model_rows: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        by_model_rows[str(row.get("model") or "")].append(row)
+    config_by_model = {row["model"]: row for row in main_configs}
+    out = []
+    for model, items in sorted(by_model_rows.items()):
+        if not model:
+            continue
+        config = config_by_model.get(model, {})
+        pairs = {(row.get("framework"), row.get("precision")) for row in items}
+        main_rows = [row for row in items if row.get("is_main_model_config") == "yes"]
+        non_main_rows = [row for row in items if row.get("is_main_model_config") == "no"]
+        status = "PASS" if config and main_rows else "FAIL"
+        reason = "one model-level main framework/precision selected and rows flagged"
+        if not config:
+            reason = "missing model-level main framework/precision"
+        elif not main_rows:
+            reason = "main framework/precision selected but no rows matched it"
+        out.append(
+            {
+                "model": model,
+                "status": status,
+                "main_framework": config.get("main_framework", ""),
+                "main_precision": config.get("main_precision", ""),
+                "main_rows": len(main_rows),
+                "non_main_rows": len(non_main_rows),
+                "distinct_framework_precision_pairs": len(pairs),
+                "reason": reason,
+            }
+        )
+    return out
+
+
+def summarize_benchmark_rows(rows: list[dict[str, Any]], release_tag: str | None) -> list[dict[str, Any]]:
     groups: dict[tuple[Any, ...], list[dict[str, Any]]] = defaultdict(list)
     for row in rows:
-        key = (row.get("model"), row.get("gpu"), row.get("gpu_vendor"), row.get("framework"), row.get("precision"), row.get("isl"), row.get("osl"))
+        key = (
+            row.get("model"),
+            row.get("gpu"),
+            row.get("gpu_vendor"),
+            row.get("framework"),
+            row.get("precision"),
+            row.get("main_framework"),
+            row.get("main_precision"),
+            row.get("is_main_model_config"),
+            row.get("isl"),
+            row.get("osl"),
+        )
         groups[key].append(row)
     out: list[dict[str, Any]] = []
     for key, items in sorted(groups.items(), key=lambda kv: (str(kv[0]), -len(kv[1]))):
-        model, gpu, vendor, framework, precision, isl, osl = key
+        model, gpu, vendor, framework, precision, main_framework, main_precision, is_main_model_config, isl, osl = key
         dates = [str(i.get("benchmark_date") or "")[:10] for i in items if i.get("benchmark_date")]
         def vals(field: str) -> list[float]:
             return [v for v in (as_float(i.get(field)) for i in items) if v is not None]
@@ -507,6 +704,9 @@ def summarize_benchmark_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]
             "gpu_vendor": vendor,
             "framework": framework,
             "precision": precision,
+            "main_framework": main_framework,
+            "main_precision": main_precision,
+            "is_main_model_config": is_main_model_config,
             "isl": isl,
             "osl": osl,
             "row_count": len(items),
@@ -524,7 +724,7 @@ def summarize_benchmark_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]
             "p99_ttft_ms_p50": percentile(vals("p99_ttft_ms"), 0.50),
             "p99_tpot_ms_p50": percentile(vals("p99_tpot_ms"), 0.50),
             "j_output_token_p50": percentile(vals("j_output_token"), 0.50),
-            "source_id": "INFERENCEX_DUMP_2026_05_11",
+            "source_id": source_id_for_release(release_tag),
             "caveat": "Grouped benchmark summary; do not average across groups without weighting and SLO comparability checks.",
         }
         out.append(row)
@@ -566,56 +766,93 @@ def normalize_inferencex_eval_row(
 
 def process_inferencex_dump_zip(zip_path: Path, release_tag: str | None, max_rows: int) -> dict[str, Any]:
     if not zip_path.exists():
-        return {"status": "skipped", "reason": f"dump zip not found: {zip_path}", "benchmark_rows": []}
+        return {"status": "skipped", "reason": f"dump archive not found: {zip_path}", "benchmark_rows": []}
     prefix = dump_prefix(zip_path)
     inventory: list[dict[str, Any]] = []
-    with zipfile.ZipFile(zip_path) as zf:
-        for info in zf.infolist():
-            if info.is_dir():
-                continue
-            record_count = ""
-            status = "indexed"
-            notes = ""
-            if info.filename.endswith((".json", ".jsonl")) and info.file_size <= 100_000_000:
-                try:
-                    obj = json.loads(zf.read(info.filename).decode("utf-8"))
-                    record_count = len(obj) if isinstance(obj, list) else 1
-                    status = "parsed"
-                except Exception as exc:  # noqa: BLE001 - inventory should not fail the run.
-                    status = "parse_error"
-                    notes = str(exc)[:200]
-            elif info.file_size > 100_000_000:
-                notes = "Large table kept in raw zip; parse only with dedicated streaming job."
-            inventory.append(
+    if zipfile.is_zipfile(zip_path):
+        with zipfile.ZipFile(zip_path) as zf:
+            members = [
                 {
-                    "source_file": info.filename,
-                    "file_size_bytes": info.file_size,
-                    "compressed_size_bytes": info.compress_size,
-                    "record_count": record_count,
-                    "parse_status": status,
-                    "notes": notes,
+                    "name": info.filename,
+                    "file_size": info.file_size,
+                    "compressed_size": info.compress_size,
                 }
-            )
+                for info in zf.infolist()
+                if not info.is_dir()
+            ]
+    else:
+        with tarfile.open(zip_path, "r:*") as tf:
+            members = [
+                {
+                    "name": member.name,
+                    "file_size": member.size,
+                    "compressed_size": "",
+                }
+                for member in tf.getmembers()
+                if member.isfile()
+            ]
+    for info in members:
+        record_count = ""
+        status = "indexed"
+        notes = ""
+        if info["name"].endswith((".json", ".jsonl")) and int(info["file_size"]) <= 100_000_000:
+            try:
+                obj = read_json_from_archive(zip_path, info["name"])
+                record_count = len(obj) if isinstance(obj, list) else 1
+                status = "parsed"
+            except Exception as exc:  # noqa: BLE001 - inventory should not fail the run.
+                status = "parse_error"
+                notes = str(exc)[:200]
+        elif int(info["file_size"]) > 100_000_000:
+            notes = "Large table kept in raw archive; parse only with dedicated streaming job."
+        inventory.append(
+            {
+                "source_file": info["name"],
+                "file_size_bytes": info["file_size"],
+                "compressed_size_bytes": info["compressed_size"],
+                "record_count": record_count,
+                "parse_status": status,
+                "notes": notes,
+            }
+        )
 
-    configs = read_json_from_zip(zip_path, f"{prefix}/configs.json")
+    table_members = [
+        f"{prefix}/configs.json",
+        f"{prefix}/benchmark_results.json",
+        f"{prefix}/eval_results.json",
+        f"{prefix}/run_stats.json",
+        f"{prefix}/availability.json",
+    ]
+    tables = read_json_members_from_archive(zip_path, table_members)
+    configs = tables[f"{prefix}/configs.json"]
     config_by_id = build_config_maps(configs)
-    benchmark_records = read_json_from_zip(zip_path, f"{prefix}/benchmark_results.json")
+    benchmark_records = tables[f"{prefix}/benchmark_results.json"]
     benchmark_rows = [
         normalize_inferencex_benchmark_row(record, config_by_id.get(int(record.get("config_id", -1)), {}), zip_path, release_tag)
         for record in benchmark_records[:max_rows]
     ]
-    summary_rows = summarize_benchmark_rows(benchmark_rows)
-    eval_records = read_json_from_zip(zip_path, f"{prefix}/eval_results.json")
+    main_configs = infer_model_main_configs(benchmark_rows)
+    apply_model_main_configs(benchmark_rows, main_configs)
+    validation_rows = validate_model_main_configs(benchmark_rows, main_configs)
+    summary_rows = summarize_benchmark_rows(benchmark_rows, release_tag)
+    comparable_summary_rows = summarize_benchmark_rows(
+        [row for row in benchmark_rows if row.get("is_main_model_config") == "yes"],
+        release_tag,
+    )
+    eval_records = tables[f"{prefix}/eval_results.json"]
     eval_rows = [
         normalize_inferencex_eval_row(record, config_by_id.get(int(record.get("config_id", -1)), {}), zip_path, release_tag)
         for record in eval_records[:max_rows]
     ]
-    run_stats = read_json_from_zip(zip_path, f"{prefix}/run_stats.json")
-    availability = read_json_from_zip(zip_path, f"{prefix}/availability.json")
+    run_stats = tables[f"{prefix}/run_stats.json"]
+    availability = tables[f"{prefix}/availability.json"]
 
     write_csv(NORM_DIR / "inferencex_dump_inventory.csv", inventory, DUMP_INVENTORY_HEADERS)
     write_csv(NORM_DIR / "inferencex_benchmark_results.csv", benchmark_rows, DUMP_BENCHMARK_HEADERS)
     write_csv(NORM_DIR / "inferencex_metric_profile.csv", summary_rows, DUMP_SUMMARY_HEADERS)
+    write_csv(NORM_DIR / "inferencex_gpu_comparable_metric_profile.csv", comparable_summary_rows, DUMP_SUMMARY_HEADERS)
+    write_csv(NORM_DIR / "inferencex_main_config_by_model.csv", main_configs, MODEL_MAIN_CONFIG_HEADERS)
+    write_csv(NORM_DIR / "inferencex_main_config_validation.csv", validation_rows, MODEL_CONFIG_VALIDATION_HEADERS)
     write_csv(NORM_DIR / "inferencex_accuracy_evals.csv", eval_rows, DUMP_EVAL_HEADERS)
     write_csv(NORM_DIR / "inferencex_run_stats.csv", run_stats, list(run_stats[0].keys()) if run_stats else ["id"])
     write_csv(NORM_DIR / "inferencex_availability.csv", availability, list(availability[0].keys()) if availability else ["model"])
@@ -629,6 +866,9 @@ def process_inferencex_dump_zip(zip_path: Path, release_tag: str | None, max_row
         "benchmark_rows": len(benchmark_rows),
         "benchmark_records_total": len(benchmark_records),
         "metric_profile_rows": len(summary_rows),
+        "gpu_comparable_metric_profile_rows": len(comparable_summary_rows),
+        "main_config_rows": len(main_configs),
+        "main_config_validation_status": "PASS" if all(row["status"] == "PASS" for row in validation_rows) else "FAIL",
         "accuracy_eval_rows": len(eval_rows),
         "run_stats_rows": len(run_stats),
         "availability_rows": len(availability),
@@ -940,6 +1180,8 @@ def write_docs(manifest: dict[str, Any]) -> None:
         "",
         "- InferenceX 수치는 `Proxy/Benchmark`입니다. 특정 회사의 production token telemetry로 쓰지 않습니다.",
         "- ISL/OSL, precision, framework, GPU, concurrency가 다른 값을 한 숫자로 평균 내지 않습니다.",
+        "- GPU별 비교는 반드시 모델별 `main_framework`와 `main_precision`이 같은 행만 사용합니다.",
+        "- `inferencex_gpu_comparable_metric_profile.csv`는 `is_main_model_config=yes` 행만 모은 GPU 비교용 summary입니다.",
         "- tokens/sec/MW는 A08 sensitivity 또는 benchmark sanity layer에만 먼저 반영합니다.",
         "- latency/SLO, concurrency, P/D disaggregation 정보는 A09 utilization sensitivity로 분리합니다.",
         "- TCO calculator 값은 memory marketing 및 cost/token narrative용이며 company capacity forecast를 직접 바꾸지 않습니다.",
@@ -961,6 +1203,7 @@ def write_docs(manifest: dict[str, Any]) -> None:
         "- `data/inferencex/normalized/inferencex_normalized_schema.csv`",
         "- main simulation workbook의 `12_inferencex_source_index`, `12a_inferencex_schema`, `12b_inferencex_tab_rules`",
         "- full dump 처리 시 `inferencex_benchmark_results.csv`, `inferencex_metric_profile.csv`, `inferencex_accuracy_evals.csv`, `inferencex_dump_inventory.csv`",
+        "- GPU 비교 전용: `inferencex_main_config_by_model.csv`, `inferencex_main_config_validation.csv`, `inferencex_gpu_comparable_metric_profile.csv`",
     ]
     DOC_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
 

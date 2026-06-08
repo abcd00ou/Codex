@@ -1576,6 +1576,7 @@ def core_inferencex_benchmark_profiles() -> list[dict[str, Any]]:
         "qwen3.5": "Alibaba",
     }
     values: dict[str, list[float]] = {model: [] for model in mapped}
+    main_configs: dict[str, tuple[str, str]] = {}
     if source_path.exists():
         with source_path.open(newline="", encoding="utf-8") as handle:
             for row in csv.DictReader(handle):
@@ -1584,11 +1585,13 @@ def core_inferencex_benchmark_profiles() -> list[dict[str, Any]]:
                     model in values
                     and row.get("gpu") == "b200"
                     and row.get("benchmark_type") == "single_turn"
+                    and row.get("is_main_model_config", "yes") == "yes"
                     and row.get("isl") == "1024"
                     and row.get("osl") == "1024"
                     and row.get("output_tok_s_mw")
                 ):
                     values[model].append(float(row["output_tok_s_mw"]))
+                    main_configs.setdefault(model, (row.get("main_framework", ""), row.get("main_precision", "")))
     rows: list[dict[str, Any]] = []
     for model, companies in mapped.items():
         samples = values[model]
@@ -1603,13 +1606,15 @@ def core_inferencex_benchmark_profiles() -> list[dict[str, Any]]:
                 "isl": 1024,
                 "osl": 1024,
                 "metric_used": "output_tok_s_mw p50",
+                "main_framework": main_configs.get(model, ("", ""))[0],
+                "main_precision": main_configs.get(model, ("", ""))[1],
                 "row_count": len(samples),
                 "output_tok_s_mw_p50": round(statistics.median(samples)),
                 "output_tok_s_mw_min": round(min(samples)),
                 "output_tok_s_mw_max": round(max(samples)),
                 "headline_use": "Public output-token TPS/MW reference ceiling; commercial workload fit is applied before headline use.",
                 "source_ids": "SRC_SEMIANALYSIS_INFERENCEX",
-                "caveat": "Benchmark proxy only; not measured sustained production throughput of mapped companies.",
+                "caveat": "Benchmark proxy only; filtered to model-level main_framework/main_precision before GPU comparison.",
             }
         )
     return rows
@@ -1749,6 +1754,7 @@ def hardware_reference_profiles() -> dict[str, dict[str, Any]]:
             if (
                 key in samples
                 and row.get("benchmark_type") == "single_turn"
+                and row.get("is_main_model_config", "yes") == "yes"
                 and row.get("isl") == "1024"
                 and row.get("osl") == "1024"
                 and row.get("output_tok_s_mw")
@@ -1892,7 +1898,7 @@ def forecast_rows(scenario_case: str = "Base") -> list[dict[str, Any]]:
                     "active_power_basis": derivation["active_basis"],
                     "ai_workload_share_basis": derivation["ai_workload_basis"],
                     "gpu_asic_mix_basis": mix["mix_rationale"],
-                    "tokens_per_mw_basis": mix["tps_rationale"] + " Common filter: B200, single_turn, ISL=1024, OSL=1024, output_tok_s_mw p50. Commercial workload fit factor: " + workload["rationale"],
+                    "tokens_per_mw_basis": mix["tps_rationale"] + " Common filter: model-level main_framework/main_precision only, B200, single_turn, ISL=1024, OSL=1024, output_tok_s_mw p50. Commercial workload fit factor: " + workload["rationale"],
                     "inference_share_basis": derivation["inference_basis"],
                     "utilization_basis": "Reference/sensitivity only; not multiplied into headline output-token formula. " + derivation["utilization_basis"],
                     "replacement_path": mix["replacement_path"],
@@ -2695,6 +2701,9 @@ def inferencex_ingestion_payload() -> dict[str, Any]:
     release_assets = read_csv_rows(base / "normalized" / "inferencex_release_assets.csv")
     benchmark_results = read_csv_rows(base / "normalized" / "inferencex_benchmark_results.csv")
     metric_profile = read_csv_rows(base / "normalized" / "inferencex_metric_profile.csv")
+    gpu_comparable_metric_profile = read_csv_rows(base / "normalized" / "inferencex_gpu_comparable_metric_profile.csv")
+    main_config_by_model = read_csv_rows(base / "normalized" / "inferencex_main_config_by_model.csv")
+    main_config_validation = read_csv_rows(base / "normalized" / "inferencex_main_config_validation.csv")
     accuracy_evals = read_csv_rows(base / "normalized" / "inferencex_accuracy_evals.csv")
     dump_inventory = read_csv_rows(base / "normalized" / "inferencex_dump_inventory.csv")
     run_stats = read_csv_rows(base / "normalized" / "inferencex_run_stats.csv")
@@ -2735,6 +2744,9 @@ def inferencex_ingestion_payload() -> dict[str, Any]:
         "release_assets": release_assets[:30],
         "benchmark_results": benchmark_results,
         "metric_profile": metric_profile,
+        "gpu_comparable_metric_profile": gpu_comparable_metric_profile,
+        "main_config_by_model": main_config_by_model,
+        "main_config_validation": main_config_validation,
         "accuracy_evals": accuracy_evals,
         "dump_inventory": dump_inventory,
         "run_stats": run_stats,
@@ -2953,10 +2965,13 @@ def write_excel_full_archive(data: dict[str, Any], path: Path) -> None:
     for sheet_name, key in [
         ("12d_ix_benchmark_results", "benchmark_results"),
         ("12e_ix_metric_profile", "metric_profile"),
-        ("12f_ix_accuracy_evals", "accuracy_evals"),
-        ("12g_ix_dump_inventory", "dump_inventory"),
-        ("12h_ix_run_stats", "run_stats"),
-        ("12i_ix_availability", "availability"),
+        ("12f_ix_gpu_comparable", "gpu_comparable_metric_profile"),
+        ("12g_ix_main_config", "main_config_by_model"),
+        ("12h_ix_main_validation", "main_config_validation"),
+        ("12i_ix_accuracy_evals", "accuracy_evals"),
+        ("12j_ix_dump_inventory", "dump_inventory"),
+        ("12k_ix_run_stats", "run_stats"),
+        ("12l_ix_availability", "availability"),
     ]:
         rows = inferencex.get(key) or []
         if rows:
@@ -3053,7 +3068,7 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
         ["Step 4", "serving_tps_per_mw = fleet_reference_tps_per_mw * commercial_workload_fit_factor"],
         ["Step 5", "generated_output_tokens_per_day = inference_gw * 1,000 * serving_tps_per_mw * 86,400"],
         ["GPU mix rule", "H200/B200/GB200/purpose-built share의 합은 100%이며, 같은 inference MW 내 구성 차이가 token capacity를 바꿉니다."],
-        ["Benchmark rule", "InferenceX output_tok_s_mw p50; single_turn / ISL 1024 / OSL 1024. 50행 미만/미존재 조합은 B200 placeholder로 시작합니다."],
+        ["Benchmark rule", "InferenceX output_tok_s_mw p50; model별 main_framework/main_precision 고정 + single_turn / ISL 1024 / OSL 1024. 50행 미만/미존재 조합은 B200 placeholder로 시작합니다."],
         ["Purpose-built rule", "Comparable TPS/MW가 없으면 B200 placeholder를 사용하며 사용자 입력으로 교체합니다."],
         ["Excluded", "utilization, MoE uplift, software CAGR는 headline 계산에서 제외합니다."],
     ]

@@ -8,6 +8,7 @@ __pycache__/
 ~$*.xlsx
 ~$*.pptx
 llm_token_capacity_project/data/inferencex/raw/*.zip
+llm_token_capacity_project/data/inferencex/raw/*.tar.xz.part*
 llm_token_capacity_project/data/inferencex/raw/inferencex-dump-*/
 llm_token_capacity_project/data/inferencex/raw/**/*.duckdb
 llm_token_capacity_project/data/inferencex/raw/**/*.sqlite

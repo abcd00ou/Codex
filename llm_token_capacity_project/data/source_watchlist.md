@@ -32,7 +32,7 @@ InferenceX should be treated as a benchmark/proxy layer. It can improve the `tok
 - release metadata for `db-dump/YYYY-MM-DD` assets
 - normalized source/schema files under `data/inferencex/`
 
-The latest checked release metadata showed `db-dump/2026-05-11` with `inferencex-dump-2026-05-11.zip`. The asset is large, so default automation records metadata and schema only. Download the dump only with explicit `--download-latest-dump`.
+The latest checked release metadata showed `db-dump/2026-06-08` with `inferencex-dump-2026-06-08.tar.xz.part00`. The asset is large, so default automation records metadata and schema only. Download the dump only with explicit `--download-latest-dump`. GPU comparisons must use model-level `main_framework` and `main_precision` filters before comparing hardware.
 
 Recommended agent flow:
 

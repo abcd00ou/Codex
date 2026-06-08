@@ -1,0 +1,10 @@
+model,status,main_framework,main_precision,main_rows,non_main_rows,distinct_framework_precision_pairs,reason
+dsr1,PASS,sglang,fp8,5860,16216,12,one model-level main framework/precision selected and rows flagged
+dsv4,PASS,dynamo-vllm,fp4,123,1647,8,one model-level main framework/precision selected and rows flagged
+glm5,PASS,sglang,fp8,341,403,6,one model-level main framework/precision selected and rows flagged
+glm5.1,PASS,sglang,fp4,40,14,2,one model-level main framework/precision selected and rows flagged
+gptoss120b,PASS,vllm,fp4,21691,7482,4,one model-level main framework/precision selected and rows flagged
+kimik2.5,PASS,vllm,int4,579,707,6,one model-level main framework/precision selected and rows flagged
+llama70b,PASS,vllm,fp8,9209,8290,4,one model-level main framework/precision selected and rows flagged
+minimaxm2.5,PASS,vllm,fp8,1453,852,7,one model-level main framework/precision selected and rows flagged
+qwen3.5,PASS,sglang,fp8,589,910,7,one model-level main framework/precision selected and rows flagged

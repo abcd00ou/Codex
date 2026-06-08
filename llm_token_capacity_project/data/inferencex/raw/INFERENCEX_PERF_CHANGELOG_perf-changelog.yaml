@@ -2450,6 +2450,15 @@
   pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1346
 
 - config-keys:
+    - dsr1-fp4-mi355x-sglang-disagg
+    - dsr1-fp4-mi355x-sglang-disagg-mtp
+  description:
+    - "Fix the eval result of dsr1 fp4 with fp8 blockwise combine"
+    - "Bump the image to May 19"
+    - "Add conc 512 new sweep point"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1566
+
+- config-keys:
     - kimik2.5-int4-h200-vllm
   description:
     - "Update vLLM image from v0.16.0 to v0.20.2"
@@ -2482,6 +2491,12 @@
   pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1375
 
 - config-keys:
+    - dsv4-fp4-gb300-dynamo-sglang
+  description:
+    - "Enable W4A4 (MXFP4) megamoe by appending w4a4 related environ flags when megamoe is enabled"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1382
+
+- config-keys:
     - dsr1-fp8-b200-sglang-mtp
   description:
     - "Update SGLang image from v0.5.9-cu130 to v0.5.11-cu130"
@@ -2492,6 +2507,14 @@
   description:
     - "Update SGLang image from v0.5.9-cu130 to v0.5.11-cu130"
   pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1322
+
+- config-keys:
+    - kimik2.5-fp4-mi355x-atom
+  description:
+    - "Bump ATOM image to rocm/atom:rocm7.2.3_ubuntu24.04_py3.12_pytorch_release_2.10.0_atom20260511"
+    - "Improves tput/GPU by up to +31% at low concurrency (tp=4, isl=1024, c=4-16)"
+    - "Ref ATOM upstream benchmark run https://github.com/ROCm/ATOM/actions/runs/25686894636"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1387
   
 
 - config-keys:
@@ -2653,6 +2676,14 @@
   description:
     - "Update SGLang image from v0.5.9-cu129-amd64 (74d old) to v0.5.12-cu130"
   pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1458
+
+- config-keys:
+    - dsv4-fp8-h200-vllm
+    - dsv4-fp8-h200-vllm-mtp
+  description:
+    - "Update vLLM image to v0.21.0 (from custom deepseekv4-cu129 / v0.20.1@sha256-pinned)"
+    - "Lower --gpu-memory-utilization from 0.95 to 0.90 in dsv4_fp8_h200.sh and dsv4_fp8_h200_mtp.sh — v0.21.0 uses more memory at load time, OOM'd on GPU 2 at 0.95"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1461
 
 - config-keys:
     - dsr1-fp8-mi325x-sglang
@@ -2871,6 +2902,14 @@
   pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1372
 
 - config-keys:
+    - dsv4-fp4-mi355x-sglang
+  description:
+    - "Bump image to rocm/sgl-dev:rocm720-mi35x-b19052c-20260518-DSv4."
+    - "Enabled Triton attention backend, FlyDSL MoE, and fused hash topk."
+    - "Concurrency sweep up to 1024."
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1355
+
+- config-keys:
     - dsr1-fp4-b200-trt
     - dsr1-fp4-b200-trt-mtp
   description:
@@ -2901,3 +2940,586 @@
   description:
     - "Add MI355X config: qwen3.5-fp4-sglang-mtp using lmsysorg/sglang-rocm:v0.5.12-rocm720-mi35x-20260517"
   pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1445
+
+- config-keys:
+    - dsr1-fp4-mi355x-sglang
+  description:
+    - "Update SGLang image to v0.5.12-rocm700-mi35x"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1431
+
+- config-keys:
+    - qwen3.5-bf16-mi355x-sglang
+    - qwen3.5-bf16-mi355x-sglang-mtp
+  description:
+    - "Update SGLang ROCm image from v0.5.10rc0-rocm720-mi35x-20260415 to v0.5.12-rocm720-mi35x-20260517"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1443
+
+- config-keys:
+    - qwen3.5-fp8-mi355x-sglang
+    - qwen3.5-fp8-mi355x-sglang-mtp
+  description:
+    - "Update SGLang ROCm image from v0.5.10rc0-rocm720-mi35x-20260414 to v0.5.12-rocm720-mi35x-20260517"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1444
+
+- config-keys:
+    - qwen3.5-fp4-mi355x-sglang
+  description:
+    - "Update SGLang ROCm image from rocm/sgl-dev:v0.5.10rc0-rocm720-mi35x-20260413 (32d old, deprecated rocm/sgl-dev repo) to lmsysorg/sglang:v0.5.12-rocm720-mi35x (clean stable tag on the active lmsysorg/sglang repo)"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1497
+
+- config-keys:
+    - glm5-fp8-mi355x-sglang
+    - glm5-fp8-mi355x-sglang-mtp
+  description:
+    - "Update SGLang ROCm image from v0.5.11/v0.5.10rc0 to v0.5.12-rocm720-mi35x-20260517"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1440
+
+- config-keys:
+    - kimik2.5-fp4-mi355x-vllm-disagg
+  description:
+    - "Add Kimi-K2.5-MXFP4 FP4 vLLM disagg PD recipe (1P2D, MoRI-EP + MoRI-IO) for MI355X on vllm/vllm-openai-rocm:nightly"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1569
+
+- config-keys:
+    - minimaxm2.5-fp8-mi355x-vllm-disagg
+  description:
+    - "Add MiniMax-M2.5 FP8 vLLM disagg PD recipe (1P2D, MoRI-EP + MoRI-IO) for MI355X on vllm/vllm-openai-rocm:nightly"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1569
+
+- config-keys:
+    - dsv4-fp4-mi355x-vllm
+  description:
+    - "Following recipe from https://github.com/vllm-project/recipes/pull/433"
+    - "Add DEP8 dp-attn=true validation probes at conc=64 for 1k1k and 8k1k"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1374
+
+- config-keys:
+    - glm5-fp8-h200-sglang
+  description:
+    - "Update SGLang image from glm5-hopper to v0.5.10.post1-cu130"
+    - "Add --enable-flashinfer-allreduce-fusion to server launch"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1033
+
+- config-keys:
+    - dsr1-fp8-mi355x-sglang-mtp
+  description:
+    - "Add MTP/EAGLE speculative-decoding sibling for dsr1-fp8-mi355x-sglang (model: deepseek-ai/DeepSeek-R1-0528) on lmsysorg/sglang:v0.5.12-rocm700-mi35x"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1521
+
+- config-keys:
+    - dsr1-fp4-mi355x-atom
+    - dsr1-fp4-mi355x-atom-mtp
+  description:
+    - "Update Atom ROCm image (off: rocm7.1.1-...-atom0.1.1-MI350x 125d / mtp: rocm7.2.0-...-atom0.1.1 83d) to rocm7.2.3_..._atom20260511"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1518
+
+- config-keys:
+    - glm5-fp8-mi325x-sglang
+    - glm5-fp8-mi325x-sglang-mtp
+  description:
+    - "Add GLM-5 FP8 SGLang ROCm recipes (off + MTP/EAGLE) for MI325X on lmsysorg/sglang:v0.5.12-rocm720-mi30x"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1485
+
+- config-keys:
+    - dsr1-fp8-mi355x-atom
+    - dsr1-fp8-mi355x-atom-mtp
+  description:
+    - "Update Atom ROCm image (off: rocm7.1.1-...-atom0.1.1-MI350x 125d / mtp: rocm7.2.1-...-atom0.1.2) to rocm7.2.3_..._atom20260511"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1519
+
+- config-keys:
+    - dsr1-fp4-mi355x-sglang-mtp
+  description:
+    - "Add MTP/EAGLE speculative-decoding sibling for dsr1-fp4-mi355x-sglang (model: amd/DeepSeek-R1-0528-MXFP4) on lmsysorg/sglang:v0.5.12-rocm700-mi35x"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1520
+
+- config-keys:
+    - dsr1-fp8-h200-sglang-mtp
+  description:
+    - "Add MTP/EAGLE speculative-decoding sibling for dsr1-fp8-h200-sglang (model: deepseek-ai/DeepSeek-R1-0528) on lmsysorg/sglang:v0.5.12-cu130 — TP=8, EP=1, search-space conc 4..64 on 1k1k + 8k1k"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1523
+
+- config-keys:
+    - dsr1-fp8-b200-sglang
+    - dsr1-fp8-b300-sglang
+    - dsr1-fp4-b200-sglang
+    - dsr1-fp4-b300-sglang
+    - dsr1-fp8-b200-sglang-mtp
+    - dsr1-fp8-b300-sglang-mtp
+  description:
+    - "Re-run DSR1 SGLang agg configs (B200/B300, FP8/FP4, no-MTP/MTP) — picks up tokenizer fix from #1381"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1502
+
+- config-keys:
+    - dsv4-fp4-gb300-dynamo-sglang
+  description:
+    - "Update SGLang container image from `lmsysorg/sglang-staging:deepseek-v4-grace-blackwell-dev` to `lmsysorg/sglang:nightly-dev-cu13-20260519-dbac4647` for all non-MTP disagg configs"
+    - "Switch moe-a2a-backend from `deepep` to `megamoe` for wideep configs"
+    - "Remove obsolete/redundant environment variables and replace deprecated ones"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1492
+
+- config-keys:
+    - dsv4-fp4-gb300-dynamo-sglang
+  description:
+    - "Update SGLang image from nightly-dev-cu13-20260518-c67b2870 to nightly-dev-cu13-20260519-dbac4647"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1492
+
+- config-keys:
+    - dsr1-fp4-b200-sglang-mtp
+  description:
+    - "Add MTP/EAGLE speculative-decoding sibling for dsr1-fp4-b200-sglang (model: nvidia/DeepSeek-R1-0528-FP4-V2) on lmsysorg/sglang:v0.5.12-cu130"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1522
+
+- config-keys:
+    - qwen3.5-fp8-mi355x-atom
+  description:
+    - "Bump ATOM image to rocm/atom:rocm7.2.3_ubuntu24.04_py3.12_pytorch_release_2.10.0_atom20260511"
+    - "TP=4 shows +3.2% to +16.3% throughput improvement across 1k1k and 8k1k workloads (concurrency 4-256)"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1411
+
+- config-keys:
+    - dsv4-fp4-gb300-dynamo-sglang
+  description:
+    - "Update SGLang image from nightly-dev-cu13-20260519-dbac4647 to nightly-dev-cu13-20260520-425dffbd for all non-MTP disagg configs"
+    - "Remove SGLANG_OPT_FP8_WO_A_GEMM=0 workaround (topk_v2 crash fixed upstream in sgl-project/sglang#25805)"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1528
+
+- config-keys:
+    - qwen3.5-fp4-b300-sglang
+    - qwen3.5-fp4-b300-sglang-mtp
+  description:
+    - "Update SGLang image from v0.5.11-cu130 (5d old) to v0.5.12-cu130"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1475
+
+- config-keys:
+    - dsv4-fp4-mi355x-vllm
+  description:
+    - "Bump vLLM ROCm image from nightly-b50646e5effd7cb5884cd96fdff4c53c18521198 to nightly-4f940896a32c9e2a0eba7f50d521bf5f6b4de458"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1546
+
+- config-keys:
+    - dsv4-fp4-mi355x-sglang
+  description:
+    - "Bump image to rocm/sgl-dev:rocm720-mi35x-8c3b5aa-20260521-DSv4"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1548
+
+- config-keys:
+    - qwen3.5-fp8-b300-sglang
+    - qwen3.5-fp8-b300-sglang-mtp
+  description:
+    - "Update SGLang image from v0.5.10.post1-cu130 / v0.5.11-cu130 (30d old) to v0.5.12-cu130"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1451
+
+- config-keys:
+    - dsv4-fp4-gb300-dynamo-sglang-mtp
+  description:
+    - "Enable W4A4 (MXFP4) megamoe by setting SGLANG_OPT_DEEPGEMM_MEGA_MOE_USE_FP4_ACTS=1 and SGLANG_OPT_DEEPGEMM_MEGA_MOE_USE_MXF4_KIND=1 in the megamoe environment blocks (not the low-latency 1p1d-tp4-tp4 or the 4p1d recipe)"
+    - "Update SGLang image from nightly-dev-cu13-20260510-2473659e to nightly-dev-20260527-14f81a67"
+    - "Switch moe-a2a-backend from deepep to megamoe and drop the deepep-config override"
+    - "Add two high concurrency configs"
+    - "Clean up obsolete environs in the 8k1k disagg recipes: drop SGLANG_OPT_USE_JIT_NORM / SGLANG_OPT_USE_JIT_INDEXER_METADATA / SGLANG_OPT_USE_TOPK_V2 (now default-on); drop the auto-set MegaMoE companions (SGLANG_OPT_USE_DEEPGEMM_MEGA_MOE, SGLANG_OPT_FIX_HASH_MEGA_MOE, SGLANG_OPT_FIX_MEGA_MOE_MEMORY, SGLANG_OPT_FIX_NEXTN_MEGA_MOE, SGLANG_DEEPEP_NUM_MAX_DISPATCH_TOKENS_PER_RANK); drop SGLANG_OPT_USE_FAST_MASK_EP which no longer exists in sglang environ.py (SGLANG_RADIX_DISABLE_REUSE is kept)"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1378
+
+- config-keys:
+    - dsr1-fp8-b200-sglang
+    - dsr1-fp8-b300-sglang
+    - dsr1-fp4-b200-sglang
+    - dsr1-fp4-b300-sglang
+    - dsr1-fp8-b200-sglang-mtp
+    - dsr1-fp8-b300-sglang-mtp
+  description:
+    - "Truncate sweep to conc=1 and conc=2 only: set conc-start=1, conc-end=2 in every search-space across all six DSR1 SGLang agg configs"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1534
+
+- config-keys:
+    - qwen3.5-fp4-mi355x-sglang-mtp
+  description:
+    - "Add --use-chat-template to run_benchmark_serving so prompts are formatted with the Qwen chat template (matching the other Qwen MTP recipes)"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1554
+
+- config-keys:
+    - glm5-fp4-gb300-dynamo-sglang
+  description:
+    - "Add GLM-5 FP4 GB300 Dynamo SGLang disaggregated multi-node coverage using lmsysorg/sglang:v0.5.11-cu130"
+    - "1k1k and 8k1k STP low-latency and max-throughput srt-slurm recipes under benchmarks/multi_node/srt-slurm-recipes/sglang/glm5/gb300-fp4/ (ported from upstream srt-slurm PR #152)"
+    - "Wire glm5/fp4 model + dynamo-sglang framework branches into runners/launch_gb300-nv.sh"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1514
+
+- config-keys:
+    - minimaxm2.5-fp8-h100-vllm
+  description:
+    - "Update minimaxm2.5-fp8-h100-vllm recipe (v0.19.1)"
+    - "Image: vllm/vllm-openai:v0.21.0 -> v0.19.1-cu130"
+    - "Replace recipe flags: drop PIECEWISE/0.90 mem util/256 max-num-seqs/no-prefix-caching/explicit max-model-len; add --enable-auto-tool-choice, --tool-call-parser minimax_m2, --reasoning-parser minimax_m2_append_think, --compilation-config mode:3+fuse_minimax_qk_norm"
+    - "Search-space: tp:8 ep:8 (TEP=8), conc-end 128 chosen at saturation per local sweep"
+    - "Local bench: TEP=8 peaks at C=128 with 26923 tot tps (+178% vs TEP=4 peak at C=32 in May 6 j11600242 sweep)"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1516
+
+- config-keys:
+    - qwen3.5-fp8-mi355x-atom-mtp
+  description:
+    - "Add --use-chat-template to run_benchmark_serving so prompts are formatted with the Qwen chat template (matching the other Qwen MTP recipes)"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1555
+
+- config-keys:
+    - minimaxm2.5-fp8-h200-vllm
+  description:
+    - "Update MiniMax-M2.5 FP8 H200 vLLM to vllm/vllm-openai:v0.20.1-ubuntu2404"
+    - "Set vLLM serving knobs in benchmarks/single_node/minimaxm2.5_fp8_h200.sh: generated benchmark max-model-len, previous eval max-model-len handling, fp8 KV cache, FlashInfer attention/autotune, Triton MoE, and MiniMax QK norm fusion"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1354
+
+- config-keys:
+    - dsv4-fp4-mi355x-sglang
+  description:
+    - "Bump image to rocm/sgl-dev:rocm720-mi35x-f96ac98-20260526-DSv4"
+    - "Add args to avoid kvcache pool full issue on high conc"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1568
+
+- config-keys:
+    - qwen3.5-fp8-h200-sglang
+    - dsr1-fp8-mi355x-sglang
+  description:
+    - "Validates measured-power aggregation pipeline (PR #1558) on both NVIDIA (H200) and AMD (MI355X) hardware — different SMI tools (nvidia-smi vs amd-smi), different CSV schemas (power.draw [W] vs socket_power), same aggregator. No config change. Entry intentionally kept past merge so run-sweep produces canonical agg JSONs with avg_power_w + joules_per_output_token on main for both vendors, seeding the dashboard's day-zero data."
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1558
+
+- config-keys:
+    - qwen3.5-fp8-mi355x-sglang-disagg
+  description:
+    - "Add Qwen3.5-397B-A17B-FP8 MI355X SGLang disaggregated prefill-decode benchmark"
+    - "Image: lmsysorg/sglang-rocm:v0.5.11-rocm700-mi35x-20260511"
+    - "1P+1D TP8/EP1 smoke sweep for 1k1k and 8k1k (conc 8-512); MoRI transfer backend"
+    - "Add models.yaml server flags and multinode launch script qwen3.5_fp8_mi355x_sglang-disagg.sh"
+    - "8k1k row uses dp-attn=false (matches 1k1k): with --enable-dp-attention + --moe-a2a-backend mori, sglang auto-promotes moe_ep_size=tp_size=8, but is_deepep_class_backend() excludes MoRI, so num_shared_slots stays at the global value (1) and the (num_experts - num_shared_slots) % moe_ep_size assertion in fused_moe_triton/layer.py fires for Qwen3.5 (512 routed + 1 shared). Track upstream sglang; flip back to dp-attn=true once MoRI is added to is_deepep_class_backend() or shared-slot accounting is reconciled."
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1570
+
+- config-keys:
+    - glm5-fp8-mi355x-sglang-disagg
+  description:
+    - "Add GLM-5-FP8 MI355X SGLang disaggregated prefill-decode benchmark"
+    - "Image: lmsysorg/sglang-rocm:v0.5.12.post1-rocm720-mi35x-20260523 (bumped from .v0.5.12-...-20260517 to unlock the PD-disagg MoRI overlay; matches chun-chang/sglang-disagg-qwen3.5)"
+    - "Adds patches/mori_conn.py overlay (bind-mounted via job.slurm) to fix sglang v0.5.12.post1 MoRI/PD startup crashes for hybrid-attention models (GLM-5 NSA, etc.): sender flatten, state_types plural fallback, consumer normalize, SWA/DSA rank/length normalize. Validated: GSM8K=0.971 strict/0.970 flexible on chun-chang. Auto-applied for v0.5.12.post1 images; opt-out via MORI_CONN_PATCH=skip."
+    - "1P+1D TP8/EP1 CI smoke sweep for 1k1k and 8k1k (conc 8-512)"
+    - "Add GLM-5-FP8 models.yaml flags, setup_deps.sh (aiter gluon + transformers glm_moe_dsa), GLM-5 env tuning in env.sh"
+    - "Add multinode launch script glm5_fp8_mi355x_sglang-disagg.sh; server.sh sources setup_deps.sh"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1572
+
+- config-keys:
+    - qwen3.5-fp4-mi355x-sglang-disagg
+  description:
+    - "Add Qwen3.5-397B-A17B-MXFP4 MI355X SGLang PD-disaggregation"
+    - "Bump image to lmsysorg/sglang-rocm:v0.5.12.post1-rocm720-mi35x-20260523, 1P1D TP8/EP1, dp-attn false, conc [8..512]"
+    - "MoRI conn.py overlay (48e459bd) via job.slurm; launcher qwen3.5_fp4_mi355x_sglang-disagg.sh"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1579
+
+- config-keys:
+    - dsv4-fp4-b300-sglang
+  description:
+    - "Update sglang image to nightly-dev-cu13-20260529-a8cfae0b"
+    - "Refactor benchmark script to dispatch by CONC instead of nested DP_ATTENTION/CONC/EP_SIZE"
+    - "Switch CONC 2048/4096/8192 from --moe-a2a-backend deepep to megamoe"
+    - "Remove env vars deleted from sglang main (SGLANG_OPT_USE_JIT_NORM, SGLANG_OPT_USE_FAST_MASK_EP, SGLANG_OPT_FIX_NEXTN_MEGA_MOE, SGLANG_OPT_FIX_HASH_MEGA_MOE)"
+    - "Remove env vars redundant with sglang defaults (SGLANG_OPT_USE_JIT_INDEXER_METADATA, SGLANG_OPT_USE_TOPK_V2, SGLANG_OPT_USE_CUSTOM_ALL_REDUCE_V2)"
+    - "Remove env vars auto-set by megamoe backend (SGLANG_OPT_USE_DEEPGEMM_MEGA_MOE, SGLANG_OPT_FIX_MEGA_MOE_MEMORY)"
+    - "Remove --deepep-config and SGLANG_DEEPEP_NUM_MAX_DISPATCH_TOKENS_PER_RANK (unused by megamoe/StandardDispatcher)"
+    - "Fix CONC=512 yaml ep from 4 to 1 (flashinfer_mxfp4 does not set ep=tp)"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1506
+  
+
+- config-keys:
+    - dsr1-fp4-mi355x-sglang-disagg-8k1k-mtp
+  description:
+    - "Bump the image to May 26"
+    - "Add conc 128/256 new sweep point"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1584
+
+- config-keys:
+    - glm5-fp8-gb300-dynamo-sglang
+  description:
+    - "Add GLM-5 FP8 GB300 Dynamo SGLang disaggregated multi-node coverage using lmsysorg/sglang:v0.5.11-cu130"
+    - "1k1k and 8k1k STP hightpt and lowlat srt-slurm recipes under benchmarks/multi_node/srt-slurm-recipes/sglang/glm5/gb300-fp8/ (resolved from upstream srt-slurm PR #160 via srtctl resolve-override)"
+    - "Wire glm5/fp8 model + dynamo-sglang framework branches into runners/launch_gb300-nv.sh with SA upstream defaults (SLURM_PARTITION=batch_1, SLURM_ACCOUNT=benchmark, SQUASH_FILE under /home/sa-shared/gharunners/squash/)"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1557
+
+- config-keys:
+    - dsv4-fp4-b200-vllm
+  description:
+    - "Update vLLM image tag to v0.22.0"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1384
+
+- config-keys:
+    - glm5-fp4-gb300-dynamo-sglang
+  description:
+    - "Update GB300 FP4 GLM-5 8k1k low-latency sweep to mirror NVIDIA/srt-slurm#175: add a 5th 1p17d topology (decode_nodes/workers=17), and lower decode max-running-requests / cuda-graph-max-bs / benchmark concurrency per-zip-index from a flat 4096/1024 to 128/64/32/16/1 (mrr & cuda-graph) and 128/64/32/16/12 (concurrency)"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1583
+
+- config-keys:
+    - glm5.1-fp4-mi355x-sglang
+  description:
+    - "Bump SGLang ROCm image from v0.5.10rc0-rocm720-mi35x-20260415 to v0.5.12.post1-rocm720-mi35x-20260529"
+    - "Picks up the fix for the GSM8K accuracy regression reported in sgl-project/sglang#25742 (v0.5.12-20260517 collapsed to ~0.32 at TP=2)"
+    - "Local eval-only runs on MI355X recover to gsm8k strict-match 0.975 at TP=2/conc=64 and 0.974 at TP=4/conc=16, well above the 0.92 upstream gate added in sgl-project/sglang#26396"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1593
+
+- config-keys:
+    - minimaxm2.5-fp8-mi325x-vllm
+  description:
+    - "Pin AITER FA attention backend in benchmarks/single_node/minimaxm2.5_fp8_mi325x.sh to recover the ~38% MI325X throughput regression introduced when vLLM PR #36702 (between v0.18.0 and v0.21.0) flipped the dense full-attention default on ROCm from ROCM_AITER_FA to ROCM_ATTN (vllm-project/vllm#43029)"
+    - "Export VLLM_ROCM_SHUFFLE_KV_CACHE_LAYOUT=1 to enable the AITER asm/hip paged-attention auto-dispatch"
+    - "Pass --attention-backend ROCM_AITER_FA to vllm serve, aligning with the merged upstream MiniMax ROCm recipe (vllm-project/recipes#481)"
+    - "Pin image vllm/vllm-openai-rocm:v0.20.2 — the version the upstream recipe explicitly validates (`min_vllm_version: 0.20.2`). v0.21.0 separately crashes during AITER MoE CUDA-graph capture on MiniMax-M2.5 (silent worker death, `Engine core initialization failed`) reproducible via the recipe's exact flags; v0.20.2 + recipe completes a 100-prompt vllm bench serve cleanly at 2030 tok/s total throughput on MI325X (TP=4)"
+    - "Add --compilation-config '{\"mode\":3,\"cudagraph_mode\":\"PIECEWISE\"}' to vllm serve, mirroring `model.base_args` from the upstream recipe. `pass_config.fuse_minimax_qk_norm` from the recipe is intentionally omitted — it triggers an upstream NameError on ROCm because vllm/compilation/passes/pass_manager.py imports MiniMaxQKNormPass under `is_cuda()` (NVIDIA-only) while using it unconditionally"
+    - "Conditionally enable VLLM_ROCM_SHUFFLE_KV_CACHE_LAYOUT=1 per (TP, EP, CONC) — on for shapes where the AITER ASM paged-attention kernel exists in the gfx942 heuristic table (TP=2 EP=1 CONC<=16, TP=8 EP=8 CONC<=64), off otherwise. Above the thresholds vllm/v1/attention/backends/rocm_aiter_fa.py routes decode through aiter pa_fwd_asm and crashes with `RuntimeError: get_heuristic_kernel: cannot get heuristic kernel!` for MiniMax-M2.5's attention shape (gqa=6 block_size=32 qTile=0); below them the ASM auto-dispatch is the perf win the recipe wants. Thresholds confirmed across 17 bench cells + 3 eval cells in PR #1594 sweep run 26692603804. Mirrors the per-shape toggle pattern in benchmarks/single_node/minimaxm2.5_fp8_mi355x.sh; can collapse to unconditional SHUFFLE=1 once AITER registers the missing kernel on gfx942"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1594
+
+- config-keys:
+    - gptoss-fp4-mi355x-vllm
+  description:
+    - "Update vLLM ROCm image from v0.21.0 to v0.22.0"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1623
+
+- config-keys:
+    - minimaxm2.5-fp8-h200-vllm
+  description:
+    - "Update vLLM image from v0.21.0 to v0.22.0"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1610
+
+- config-keys:
+    - gptoss-fp4-h200-vllm
+  description:
+    - "Update vLLM image from v0.21.0 to v0.22.0"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1606
+
+- config-keys:
+    - kimik2.5-int4-h200-vllm
+  description:
+    - "Update vLLM image from v0.21.0 to v0.22.0"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1600
+
+- config-keys:
+    - minimaxm2.5-fp8-h100-vllm
+  description:
+    - "Update vLLM image from v0.19.1-cu130 to v0.22.0"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1609
+
+- config-keys:
+    - minimaxm2.5-fp8-mi325x-vllm
+  description:
+    - "Update vLLM ROCm image from v0.20.2 to v0.22.0"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1619
+
+- config-keys:
+    - gptoss-fp4-mi325x-vllm
+  description:
+    - "Update vLLM ROCm image from v0.21.0 to v0.22.0"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1622
+
+- config-keys:
+    - minimaxm2.5-fp4-mi355x-vllm
+  description:
+    - "Update vLLM ROCm image from v0.21.0 to v0.22.0"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1620
+
+- config-keys:
+    - minimaxm2.5-fp8-mi355x-vllm
+  description:
+    - "Update vLLM ROCm image from v0.21.0 to v0.22.0"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1617
+
+- config-keys:
+    - minimaxm2.5-fp4-b200-vllm
+  description:
+    - "Update vLLM image from v0.21.0 to v0.22.0"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1611
+
+- config-keys:
+    - gptoss-fp4-b200-vllm
+  description:
+    - "Update vLLM image from v0.21.0 to v0.22.0"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1604
+
+- config-keys:
+    - kimik2.5-int4-b200-vllm
+  description:
+    - "Update vLLM image from v0.21.0 to v0.22.0"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1598
+
+- config-keys:
+    - minimaxm2.5-fp8-b200-vllm
+  description:
+    - "Update vLLM image from v0.21.0 to v0.22.0"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1607
+
+- config-keys:
+    - kimik2.5-fp4-b200-vllm
+  description:
+    - "Update vLLM image from v0.21.0 to v0.22.0"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1602
+
+- config-keys:
+    - dsv4-fp4-mi355x-vllm
+  description:
+    - "Update vLLM ROCm image from nightly-4f940896a32c9e2a0eba7f50d521bf5f6b4de458 to v0.22.0"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1624
+
+- config-keys:
+    - dsr1-fp8-mi355x-atom-mtp
+  description:
+    - "Update ATOM image to rocm/atom:rocm7.2.4_ubuntu24.04_py3.12_pytorch_release_2.10.0_atom0.1.3"
+    - "isl=1024/osl=1024: +47% to +116% improvement across conc 4-256 vs prior InferenceX numbers"
+    - "isl=8192/osl=1024: +47% to +131% improvement across conc 4-256"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1628
+
+- config-keys:
+    - kimik2.5-fp4-mi355x-vllm
+  description:
+    - "Update vLLM ROCm image from v0.21.0 to v0.22.0"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1616
+
+- config-keys:
+    - dsv4-fp4-mi355x-atom
+  description:
+    - "Add DeepSeek-V4-Pro FP4 MI355X ATOM DP-attention benchmark; image rocm/atom:rocm7.2.4_ubuntu24.04_py3.12_pytorch_release_2.10.0_atom0.1.3"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1626
+
+- config-keys:
+    - dsv4-fp4-mi355x-vllm-mtp
+  description:
+    - "Add MTP speculative-decoding sibling for dsv4-fp4-mi355x-vllm (model: deepseek-ai/DeepSeek-V4-Pro) on vllm/vllm-openai-rocm:v0.22.0, per vllm-project/vllm#43385"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1630
+
+- config-keys:
+    - dsv4-fp4-mi355x-sglang-mtp
+  description:
+    - "Add MTP/EAGLE speculative-decoding sibling for dsv4-fp4-mi355x-sglang (model: deepseek-ai/DeepSeek-V4-Pro) on v0.5.12.post1-rocm720-mi35x-20260601 (mainline ROCm nightly carrying sgl-project/sglang#26383); routes around the absent deep_gemm via SGLANG_OPT_FP8_WO_A_GEMM=0 + SGLANG_TOPK_TRANSFORM_512_TORCH=1."
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1631
+
+- config-keys:
+    - dsv4-fp4-b300-vllm
+  description:
+    - "Update DSv4 FP4 B300 vLLM image tag to v0.22.0"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1588
+
+- config-keys:
+    - dsv4-fp4-mi355x-atom-mtp
+  description:
+    - "Add DeepSeek-V4-Pro FP4 MI355X ATOM MTP3 benchmark; image rocm/atom:rocm7.2.4_ubuntu24.04_py3.12_pytorch_release_2.10.0_atom0.1.3"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1627
+
+- config-keys:
+    - dsv4-fp4-gb300-dynamo-sglang-mtp
+  description:
+    - "Update SGLang image from nightly-dev-cu13-20260509-9ee83034 to nightly-dev-20260527-14f81a67"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1637
+
+- config-keys:
+    - minimaxm2.5-fp4-gb200-dynamo-vllm
+  description:
+    - "Add MiniMax-M2.5 NVFP4 GB200 disaggregated multinode vLLM benchmarks via Dynamo"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1642
+
+- config-keys:
+    - minimaxm2.5-fp8-b200-dynamo-vllm
+  description:
+    - "Add MiniMax-M2.5 FP8 B200 disaggregated multinode vLLM benchmarks via Dynamo"
+    - "Add 1k1k/8k1k FP8 recipe set under benchmarks/multi_node/srt-slurm-recipes/vllm/minimax-m2.5-b200-fp8/"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1649
+
+- config-keys:
+    - minimaxm2.5-fp4-b200-dynamo-vllm
+  description:
+    - "Add MiniMax-M2.5 NVFP4 B200 disaggregated multinode vLLM benchmarks via Dynamo"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1643
+
+- config-keys:
+    - minimaxm2.5-fp4-b300-dynamo-vllm
+  description:
+    - "Add MiniMax-M2.5 NVFP4 B300 disaggregated multinode vLLM benchmarks via Dynamo"
+    - "Image: vllm/vllm-openai:v0.20.1"
+    - "Same 1k/1k and 8k/1k search space as gb300, plus a new tp8-1p1d at low concurrencies for both ISLs"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1652
+
+- config-keys:
+    - minimaxm2.5-fp4-gb300-dynamo-vllm
+  description:
+    - "Add MiniMax-M2.5 NVFP4 GB300 disaggregated multinode vLLM benchmarks via Dynamo"
+    - "Add 1k1k/8k1k minimax recipe set under benchmarks/multi_node/srt-slurm-recipes/vllm/minimax-m2.5/"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1641
+
+- config-keys:
+    - dsv4-fp4-b200-vllm
+  description:
+    - "Enable EPLB for DEP configs"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1655
+
+- config-keys:
+    - minimaxm2.5-fp8-gb300-dynamo-vllm
+  description:
+    - "Add MiniMax-M2.5 FP8 GB300 disaggregated multinode vLLM benchmarks via Dynamo"
+    - "Add 1k1k/8k1k FP8 recipe set under benchmarks/multi_node/srt-slurm-recipes/vllm/minimax-m2.5-fp8/"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1647
+
+- config-keys:
+    - minimaxm2.5-fp8-gb200-dynamo-vllm
+  description:
+    - "Add MiniMax-M2.5 FP8 GB200 disaggregated multinode vLLM benchmarks via Dynamo"
+    - "Add 1k1k/8k1k FP8 recipe set under benchmarks/multi_node/srt-slurm-recipes/vllm/minimax-m2.5-gb200-fp8/"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1648
+
+- config-keys:
+    - minimaxm2.5-fp8-b300-dynamo-vllm
+  description:
+    - "Add MiniMax-M2.5 FP8 B300 disaggregated multinode vLLM benchmarks via Dynamo"
+    - "Add 1k1k/8k1k FP8 recipe set under benchmarks/multi_node/srt-slurm-recipes/vllm/minimax-m2.5-b300-fp8/"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1663
+
+- config-keys:
+    - qwen3.5-fp8-h100-sglang
+  description:
+    - "Tune Qwen3.5-397B-A17B-FP8 H100 SGLang aggregate recipe for 1k/1k and 8k/1k sweeps"
+    - "Use TP8/EP1 for conc 1-8 and TP8/EP8 for conc 16-256"
+    - "Use scheduler-recv-interval values 2/60/30/1200/600/1920 for conc 1-4/8/16/32/64/128-256"
+    - "Set max-running-requests=256, chunked-prefill-size=16384, mem-fraction-static=0.8, cuda-graph-max-bs=CONC, and enable symm-mem"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1544
+
+- config-keys:
+    - qwen3.5-fp8-mi355x-sglang
+    - qwen3.5-fp8-mi355x-sglang-mtp
+  description:
+    - "Bump image to lmsysorg/sglang-rocm:v0.5.12.post1-rocm720-mi35x-20260528."
+    - "Update script for aiter attention backend from triton."
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1669
+
+- config-keys:
+    - minimaxm2.5-fp8-h200-vllm
+  description:
+    - "Switch attention backend from FLASHINFER to FLASH_ATTN for the 8k/1k cell of MiniMax-M2.5 FP8 H200 vLLM."
+    - "1k/1k cell not changed in this PR: at 1k/1k all three measured configs."
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1668
+
+- config-keys:
+    - gptoss-fp4-mi355x-vllm
+  description:
+    - "Update GPT-OSS model for MI355X vLLM from amd/gpt-oss-120b-w-mxfp4-a-fp8 to openai/gpt-oss-120b"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1670
+
+- config-keys:
+    - kimik2.5-fp4-b300-vllm
+  description:
+    - "Update vLLM image from v0.21.0 to v0.22.0"
+    - "Expand concurrency sweep for the 1k/1k and 8k/1k cells: TP4/EP1 conc 4-64 -> 1-128, TP8/EP1 conc-start 4 -> 1 (conc-end 4 unchanged)."
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1674
+
+- config-keys:
+    - kimik2.5-fp4-b200-vllm
+  description:
+    - "Expand concurrency sweep for the 1k/1k and 8k/1k cells: TP4/EP1 conc 4-64 -> 1-128, TP8/EP1 conc-start 4 -> 1 (conc-end 4 unchanged)."
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1677
+
+- config-keys:
+    - dsv4-fp4-gb300-dynamo-sglang
+  description:
+    - "Add wide-EP sweep configs (EP=12/16/24/32/40) matching srt-slurm PR#173 topology (18 nodes total)"
+    - "EP=12 15P+3D conc=12000, EP=16 14P+4D conc=8192, EP=24 12P+6D conc=3000, EP=32 10P+8D conc=2500, EP=40 8P+10D conc=2048"
+    - "Aligned decode params with Weiliang config: swa-full-tokens-ratio=0.20, max-running-requests=18432, moe-dense-tp-size=1; added prefill enable-dp-lm-head and cuda-graph-max-bs=512"
+    - "Remove 4 dominated old configs (4p-dep16-8n, 8p-dep16-12n, 10p-dep16-14n, 12p-dep12-15n) superseded by wide-EP frontier"
+  pr-link: https://github.com/SemiAnalysisAI/InferenceX/pull/1586

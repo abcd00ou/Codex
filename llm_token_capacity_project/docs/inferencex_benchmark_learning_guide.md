@@ -55,13 +55,15 @@ InferenceX는 SemiAnalysis 쪽에서 제공하는 LLM inference benchmark/dashbo
 
 | 항목 | 값 |
 |---|---|
-| Release tag | `db-dump/2026-05-11` |
-| Dump file | `inferencex-dump-2026-05-11.zip` |
-| Benchmark rows | `72,091` |
-| Metric profile groups | `298` |
-| Accuracy eval rows | `1,048` |
-| Availability rows | `5,620` |
-| Run stats rows | `4,484` |
+| Release tag | `db-dump/2026-06-08` |
+| Dump file | `inferencex-dump-2026-06-08.tar.xz.part00` |
+| Benchmark rows | `76,406` |
+| Metric profile groups | `338` |
+| GPU-comparable metric groups | `128` |
+| Main config validation rows | `9 PASS` |
+| Accuracy eval rows | `1,613` |
+| Availability rows | `6,055` |
+| Run stats rows | `6,221` |
 | Evidence class | `Proxy/Benchmark` |
 
 InferenceX가 유용한 이유는 benchmark row가 매우 세밀하기 때문입니다. 단순히 "B200이 빠르다"가 아니라, 아래 조합별로 볼 수 있습니다.
@@ -91,11 +93,14 @@ accuracy
 
 | 파일 | row 수 | 용도 |
 |---|---:|---|
-| `inferencex_benchmark_results.csv` | 72,091 | 원천 benchmark row. 속도, 지연시간, 전력, 비용 지표가 가장 자세히 들어 있음 |
-| `inferencex_metric_profile.csv` | 298 | 모델/GPU/framework/precision/ISL/OSL별 p10/p50/p90 요약 |
-| `inferencex_accuracy_evals.csv` | 1,048 | 정확도 eval. 현재 로컬 dump에서는 `gsm8k` 중심 |
-| `inferencex_availability.csv` | 5,620 | 어떤 모델/precision/sequence/framework가 어떤 hardware에서 지원되는지 |
-| `inferencex_run_stats.csv` | 4,484 | hardware별 benchmark run 성공/실패 통계 |
+| `inferencex_benchmark_results.csv` | 76,406 | 원천 benchmark row. 속도, 지연시간, 전력, 비용 지표가 가장 자세히 들어 있음 |
+| `inferencex_metric_profile.csv` | 338 | 모델/GPU/framework/precision/ISL/OSL별 p10/p50/p90 요약 |
+| `inferencex_gpu_comparable_metric_profile.csv` | 128 | 모델별 `main_framework`/`main_precision`이 고정된 GPU 비교용 요약 |
+| `inferencex_main_config_by_model.csv` | 9 | 모델별 canonical framework/precision 선택 결과 |
+| `inferencex_main_config_validation.csv` | 9 | 모델별 main config 검증 결과. GPU 비교 전 PASS 확인용 |
+| `inferencex_accuracy_evals.csv` | 1,613 | 정확도 eval. precision/framework 변경 시 quality guardrail |
+| `inferencex_availability.csv` | 6,055 | 어떤 모델/precision/sequence/framework가 어떤 hardware에서 지원되는지 |
+| `inferencex_run_stats.csv` | 6,221 | hardware별 benchmark run 성공/실패 통계 |
 | `inferencex_normalized_schema.csv` | schema | normalized benchmark column 정의 |
 
 ### Raw 참고 문서

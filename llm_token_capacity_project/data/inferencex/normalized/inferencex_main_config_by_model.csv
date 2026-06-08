@@ -1,0 +1,10 @@
+model,main_framework,main_precision,distinct_gpu_count,row_count,date_min,date_max,selection_rule
+dsr1,sglang,fp8,6,5860,2025-09-29,2026-05-27,"max distinct GPUs, then max row count, then latest benchmark date"
+dsv4,dynamo-vllm,fp4,4,123,2026-04-25,2026-05-19,"max distinct GPUs, then max row count, then latest benchmark date"
+glm5,sglang,fp8,5,341,2026-03-07,2026-05-20,"max distinct GPUs, then max row count, then latest benchmark date"
+glm5.1,sglang,fp4,1,40,2026-04-21,2026-05-30,"max distinct GPUs, then max row count, then latest benchmark date"
+gptoss120b,vllm,fp4,6,21691,2025-09-29,2026-06-05,"max distinct GPUs, then max row count, then latest benchmark date"
+kimik2.5,vllm,int4,6,579,2026-02-18,2026-05-31,"max distinct GPUs, then max row count, then latest benchmark date"
+llama70b,vllm,fp8,6,9209,2025-09-29,2025-10-29,"max distinct GPUs, then max row count, then latest benchmark date"
+minimaxm2.5,vllm,fp8,7,1453,2026-02-19,2026-06-05,"max distinct GPUs, then max row count, then latest benchmark date"
+qwen3.5,sglang,fp8,7,589,2026-02-20,2026-06-05,"max distinct GPUs, then max row count, then latest benchmark date"

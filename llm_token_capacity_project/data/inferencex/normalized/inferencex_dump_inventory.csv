@@ -1,10 +1,10 @@
 source_file,file_size_bytes,compressed_size_bytes,record_count,parse_status,notes
-inferencex-dump-2026-05-11/eval_results.json,387527,31442,1048,parsed,
-inferencex-dump-2026-05-11/eval_samples.json,7608083693,1707677669,,indexed,Large table kept in raw zip; parse only with dedicated streaming job.
-inferencex-dump-2026-05-11/server_logs.json,5971326201,344832760,,indexed,Large table kept in raw zip; parse only with dedicated streaming job.
-inferencex-dump-2026-05-11/availability.json,951790,23863,5620,parsed,
-inferencex-dump-2026-05-11/workflow_runs.json,345661,54254,570,parsed,
-inferencex-dump-2026-05-11/changelog_entries.json,192489,36401,340,parsed,
-inferencex-dump-2026-05-11/benchmark_results.json,69569312,19633636,72091,parsed,
-inferencex-dump-2026-05-11/run_stats.json,523011,37345,4484,parsed,
-inferencex-dump-2026-05-11/configs.json,325424,11130,943,parsed,
+inferencex-dump-2026-06-08/eval_results.json,571118,,1613,parsed,
+inferencex-dump-2026-06-08/configs.json,428068,,1238,parsed,
+inferencex-dump-2026-06-08/benchmark_results.json,76331250,,76406,parsed,
+inferencex-dump-2026-06-08/changelog_entries.json,284916,,533,parsed,
+inferencex-dump-2026-06-08/run_stats.json,728171,,6221,parsed,
+inferencex-dump-2026-06-08/workflow_runs.json,452272,,763,parsed,
+inferencex-dump-2026-06-08/eval_samples.json,13186784200,,,indexed,Large table kept in raw archive; parse only with dedicated streaming job.
+inferencex-dump-2026-06-08/server_logs.json,9744565843,,,indexed,Large table kept in raw archive; parse only with dedicated streaming job.
+inferencex-dump-2026-06-08/availability.json,1025648,,6055,parsed,

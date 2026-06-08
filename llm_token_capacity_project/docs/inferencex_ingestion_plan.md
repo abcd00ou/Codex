@@ -1,20 +1,19 @@
 # InferenceX 데이터 수집 및 정규화 계획
 
-- 기준일: 2026-05-19
-- 목적: InferenceX의 공개 benchmark/app/dump 자료를 A08 tokens/sec/MW, A09 utilization, A11 gpu_asic_mix의 성능 bridge, GPU spec, TCO sanity layer로 반복 수집합니다.
+- 기준일: 2026-06-08
+- 목적: InferenceX의 공개 benchmark/app/dump 자료를 A08 tokens/sec/MW, A09 utilization, GPU spec, TCO sanity layer로 반복 수집합니다.
 - 핵심 원칙: dashboard DOM 크롤링보다 GitHub repo, API route, weekly DB dump release, raw CSV/export를 우선합니다.
-- 초보자용 benchmark 해설과 실제 row 해석 방법은 `docs/inferencex_benchmark_learning_guide.md`를 참고합니다.
 
 ## 확인된 공개 소스
 
 - Benchmark repo: https://github.com/SemiAnalysisAI/InferenceX
 - Dashboard app repo: https://github.com/SemiAnalysisAI/InferenceX-app
 - Dashboard: https://inferencex.semianalysis.com/
-- 최신 확인 DB dump: `db-dump/2026-05-11` / `inferencex-dump-2026-05-11.zip` / 2072340792 bytes
+- 최신 확인 DB dump: `db-dump/2026-06-08` / `inferencex-dump-2026-06-08.tar.xz.part00` / 630680472 bytes
 - App README 기준: dashboard는 Neon PostgreSQL 또는 static JSON dump를 데이터 소스로 사용합니다.
 - Full dump parse status: `parsed`
-- Full dump benchmark rows: `72091` / total records `72091`
-- Full dump SHA-256: `3f59aa2b4db7a0449a7bb030d70cdc3780fc59cafddf6ff071beb36365b44e2d`
+- Full dump benchmark rows: `76406` / total records `76406`
+- Full dump SHA-256: `3e4fd9329143c531728f68c6e7469813a79bc5f212f483f26e4f51f0b2057e49`
 
 ## Source 우선순위
 
@@ -40,17 +39,16 @@
 정규화 파일은 `data/inferencex/normalized/inferencex_normalized_schema.csv`를 기준으로 합니다.
 
 ```text
-source_file, source_kind, benchmark_id, dashboard_tab, model, model_family, gpu, gpu_vendor, gpu_count, framework, runtime, precision, isl, osl, concurrency, batch_size, metric_name, metric_value, metric_unit, tok_s_user, tok_s_gpu, tok_s_mw, input_tok_s_gpu, output_tok_s_gpu, joules_token, p99_ttft_ms, p99_tpot_ms, cost_per_million_tokens_usd, power_w, benchmark_date, github_run_url, source_url, evidence_class, caveat
+source_file, source_kind, benchmark_id, dashboard_tab, model, model_family, gpu, gpu_vendor, gpu_count, framework, runtime, precision, main_framework, main_precision, is_main_model_config, main_config_reason, isl, osl, concurrency, batch_size, metric_name, metric_value, metric_unit, tok_s_user, tok_s_gpu, tok_s_mw, input_tok_s_gpu, output_tok_s_gpu, joules_token, p99_ttft_ms, p99_tpot_ms, cost_per_million_tokens_usd, power_w, benchmark_date, github_run_url, source_url, evidence_class, caveat
 ```
 
 ## 사용 규칙
 
 - InferenceX 수치는 `Proxy/Benchmark`입니다. 특정 회사의 production token telemetry로 쓰지 않습니다.
-- 본 보고서의 headline `inference_tokens_per_day`는 generated output token equivalent입니다. InferenceX total `tok_s_mw`는 processed token proxy일 수 있으므로 headline 검증에는 `output_tok_s_mw`와 `j_output_token`을 우선 사용합니다.
-- `tok_s_mw`, `input_tok_s_mw`, `output_tok_s_mw`는 서로 다른 단위/의미로 취급합니다. input+output processed throughput을 generated output capacity로 직접 치환하지 않습니다.
 - ISL/OSL, precision, framework, GPU, concurrency가 다른 값을 한 숫자로 평균 내지 않습니다.
+- GPU별 비교는 반드시 모델별 `main_framework`와 `main_precision`이 같은 행만 사용합니다.
+- `inferencex_gpu_comparable_metric_profile.csv`는 `is_main_model_config=yes` 행만 모은 GPU 비교용 summary입니다.
 - tokens/sec/MW는 A08 sensitivity 또는 benchmark sanity layer에만 먼저 반영합니다.
-- InferenceX가 보여주는 GPU별 output efficiency는 A11의 `purpose_built_accelerator_share`를 입증하지 않습니다. A11 mix는 업체의 operated serving allocation 공시가 나올 때까지 scenario이며, InferenceX는 동일 workload에서의 효율 calibration에만 사용합니다.
 - latency/SLO, concurrency, P/D disaggregation 정보는 A09 utilization sensitivity로 분리합니다.
 - TCO calculator 값은 memory marketing 및 cost/token narrative용이며 company capacity forecast를 직접 바꾸지 않습니다.
 
@@ -70,5 +68,5 @@ source_file, source_kind, benchmark_id, dashboard_tab, model, model_family, gpu,
 - `data/inferencex/normalized/inferencex_source_index.csv`
 - `data/inferencex/normalized/inferencex_normalized_schema.csv`
 - main simulation workbook의 `12_inferencex_source_index`, `12a_inferencex_schema`, `12b_inferencex_tab_rules`
-- main simulation workbook의 `02b_number_trace`, `04_gpu_asic_mix`, `05_inference_efficiency`에서는 benchmark가 fleet share fact가 아니라 efficiency calibration 또는 replacement path인지 명시
 - full dump 처리 시 `inferencex_benchmark_results.csv`, `inferencex_metric_profile.csv`, `inferencex_accuracy_evals.csv`, `inferencex_dump_inventory.csv`
+- GPU 비교 전용: `inferencex_main_config_by_model.csv`, `inferencex_main_config_validation.csv`, `inferencex_gpu_comparable_metric_profile.csv`
