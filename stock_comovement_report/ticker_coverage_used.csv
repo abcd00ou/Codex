@@ -1,0 +1,137 @@
+group_3,display_name,ticker_x,db_ticker,price_rows,start,end,has_price_data
+AI Chip,AMD,AMD,AMD,1620.0,2020-01-02,2026-06-12,True
+AI Chip,Alchip Technologies,3661.TW,3661.TW,1563.0,2020-01-02,2026-06-15,True
+AI Chip,Marvell Technology,MRVL,MRVL,1620.0,2020-01-02,2026-06-12,True
+AI Chip,NVIDIA,NVDA,NVDA,1620.0,2020-01-02,2026-06-12,True
+AI Chip,Qualcomm,QCOM,QCOM,1620.0,2020-01-02,2026-06-12,True
+AI Platforms,Adobe,ADBE,ADBE,1620.0,2020-01-02,2026-06-12,True
+AI Platforms,Cloudflare,NET,NET,1620.0,2020-01-02,2026-06-12,True
+AI Platforms,Datadog,DDOG,DDOG,1620.0,2020-01-02,2026-06-12,True
+AI Platforms,IBM,IBM,IBM,1620.0,2020-01-02,2026-06-12,True
+AI Platforms,MongoDB,MDB,MDB,1620.0,2020-01-02,2026-06-12,True
+AI Platforms,Palantir,PLTR,PLTR,1432.0,2020-09-30,2026-06-12,True
+AI Platforms,Salesforce,CRM,CRM,1620.0,2020-01-02,2026-06-12,True
+AI Platforms,ServiceNow,NOW,NOW,1620.0,2020-01-02,2026-06-12,True
+AI Platforms,Snowflake,SNOW,SNOW,1442.0,2020-09-16,2026-06-12,True
+AI Software,Baidu,BIDU,BIDU,1620.0,2020-01-02,2026-06-12,True
+AI Software,Meta Platforms,META,META,1620.0,2020-01-02,2026-06-12,True
+CPU,ARM Holdings,ARM,ARM,689.0,2023-09-14,2026-06-12,True
+CPU,Intel,INTC,INTC,1620.0,2020-01-02,2026-06-12,True
+Cooling,Alfa Laval,ALFA.ST,ALFA.ST,1621.0,2020-01-02,2026-06-15,True
+Cooling,Carrier Global,CARR,CARR,1567.0,2020-03-19,2026-06-12,True
+Cooling,Modine Manufacturing,MOD,MOD,1620.0,2020-01-02,2026-06-12,True
+Cooling,Trane Technologies,TT,TT,1620.0,2020-01-02,2026-06-12,True
+DRAM,Micron Technology,MU,MU,1620.0,2020-01-02,2026-06-12,True
+DRAM,SK hynix,000660.KS,000660.KS,1579.0,2020-01-02,2026-06-15,True
+DRAM,Samsung Electronics,005930.KS,005930.KS,1579.0,2020-01-02,2026-06-15,True
+Energy,ABB,ABBN.SW,ABBN.SW,1621.0,2020-01-03,2026-06-15,True
+Energy,Bloom Energy,BE,BE,1620.0,2020-01-02,2026-06-12,True
+Energy,Brookfield Renewable,BEPC,BEPC,1479.0,2020-07-24,2026-06-12,True
+Energy,Constellation Energy,CEG,CEG,1104.0,2022-01-19,2026-06-12,True
+Energy,Delta Electronics,2308.TW,2308.TW,1563.0,2020-01-02,2026-06-15,True
+Energy,Dominion Energy,D,D,1620.0,2020-01-02,2026-06-12,True
+Energy,Eaton,ETN,ETN,1620.0,2020-01-02,2026-06-12,True
+Energy,Equinix,EQIX,EQIX,1620.0,2020-01-02,2026-06-12,True
+Energy,GE Vernova,GEV,GEV,555.0,2024-03-27,2026-06-12,True
+Energy,Hitachi,6501.T,6501.T,1573.0,2020-01-06,2026-06-15,True
+Energy,Iberdrola,IBE.MC,IBE.MC,1650.0,2020-01-02,2026-06-15,True
+Energy,NextEra Energy,NEE,NEE,1620.0,2020-01-02,2026-06-12,True
+Energy,RWE,RWE.DE,RWE.DE,1642.0,2020-01-02,2026-06-15,True
+Energy,Schneider Electric,SU.PA,SU.PA,1652.0,2020-01-02,2026-06-15,True
+Energy,Siemens Energy,ENR.DE,ENR.DE,1453.0,2020-09-29,2026-06-15,True
+Energy,Southern Company,SO,SO,1620.0,2020-01-02,2026-06-12,True
+Energy,Vertiv,VRT,VRT,1620.0,2020-01-02,2026-06-12,True
+Energy,Vistra,VST,VST,1620.0,2020-01-02,2026-06-12,True
+HW equipment,ASM International,ASM.AS,ASM.AS,1652.0,2020-01-02,2026-06-15,True
+HW equipment,ASML,ASML,ASML,1620.0,2020-01-02,2026-06-12,True
+HW equipment,Advantest,6857.T,6857.T,1573.0,2020-01-06,2026-06-15,True
+HW equipment,Applied Materials,AMAT,AMAT,1620.0,2020-01-02,2026-06-12,True
+HW equipment,BE Semiconductor Industries,BESI.AS,BESI.AS,1652.0,2020-01-02,2026-06-15,True
+HW equipment,Disco,6146.T,6146.T,1573.0,2020-01-06,2026-06-15,True
+HW equipment,FormFactor,FORM,FORM,1620.0,2020-01-02,2026-06-12,True
+HW equipment,KLA,KLAC,KLAC,1620.0,2020-01-02,2026-06-12,True
+HW equipment,Lam Research,LRCX,LRCX,1620.0,2020-01-02,2026-06-12,True
+HW equipment,Lasertec,6920.T,6920.T,1573.0,2020-01-06,2026-06-15,True
+HW equipment,MKS Instruments,MKSI,MKSI,1620.0,2020-01-02,2026-06-12,True
+HW equipment,Onto Innovation,ONTO,ONTO,1620.0,2020-01-02,2026-06-12,True
+HW equipment,Screen Holdings,7735.T,7735.T,1573.0,2020-01-06,2026-06-15,True
+HW equipment,Tokyo Electron,8035.T,8035.T,1573.0,2020-01-06,2026-06-15,True
+Hyperscalers,Alibaba Group,BABA,BABA,1620.0,2020-01-02,2026-06-12,True
+Hyperscalers,Amazon,AMZN,AMZN,1620.0,2020-01-02,2026-06-12,True
+Hyperscalers,Google,GOOGL,GOOGL,1620.0,2020-01-02,2026-06-12,True
+Hyperscalers,Microsoft,MSFT,MSFT,1620.0,2020-01-02,2026-06-12,True
+Hyperscalers,Oracle,ORCL,ORCL,1620.0,2020-01-02,2026-06-12,True
+Hyperscalers,TCEHY,TCEHY,TCEHY,1620.0,2020-01-02,2026-06-12,True
+NAND,Kioxia Holdings,285A.T,285A.T,360.0,2024-12-18,2026-06-15,True
+NAND,Seagate Technology,STX,STX,1620.0,2020-01-02,2026-06-12,True
+NAND,Western Digital,WDC,WDC,1620.0,2020-01-02,2026-06-12,True
+Neocloud,CRWV,CRWV,CRWV,304.0,2025-03-28,2026-06-12,True
+Neocloud,IREN,IREN,IREN,1146.0,2021-11-17,2026-06-12,True
+Neocloud,Nebius Group,NBIS,NBIS,412.0,2024-10-21,2026-06-12,True
+OSAT / packiging,ASX,ASX,ASX,1620.0,2020-01-02,2026-06-12,True
+OSAT / packiging,Amkor Technology,AMKR,AMKR,1620.0,2020-01-02,2026-06-12,True
+OSAT / packiging,Hana Micron,067310.KQ,067310.KQ,1579.0,2020-01-02,2026-06-15,True
+OSAT / packiging,JCET Group,600584.SS,600584.SS,1561.0,2020-01-02,2026-06-15,True
+OSAT / packiging,King Yuan Electronics,2449.TW,2449.TW,1563.0,2020-01-02,2026-06-15,True
+OSAT / packiging,Tongfu Microelectronics,002156.SZ,002156.SZ,1561.0,2020-01-02,2026-06-15,True
+SW equipment,Synopsys,SNPS,SNPS,1620.0,2020-01-02,2026-06-12,True
+Server Networking,Accton Technology,2345.TW,2345.TW,1563.0,2020-01-02,2026-06-15,True
+Server Networking,Applied Optoelectronics,AAOI,AAOI,1620.0,2020-01-02,2026-06-12,True
+Server Networking,Arista Networks,ANET,ANET,1620.0,2020-01-02,2026-06-12,True
+Server Networking,Astera Labs,ALAB,ALAB,560.0,2024-03-20,2026-06-12,True
+Server Networking,Broadcom,AVGO,AVGO,1620.0,2020-01-02,2026-06-12,True
+Server Networking,Cisco,CSCO,CSCO,1620.0,2020-01-02,2026-06-12,True
+Server Networking,Coherent Corp,COHR,COHR,1620.0,2020-01-02,2026-06-12,True
+Server Networking,Credo Technology,CRDO,CRDO,1098.0,2022-01-27,2026-06-12,True
+Server Networking,Fabrinet,FN,FN,1620.0,2020-01-02,2026-06-12,True
+Server Networking,Juniper Networks,JNPR,JNPR,,,,False
+Server Networking,Lumentum,LITE,LITE,1620.0,2020-01-02,2026-06-12,True
+Server Networking,MACOM Technology,MTSI,MTSI,1620.0,2020-01-02,2026-06-12,True
+Server Networking,Nokia,NOK,NOK,1620.0,2020-01-02,2026-06-12,True
+Server Networking,Semtech,SMTC,SMTC,1620.0,2020-01-02,2026-06-12,True
+Server Networking,Zhongji Innolight,300308.SZ,300308.SZ,1561.0,2020-01-02,2026-06-15,True
+Server OEM/EMS/ODM,ASUSTeK Computer,2357.TW,2357.TW,1563.0,2020-01-02,2026-06-15,True
+Server OEM/EMS/ODM,Celestica,CLS,CLS,1620.0,2020-01-02,2026-06-12,True
+Server OEM/EMS/ODM,Compal Electronics,2324.TW,2324.TW,1563.0,2020-01-02,2026-06-15,True
+Server OEM/EMS/ODM,Dell Technologies,DELL,DELL,1620.0,2020-01-02,2026-06-12,True
+Server OEM/EMS/ODM,Flex Ltd,FLEX,FLEX,1620.0,2020-01-02,2026-06-12,True
+Server OEM/EMS/ODM,GIGABYTE,2376.TW,2376.TW,1563.0,2020-01-02,2026-06-15,True
+Server OEM/EMS/ODM,Hewlett Packard Enterprise,HPE,HPE,1620.0,2020-01-02,2026-06-12,True
+Server OEM/EMS/ODM,Hon Hai Precision Industry (Foxconn),2317.TW,2317.TW,1563.0,2020-01-02,2026-06-15,True
+Server OEM/EMS/ODM,Inspur Electronic Information,000977.SZ,000977.SZ,1561.0,2020-01-02,2026-06-15,True
+Server OEM/EMS/ODM,Inventec,2356.TW,2356.TW,1563.0,2020-01-02,2026-06-15,True
+Server OEM/EMS/ODM,Lenovo,0992.HK,0992.HK,1585.0,2020-01-02,2026-06-15,True
+Server OEM/EMS/ODM,Luxshare Precision,002475.SZ,002475.SZ,1561.0,2020-01-02,2026-06-15,True
+Server OEM/EMS/ODM,MiTAC Holdings,3706.TW,3706.TW,1563.0,2020-01-02,2026-06-15,True
+Server OEM/EMS/ODM,NEC,6701.T,6701.T,1573.0,2020-01-06,2026-06-15,True
+Server OEM/EMS/ODM,Pure Storage,PSTG,PSTG,1620.0,2020-01-02,2026-06-12,True
+Server OEM/EMS/ODM,Quanta Computer,2382.TW,2382.TW,1563.0,2020-01-02,2026-06-15,True
+Server OEM/EMS/ODM,Sanmina,SANM,SANM,1620.0,2020-01-02,2026-06-12,True
+Server OEM/EMS/ODM,Super Micro Computer,SMCI,SMCI,1620.0,2020-01-02,2026-06-12,True
+Server OEM/EMS/ODM,Unisplendour,000938.SZ,000938.SZ,1561.0,2020-01-02,2026-06-15,True
+Server OEM/EMS/ODM,Wistron,3231.TW,3231.TW,1563.0,2020-01-02,2026-06-15,True
+Server OEM/EMS/ODM,Wiwynn,6669.TW,6669.TW,1563.0,2020-01-02,2026-06-15,True
+components,AT&S,ATS.VI,ATS.VI,1637.0,2020-01-02,2026-06-15,True
+components,Amphenol,APH,APH,1620.0,2020-01-02,2026-06-12,True
+components,Analog Devices,ADI,ADI,1620.0,2020-01-02,2026-06-12,True
+components,Ibiden,4062.T,4062.T,1573.0,2020-01-06,2026-06-15,True
+components,LG Innotek,011070.KS,011070.KS,1579.0,2020-01-02,2026-06-15,True
+components,Monolithic Power Systems,MPWR,MPWR,1620.0,2020-01-02,2026-06-12,True
+components,Murata Manufacturing,6981.T,6981.T,1573.0,2020-01-06,2026-06-15,True
+components,Nan Ya PCB,8046.TW,8046.TW,1563.0,2020-01-02,2026-06-15,True
+components,Rambus,RMBS,RMBS,1620.0,2020-01-02,2026-06-12,True
+components,Samsung Electro-Mechanics,009150.KS,009150.KS,1579.0,2020-01-02,2026-06-15,True
+components,Silicon Motion,SIMO,SIMO,1620.0,2020-01-02,2026-06-12,True
+components,TE Connectivity,TEL,TEL,1620.0,2020-01-02,2026-06-12,True
+components,Unimicron,3037.TW,3037.TW,1563.0,2020-01-02,2026-06-15,True
+components,Yageo,2327.TW,2327.TW,1563.0,2020-01-02,2026-06-15,True
+foundry,SMIC,0981.HK,0981.HK,1585.0,2020-01-02,2026-06-15,True
+foundry,TSMC,TSM,TSM,1620.0,2020-01-02,2026-06-12,True
+meterier,Air Liquide,AI.PA,AI.PA,1652.0,2020-01-02,2026-06-15,True
+meterier,Corning,GLW,GLW,1620.0,2020-01-02,2026-06-12,True
+meterier,Entegris,ENTG,ENTG,1620.0,2020-01-02,2026-06-12,True
+meterier,Linde,LIN,LIN,1620.0,2020-01-02,2026-06-12,True
+meterier,Merck KGaA,MRK.DE,MRK.DE,1642.0,2020-01-02,2026-06-15,True
+meterier,Shin-Etsu Chemical,4063.T,4063.T,1573.0,2020-01-06,2026-06-15,True
+meterier,Stella Chemifa,4109.T,4109.T,1573.0,2020-01-06,2026-06-15,True
+meterier,Tokyo Ohka Kogyo,4186.T,4186.T,1573.0,2020-01-06,2026-06-15,True
