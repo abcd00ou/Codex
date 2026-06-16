@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import html
+import json
 import math
 import sqlite3
 from dataclasses import dataclass
@@ -23,6 +24,7 @@ OUT_BOTTLENECK_CSV = ROOT / "bottleneck_interpretation_summary.csv"
 OUT_COVERAGE_CSV = ROOT / "ticker_coverage_used.csv"
 OUT_REFERENCES_MD = ROOT / "comovement_methodology_references.md"
 
+ANALYSIS_START_DATE = "2016-01-01"
 BASE_FREQUENCY = "monthly"
 MIN_OBS = 18
 YEARLY_MIN_OBS = 4
@@ -32,6 +34,14 @@ COUPLING_CORR = 0.50
 CORE_MEAN_CORR = 0.50
 PARTIAL_MEAN_CORR = 0.35
 STRONG_LINK_CORR = 0.65
+
+EXTERNAL_COLUMN_ALIASES = {
+    "date": ["date", "price_date", "날짜"],
+    "section": ["section", "group", "group_3", "섹션"],
+    "company_name": ["companyname", "company_name", "company", "name", "회사명"],
+    "ticker": ["ticker", "symbol", "티커"],
+    "adjusted_close": ["adjusted close", "adjusted_close", "adj_close", "adj_close_usd", "close", "수정종가"],
+}
 
 
 @dataclass(frozen=True)
@@ -112,6 +122,7 @@ def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         )
     prices["price_date"] = pd.to_datetime(prices["price_date"])
     prices["adj_close_usd"] = pd.to_numeric(prices["adj_close_usd"], errors="coerce")
+    prices = prices[prices["price_date"] >= pd.Timestamp(ANALYSIS_START_DATE)]
 
     db_tickers = set(companies["ticker"])
     suffix_lookup = {}
@@ -130,6 +141,65 @@ def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     master["db_ticker"] = master.apply(match_db_ticker, axis=1)
     matched = master.dropna(subset=["db_ticker"]).merge(companies, left_on="db_ticker", right_on="ticker", how="left")
     return matched, companies, prices
+
+
+def _normalized_column_lookup(df: pd.DataFrame) -> dict[str, str]:
+    return {str(col).strip().lower().replace("_", " "): col for col in df.columns}
+
+
+def _resolve_external_column(df: pd.DataFrame, field: str) -> str:
+    lookup = _normalized_column_lookup(df)
+    for alias in EXTERNAL_COLUMN_ALIASES[field]:
+        key = alias.strip().lower().replace("_", " ")
+        if key in lookup:
+            return lookup[key]
+    expected = ", ".join(EXTERNAL_COLUMN_ALIASES[field])
+    raise ValueError(f"Missing required dataframe column for {field}. Expected one of: {expected}")
+
+
+def normalize_price_dataframe(raw: pd.DataFrame, analysis_start_date: str | None = "2012-01-01") -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Convert a generic price DataFrame into the internal matched/prices schema.
+
+    Required logical columns are date, section, companyname, ticker, and adjusted close.
+    Column names are matched case-insensitively and may use spaces or underscores.
+    """
+    if raw.empty:
+        raise ValueError("Input dataframe is empty.")
+
+    date_col = _resolve_external_column(raw, "date")
+    section_col = _resolve_external_column(raw, "section")
+    company_col = _resolve_external_column(raw, "company_name")
+    ticker_col = _resolve_external_column(raw, "ticker")
+    price_col = _resolve_external_column(raw, "adjusted_close")
+
+    data = raw[[date_col, section_col, company_col, ticker_col, price_col]].copy()
+    data.columns = ["price_date", "group_3", "company_name", "ticker", "adj_close_usd"]
+    data["price_date"] = pd.to_datetime(data["price_date"], errors="coerce")
+    data["group_3"] = data["group_3"].astype(str).str.strip()
+    data["company_name"] = data["company_name"].astype(str).str.strip()
+    data["ticker"] = data["ticker"].astype(str).str.strip().str.upper()
+    data["adj_close_usd"] = pd.to_numeric(data["adj_close_usd"], errors="coerce")
+    data = data.dropna(subset=["price_date", "group_3", "company_name", "ticker", "adj_close_usd"])
+    if analysis_start_date:
+        data = data[data["price_date"] >= pd.Timestamp(analysis_start_date)]
+    if data.empty:
+        raise ValueError("No valid price rows remain after cleaning and date filtering.")
+
+    matched = (
+        data[["group_3", "company_name", "ticker"]]
+        .drop_duplicates()
+        .rename(columns={"ticker": "ticker_x"})
+        .sort_values(["group_3", "company_name", "ticker_x"])
+    )
+    matched["db_ticker"] = matched["ticker_x"]
+    matched["display_name"] = matched["company_name"]
+
+    prices = (
+        data.rename(columns={"ticker": "db_ticker"})[["db_ticker", "price_date", "adj_close_usd"]]
+        .rename(columns={"db_ticker": "ticker"})
+        .sort_values(["ticker", "price_date"])
+    )
+    return matched, prices
 
 
 def price_matrix(prices: pd.DataFrame, tickers: list[str], frequency: str = "daily") -> pd.DataFrame:
@@ -292,6 +362,32 @@ def yearly_group_rows(group: str, returns: pd.DataFrame) -> list[dict[str, objec
     return rows
 
 
+def yearly_scatter_rows(group: str, returns: pd.DataFrame, names: dict[str, str]) -> list[dict[str, object]]:
+    rows = []
+    for year, sub in returns.groupby(returns.index.year):
+        sub = sub.dropna(axis=1, thresh=YEARLY_MIN_OBS)
+        if sub.shape[1] < 2 or len(sub) < YEARLY_MIN_OBS:
+            continue
+        group_avg = sub.mean(axis=1, skipna=True)
+        for date, values in sub.iterrows():
+            avg = group_avg.loc[date]
+            if pd.isna(avg):
+                continue
+            for ticker, value in values.dropna().items():
+                rows.append(
+                    {
+                        "group": group,
+                        "year": int(year),
+                        "date": date.date().isoformat(),
+                        "ticker": ticker,
+                        "company": names.get(ticker, ticker),
+                        "group_return_pct": float(avg * 100),
+                        "company_return_pct": float(value * 100),
+                    }
+                )
+    return rows
+
+
 def summarize_group_frequency(group: str, returns: pd.DataFrame, min_obs: int) -> dict[str, object] | None:
     returns = returns.dropna(axis=1, thresh=min_obs)
     if returns.shape[1] < 2:
@@ -356,12 +452,21 @@ def interpretation(group: str, result: GroupResult) -> str:
     return f"{group}는 동조화가 약하거나 내부 하위 테마가 갈린다. 같은 그룹이어도 국가, 상장시장, business mix, 데이터 기간 차이가 수익률 상관을 낮춘다."
 
 
-def analyze() -> tuple[list[GroupResult], pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    matched, companies, prices = load_data()
-    matched["display_name"] = matched.apply(
-        lambda row: row["name"] if str(row["company_name"]).strip().upper() == str(row["ticker_x"]).strip().upper() else row["company_name"],
-        axis=1,
-    )
+def analyze_dataset(matched: pd.DataFrame, prices: pd.DataFrame) -> tuple[list[GroupResult], pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    matched = matched.copy()
+    prices = prices.copy()
+    prices["price_date"] = pd.to_datetime(prices["price_date"])
+    prices["adj_close_usd"] = pd.to_numeric(prices["adj_close_usd"], errors="coerce")
+    prices = prices.dropna(subset=["ticker", "price_date", "adj_close_usd"])
+
+    if "display_name" not in matched.columns:
+        if "name" in matched.columns:
+            matched["display_name"] = matched.apply(
+                lambda row: row["name"] if str(row["company_name"]).strip().upper() == str(row["ticker_x"]).strip().upper() else row["company_name"],
+                axis=1,
+            )
+        else:
+            matched["display_name"] = matched["company_name"]
     names = dict(zip(matched["db_ticker"], matched["display_name"]))
 
     coverage = (
@@ -380,6 +485,7 @@ def analyze() -> tuple[list[GroupResult], pd.DataFrame, pd.DataFrame, pd.DataFra
     all_pair_rows: list[dict[str, object]] = []
     all_member_rows: list[dict[str, object]] = []
     all_yearly_rows: list[dict[str, object]] = []
+    all_yearly_scatter_rows: list[dict[str, object]] = []
     all_frequency_rows: list[dict[str, object]] = []
 
     for group, members in matched.groupby("group_3"):
@@ -434,6 +540,7 @@ def analyze() -> tuple[list[GroupResult], pd.DataFrame, pd.DataFrame, pd.DataFra
         all_pair_rows.extend(pair_rows)
         all_member_rows.extend(member_summary)
         all_yearly_rows.extend(yearly_group_rows(group, returns))
+        all_yearly_scatter_rows.extend(yearly_scatter_rows(group, returns, names))
         all_frequency_rows.extend(frequency_group_rows(group, prices, active_cols))
 
     group_results.sort(key=lambda r: (r.avg_pair_corr, r.pc1_share), reverse=True)
@@ -443,6 +550,7 @@ def analyze() -> tuple[list[GroupResult], pd.DataFrame, pd.DataFrame, pd.DataFra
     if not yearly_summary.empty:
         yearly_summary["avg_pair_corr_yoy_change"] = yearly_summary.groupby("group")["avg_pair_corr"].diff()
         yearly_summary["pc1_share_yoy_change"] = yearly_summary.groupby("group")["pc1_share"].diff()
+    yearly_scatter = pd.DataFrame(all_yearly_scatter_rows)
     frequency_summary = pd.DataFrame(all_frequency_rows).sort_values(["frequency", "avg_pair_corr"], ascending=[True, False])
     if not frequency_summary.empty:
         monthly_base = frequency_summary[frequency_summary["frequency"] == "monthly"][["group", "avg_pair_corr"]].rename(columns={"avg_pair_corr": "monthly_avg_pair_corr"})
@@ -451,7 +559,12 @@ def analyze() -> tuple[list[GroupResult], pd.DataFrame, pd.DataFrame, pd.DataFra
         frequency_summary["corr_vs_monthly_delta"] = frequency_summary["avg_pair_corr"] - frequency_summary["monthly_avg_pair_corr"]
         frequency_summary["monthly_vs_daily_delta"] = frequency_summary["monthly_avg_pair_corr"] - frequency_summary["daily_avg_pair_corr"]
     group_summary = pd.DataFrame([r.__dict__ for r in group_results])
-    return group_results, pair_summary, member_summary, yearly_summary, frequency_summary, group_summary, coverage
+    return group_results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage
+
+
+def analyze() -> tuple[list[GroupResult], pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    matched, _companies, prices = load_data()
+    return analyze_dataset(matched, prices)
 
 
 def table_html(df: pd.DataFrame, columns: list[str] | None = None, max_rows: int | None = None) -> str:
@@ -507,9 +620,31 @@ def yearly_heatmap_html(yearly_summary: pd.DataFrame) -> str:
                 intensity = max(0, min(1, float(val)))
                 bg = f"rgba(43, 108, 176, {0.12 + intensity * 0.72:.2f})"
                 fg = "#fff" if intensity > 0.55 else "#172033"
-                cells.append(f'<td style="background:{bg};color:{fg};font-weight:650">{num(float(val), 2)}</td>')
+                cells.append(
+                    f'<td class="heatmap-cell" data-group="{esc(group)}" data-year="{int(year)}" '
+                    f'tabindex="0" role="button" title="Show company scatter: {esc(group)} {int(year)}" '
+                    f'style="background:{bg};color:{fg};font-weight:650">{num(float(val), 2)}</td>'
+                )
         rows.append("<tr>" + "".join(cells) + "</tr>")
     return f"<table><thead><tr>{header}</tr></thead><tbody>{''.join(rows)}</tbody></table>"
+
+
+def yearly_scatter_payload(yearly_scatter: pd.DataFrame) -> str:
+    if yearly_scatter.empty:
+        return "{}"
+    payload: dict[str, list[dict[str, object]]] = {}
+    for (group, year), sub in yearly_scatter.groupby(["group", "year"]):
+        payload[f"{group}||{int(year)}"] = [
+            {
+                "date": row.date,
+                "ticker": row.ticker,
+                "company": row.company,
+                "x": round(float(row.group_return_pct), 4),
+                "y": round(float(row.company_return_pct), 4),
+            }
+            for row in sub.itertuples(index=False)
+        ]
+    return json.dumps(payload, ensure_ascii=False).replace("</", "<\\/")
 
 
 def yearly_story_html(yearly_summary: pd.DataFrame) -> str:
@@ -636,6 +771,27 @@ BOTTLENECK_CONTEXT = {
         "interpretation": "Weak-to-moderate coupling usually means execution and customer mix matter as much as the AI server theme.",
         "evidence_needed": "AI server revenue mix, rack backlog, ODM allocation, gross margin by AI program",
     },
+    "Server OEM": {
+        "supply_chain_role": "Branded server OEM / enterprise systems",
+        "bottleneck_sensitivity": "medium",
+        "bottleneck_proxy_to_verify": "AI server orders, enterprise backlog, GPU allocation, channel inventory, margin by AI system",
+        "interpretation": "OEM coupling indicates whether branded system vendors are being priced as a common AI server demand channel rather than as separate enterprise hardware stories.",
+        "evidence_needed": "AI server revenue mix, enterprise backlog, GPU allocation, channel inventory, services attach rate",
+    },
+    "Server ODM": {
+        "supply_chain_role": "Cloud server ODM / rack-scale integration",
+        "bottleneck_sensitivity": "medium-high",
+        "bottleneck_proxy_to_verify": "Hyperscaler rack orders, AI server build schedule, rack-scale integration capacity, GPU allocation",
+        "interpretation": "ODM coupling is more directly tied to hyperscaler AI buildouts; strong coupling can screen for shared rack-scale integration or allocation constraints.",
+        "evidence_needed": "AI rack backlog, hyperscaler customer mix, GPU allocation, rack delivery schedule, ODM utilization",
+    },
+    "Server EMS": {
+        "supply_chain_role": "Electronics manufacturing services / assembly",
+        "bottleneck_sensitivity": "medium",
+        "bottleneck_proxy_to_verify": "Assembly capacity, customer concentration, component availability, AI program margins",
+        "interpretation": "EMS coupling can reflect shared manufacturing exposure, but large customers and non-AI product mix can dilute the AI infrastructure signal.",
+        "evidence_needed": "AI program revenue mix, assembly utilization, customer concentration, component lead times, margin by program",
+    },
     "Neocloud": {
         "supply_chain_role": "GPU cloud / compute capacity monetization",
         "bottleneck_sensitivity": "medium-high",
@@ -717,9 +873,11 @@ def render_report(
     pair_summary: pd.DataFrame,
     member_summary: pd.DataFrame,
     yearly_summary: pd.DataFrame,
+    yearly_scatter: pd.DataFrame,
     frequency_summary: pd.DataFrame,
     group_summary: pd.DataFrame,
     coverage: pd.DataFrame,
+    analysis_start_date: str = ANALYSIS_START_DATE,
 ) -> str:
     bottleneck_summary = bottleneck_interpretation_rows(group_summary, yearly_summary)
     bottleneck_display = bottleneck_summary.copy()
@@ -775,6 +933,7 @@ def render_report(
     high = [r for r in results if r.classification == "high coupling"]
     moderate = [r for r in results if r.classification == "moderate coupling"]
     weak = [r for r in results if r.classification == "weak / fragmented"]
+    scatter_json = yearly_scatter_payload(yearly_scatter)
 
     sections = []
     for r in results:
@@ -833,6 +992,20 @@ def render_report(
     th:first-child, td:first-child, th:nth-child(2), td:nth-child(2), th:nth-child(3), td:nth-child(3) {{ text-align: left; }}
     th {{ background: #f4f7fb; color: #27364a; }}
     .chart {{ overflow-x: auto; border: 1px solid #d9e0ea; border-radius: 8px; padding: 8px; background: #fff; }}
+    .heatmap-cell {{ cursor: pointer; transition: transform 120ms ease, outline-color 120ms ease; }}
+    .heatmap-cell:hover, .heatmap-cell:focus {{ outline: 2px solid #111827; outline-offset: -2px; transform: translateY(-1px); }}
+    .scatter-panel {{ margin-top: 12px; border: 1px solid #d9e0ea; border-radius: 8px; background: #fff; padding: 12px; }}
+    .scatter-head {{ display: flex; justify-content: space-between; gap: 12px; align-items: baseline; flex-wrap: wrap; }}
+    .scatter-head h3 {{ margin: 0; }}
+    .scatter-wrap {{ overflow-x: auto; }}
+    .scatter-svg text {{ font-size: 12px; fill: #334155; }}
+    .scatter-axis {{ stroke: #94a3b8; stroke-width: 1; }}
+    .scatter-grid {{ stroke: #e2e8f0; stroke-width: 1; }}
+    .scatter-point {{ opacity: 0.82; stroke: #fff; stroke-width: 1; }}
+    .scatter-point:hover {{ opacity: 1; stroke: #111827; stroke-width: 1.5; }}
+    .legend {{ display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 8px; }}
+    .legend-item {{ display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: #475569; }}
+    .legend-swatch {{ width: 9px; height: 9px; border-radius: 50%; display: inline-block; }}
     .chart-title {{ font-weight: 700; font-size: 14px; fill: #172033; }}
     .bar-label {{ font-size: 12px; fill: #334155; }}
     @media (max-width: 760px) {{ .kpis {{ grid-template-columns: repeat(2, 1fr); }} .wrap {{ padding: 0 14px; }} }}
@@ -843,7 +1016,7 @@ def render_report(
     <div class="wrap">
       <h1>Stock Comovement / Coupling Report</h1>
       <p>company_master.xlsx의 그룹 정의와 financials.db의 adjusted close 데이터를 매칭해, 데이터가 존재하는 그룹에 한해서 주가 동조화 현상을 분석했다.</p>
-      <p class="small">Primary method: monthly log returns, Pearson pairwise correlation, 12-month rolling average pair correlation, PCA first component explained variance.</p>
+      <p class="small">Analysis window: {esc(analysis_start_date)} onward · Primary method: monthly log returns, Pearson pairwise correlation, 12-month rolling average pair correlation, PCA first component explained variance.</p>
     </div>
   </header>
   <main class="wrap">
@@ -885,6 +1058,15 @@ def render_report(
       <h2>Yearly Coupling Timeline</h2>
       <p>연도별로 같은 그룹 내 <strong>monthly return coupling</strong>을 다시 계산했다. 이 표는 특정 연도에 어떤 섹션이 시장에서 같이 움직였는지, 그리고 어느 해에 coupling이 강화됐는지 보는 용도다.</p>
       <div class="chart">{yearly_heatmap_html(yearly_summary)}</div>
+      <div class="scatter-panel" id="yearlyScatterPanel">
+        <div class="scatter-head">
+          <h3 id="scatterTitle">Company Return Scatter</h3>
+          <p class="small" id="scatterMeta">Heatmap 셀을 클릭하면 해당 section/year의 기업별 월간 수익률 분포가 표시된다.</p>
+        </div>
+        <p class="small">x축은 해당 section의 동일월 평균 수익률, y축은 개별 기업 월간 수익률이다. 점들이 우상향 대각선 주변에 모이면 그 해에 기업들이 section factor와 함께 움직였다는 뜻이다.</p>
+        <div class="scatter-wrap" id="scatterChart"></div>
+        <div class="legend" id="scatterLegend"></div>
+      </div>
       <h3>Year-by-year story</h3>
       {yearly_story_html(yearly_summary)}
       <h3>Yearly detail</h3>
@@ -915,32 +1097,194 @@ def render_report(
       {table_html(coverage.rename(columns={"group_3": "group", "display_name": "company", "ticker_x": "master_ticker"}), max_rows=150)}
     </section>
   </main>
+  <script id="yearlyScatterData" type="application/json">{scatter_json}</script>
+  <script>
+    (() => {{
+      const data = JSON.parse(document.getElementById("yearlyScatterData").textContent || "{{}}");
+      const chart = document.getElementById("scatterChart");
+      const title = document.getElementById("scatterTitle");
+      const meta = document.getElementById("scatterMeta");
+      const legend = document.getElementById("scatterLegend");
+      const colors = ["#2563eb", "#dc2626", "#059669", "#7c3aed", "#ea580c", "#0891b2", "#be123c", "#4d7c0f", "#9333ea", "#0f766e", "#b45309", "#64748b"];
+
+      function extent(values) {{
+        let min = Math.min(...values, 0);
+        let max = Math.max(...values, 0);
+        if (!Number.isFinite(min) || !Number.isFinite(max) || min === max) {{
+          min = -5;
+          max = 5;
+        }}
+        const pad = Math.max(2, (max - min) * 0.12);
+        return [min - pad, max + pad];
+      }}
+
+      function draw(group, year) {{
+        const key = `${{group}}||${{year}}`;
+        const points = data[key] || [];
+        title.textContent = `${{group}} · ${{year}} Company Return Scatter`;
+        meta.textContent = points.length ? `${{points.length}} monthly company observations` : "No scatter observations available.";
+        if (!points.length) {{
+          chart.innerHTML = "<p class='small'>No scatter data for this cell.</p>";
+          legend.innerHTML = "";
+          return;
+        }}
+        const companies = [...new Set(points.map(p => p.company))];
+        const colorMap = new Map(companies.map((c, i) => [c, colors[i % colors.length]]));
+        const width = 920, height = 520;
+        const margin = {{ left: 72, right: 34, top: 30, bottom: 62 }};
+        const innerW = width - margin.left - margin.right;
+        const innerH = height - margin.top - margin.bottom;
+        const [xMin, xMax] = extent(points.map(p => p.x));
+        const [yMin, yMax] = extent(points.map(p => p.y));
+        const sx = x => margin.left + ((x - xMin) / (xMax - xMin)) * innerW;
+        const sy = y => margin.top + innerH - ((y - yMin) / (yMax - yMin)) * innerH;
+        const ticks = [-60, -40, -20, 0, 20, 40, 60].filter(t => t >= xMin && t <= xMax);
+        const yTicks = [-80, -60, -40, -20, 0, 20, 40, 60, 80].filter(t => t >= yMin && t <= yMax);
+        const diagStart = Math.max(xMin, yMin);
+        const diagEnd = Math.min(xMax, yMax);
+        let svg = `<svg class="scatter-svg" viewBox="0 0 ${{width}} ${{height}}" role="img" aria-label="Company return scatter for ${{group}} ${{year}}">`;
+        for (const t of ticks) {{
+          svg += `<line class="scatter-grid" x1="${{sx(t).toFixed(1)}}" y1="${{margin.top}}" x2="${{sx(t).toFixed(1)}}" y2="${{margin.top + innerH}}"></line>`;
+          svg += `<text x="${{sx(t).toFixed(1)}}" y="${{height - 38}}" text-anchor="middle">${{t}}%</text>`;
+        }}
+        for (const t of yTicks) {{
+          svg += `<line class="scatter-grid" x1="${{margin.left}}" y1="${{sy(t).toFixed(1)}}" x2="${{margin.left + innerW}}" y2="${{sy(t).toFixed(1)}}"></line>`;
+          svg += `<text x="${{margin.left - 10}}" y="${{sy(t).toFixed(1)}}" text-anchor="end" dominant-baseline="middle">${{t}}%</text>`;
+        }}
+        svg += `<line class="scatter-axis" x1="${{margin.left}}" y1="${{sy(0).toFixed(1)}}" x2="${{margin.left + innerW}}" y2="${{sy(0).toFixed(1)}}"></line>`;
+        svg += `<line class="scatter-axis" x1="${{sx(0).toFixed(1)}}" y1="${{margin.top}}" x2="${{sx(0).toFixed(1)}}" y2="${{margin.top + innerH}}"></line>`;
+        if (diagStart < diagEnd) {{
+          svg += `<line x1="${{sx(diagStart).toFixed(1)}}" y1="${{sy(diagStart).toFixed(1)}}" x2="${{sx(diagEnd).toFixed(1)}}" y2="${{sy(diagEnd).toFixed(1)}}" stroke="#0f172a" stroke-width="1.2" stroke-dasharray="5 5" opacity="0.55"></line>`;
+        }}
+        for (const p of points) {{
+          const tip = `${{p.company}} (${{p.ticker}}) · ${{p.date}}\\nsection avg: ${{p.x.toFixed(1)}}%\\ncompany: ${{p.y.toFixed(1)}}%`;
+          svg += `<circle class="scatter-point" cx="${{sx(p.x).toFixed(1)}}" cy="${{sy(p.y).toFixed(1)}}" r="4.2" fill="${{colorMap.get(p.company)}}"><title>${{tip}}</title></circle>`;
+        }}
+        svg += `<text x="${{margin.left + innerW / 2}}" y="${{height - 12}}" text-anchor="middle">Section average monthly return</text>`;
+        svg += `<text transform="translate(18 ${{margin.top + innerH / 2}}) rotate(-90)" text-anchor="middle">Company monthly return</text>`;
+        svg += "</svg>";
+        chart.innerHTML = svg;
+        legend.innerHTML = companies.map(c => `<span class="legend-item"><span class="legend-swatch" style="background:${{colorMap.get(c)}}"></span>${{c}}</span>`).join("");
+      }}
+
+      document.querySelectorAll(".heatmap-cell").forEach(cell => {{
+        const activate = () => {{
+          document.querySelectorAll(".heatmap-cell").forEach(c => c.classList.remove("active"));
+          cell.classList.add("active");
+          draw(cell.dataset.group, cell.dataset.year);
+          document.getElementById("yearlyScatterPanel").scrollIntoView({{ behavior: "smooth", block: "nearest" }});
+        }};
+        cell.addEventListener("click", activate);
+        cell.addEventListener("keydown", event => {{
+          if (event.key === "Enter" || event.key === " ") {{
+            event.preventDefault();
+            activate();
+          }}
+        }});
+      }});
+      const firstCell = document.querySelector(".heatmap-cell");
+      if (firstCell) {{
+        draw(firstCell.dataset.group, firstCell.dataset.year);
+      }}
+    }})();
+  </script>
 </body>
 </html>
 """
     return "\n".join(line.rstrip() for line in html_doc.splitlines()) + "\n"
 
 
-def main() -> None:
-    results, pair_summary, member_summary, yearly_summary, frequency_summary, group_summary, coverage = analyze()
+def output_paths(output_dir: str | Path) -> dict[str, Path]:
+    root = Path(output_dir)
+    return {
+        "html": root / "stock_comovement_coupling_report.html",
+        "group": root / "group_comovement_summary.csv",
+        "pair": root / "pairwise_comovement_summary.csv",
+        "member": root / "member_coupling_summary.csv",
+        "yearly": root / "yearly_group_coupling_summary.csv",
+        "frequency": root / "frequency_group_coupling_summary.csv",
+        "bottleneck": root / "bottleneck_interpretation_summary.csv",
+        "coverage": root / "ticker_coverage_used.csv",
+    }
+
+
+def write_report_outputs(
+    results: list[GroupResult],
+    pair_summary: pd.DataFrame,
+    member_summary: pd.DataFrame,
+    yearly_summary: pd.DataFrame,
+    yearly_scatter: pd.DataFrame,
+    frequency_summary: pd.DataFrame,
+    group_summary: pd.DataFrame,
+    coverage: pd.DataFrame,
+    output_dir: str | Path = ROOT,
+    analysis_start_date: str = ANALYSIS_START_DATE,
+) -> dict[str, Path]:
+    paths = output_paths(output_dir)
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
     bottleneck_summary = bottleneck_interpretation_rows(group_summary, yearly_summary)
-    group_summary.to_csv(OUT_GROUP_CSV, index=False)
-    pair_summary.to_csv(OUT_PAIR_CSV, index=False)
-    member_summary.to_csv(OUT_MEMBER_CSV, index=False)
-    yearly_summary.to_csv(OUT_YEARLY_CSV, index=False)
-    frequency_summary.to_csv(OUT_FREQUENCY_CSV, index=False)
-    bottleneck_summary.to_csv(OUT_BOTTLENECK_CSV, index=False)
-    coverage.to_csv(OUT_COVERAGE_CSV, index=False)
-    OUT_HTML.write_text(render_report(results, pair_summary, member_summary, yearly_summary, frequency_summary, group_summary, coverage), encoding="utf-8")
+    group_summary.to_csv(paths["group"], index=False)
+    pair_summary.to_csv(paths["pair"], index=False)
+    member_summary.to_csv(paths["member"], index=False)
+    yearly_summary.to_csv(paths["yearly"], index=False)
+    frequency_summary.to_csv(paths["frequency"], index=False)
+    bottleneck_summary.to_csv(paths["bottleneck"], index=False)
+    coverage.to_csv(paths["coverage"], index=False)
+    paths["html"].write_text(
+        render_report(
+            results,
+            pair_summary,
+            member_summary,
+            yearly_summary,
+            yearly_scatter,
+            frequency_summary,
+            group_summary,
+            coverage,
+            analysis_start_date=analysis_start_date,
+        ),
+        encoding="utf-8",
+    )
+    return paths
+
+
+def generate_report_from_dataframe(
+    df: pd.DataFrame,
+    output_dir: str | Path,
+    analysis_start_date: str | None = "2012-01-01",
+) -> dict[str, Path]:
+    """Run the full comovement analysis from a generic price DataFrame and write HTML/CSV outputs.
+
+    The DataFrame must contain logical columns for:
+    date, section, companyname, ticker, and adjusted close.
+
+    Example:
+        paths = generate_report_from_dataframe(my_df, "outputs/comovement", analysis_start_date="2012-01-01")
+        print(paths["html"])
+    """
+    matched, prices = normalize_price_dataframe(df, analysis_start_date=analysis_start_date)
+    results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage = analyze_dataset(matched, prices)
+    if not results:
+        raise ValueError("No analyzable sections found. Need at least two tickers per section with enough observations.")
+    return write_report_outputs(
+        results,
+        pair_summary,
+        member_summary,
+        yearly_summary,
+        yearly_scatter,
+        frequency_summary,
+        group_summary,
+        coverage,
+        output_dir=output_dir,
+        analysis_start_date=analysis_start_date or "",
+    )
+
+
+def main() -> None:
+    results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage = analyze()
+    paths = write_report_outputs(results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage, output_dir=ROOT, analysis_start_date=ANALYSIS_START_DATE)
     print(f"groups={len(results)} pairs={len(pair_summary)}")
-    print(f"wrote {OUT_HTML}")
-    print(f"wrote {OUT_GROUP_CSV}")
-    print(f"wrote {OUT_PAIR_CSV}")
-    print(f"wrote {OUT_MEMBER_CSV}")
-    print(f"wrote {OUT_YEARLY_CSV}")
-    print(f"wrote {OUT_FREQUENCY_CSV}")
-    print(f"wrote {OUT_BOTTLENECK_CSV}")
-    print(f"wrote {OUT_COVERAGE_CSV}")
+    for path in paths.values():
+        print(f"wrote {path}")
 
 
 if __name__ == "__main__":
