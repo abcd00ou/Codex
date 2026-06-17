@@ -1,0 +1,1041 @@
+section,target_metric,target_metric_label,target_transform,lag_quarters,lag_interpretation,observations,corr,r_squared,beta_target_per_1_capex_yoy
+AI Chip,revenue_usd_m,Revenue,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.4024455613336905,0.16196242983718925,-0.1853578435561704
+AI Chip,revenue_usd_m,Revenue,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),26,-0.10866138021925648,0.011807295551153823,-0.05154647357774755
+AI Chip,revenue_usd_m,Revenue,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),27,-0.10165128819412451,0.010332984391524958,-0.10827003056233074
+AI Chip,revenue_usd_m,Revenue,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.4472620212606246,0.2000433156621394,0.4722960802004467
+AI Chip,revenue_usd_m,Revenue,YoY %,0,Same quarter,29,0.7323823418405592,0.5363838946398617,0.7607122331604349
+AI Chip,revenue_usd_m,Revenue,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),29,0.06143599233562102,0.0037743811542624846,0.06462399176840143
+AI Chip,revenue_usd_m,Revenue,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),29,-0.07759730834026696,0.0060213422616544636,-0.0836316119437617
+AI Chip,revenue_usd_m,Revenue,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),28,-0.11264771864330943,0.012689508515542203,-0.12300924452610036
+AI Chip,revenue_usd_m,Revenue,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),27,-0.4999171171443608,0.24991712401392857,-0.27636705744197093
+AI Chip,revenue_usd_m,Revenue,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),26,-0.29232841710470314,0.0854559034469413,-0.6144711650703548
+AI Chip,revenue_usd_m,Revenue,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),25,-0.3894545340709171,0.15167483410839513,-0.8289577442088021
+AI Chip,revenue_usd_m,Revenue,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),24,-0.18685543927727555,0.03491495518750361,-0.40025024665464154
+AI Chip,revenue_usd_m,Revenue,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),23,-0.0014708120149927882,2.163287983447146e-06,-0.0030897075107703524
+AI Chip,gross_profit_usd_m,Gross profit,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.3315525028788167,0.10992706216520777,-0.42197310140822636
+AI Chip,gross_profit_usd_m,Gross profit,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),26,-0.18694124713500215,0.03494702988038995,-0.23837038912919112
+AI Chip,gross_profit_usd_m,Gross profit,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),27,-0.13304237186356585,0.017700272711083338,-0.4820919927991782
+AI Chip,gross_profit_usd_m,Gross profit,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.4447533719463647,0.19780556185766143,1.5985126790114572
+AI Chip,gross_profit_usd_m,Gross profit,YoY %,0,Same quarter,29,0.7686059653676066,0.5907551299986705,2.7281342913634834
+AI Chip,gross_profit_usd_m,Gross profit,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),29,0.08627773705816691,0.0074438479118781875,0.3069842144849273
+AI Chip,gross_profit_usd_m,Gross profit,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),29,-0.08087815723039152,0.006541276316983932,-0.2896288245075626
+AI Chip,gross_profit_usd_m,Gross profit,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),28,-0.05304198694463914,0.0028134523790352686,-0.19296446187113148
+AI Chip,gross_profit_usd_m,Gross profit,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),27,-0.3698039738590577,0.13675497908195064,-0.5080786313331899
+AI Chip,gross_profit_usd_m,Gross profit,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),26,-0.282350574880724,0.07972184713547534,-1.9771334685240913
+AI Chip,gross_profit_usd_m,Gross profit,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),25,-0.39924651221966545,0.15939777751956746,-2.837947836493619
+AI Chip,gross_profit_usd_m,Gross profit,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),24,-0.1408936232245605,0.019851013065344415,-1.0123606458448922
+AI Chip,gross_profit_usd_m,Gross profit,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),23,-0.007114324240689967,5.0613609401668876e-05,-0.051188989106495456
+AI Chip,operating_income_usd_m,Operating income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.4218635078131716,0.17796881922443392,-1113.4784859695196
+AI Chip,operating_income_usd_m,Operating income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,-0.029542381904274034,0.0008727523285779778,-98.36453943641119
+AI Chip,operating_income_usd_m,Operating income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),27,-0.0019354645916235154,3.7460231854283813e-06,-15.15835780257424
+AI Chip,operating_income_usd_m,Operating income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.46449492088158073,0.21575553152478594,3725.7715479853805
+AI Chip,operating_income_usd_m,Operating income,YoY delta USDm,0,Same quarter,29,0.7638784083439121,0.5835102227340285,6131.944565190193
+AI Chip,operating_income_usd_m,Operating income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),29,0.3384335713619139,0.11453728222477966,2761.602317095729
+AI Chip,operating_income_usd_m,Operating income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),29,0.264230966586015,0.06981800370297979,3032.7491288047795
+AI Chip,operating_income_usd_m,Operating income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),28,-0.15403428561698365,0.023726561145534498,-1784.9546233568478
+AI Chip,operating_income_usd_m,Operating income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),27,-0.7618433601392268,0.5804053053882277,-7496.331488707385
+AI Chip,operating_income_usd_m,Operating income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),26,-0.28340868581030865,0.08032048319272624,-6291.832012141957
+AI Chip,operating_income_usd_m,Operating income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),25,-0.17263115146037544,0.029801514454535088,-3917.3940240978445
+AI Chip,operating_income_usd_m,Operating income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),24,-0.2988258346302165,0.0892968794424455,-6915.925416503506
+AI Chip,operating_income_usd_m,Operating income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),23,-0.1883623242397686,0.035480365193007714,-3054.195973234071
+AI Chip,net_income_usd_m,Net income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.4405523228810431,0.19408634919588288,-1017.3938166657895
+AI Chip,net_income_usd_m,Net income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.047789796536874235,0.002283864653035837,141.31276562844565
+AI Chip,net_income_usd_m,Net income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.02004033423489895,0.00040161499624646294,144.58316296857933
+AI Chip,net_income_usd_m,Net income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.47798379796250445,0.22846851111466027,3517.584194024781
+AI Chip,net_income_usd_m,Net income,YoY delta USDm,0,Same quarter,29,0.7827034706123969,0.6126247229086912,5736.5135580443
+AI Chip,net_income_usd_m,Net income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),29,0.3155915020942994,0.0995979961941362,2346.3995993712924
+AI Chip,net_income_usd_m,Net income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),29,0.24316777726180977,0.05913056789844913,2564.5469159452205
+AI Chip,net_income_usd_m,Net income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),28,-0.1716931669050323,0.029478543561879282,-1829.9165775810907
+AI Chip,net_income_usd_m,Net income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),27,-0.7951378384283473,0.6322441821005045,-7145.752911735067
+AI Chip,net_income_usd_m,Net income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),26,-0.31985765395793,0.10230891879547088,-6552.279336051229
+AI Chip,net_income_usd_m,Net income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),25,-0.18444438025585086,0.0340197294079649,-3861.768669009191
+AI Chip,net_income_usd_m,Net income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),24,-0.2746596035480784,0.0754378978211876,-5852.811685225346
+AI Chip,net_income_usd_m,Net income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),23,-0.1420768111784878,0.020185820274647676,-2103.143553762672
+AI Platforms,revenue_usd_m,Revenue,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.10153027649186956,0.01030839704451548,-0.008539804520473817
+AI Platforms,revenue_usd_m,Revenue,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),26,-0.04982400810459981,0.0024824317836072275,-0.004144204395401601
+AI Platforms,revenue_usd_m,Revenue,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),27,-0.03331935502364558,0.001110179419191736,-0.003315398134041757
+AI Platforms,revenue_usd_m,Revenue,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.17261052655153886,0.0297943938763995,0.017034017283857467
+AI Platforms,revenue_usd_m,Revenue,YoY %,0,Same quarter,29,0.43902559757331133,0.19274347532460312,0.06445247692791252
+AI Platforms,revenue_usd_m,Revenue,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),29,0.06543246806298891,0.004281407876814064,0.01300522074097274
+AI Platforms,revenue_usd_m,Revenue,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),29,-0.40721314481882187,0.1658225453132348,-0.09873069249164174
+AI Platforms,revenue_usd_m,Revenue,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),28,-0.6621570463767772,0.43845195406641746,-0.16333039152741374
+AI Platforms,revenue_usd_m,Revenue,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),27,-0.4980977823127765,0.2481014007449061,-0.13132467362577877
+AI Platforms,revenue_usd_m,Revenue,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),26,-0.20978738673703393,0.04401074763395384,-0.09972960424041599
+AI Platforms,revenue_usd_m,Revenue,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),25,0.018654565680202274,0.0003479928207169805,0.008969122145174065
+AI Platforms,revenue_usd_m,Revenue,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),24,0.12506437547139534,0.015641098012050155,0.059845057412710054
+AI Platforms,revenue_usd_m,Revenue,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),23,0.16316872341045255,0.026624032299396767,0.0783390246897334
+AI Platforms,gross_profit_usd_m,Gross profit,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.1625052068381897,0.026407942249522816,-0.012002324391933765
+AI Platforms,gross_profit_usd_m,Gross profit,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),26,-0.054468149482040776,0.002966779307997939,-0.003980295734658596
+AI Platforms,gross_profit_usd_m,Gross profit,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.013630864929663677,0.00018580047873073517,0.0013280920252379392
+AI Platforms,gross_profit_usd_m,Gross profit,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.2185786750444747,0.04777663718419807,0.021126353292751518
+AI Platforms,gross_profit_usd_m,Gross profit,YoY %,0,Same quarter,29,0.43903684926051384,0.19275335500859916,0.06158147483435076
+AI Platforms,gross_profit_usd_m,Gross profit,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),29,0.024544546607381167,0.0006024347681619064,0.004782630785184185
+AI Platforms,gross_profit_usd_m,Gross profit,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),29,-0.42416198042515957,0.17991338563819345,-0.10227573577001633
+AI Platforms,gross_profit_usd_m,Gross profit,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),28,-0.7034314903275591,0.4948158615844509,-0.17208148068155443
+AI Platforms,gross_profit_usd_m,Gross profit,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),27,-0.517343178755786,0.2676439646051411,-0.13526204507907594
+AI Platforms,gross_profit_usd_m,Gross profit,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),26,-0.15699031497398466,0.024645958995630914,-0.07399094438702901
+AI Platforms,gross_profit_usd_m,Gross profit,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),25,0.05568844850153941,0.003101203296508607,0.026665398695606794
+AI Platforms,gross_profit_usd_m,Gross profit,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),24,0.1979551504543479,0.039186241591403506,0.09528582596925966
+AI Platforms,gross_profit_usd_m,Gross profit,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),23,0.26406149694879266,0.06972847417083723,0.1282092587077957
+AI Platforms,operating_income_usd_m,Operating income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.203043752553203,0.041226765450886334,-96.02030171173446
+AI Platforms,operating_income_usd_m,Operating income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.045343161913289555,0.0020560023322947923,26.0890980775932
+AI Platforms,operating_income_usd_m,Operating income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.05067264719414449,0.0025677171736622397,76.10165725859093
+AI Platforms,operating_income_usd_m,Operating income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.44832040122248157,0.20099118215228684,686.0597492193679
+AI Platforms,operating_income_usd_m,Operating income,YoY delta USDm,0,Same quarter,29,0.8207620796238329,0.673650391348439,1245.4875026566037
+AI Platforms,operating_income_usd_m,Operating income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),29,0.29783108594074564,0.08870335575264382,477.25752386595957
+AI Platforms,operating_income_usd_m,Operating income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),29,-0.02422304464250113,0.0005867558917526028,-55.938479992290986
+AI Platforms,operating_income_usd_m,Operating income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),28,-0.44348865984395636,0.19668219141018842,-1042.4931988276614
+AI Platforms,operating_income_usd_m,Operating income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),27,-0.7090471898402638,0.5027479174203752,-1781.9986719340334
+AI Platforms,operating_income_usd_m,Operating income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),26,-0.3563675230218794,0.12699781146474975,-1615.6094905734137
+AI Platforms,operating_income_usd_m,Operating income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),25,-0.03043078022059858,0.0009260323848343737,-140.18203987794766
+AI Platforms,operating_income_usd_m,Operating income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),24,-0.12588949682033948,0.015848165409678264,-586.9989231675058
+AI Platforms,operating_income_usd_m,Operating income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),23,0.10377021156425346,0.010768256808089923,488.19161750792756
+AI Platforms,net_income_usd_m,Net income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,0.21755722571591618,0.0473311464612061,293.7256125323993
+AI Platforms,net_income_usd_m,Net income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.5854218369611277,0.3427187271909412,804.1401594677834
+AI Platforms,net_income_usd_m,Net income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.04926595756164273,0.002427134574465583,92.10600607041488
+AI Platforms,net_income_usd_m,Net income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.06207724038092403,0.003853583773311025,116.75755330501532
+AI Platforms,net_income_usd_m,Net income,YoY delta USDm,0,Same quarter,29,0.5819187541887274,0.3386294364765606,1090.365055510509
+AI Platforms,net_income_usd_m,Net income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),29,0.21535901424489665,0.046379505016533595,405.5621881916046
+AI Platforms,net_income_usd_m,Net income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),29,-0.0748586586791651,0.00560381877924374,-188.88170543444986
+AI Platforms,net_income_usd_m,Net income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),28,-0.3348805453640918,0.11214497966335153,-858.4822884316235
+AI Platforms,net_income_usd_m,Net income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),27,-0.5650479443212892,0.3192791793817148,-1545.1347805974135
+AI Platforms,net_income_usd_m,Net income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),26,-0.37105896276434347,0.13768475384775045,-1829.582262088235
+AI Platforms,net_income_usd_m,Net income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),25,0.06486324073512297,0.004207239998662515,324.48455770493786
+AI Platforms,net_income_usd_m,Net income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),24,0.011710611993425827,0.00013713843326056883,59.172321578135936
+AI Platforms,net_income_usd_m,Net income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),23,-0.06644792737710846,0.0044153270527134796,-338.4350572785812
+AI Software,revenue_usd_m,Revenue,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),24,0.2060991587330223,0.042476863230459516,0.07163021878362301
+AI Software,revenue_usd_m,Revenue,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),25,0.712434180014919,0.50756246085353,0.27935016932227397
+AI Software,revenue_usd_m,Revenue,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),26,0.7022593731041684,0.4931682271126596,0.2883477158034112
+AI Software,revenue_usd_m,Revenue,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),27,0.5509183700725068,0.30351105048334753,0.25262128383865573
+AI Software,revenue_usd_m,Revenue,YoY %,0,Same quarter,28,0.2780096980380251,0.0772893922031939,0.13797969720777195
+AI Software,revenue_usd_m,Revenue,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),27,-0.3629007696051888,0.13169696858003832,-0.19163482255929193
+AI Software,revenue_usd_m,Revenue,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),26,-0.44360575150349674,0.1967860627669821,-0.42147149736203354
+AI Software,revenue_usd_m,Revenue,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),25,-0.28906727082983147,0.08355988706500714,-0.2778259856942068
+AI Software,revenue_usd_m,Revenue,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),24,-0.4647177467996226,0.21596258419051811,-0.4507158128485145
+AI Software,revenue_usd_m,Revenue,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),23,-0.2987224932009577,0.0892351279441962,-0.28079663541426386
+AI Software,revenue_usd_m,Revenue,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),22,0.0482131454194792,0.002324507391239848,0.0459620076422947
+AI Software,revenue_usd_m,Revenue,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),21,0.11658990198173996,0.013593205244111731,0.117199491017772
+AI Software,revenue_usd_m,Revenue,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),20,0.1555683249822574,0.02420150373778525,0.15646312551277364
+AI Software,gross_profit_usd_m,Gross profit,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),0,,,
+AI Software,gross_profit_usd_m,Gross profit,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),0,,,
+AI Software,gross_profit_usd_m,Gross profit,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),0,,,
+AI Software,gross_profit_usd_m,Gross profit,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),0,,,
+AI Software,gross_profit_usd_m,Gross profit,YoY %,0,Same quarter,1,,,
+AI Software,gross_profit_usd_m,Gross profit,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),1,,,
+AI Software,gross_profit_usd_m,Gross profit,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),1,,,
+AI Software,gross_profit_usd_m,Gross profit,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),1,,,
+AI Software,gross_profit_usd_m,Gross profit,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),1,,,
+AI Software,gross_profit_usd_m,Gross profit,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),1,,,
+AI Software,gross_profit_usd_m,Gross profit,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),1,,,
+AI Software,gross_profit_usd_m,Gross profit,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),1,,,
+AI Software,gross_profit_usd_m,Gross profit,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),1,,,
+AI Software,operating_income_usd_m,Operating income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),24,0.46831361881422556,0.21931764556687577,1613.4211718872052
+AI Software,operating_income_usd_m,Operating income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),25,0.7011600155995018,0.4916253674754936,2661.9758441371746
+AI Software,operating_income_usd_m,Operating income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),26,0.6262141580045849,0.39214417168539123,2486.989916986956
+AI Software,operating_income_usd_m,Operating income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),27,0.5112451867032196,0.2613716409272099,2218.603124071748
+AI Software,operating_income_usd_m,Operating income,YoY delta USDm,0,Same quarter,28,0.09748277421396226,0.009502891268450345,523.0932746796093
+AI Software,operating_income_usd_m,Operating income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),27,-0.5499267022382825,0.30241937783467265,-3154.992158887597
+AI Software,operating_income_usd_m,Operating income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),26,-0.4698807122753652,0.22078788376840455,-4862.693192117969
+AI Software,operating_income_usd_m,Operating income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),25,-0.2582144232040016,0.06667468835057525,-2715.1132824921683
+AI Software,operating_income_usd_m,Operating income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),24,-0.4338363225681329,0.18821395477944108,-4617.490879402536
+AI Software,operating_income_usd_m,Operating income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),23,-0.08589877966605418,0.007378600348117323,-922.0321961943374
+AI Software,operating_income_usd_m,Operating income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),22,0.2796484711451877,0.07820326741384089,3056.084639554637
+AI Software,operating_income_usd_m,Operating income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),21,0.23372261697286595,0.054626261684645,2699.423660670974
+AI Software,operating_income_usd_m,Operating income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),20,0.324093037357811,0.10503629686381145,3743.86989900635
+AI Software,net_income_usd_m,Net income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),24,0.49729727166922116,0.24730457640965114,1946.7350095952
+AI Software,net_income_usd_m,Net income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),25,0.7655235040217556,0.5860262352097468,3513.429198537249
+AI Software,net_income_usd_m,Net income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),26,0.5026769299496768,0.25268409590363233,2344.4264536717865
+AI Software,net_income_usd_m,Net income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),27,0.11843164599960083,0.014026054774174769,595.7307839559606
+AI Software,net_income_usd_m,Net income,YoY delta USDm,0,Same quarter,28,0.05538854857272523,0.0030678913129931424,334.60778106944565
+AI Software,net_income_usd_m,Net income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),27,-0.5059779187714318,0.2560136542842697,-3268.3057014098385
+AI Software,net_income_usd_m,Net income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),26,-0.5487978012845783,0.3011790266947875,-6394.733287046584
+AI Software,net_income_usd_m,Net income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),25,-0.2311371784896062,0.05342439528013607,-2736.457124270581
+AI Software,net_income_usd_m,Net income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),24,-0.33928502612404543,0.1151143289519942,-4065.6569636998684
+AI Software,net_income_usd_m,Net income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),23,-0.09615999824037973,0.009246745261589832,-1159.0831040464623
+AI Software,net_income_usd_m,Net income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),22,0.3324582423056792,0.11052848287698172,4078.8976762522907
+AI Software,net_income_usd_m,Net income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),21,0.368817071394447,0.13602603215197664,4782.23848810015
+AI Software,net_income_usd_m,Net income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),20,0.24087469487894186,0.058020618633023345,3124.763062460824
+CPU,revenue_usd_m,Revenue,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),25,0.02413558992454144,0.0005825267010056263,0.0034476823057210167
+CPU,revenue_usd_m,Revenue,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.04428780091363037,0.0019614093097653587,0.006258300416888403
+CPU,revenue_usd_m,Revenue,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.16592078227739718,0.027529705991543436,0.0232770953475785
+CPU,revenue_usd_m,Revenue,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.2026414467483782,0.041063555940275796,0.02820453898611707
+CPU,revenue_usd_m,Revenue,YoY %,0,Same quarter,29,0.22350356050873332,0.049953841560081015,0.04880826698203193
+CPU,revenue_usd_m,Revenue,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),29,-0.0679945084437044,0.004623253178500989,-0.01845982086301967
+CPU,revenue_usd_m,Revenue,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),28,-0.6617406487681329,0.4379006862320694,-0.1803784141425509
+CPU,revenue_usd_m,Revenue,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),27,-0.5950693772943408,0.3541075637934746,-0.17317837960828408
+CPU,revenue_usd_m,Revenue,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),26,-0.1379431091228603,0.019028301354481348,-0.07209712248035241
+CPU,revenue_usd_m,Revenue,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),25,0.058259703524696206,0.0033941930547854997,0.030445277487340997
+CPU,revenue_usd_m,Revenue,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),24,0.08277969118653412,0.006852477272937955,0.04369402936197134
+CPU,revenue_usd_m,Revenue,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),23,0.40226270588091784,0.1618152845426378,0.21151059755592153
+CPU,revenue_usd_m,Revenue,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),22,0.3792294442415877,0.1438149713797835,0.1951124188293489
+CPU,gross_profit_usd_m,Gross profit,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),25,0.2702983558246506,0.07306120116150944,0.057628034613694035
+CPU,gross_profit_usd_m,Gross profit,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.2834887938903515,0.08036589626140618,0.06408140389837476
+CPU,gross_profit_usd_m,Gross profit,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.06347232766494627,0.004028736379206304,0.014250608766327857
+CPU,gross_profit_usd_m,Gross profit,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.04355741823563991,0.0018972486833544562,0.011616540998227308
+CPU,gross_profit_usd_m,Gross profit,YoY %,0,Same quarter,29,-0.036731609336343264,0.0013492111244377397,-0.010932944741645925
+CPU,gross_profit_usd_m,Gross profit,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),29,-0.4417245569472474,0.195120584210242,-0.13814626655902465
+CPU,gross_profit_usd_m,Gross profit,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),28,-0.5006434470638275,0.2506438610879514,-0.1563817359666441
+CPU,gross_profit_usd_m,Gross profit,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),27,-0.3039331129669344,0.09237533715777133,-0.10117508299016954
+CPU,gross_profit_usd_m,Gross profit,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),26,-0.1859670557825418,0.03458374583642702,-0.11036540664743727
+CPU,gross_profit_usd_m,Gross profit,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),25,0.15493350800230976,0.024004391901901782,0.09051660076698889
+CPU,gross_profit_usd_m,Gross profit,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),24,0.29439785241948363,0.08667009550920406,0.17346173566276876
+CPU,gross_profit_usd_m,Gross profit,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),23,0.3303885574853167,0.10915659891722843,0.19274716988491092
+CPU,gross_profit_usd_m,Gross profit,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),22,0.28023604269840413,0.07853223962726179,0.15610473545334394
+CPU,operating_income_usd_m,Operating income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,0.22078271453961185,0.04874500703947973,531.3353827681807
+CPU,operating_income_usd_m,Operating income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.240669624292714,0.05792186805719611,659.1063475637826
+CPU,operating_income_usd_m,Operating income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),27,-0.1018644902048078,0.010376374364685383,-278.11569686412565
+CPU,operating_income_usd_m,Operating income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),28,-0.11742401457595034,0.013788399199132996,-318.3095704767128
+CPU,operating_income_usd_m,Operating income,YoY delta USDm,0,Same quarter,29,0.11514822389847512,0.013259113466973357,314.9784321118116
+CPU,operating_income_usd_m,Operating income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),29,-0.025128593445722422,0.0006314462085604039,-81.51443106829652
+CPU,operating_income_usd_m,Operating income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),28,0.32341586441884335,0.10459782135778767,1061.1453991674446
+CPU,operating_income_usd_m,Operating income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),27,0.4698509721462167,0.22075993602674487,1648.3356465116892
+CPU,operating_income_usd_m,Operating income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),26,-0.022439889360718595,0.0005035486345212916,-141.29354421826133
+CPU,operating_income_usd_m,Operating income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),25,0.000590046108433111,3.4815441007705857e-07,3.6541442025064783
+CPU,operating_income_usd_m,Operating income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),24,0.1999629364712841,0.0399851759622188,1252.3106269554903
+CPU,operating_income_usd_m,Operating income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),23,-0.08032752064581451,0.006452510573103757,-502.36682440497174
+CPU,operating_income_usd_m,Operating income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),22,-0.23005936139722172,0.05292730976649747,-1413.3962887705877
+CPU,net_income_usd_m,Net income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,0.06719607065036455,0.004515311910848785,186.84301620412072
+CPU,net_income_usd_m,Net income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.20195295799006624,0.04078499724093746,855.8012389851356
+CPU,net_income_usd_m,Net income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),27,-0.1727044459898135,0.029826825664648407,-726.4427197666452
+CPU,net_income_usd_m,Net income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),28,-0.4188507796435942,0.1754359756080467,-1750.5714435219475
+CPU,net_income_usd_m,Net income,YoY delta USDm,0,Same quarter,29,0.07749767170302377,0.006005889119389651,322.6768333373224
+CPU,net_income_usd_m,Net income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),29,0.050096467209222284,0.0025096560268446835,261.21027944428533
+CPU,net_income_usd_m,Net income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),28,0.2884443787270585,0.08320015961923877,1530.0152190616654
+CPU,net_income_usd_m,Net income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),27,0.5249242385687342,0.27554545623696536,2977.1082998667816
+CPU,net_income_usd_m,Net income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),26,0.0808341810937043,0.0065341648330897815,826.3829787197202
+CPU,net_income_usd_m,Net income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),25,-0.09060988824366764,0.00821015184752994,-933.7022187877724
+CPU,net_income_usd_m,Net income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),24,0.10699787485633522,0.011448545223771972,1114.223693973516
+CPU,net_income_usd_m,Net income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),23,-0.05361759688073498,0.0028748466952650017,-560.8232509193517
+CPU,net_income_usd_m,Net income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),22,-0.2926756840524993,0.08565905603559838,-3079.256937177036
+Cooling,revenue_usd_m,Revenue,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),25,0.15971398342069912,0.025508556500107353,0.07759880211420166
+Cooling,revenue_usd_m,Revenue,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.5085332703654751,0.25860608706860544,0.24447700158733085
+Cooling,revenue_usd_m,Revenue,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.26378517100183135,0.06958261644046541,0.1278471869050824
+Cooling,revenue_usd_m,Revenue,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),28,-0.021440083972831456,0.0004596772007620643,-0.010339763956382397
+Cooling,revenue_usd_m,Revenue,YoY %,0,Same quarter,29,0.06077681514836734,0.003693821259578813,0.03225100237273728
+Cooling,revenue_usd_m,Revenue,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),29,-0.05805220831460848,0.003370058890202698,-0.029596400105898944
+Cooling,revenue_usd_m,Revenue,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),28,-0.44197100767580694,0.1953383716259682,-0.2401477251963723
+Cooling,revenue_usd_m,Revenue,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),27,-0.3456800659542538,0.11949470799813727,-0.2164668164557451
+Cooling,revenue_usd_m,Revenue,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),26,0.1974653248490814,0.03899255451775324,0.2220047689828673
+Cooling,revenue_usd_m,Revenue,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),25,0.07441374066395869,0.005537404799602899,0.08457457081438877
+Cooling,revenue_usd_m,Revenue,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),24,-0.27162472233788737,0.0737799897851344,-0.28322094533140635
+Cooling,revenue_usd_m,Revenue,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),23,0.03658247748992587,0.0013382776593009332,0.03865529978665231
+Cooling,revenue_usd_m,Revenue,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),23,0.1644540908532644,0.027045147998373743,0.1905346141512251
+Cooling,gross_profit_usd_m,Gross profit,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),21,0.6635103669254129,0.44024600701749605,15.307907376693846
+Cooling,gross_profit_usd_m,Gross profit,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),22,0.6825211745593474,0.4658351537218711,15.496587861314529
+Cooling,gross_profit_usd_m,Gross profit,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),23,0.35073702903921933,0.12301646353925819,8.101895786369013
+Cooling,gross_profit_usd_m,Gross profit,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),24,-0.042783787209727586,0.0018304524480072498,-0.9588438155757192
+Cooling,gross_profit_usd_m,Gross profit,YoY %,0,Same quarter,25,-0.06902248009251845,0.004764102758122105,-1.2221851621056163
+Cooling,gross_profit_usd_m,Gross profit,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),26,-0.09773746191277993,0.009552611461152109,-1.8457443715547166
+Cooling,gross_profit_usd_m,Gross profit,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),26,-0.25805581903583813,0.06659280573825724,-5.182690136098474
+Cooling,gross_profit_usd_m,Gross profit,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),25,-0.2258118926521482,0.05099101086314531,-5.448610757060853
+Cooling,gross_profit_usd_m,Gross profit,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),25,-0.24121387730857866,0.05818413460623804,-10.521393615701063
+Cooling,gross_profit_usd_m,Gross profit,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),24,-0.17791712430398535,0.031654503120599774,-7.802984967692532
+Cooling,gross_profit_usd_m,Gross profit,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),23,0.01724605518831312,0.00029742641955834184,0.7671102362262275
+Cooling,gross_profit_usd_m,Gross profit,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),22,0.1876419228163396,0.03520949119821314,8.488793592330115
+Cooling,gross_profit_usd_m,Gross profit,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),23,0.19314355947250328,0.03730443456570841,8.54369036462036
+Cooling,operating_income_usd_m,Operating income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,0.07628194011137429,0.005818934387155294,63.24563946110787
+Cooling,operating_income_usd_m,Operating income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.5509839253650761,0.3035832860107078,448.0609301783257
+Cooling,operating_income_usd_m,Operating income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.4762223701625926,0.22678774584327738,380.2208291939682
+Cooling,operating_income_usd_m,Operating income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.11953746304796367,0.01428920507194328,97.42714951766405
+Cooling,operating_income_usd_m,Operating income,YoY delta USDm,0,Same quarter,29,0.1987492421287861,0.039501261246766846,242.27448040924702
+Cooling,operating_income_usd_m,Operating income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),29,-0.14637295514121154,0.021425041996771126,-172.5653858407246
+Cooling,operating_income_usd_m,Operating income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),28,-0.6930944483195278,0.48037991429135063,-804.293935050132
+Cooling,operating_income_usd_m,Operating income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),27,-0.3764968680803657,0.14174989167432428,-520.4638654035178
+Cooling,operating_income_usd_m,Operating income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),26,-0.05737168317101362,0.0032915100298751675,-141.77406845344214
+Cooling,operating_income_usd_m,Operating income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),25,-0.10902861525464501,0.01188723894434541,-276.20310619186245
+Cooling,operating_income_usd_m,Operating income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),24,-0.36681354310898273,0.13455217540816553,-654.2479635926117
+Cooling,operating_income_usd_m,Operating income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),23,0.07108541520782759,0.005053136255269246,175.0069960877642
+Cooling,operating_income_usd_m,Operating income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),23,0.4453805362925339,0.1983638221082251,1148.4149602314917
+Cooling,net_income_usd_m,Net income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.1282998384399805,0.016460848543725096,-123.19892830897855
+Cooling,net_income_usd_m,Net income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.3756381992596455,0.14110405674302912,360.1545920383369
+Cooling,net_income_usd_m,Net income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.5032412151041933,0.2532517205795449,469.53336495835947
+Cooling,net_income_usd_m,Net income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),28,-0.007988937233196805,6.382311811595823e-05,-7.3160851514776315
+Cooling,net_income_usd_m,Net income,YoY delta USDm,0,Same quarter,29,0.11303227608325311,0.012776295436560755,152.64369009043574
+Cooling,net_income_usd_m,Net income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),29,-0.11960542733177036,0.014305458247215401,-158.69752172424134
+Cooling,net_income_usd_m,Net income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),28,-0.6382306006433328,0.40733829959754936,-751.1569277706045
+Cooling,net_income_usd_m,Net income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),27,-0.24545355176467035,0.06024744607389171,-365.85243246233193
+Cooling,net_income_usd_m,Net income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),26,-0.014256769727269775,0.0002032554830563959,-38.2869338219351
+Cooling,net_income_usd_m,Net income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),25,-0.16263019264487336,0.02644857955970862,-443.3283834986875
+Cooling,net_income_usd_m,Net income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),24,-0.44565796335330427,0.19861102030021507,-860.2197759908821
+Cooling,net_income_usd_m,Net income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),23,-0.06073647136246846,0.003688918953563951,-165.74812080864203
+Cooling,net_income_usd_m,Net income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),23,0.32801564612745,0.10759426410440849,911.5836933055323
+DRAM,revenue_usd_m,Revenue,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),24,0.3472151978095581,0.12055839358993058,729.8396024938859
+DRAM,revenue_usd_m,Revenue,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),25,0.6570170413236567,0.4316713925896916,3141.316318119839
+DRAM,revenue_usd_m,Revenue,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),26,0.7603482442028036,0.5781294524622862,5376.52570773659
+DRAM,revenue_usd_m,Revenue,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),27,0.6958772791273427,0.48424518760567353,6283.661834374214
+DRAM,revenue_usd_m,Revenue,YoY %,0,Same quarter,28,0.49497907143237113,0.24500428115605236,4425.575721016066
+DRAM,revenue_usd_m,Revenue,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),27,-0.03951915865859429,0.0015617639010831479,-376.77920048018615
+DRAM,revenue_usd_m,Revenue,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),26,-0.18972439042707784,0.03599534432292627,-3253.4873306050154
+DRAM,revenue_usd_m,Revenue,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),25,-0.16286281437262168,0.026524296305371026,-2828.81655169917
+DRAM,revenue_usd_m,Revenue,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),24,-0.34627764552992857,0.11990820779375086,-6067.057121679724
+DRAM,revenue_usd_m,Revenue,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),23,-0.2940242423260507,0.08645025507540817,-5177.872311074649
+DRAM,revenue_usd_m,Revenue,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),22,-0.09069663938896799,0.0082258803964525,-1619.3555402976767
+DRAM,revenue_usd_m,Revenue,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),21,-0.03007878460875749,0.0009047332835400264,-565.013947339623
+DRAM,revenue_usd_m,Revenue,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),20,0.07722979523238804,0.0059644412716365865,1444.0292485586124
+DRAM,gross_profit_usd_m,Gross profit,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),22,0.6149169386977342,0.37812284149739306,1745.084619094263
+DRAM,gross_profit_usd_m,Gross profit,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),23,0.5168489186030997,0.26713280466119355,4122.018517956025
+DRAM,gross_profit_usd_m,Gross profit,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),23,0.8438062438895624,0.7120089772270116,7110.862045897462
+DRAM,gross_profit_usd_m,Gross profit,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),23,0.1317829833703099,0.01736675470597937,2048.1303227692433
+DRAM,gross_profit_usd_m,Gross profit,YoY %,0,Same quarter,24,-0.15661034618143072,0.02452680053106757,-1978.194288967355
+DRAM,gross_profit_usd_m,Gross profit,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),23,-0.007262097074867253,5.273805392479552e-05,-61.28088022780039
+DRAM,gross_profit_usd_m,Gross profit,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),22,-0.26594881231705714,0.07072877077285328,-4011.8127775313933
+DRAM,gross_profit_usd_m,Gross profit,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),21,-0.33112847168089055,0.10964606475772233,-5174.922202564569
+DRAM,gross_profit_usd_m,Gross profit,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),20,-0.0634572253355043,0.004026819447280968,-1096.5467280189594
+DRAM,gross_profit_usd_m,Gross profit,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),19,-0.11908258060082828,0.014180661002552764,-2026.6444419446746
+DRAM,gross_profit_usd_m,Gross profit,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),18,-0.12701421706504915,0.01613261133664742,-2014.3206199958686
+DRAM,gross_profit_usd_m,Gross profit,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),17,0.3031815493372221,0.09191905185851842,5162.944152146382
+DRAM,gross_profit_usd_m,Gross profit,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),16,0.16053913270909953,0.02577281313098987,2813.3002285866623
+DRAM,operating_income_usd_m,Operating income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),24,0.34694187417775024,0.12036866405796988,919664.8988192863
+DRAM,operating_income_usd_m,Operating income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),25,0.813693233758091,0.6620966786636994,2925788.29855822
+DRAM,operating_income_usd_m,Operating income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),26,0.6590669872997006,0.4343692937483037,3593581.718925761
+DRAM,operating_income_usd_m,Operating income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),27,0.6446429266709165,0.4155645029068446,5594790.223065841
+DRAM,operating_income_usd_m,Operating income,YoY delta USDm,0,Same quarter,28,0.6423172222252966,0.4125714139672211,10508518.32479049
+DRAM,operating_income_usd_m,Operating income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),27,0.7234044147371133,0.5233139472611453,12623578.090451509
+DRAM,operating_income_usd_m,Operating income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),26,0.046410525112235396,0.002153936841193432,1457094.385422064
+DRAM,operating_income_usd_m,Operating income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),25,-0.1736807515742461,0.030165003467394987,-5524771.895051961
+DRAM,operating_income_usd_m,Operating income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),24,-0.06098711004415714,0.0037194275915381327,-1957578.9858195113
+DRAM,operating_income_usd_m,Operating income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),23,-0.3448055385963998,0.11889085944675334,-11128407.24526616
+DRAM,operating_income_usd_m,Operating income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),22,-0.30659136233485684,0.09399826345834347,-10036496.72306895
+DRAM,operating_income_usd_m,Operating income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),21,-0.0617394039660633,0.003811754002084752,-2127326.7584627434
+DRAM,operating_income_usd_m,Operating income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),20,-0.11625706898806855,0.01351570608969653,-3989416.4609545073
+DRAM,net_income_usd_m,Net income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),24,0.3470796921716759,0.1204643127179853,1050991.4867859182
+DRAM,net_income_usd_m,Net income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),25,0.8468549163936708,0.7171632494201312,3087394.3759284317
+DRAM,net_income_usd_m,Net income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),26,0.6033176844274758,0.36399222834293127,3397430.354265847
+DRAM,net_income_usd_m,Net income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),27,0.6603824913658582,0.43610503490257785,5372755.7287999755
+DRAM,net_income_usd_m,Net income,YoY delta USDm,0,Same quarter,28,0.6355511168558369,0.4039252221367016,9317335.732028354
+DRAM,net_income_usd_m,Net income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),27,0.701157080695467,0.49162125180938965,10962221.538842002
+DRAM,net_income_usd_m,Net income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),26,0.03914544630867477,0.001532365966705339,1100933.1020885543
+DRAM,net_income_usd_m,Net income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),25,-0.17912033434423036,0.03208409417558887,-5103121.663502152
+DRAM,net_income_usd_m,Net income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),24,-0.0781968420200993,0.006114746101916368,-2247558.3692521644
+DRAM,net_income_usd_m,Net income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),23,-0.34743941210593393,0.12071414508451699,-10038795.786578437
+DRAM,net_income_usd_m,Net income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),22,-0.2932995572930862,0.08602463030832036,-8593504.939125651
+DRAM,net_income_usd_m,Net income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),21,-0.06370793208701803,0.004058700610804101,-1964187.0877338066
+DRAM,net_income_usd_m,Net income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),20,-0.10828516460689878,0.011725676873943165,-3323863.1967943823
+Energy,revenue_usd_m,Revenue,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),24,0.030855402824221508,0.0009520558834449766,0.10889216790374445
+Energy,revenue_usd_m,Revenue,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),25,0.1474033279813201,0.02172774109996863,0.518489496711529
+Energy,revenue_usd_m,Revenue,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),26,0.042789109563815764,0.0018309078972642296,0.1501133264533414
+Energy,revenue_usd_m,Revenue,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),27,-0.16180843482038318,0.02618196957902219,-0.5589130019603058
+Energy,revenue_usd_m,Revenue,YoY %,0,Same quarter,28,-0.0745983589480823,0.00556491515774693,-0.2552968844845526
+Energy,revenue_usd_m,Revenue,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),27,0.07078905856676876,0.005011090812769417,0.2579021541137052
+Energy,revenue_usd_m,Revenue,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),26,0.20388031470888446,0.041567182725793766,1.3373796277670826
+Energy,revenue_usd_m,Revenue,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),25,0.36052738213307983,0.12997999326773177,2.4097072997225655
+Energy,revenue_usd_m,Revenue,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),24,-0.31172412464836424,0.09717192988778893,-0.7499972269145583
+Energy,revenue_usd_m,Revenue,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),23,0.24672407276160904,0.06087276808007575,1.682578834632653
+Energy,revenue_usd_m,Revenue,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),23,-0.17005290267255552,0.02891798970736164,-1.1573799966650729
+Energy,revenue_usd_m,Revenue,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),22,-0.1218580732495985,0.014849390016104516,-0.8407166293047059
+Energy,revenue_usd_m,Revenue,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),21,-0.11113035151563355,0.012349955027988276,-0.807354590852915
+Energy,gross_profit_usd_m,Gross profit,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),13,0.8623818720590113,0.7437024932560049,167.6048719259393
+Energy,gross_profit_usd_m,Gross profit,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),14,0.06711810158216948,0.004504839559994421,13.27327146193064
+Energy,gross_profit_usd_m,Gross profit,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),15,-0.124811799720098,0.015577985349369855,-23.6718530014452
+Energy,gross_profit_usd_m,Gross profit,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),17,-0.0134439820731782,0.0001807406539839368,-2.555038465264132
+Energy,gross_profit_usd_m,Gross profit,YoY %,0,Same quarter,17,-0.2869518557720223,0.0823413675310075,-4.432041196168881
+Energy,gross_profit_usd_m,Gross profit,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),17,-0.15924173059549876,0.025357928763049407,-33.44213190573067
+Energy,gross_profit_usd_m,Gross profit,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),17,-0.42807277390971676,0.1832462997627595,-204.842957536573
+Energy,gross_profit_usd_m,Gross profit,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),17,-0.059912294188093886,0.0035894829948807084,-26.30164597204882
+Energy,gross_profit_usd_m,Gross profit,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),17,-0.14488265729667146,0.02099098438534475,-57.09282032216006
+Energy,gross_profit_usd_m,Gross profit,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),16,-0.22592653602282112,0.05104279967927109,-91.36110395865836
+Energy,gross_profit_usd_m,Gross profit,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),17,0.2552504818482935,0.06515280848378602,100.10614204431013
+Energy,gross_profit_usd_m,Gross profit,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),17,0.17042475417484643,0.029044596835556834,65.02450060643608
+Energy,gross_profit_usd_m,Gross profit,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),17,-0.16864645721904498,0.028441627532535166,-67.70081416543947
+Energy,operating_income_usd_m,Operating income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),24,0.47032920460454286,0.22120956070394193,2850.001218570156
+Energy,operating_income_usd_m,Operating income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),25,0.46032255197205835,0.21189685185406837,3391.1467639698562
+Energy,operating_income_usd_m,Operating income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),26,0.29171690826990165,0.08509875457055022,2245.0098967689773
+Energy,operating_income_usd_m,Operating income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),27,-0.10038674028871979,0.010077497625794875,-775.6891081408972
+Energy,operating_income_usd_m,Operating income,YoY delta USDm,0,Same quarter,28,0.0853569525567455,0.007285809349774502,750.4440044543763
+Energy,operating_income_usd_m,Operating income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),27,-0.3006919010459956,0.0904156193546548,-2697.990673411577
+Energy,operating_income_usd_m,Operating income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),26,-0.2128791723558209,0.0453175420228993,-3252.7113740228515
+Energy,operating_income_usd_m,Operating income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),25,-0.007560439628812733,5.7160247380922016e-05,-126.83981857941434
+Energy,operating_income_usd_m,Operating income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),24,-0.21014204200441158,0.044159677817783884,-3379.6337689712204
+Energy,operating_income_usd_m,Operating income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),23,0.1542763574759594,0.023801194476050017,2551.257301479286
+Energy,operating_income_usd_m,Operating income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),23,-0.10129019451871685,0.010259703505639496,-1780.6474565118274
+Energy,operating_income_usd_m,Operating income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),22,0.01914975048096171,0.0003667129434830933,338.82916102447916
+Energy,operating_income_usd_m,Operating income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),21,0.11021733099279787,0.012147860051175963,2057.520776152448
+Energy,net_income_usd_m,Net income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),24,0.3816377331118566,0.1456473593347567,1690.7214791984868
+Energy,net_income_usd_m,Net income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),25,0.49325548750474496,0.2433009759535436,2589.186533798635
+Energy,net_income_usd_m,Net income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),26,0.31879455852687727,0.10162997054634658,1744.699553467413
+Energy,net_income_usd_m,Net income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),27,-0.026228815950763252,0.0006879507861790128,-152.51059980908593
+Energy,net_income_usd_m,Net income,YoY delta USDm,0,Same quarter,28,0.12744531182067226,0.016242307505068384,885.9874238913366
+Energy,net_income_usd_m,Net income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),27,-0.3901102976254279,0.15218604431339997,-2752.4276123007
+Energy,net_income_usd_m,Net income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),26,-0.24667247566312958,0.060847310249777256,-3053.5562142727777
+Energy,net_income_usd_m,Net income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),25,-0.059505577850343085,0.0035409137953032414,-786.2746398804117
+Energy,net_income_usd_m,Net income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),24,-0.30980571095940995,0.09597957854306546,-3803.3015745983885
+Energy,net_income_usd_m,Net income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),23,0.0995064917554126,0.009901541901469996,1209.9947729171047
+Energy,net_income_usd_m,Net income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),23,-0.1898362178664479,0.03603778961383747,-2622.010522650467
+Energy,net_income_usd_m,Net income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),22,0.08344321798161777,0.0069627706271277795,1162.8055683284126
+Energy,net_income_usd_m,Net income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),21,0.16014143198070624,0.025645278236831163,2362.297863146441
+HW equipment,revenue_usd_m,Revenue,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),25,0.09892611984767155,0.009786377188115876,1.6060943619228458
+HW equipment,revenue_usd_m,Revenue,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.19273820357663282,0.037148015117947554,3.0963458564813235
+HW equipment,revenue_usd_m,Revenue,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.009876939818147945,9.755394017131636e-05,0.16321093637244166
+HW equipment,revenue_usd_m,Revenue,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),28,-0.023566677446469876,0.0005553882858659519,-0.38658863866244086
+HW equipment,revenue_usd_m,Revenue,YoY %,0,Same quarter,29,0.12261029467080337,0.015033284359261233,1.990607844511438
+HW equipment,revenue_usd_m,Revenue,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),29,-0.10307465128995834,0.01062438373854651,-1.6753789352014512
+HW equipment,revenue_usd_m,Revenue,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),28,-0.19822561751701093,0.03929339544000031,-3.276364416828646
+HW equipment,revenue_usd_m,Revenue,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),27,0.007598136138158282,5.773167277398685e-05,0.040365804401465324
+HW equipment,revenue_usd_m,Revenue,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),26,-0.2137895025349434,0.045705951394138564,-0.1593279952301495
+HW equipment,revenue_usd_m,Revenue,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),25,-0.1891593256962324,0.03578125049785332,-1.8400167877564968
+HW equipment,revenue_usd_m,Revenue,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),24,-0.3254028899502431,0.10588704078797001,-3.2002620110486704
+HW equipment,revenue_usd_m,Revenue,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),23,-0.0067514020325438896,4.558142940503776e-05,-0.06671075495646024
+HW equipment,revenue_usd_m,Revenue,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),23,-0.051950701451074194,0.002698875381258642,-0.5142899322909441
+HW equipment,gross_profit_usd_m,Gross profit,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.4950828003901499,0.24510697924215302,-0.16846006930521412
+HW equipment,gross_profit_usd_m,Gross profit,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.26323934723625064,0.06929495393336733,0.09292867772439097
+HW equipment,gross_profit_usd_m,Gross profit,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),27,-0.16266081352703632,0.026458540257277282,-0.7865976284392112
+HW equipment,gross_profit_usd_m,Gross profit,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.3810148701442171,0.14517233127101462,1.828376853976513
+HW equipment,gross_profit_usd_m,Gross profit,YoY %,0,Same quarter,29,0.7728423599264361,0.597285313296663,3.6673478893588394
+HW equipment,gross_profit_usd_m,Gross profit,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),29,0.05580756441806619,0.0031144842462766074,0.2660948994711558
+HW equipment,gross_profit_usd_m,Gross profit,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),28,-0.15988855923688763,0.025564351374847725,-0.7754799812470914
+HW equipment,gross_profit_usd_m,Gross profit,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),27,-0.011432178791119102,0.0001306947119121134,-0.0592679707259907
+HW equipment,gross_profit_usd_m,Gross profit,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),26,-0.44969907959095523,0.2022292621849523,-0.35389227808808427
+HW equipment,gross_profit_usd_m,Gross profit,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),25,-0.20887003386320385,0.04362669104601592,-1.9823523343691922
+HW equipment,gross_profit_usd_m,Gross profit,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),24,-0.3441004815866241,0.11840514142814663,-3.301210691637271
+HW equipment,gross_profit_usd_m,Gross profit,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),23,-0.00454094513301135,2.062018270101947e-05,-0.04389574216166552
+HW equipment,gross_profit_usd_m,Gross profit,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),23,-0.04254097029230216,0.0018097341534105348,-0.41218370673647586
+HW equipment,operating_income_usd_m,Operating income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.4333616763112224,0.1878023424952727,-568.9875223164089
+HW equipment,operating_income_usd_m,Operating income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.34212240850998465,0.11704774240467282,465.3059307599036
+HW equipment,operating_income_usd_m,Operating income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.3156289946620025,0.0996216622713464,607.8423464115887
+HW equipment,operating_income_usd_m,Operating income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.4916401227288726,0.2417100102768609,958.5962893934816
+HW equipment,operating_income_usd_m,Operating income,YoY delta USDm,0,Same quarter,29,0.718841050465186,0.516732455833892,1403.143216337461
+HW equipment,operating_income_usd_m,Operating income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),29,0.09623847930070663,0.009261844898112537,212.98976074349244
+HW equipment,operating_income_usd_m,Operating income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),28,-0.4244821311204221,0.18018507964053523,-912.3646440331365
+HW equipment,operating_income_usd_m,Operating income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),27,-0.41944401468201525,0.17593328145256662,-1006.2167077036203
+HW equipment,operating_income_usd_m,Operating income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),26,-0.41860130714076044,0.17522705433995325,-1384.3293985883925
+HW equipment,operating_income_usd_m,Operating income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),25,-0.30882380390429465,0.09537214185791823,-1378.061113386231
+HW equipment,operating_income_usd_m,Operating income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),24,-0.4808842994511095,0.23124970945858436,-2067.6993169043444
+HW equipment,operating_income_usd_m,Operating income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),23,-0.043630656436135305,0.0019036341810480752,-183.2078943969534
+HW equipment,operating_income_usd_m,Operating income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),23,0.30182428266937983,0.0910978976088857,1373.3621136735158
+HW equipment,net_income_usd_m,Net income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.6057532429101322,0.36693699129614166,-659.3690280804326
+HW equipment,net_income_usd_m,Net income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.1820118059021181,0.03312829748775031,205.08294384249652
+HW equipment,net_income_usd_m,Net income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.12018665539351876,0.014444832134680433,200.63290835883575
+HW equipment,net_income_usd_m,Net income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.41075931526618126,0.16872321507794208,676.5789819528982
+HW equipment,net_income_usd_m,Net income,YoY delta USDm,0,Same quarter,29,0.706103675471877,0.49858240051489383,1087.4876142490607
+HW equipment,net_income_usd_m,Net income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),29,0.04451643343211633,0.0019817128455160444,82.75687590455759
+HW equipment,net_income_usd_m,Net income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),28,-0.35812217872421814,0.12825149489418083,-672.7154397431898
+HW equipment,net_income_usd_m,Net income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),27,-0.3339107702439131,0.11149640248488331,-672.0901867495727
+HW equipment,net_income_usd_m,Net income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),26,-0.21943780481841182,0.048152950183523405,-592.0153302888666
+HW equipment,net_income_usd_m,Net income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),25,-0.20997175702211843,0.04408813874695554,-783.5411951655481
+HW equipment,net_income_usd_m,Net income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),24,-0.5112152784673031,0.26134106093840226,-1859.364698856525
+HW equipment,net_income_usd_m,Net income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),23,-0.10118095508110175,0.010237585671123931,-353.7061654213939
+HW equipment,net_income_usd_m,Net income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),23,0.18348742788836736,0.03366763619308881,697.4295850029489
+Hyperscalers,revenue_usd_m,Revenue,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.13725795790754616,0.018839747008949713,-0.04600808938019425
+Hyperscalers,revenue_usd_m,Revenue,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.5086930542194725,0.2587686234111352,0.18171810138705527
+Hyperscalers,revenue_usd_m,Revenue,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.6247360736942799,0.39029516177494467,0.2545754634170238
+Hyperscalers,revenue_usd_m,Revenue,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.5273609329581774,0.2781095536105193,0.2263273471251542
+Hyperscalers,revenue_usd_m,Revenue,YoY %,0,Same quarter,29,0.33792644886184503,0.11419428484037716,0.16244302977672767
+Hyperscalers,revenue_usd_m,Revenue,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),29,-0.21495983082327932,0.04620772886757287,-0.11479955684354828
+Hyperscalers,revenue_usd_m,Revenue,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),28,-0.623716675286892,0.3890224910309343,-0.3382342805929971
+Hyperscalers,revenue_usd_m,Revenue,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),27,-0.4955232629450021,0.2455433041196617,-0.28715408304639595
+Hyperscalers,revenue_usd_m,Revenue,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),26,-0.25650672937339536,0.06579570221383628,-0.26810531238729984
+Hyperscalers,revenue_usd_m,Revenue,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),25,-0.20783961647277996,0.043197306175552265,-0.22063344564251164
+Hyperscalers,revenue_usd_m,Revenue,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),24,0.02278170309131673,0.0005190059957409102,0.02447680186036518
+Hyperscalers,revenue_usd_m,Revenue,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),23,0.35326642748860776,0.12479716879056377,0.3829023766932393
+Hyperscalers,revenue_usd_m,Revenue,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),22,0.2796816957691855,0.07822185094832723,0.3086199454223944
+Hyperscalers,gross_profit_usd_m,Gross profit,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.06172638740927316,0.003810146902599676,-0.07688417042318468
+Hyperscalers,gross_profit_usd_m,Gross profit,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.5254028732603199,0.27604817923019975,0.6879087124744664
+Hyperscalers,gross_profit_usd_m,Gross profit,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.4064013782132052,0.16516208021359266,0.7877530969748618
+Hyperscalers,gross_profit_usd_m,Gross profit,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.4705714759038782,0.22143751393435424,0.9079966277650369
+Hyperscalers,gross_profit_usd_m,Gross profit,YoY %,0,Same quarter,29,0.5373384253580487,0.2887325833662672,1.0381524455849156
+Hyperscalers,gross_profit_usd_m,Gross profit,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),28,-0.07396447563365607,0.005470743655761703,-0.14526947442674268
+Hyperscalers,gross_profit_usd_m,Gross profit,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),27,-0.31457134243121315,0.09895512947897557,-0.6589961479275737
+Hyperscalers,gross_profit_usd_m,Gross profit,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),26,-0.170619913872935,0.02911115501000775,-0.6438609776017623
+Hyperscalers,gross_profit_usd_m,Gross profit,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),25,-0.2310587157898135,0.053388130142437804,-0.8856861150950092
+Hyperscalers,gross_profit_usd_m,Gross profit,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),24,-0.3432352582266258,0.11781044248989851,-1.327494089096788
+Hyperscalers,gross_profit_usd_m,Gross profit,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),23,-0.010288467824624902,0.00010585257017834187,-0.04004095407873664
+Hyperscalers,gross_profit_usd_m,Gross profit,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),22,0.14880665615558744,0.02214342091620723,0.5865991531634458
+Hyperscalers,gross_profit_usd_m,Gross profit,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),21,-0.002372218090398288,5.6274186684129e-06,-0.009815752821449922
+Hyperscalers,operating_income_usd_m,Operating income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.062391720785633056,0.003892726822592396,-1512.0471039480947
+Hyperscalers,operating_income_usd_m,Operating income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.5573201499781848,0.3106057495717064,13463.082811341945
+Hyperscalers,operating_income_usd_m,Operating income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.6410583695929368,0.4109558332251544,16537.914308224503
+Hyperscalers,operating_income_usd_m,Operating income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.337483077209751,0.11389482740296276,9931.527245178964
+Hyperscalers,operating_income_usd_m,Operating income,YoY delta USDm,0,Same quarter,29,0.1730578578541749,0.029949022165075806,6807.3542227604985
+Hyperscalers,operating_income_usd_m,Operating income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),29,-0.3849857972469549,0.1482140640818735,-16233.486620830517
+Hyperscalers,operating_income_usd_m,Operating income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),28,-0.7506711791743581,0.5635072192430213,-32206.652371051965
+Hyperscalers,operating_income_usd_m,Operating income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),27,-0.4187577967776037,0.17535809236203287,-19208.5620760912
+Hyperscalers,operating_income_usd_m,Operating income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),26,-0.12604214413057696,0.015886622097033135,-10427.946554780843
+Hyperscalers,operating_income_usd_m,Operating income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),25,-0.12432117125580379,0.015455753622414895,-10450.042953869714
+Hyperscalers,operating_income_usd_m,Operating income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),24,0.12399651828027627,0.015375136545630889,10550.31915310009
+Hyperscalers,operating_income_usd_m,Operating income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),23,0.4124963499064189,0.17015323868611879,35404.765742597985
+Hyperscalers,operating_income_usd_m,Operating income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),22,0.25250013939721927,0.06375632039561516,22063.544880876634
+Hyperscalers,net_income_usd_m,Net income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.04787480998608878,0.002291997431204106,-1110.0737790354242
+Hyperscalers,net_income_usd_m,Net income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.4461586127477356,0.1990575077289839,10566.213811001806
+Hyperscalers,net_income_usd_m,Net income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.6616177492767557,0.4377380461580399,16858.59921356546
+Hyperscalers,net_income_usd_m,Net income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.41310171091389897,0.17065302355999054,10712.836227249893
+Hyperscalers,net_income_usd_m,Net income,YoY delta USDm,0,Same quarter,29,0.259414769024183,0.0672960223878702,9371.730058684567
+Hyperscalers,net_income_usd_m,Net income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),29,-0.256452618923031,0.06576794575248136,-10168.920477791433
+Hyperscalers,net_income_usd_m,Net income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),28,-0.7681916681129111,0.5901184389580969,-30992.453129251367
+Hyperscalers,net_income_usd_m,Net income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),27,-0.4816364209682972,0.23197364200315077,-20774.40096540645
+Hyperscalers,net_income_usd_m,Net income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),26,-0.10408888644343106,0.010834496281033487,-8096.985278502787
+Hyperscalers,net_income_usd_m,Net income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),25,-0.09730858910224777,0.009468961513070093,-7690.221952305965
+Hyperscalers,net_income_usd_m,Net income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),24,0.07521191360081,0.005656831947495709,6016.247588985905
+Hyperscalers,net_income_usd_m,Net income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),23,0.4083092326296592,0.16671642945062112,32839.848243609595
+Hyperscalers,net_income_usd_m,Net income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),22,0.2888191711389,0.0834165136173612,23647.9414829814
+NAND,revenue_usd_m,Revenue,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.3516134709855864,0.12363203297853179,-0.25184956207742215
+NAND,revenue_usd_m,Revenue,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),26,-0.22902271023815138,0.05245140180482825,-0.16368382205077195
+NAND,revenue_usd_m,Revenue,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),27,-0.09261060091114914,0.008576723401124139,-0.06570573961730902
+NAND,revenue_usd_m,Revenue,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.06456539523766565,0.004168690262195978,0.045459770751271895
+NAND,revenue_usd_m,Revenue,YoY %,0,Same quarter,29,0.32257933074251394,0.1040574246222882,0.2247837235256763
+NAND,revenue_usd_m,Revenue,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),29,0.35231127748254176,0.12412323624138054,0.2443060038082632
+NAND,revenue_usd_m,Revenue,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),28,0.19747172166108984,0.038995080855794936,0.13818672297980475
+NAND,revenue_usd_m,Revenue,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),27,0.1262208087734517,0.015931692567424265,0.09396821995609428
+NAND,revenue_usd_m,Revenue,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),26,-0.15606422098757503,0.024356041072458652,-0.20915974798201561
+NAND,revenue_usd_m,Revenue,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),25,-0.48924959595193995,0.2393651671391365,-0.6634300768137176
+NAND,revenue_usd_m,Revenue,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),24,-0.39347500648440237,0.15482258072790048,-0.4749550129864574
+NAND,revenue_usd_m,Revenue,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),23,-0.32179068591212895,0.10354924553979843,-0.3284420200543097
+NAND,revenue_usd_m,Revenue,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),22,-0.2805897475799893,0.0787306064470021,-0.23576695319224503
+NAND,gross_profit_usd_m,Gross profit,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.46171411248632704,0.21317992166903665,-0.25522701264457465
+NAND,gross_profit_usd_m,Gross profit,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),26,-0.2631363198490249,0.06924072282368834,-0.1438604979101044
+NAND,gross_profit_usd_m,Gross profit,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),27,-0.16662134558349534,0.027762672804054582,-0.25419543744008455
+NAND,gross_profit_usd_m,Gross profit,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.18574199803273686,0.03450008983319322,0.3610127903688949
+NAND,gross_profit_usd_m,Gross profit,YoY %,0,Same quarter,29,0.8459878623950624,0.7156954633197671,1.6266423128279857
+NAND,gross_profit_usd_m,Gross profit,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),29,0.6077469371180716,0.3693563395763973,1.1653697425779805
+NAND,gross_profit_usd_m,Gross profit,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),28,0.024398480692906618,0.000595285860122137,0.047433228284802495
+NAND,gross_profit_usd_m,Gross profit,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),27,-0.017282392787211536,0.00029868110045146135,-0.03590490559333265
+NAND,gross_profit_usd_m,Gross profit,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),26,-0.1651664718641828,0.027279963428061885,-0.6189990178638484
+NAND,gross_profit_usd_m,Gross profit,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),25,-0.49710725304427517,0.24711562102922502,-1.8930451504966173
+NAND,gross_profit_usd_m,Gross profit,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),24,-0.3257133360540589,0.1060891772834643,-1.2509786731985304
+NAND,gross_profit_usd_m,Gross profit,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),23,-0.135724595231597,0.01842116575078084,-0.5259170737702571
+NAND,gross_profit_usd_m,Gross profit,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),22,-0.18652854159945817,0.0347928968312208,-0.7354115764010083
+NAND,operating_income_usd_m,Operating income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.6219735690108468,0.38685112054809057,-531.6773309625036
+NAND,operating_income_usd_m,Operating income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,-0.30363557881276526,0.09219456472096299,-261.91328652875956
+NAND,operating_income_usd_m,Operating income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.052467294705169636,0.0027528170136791215,52.090865327233644
+NAND,operating_income_usd_m,Operating income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.40459930580202363,0.16370059825547945,413.8709513644771
+NAND,operating_income_usd_m,Operating income,YoY delta USDm,0,Same quarter,29,0.648588494018353,0.42066703457299504,669.6685888884099
+NAND,operating_income_usd_m,Operating income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),29,0.5000514059068631,0.2500514085494304,521.1878738199263
+NAND,operating_income_usd_m,Operating income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),28,0.29721824404274905,0.08833868459185513,304.7488524745624
+NAND,operating_income_usd_m,Operating income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),27,0.10141063790867802,0.010284117481045003,110.85547572481244
+NAND,operating_income_usd_m,Operating income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),26,-0.3981486325747233,0.15852233362112203,-783.196040237831
+NAND,operating_income_usd_m,Operating income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),25,-0.7049426741121105,0.49694417378433325,-1408.0664786530313
+NAND,operating_income_usd_m,Operating income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),24,-0.5166534277481283,0.2669307644038904,-1028.7541795975515
+NAND,operating_income_usd_m,Operating income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),23,-0.28362505763933793,0.08044317332091776,-562.168671265115
+NAND,operating_income_usd_m,Operating income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),22,-0.026643687269826726,0.0007098860713323267,-53.59948208780488
+NAND,net_income_usd_m,Net income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.6085384551753604,0.37031905142721416,-474.44871632570704
+NAND,net_income_usd_m,Net income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,-0.5231372492360326,0.27367258153824287,-405.79231796943924
+NAND,net_income_usd_m,Net income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),27,-0.2257531009377321,0.05096446258300186,-213.45449963410672
+NAND,net_income_usd_m,Net income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.19560299047997345,0.038260529884708586,193.66971368878083
+NAND,net_income_usd_m,Net income,YoY delta USDm,0,Same quarter,29,0.6326321777475223,0.4002234723215727,644.234167622918
+NAND,net_income_usd_m,Net income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),29,0.5607516187751912,0.3144423779589974,588.0080727120779
+NAND,net_income_usd_m,Net income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),28,0.45289827210502837,0.20511684487572032,468.8915287540067
+NAND,net_income_usd_m,Net income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),27,0.3188411203760916,0.10165966004268132,347.20144611893255
+NAND,net_income_usd_m,Net income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),26,-0.1279527333431816,0.01637190196999134,-251.33768308822127
+NAND,net_income_usd_m,Net income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),25,-0.5044305723696232,0.2544502023411457,-1006.5299252096627
+NAND,net_income_usd_m,Net income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),24,-0.5373920405385749,0.28879020523421334,-1077.729034487257
+NAND,net_income_usd_m,Net income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),23,-0.5324145153220127,0.2834652161255737,-1062.0926925118501
+NAND,net_income_usd_m,Net income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),22,-0.37190499014208295,0.1383133216925828,-752.8298034971039
+Neocloud,revenue_usd_m,Revenue,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),0,,,
+Neocloud,revenue_usd_m,Revenue,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),0,,,
+Neocloud,revenue_usd_m,Revenue,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),0,,,
+Neocloud,revenue_usd_m,Revenue,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),1,,,
+Neocloud,revenue_usd_m,Revenue,YoY %,0,Same quarter,2,,,
+Neocloud,revenue_usd_m,Revenue,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),3,,,
+Neocloud,revenue_usd_m,Revenue,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),3,,,
+Neocloud,revenue_usd_m,Revenue,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),3,,,
+Neocloud,revenue_usd_m,Revenue,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),3,,,
+Neocloud,revenue_usd_m,Revenue,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),2,,,
+Neocloud,revenue_usd_m,Revenue,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),1,,,
+Neocloud,revenue_usd_m,Revenue,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),0,,,
+Neocloud,revenue_usd_m,Revenue,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),0,,,
+Neocloud,gross_profit_usd_m,Gross profit,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),0,,,
+Neocloud,gross_profit_usd_m,Gross profit,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),0,,,
+Neocloud,gross_profit_usd_m,Gross profit,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),0,,,
+Neocloud,gross_profit_usd_m,Gross profit,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),1,,,
+Neocloud,gross_profit_usd_m,Gross profit,YoY %,0,Same quarter,1,,,
+Neocloud,gross_profit_usd_m,Gross profit,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),1,,,
+Neocloud,gross_profit_usd_m,Gross profit,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),1,,,
+Neocloud,gross_profit_usd_m,Gross profit,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),1,,,
+Neocloud,gross_profit_usd_m,Gross profit,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),1,,,
+Neocloud,gross_profit_usd_m,Gross profit,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),0,,,
+Neocloud,gross_profit_usd_m,Gross profit,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),0,,,
+Neocloud,gross_profit_usd_m,Gross profit,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),0,,,
+Neocloud,gross_profit_usd_m,Gross profit,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),0,,,
+Neocloud,operating_income_usd_m,Operating income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),0,,,
+Neocloud,operating_income_usd_m,Operating income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),0,,,
+Neocloud,operating_income_usd_m,Operating income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),0,,,
+Neocloud,operating_income_usd_m,Operating income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),1,,,
+Neocloud,operating_income_usd_m,Operating income,YoY delta USDm,0,Same quarter,2,,,
+Neocloud,operating_income_usd_m,Operating income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),3,,,
+Neocloud,operating_income_usd_m,Operating income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),3,,,
+Neocloud,operating_income_usd_m,Operating income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),3,,,
+Neocloud,operating_income_usd_m,Operating income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),3,,,
+Neocloud,operating_income_usd_m,Operating income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),2,,,
+Neocloud,operating_income_usd_m,Operating income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),1,,,
+Neocloud,operating_income_usd_m,Operating income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),0,,,
+Neocloud,operating_income_usd_m,Operating income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),0,,,
+Neocloud,net_income_usd_m,Net income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),0,,,
+Neocloud,net_income_usd_m,Net income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),0,,,
+Neocloud,net_income_usd_m,Net income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),0,,,
+Neocloud,net_income_usd_m,Net income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),1,,,
+Neocloud,net_income_usd_m,Net income,YoY delta USDm,0,Same quarter,2,,,
+Neocloud,net_income_usd_m,Net income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),3,,,
+Neocloud,net_income_usd_m,Net income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),3,,,
+Neocloud,net_income_usd_m,Net income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),3,,,
+Neocloud,net_income_usd_m,Net income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),3,,,
+Neocloud,net_income_usd_m,Net income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),2,,,
+Neocloud,net_income_usd_m,Net income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),1,,,
+Neocloud,net_income_usd_m,Net income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),0,,,
+Neocloud,net_income_usd_m,Net income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),0,,,
+OSAT / packiging,revenue_usd_m,Revenue,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),24,0.37417709611898314,0.14000849926003475,23.001521585632663
+OSAT / packiging,revenue_usd_m,Revenue,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),25,0.8007983484811106,0.6412779949300743,69.99368198831803
+OSAT / packiging,revenue_usd_m,Revenue,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),26,0.7138501503041514,0.5095820370892596,73.83456338154268
+OSAT / packiging,revenue_usd_m,Revenue,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),27,0.42412085212685946,0.17987849720881338,43.46032917380102
+OSAT / packiging,revenue_usd_m,Revenue,YoY %,0,Same quarter,28,-0.00207771625306867,4.316904828265714e-06,-0.21097566457810227
+OSAT / packiging,revenue_usd_m,Revenue,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),27,-0.055249841958462775,0.003052545036435114,-5.064110522959034
+OSAT / packiging,revenue_usd_m,Revenue,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),26,-0.055958991266630544,0.0031314087035788332,-8.889383955696028
+OSAT / packiging,revenue_usd_m,Revenue,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),25,-0.34105260342862553,0.11631687830544332,-56.533488890364005
+OSAT / packiging,revenue_usd_m,Revenue,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),24,-0.32110843996140154,0.10311063021444501,-64.08282007062289
+OSAT / packiging,revenue_usd_m,Revenue,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),23,-0.2474864151814543,0.06124952569936718,-49.54034266354398
+OSAT / packiging,revenue_usd_m,Revenue,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),23,-0.16329690597713817,0.0266658795017063,-32.68527605303304
+OSAT / packiging,revenue_usd_m,Revenue,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),22,-0.00414649875278255,1.7193451906827242e-05,-0.8418907969979815
+OSAT / packiging,revenue_usd_m,Revenue,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),21,0.14877947150692508,0.022135331141879933,31.798283138903898
+OSAT / packiging,gross_profit_usd_m,Gross profit,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),24,0.37516724879334556,0.14075046456716805,22.745430716143243
+OSAT / packiging,gross_profit_usd_m,Gross profit,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),25,0.7563426401898015,0.5720541893692794,75.02056331242012
+OSAT / packiging,gross_profit_usd_m,Gross profit,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),26,0.7624447525750109,0.5813220007291695,85.50715742522857
+OSAT / packiging,gross_profit_usd_m,Gross profit,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),27,0.3826087991950893,0.14638949322150815,42.525850892875326
+OSAT / packiging,gross_profit_usd_m,Gross profit,YoY %,0,Same quarter,28,-0.026364212595054996,0.0006950717057572565,-2.90301535391628
+OSAT / packiging,gross_profit_usd_m,Gross profit,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),27,-0.040316525838039664,0.00162542225564932,-4.156899883910033
+OSAT / packiging,gross_profit_usd_m,Gross profit,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),26,-0.05673934092890217,0.003219352809046193,-8.80844149584145
+OSAT / packiging,gross_profit_usd_m,Gross profit,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),25,-0.3298663503522675,0.1088118090947249,-62.0635352607631
+OSAT / packiging,gross_profit_usd_m,Gross profit,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),24,-0.33811902964811885,0.11432447821018547,-73.17223604142464
+OSAT / packiging,gross_profit_usd_m,Gross profit,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),23,-0.221427904820094,0.04903031703301661,-48.10198867072022
+OSAT / packiging,gross_profit_usd_m,Gross profit,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),23,-0.15768258944885788,0.024863799015297065,-34.24733537051159
+OSAT / packiging,gross_profit_usd_m,Gross profit,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),22,-0.030750706112451214,0.0009456059264143445,-6.775788242429677
+OSAT / packiging,gross_profit_usd_m,Gross profit,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),21,0.1814064342021807,0.03290829436995012,42.08320685093697
+OSAT / packiging,operating_income_usd_m,Operating income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),24,0.41774000164967195,0.17450670897826792,1851.9280209440185
+OSAT / packiging,operating_income_usd_m,Operating income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),25,0.6900137113835483,0.47611892189729865,6227.579626934229
+OSAT / packiging,operating_income_usd_m,Operating income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),26,0.7542177472082371,0.5688444102038682,9803.805653422653
+OSAT / packiging,operating_income_usd_m,Operating income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),27,0.6801988058469467,0.4626704154756123,11709.808544802112
+OSAT / packiging,operating_income_usd_m,Operating income,YoY delta USDm,0,Same quarter,28,0.6519069143053252,0.4249826249190906,13134.620977274266
+OSAT / packiging,operating_income_usd_m,Operating income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),27,0.49573942462029497,0.24575757712286112,10568.654318532754
+OSAT / packiging,operating_income_usd_m,Operating income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),26,0.028040365472971524,0.0007862620958578136,1027.9027961772713
+OSAT / packiging,operating_income_usd_m,Operating income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),25,-0.16129221139497488,0.026015177456681263,-5746.6917162962145
+OSAT / packiging,operating_income_usd_m,Operating income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),24,-0.16842502849187252,0.02836699022248807,-5600.138579589672
+OSAT / packiging,operating_income_usd_m,Operating income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),23,-0.3403304770396016,0.11582483360200281,-11423.063804998888
+OSAT / packiging,operating_income_usd_m,Operating income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),23,-0.37008622856486273,0.13696381657336382,-14582.647371135818
+OSAT / packiging,operating_income_usd_m,Operating income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),22,-0.261014046059585,0.06812833224039516,-10411.668450460584
+OSAT / packiging,operating_income_usd_m,Operating income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),21,-0.043868347128162434,0.0019244318797569573,-1837.6517068130365
+OSAT / packiging,net_income_usd_m,Net income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),24,0.5492289733679169,0.30165246518677596,917.365657655371
+OSAT / packiging,net_income_usd_m,Net income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),25,0.7292235446808727,0.5317669781169367,2128.6515238102947
+OSAT / packiging,net_income_usd_m,Net income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),26,0.6414726325954538,0.41148713836894213,3775.519214734512
+OSAT / packiging,net_income_usd_m,Net income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),27,0.7327341137585597,0.5368992814655419,6369.521676948573
+OSAT / packiging,net_income_usd_m,Net income,YoY delta USDm,0,Same quarter,28,0.6559647480205227,0.4302897506456279,9418.536010937023
+OSAT / packiging,net_income_usd_m,Net income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),27,0.691097061761143,0.47761514877488515,10583.27301101503
+OSAT / packiging,net_income_usd_m,Net income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),26,0.09217026528657819,0.008495357802998201,2528.728433067315
+OSAT / packiging,net_income_usd_m,Net income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),25,-0.13814106940637774,0.019082955056737672,-3682.2830954984333
+OSAT / packiging,net_income_usd_m,Net income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),24,-0.017549612615338835,0.00030798890294845996,-451.21874877411926
+OSAT / packiging,net_income_usd_m,Net income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),23,-0.36131217847959385,0.13054649031766988,-6133.199393931317
+OSAT / packiging,net_income_usd_m,Net income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),23,-0.33327127185236916,0.11106974064209575,-9409.243161096927
+OSAT / packiging,net_income_usd_m,Net income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),22,-0.3115543372546717,0.0970661050621977,-8918.476801848137
+OSAT / packiging,net_income_usd_m,Net income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),21,-0.09286653809244122,0.008624193897274837,-2796.544740100581
+SW equipment,revenue_usd_m,Revenue,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.32721260340009806,0.10706808782386987,-0.025533651198095555
+SW equipment,revenue_usd_m,Revenue,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),26,-0.05240307461364441,0.002746082228963183,-0.004068449487292531
+SW equipment,revenue_usd_m,Revenue,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),27,-0.2221706890354574,0.049359815066489905,-0.026405837000876682
+SW equipment,revenue_usd_m,Revenue,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.3842873068959123,0.14767673424131308,0.04772224068219515
+SW equipment,revenue_usd_m,Revenue,YoY %,0,Same quarter,29,0.6030005682134597,0.36360968526575527,0.07444308463613983
+SW equipment,revenue_usd_m,Revenue,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),28,-0.13553004324194962,0.01836839262116473,-0.016973981340106015
+SW equipment,revenue_usd_m,Revenue,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),27,-0.18053966902604324,0.03259457209203324,-0.024047154412136784
+SW equipment,revenue_usd_m,Revenue,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),26,0.16557683068513934,0.027415686859735302,0.039784409177384523
+SW equipment,revenue_usd_m,Revenue,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),25,-0.35603613965920994,0.12676173274343244,-0.08688697205358598
+SW equipment,revenue_usd_m,Revenue,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),24,-0.554156554660372,0.3070894870730538,-0.1367881901601108
+SW equipment,revenue_usd_m,Revenue,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),23,-0.04172412296436929,0.0017409024371458086,-0.01032591477353328
+SW equipment,revenue_usd_m,Revenue,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),22,-0.22848812681390074,0.052206824094925185,-0.05755241087589564
+SW equipment,revenue_usd_m,Revenue,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),21,-0.16752394104286897,0.028064270822534636,-0.0445660057415207
+SW equipment,gross_profit_usd_m,Gross profit,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.28758710799313486,0.08270634468385502,-0.022740343644030447
+SW equipment,gross_profit_usd_m,Gross profit,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),26,-0.03424030031101728,0.0011723981653886503,-0.0026940923238649175
+SW equipment,gross_profit_usd_m,Gross profit,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),27,-0.22132975954433565,0.048986862459953436,-0.020839435786380908
+SW equipment,gross_profit_usd_m,Gross profit,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.3312750756281914,0.10974317573246395,0.03356087626362269
+SW equipment,gross_profit_usd_m,Gross profit,YoY %,0,Same quarter,29,0.4359755654854339,0.19007469370034388,0.04392524989537073
+SW equipment,gross_profit_usd_m,Gross profit,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),28,-0.18421766636460013,0.03393614860081912,-0.01884758949466935
+SW equipment,gross_profit_usd_m,Gross profit,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),27,-0.16289560223688201,0.026534977228116482,-0.017660229003822595
+SW equipment,gross_profit_usd_m,Gross profit,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),26,0.14824675281751645,0.021977099720937823,0.028988017518449153
+SW equipment,gross_profit_usd_m,Gross profit,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),25,-0.3572174062520746,0.1276042753294597,-0.0709745077783169
+SW equipment,gross_profit_usd_m,Gross profit,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),24,-0.5473311390246822,0.299571375746056,-0.10927006011802019
+SW equipment,gross_profit_usd_m,Gross profit,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),23,-0.0026741934685814723,7.151310707403806e-06,-0.0005355033469434171
+SW equipment,gross_profit_usd_m,Gross profit,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),22,-0.19438524957249195,0.037785625251359985,-0.03958132526891261
+SW equipment,gross_profit_usd_m,Gross profit,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),21,-0.07485970595552005,0.005603975575746924,-0.01608905388350414
+SW equipment,operating_income_usd_m,Operating income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.4060925171227508,0.16491113246309164,-22.839917408188654
+SW equipment,operating_income_usd_m,Operating income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.10195732684182084,0.01039529649672988,5.694252892247896
+SW equipment,operating_income_usd_m,Operating income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.2027742186505108,0.04111738374932516,13.815129514288895
+SW equipment,operating_income_usd_m,Operating income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),28,-0.09164701001200855,0.008399174444141195,-6.568429201244574
+SW equipment,operating_income_usd_m,Operating income,YoY delta USDm,0,Same quarter,29,-0.4634338761538943,0.21477095756702305,-32.87496850020471
+SW equipment,operating_income_usd_m,Operating income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),28,-0.18386500427180313,0.03380633979587019,-13.268716328239922
+SW equipment,operating_income_usd_m,Operating income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),27,0.03766340542767201,0.0014185321084091936,2.8983854478951945
+SW equipment,operating_income_usd_m,Operating income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),26,-0.05868692363119517,0.0034441550052937337,-8.14630749638458
+SW equipment,operating_income_usd_m,Operating income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),25,-0.06248200166319902,0.003904000531840005,-8.745603914559725
+SW equipment,operating_income_usd_m,Operating income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),24,-0.12890242224344256,0.016615834460226755,-18.252234922324998
+SW equipment,operating_income_usd_m,Operating income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),23,0.014161068414771523,0.00020053585864783966,2.023103698805657
+SW equipment,operating_income_usd_m,Operating income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),22,0.07026388044580402,0.0049370128953022405,10.219959876296075
+SW equipment,operating_income_usd_m,Operating income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),21,0.21280157047729933,0.045284508397605,32.659526022134514
+SW equipment,net_income_usd_m,Net income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,0.11446162992424984,0.013101464724915926,7.339061591634422
+SW equipment,net_income_usd_m,Net income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.31271617279467856,0.09779140472735126,20.484045241350326
+SW equipment,net_income_usd_m,Net income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),27,-0.07490275110323442,0.005610422122833086,-4.946948262856239
+SW equipment,net_income_usd_m,Net income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.21655327840366018,0.04689532238737315,16.235445270165002
+SW equipment,net_income_usd_m,Net income,YoY delta USDm,0,Same quarter,29,-0.078037649797873,0.006089874785975468,-5.787668793648167
+SW equipment,net_income_usd_m,Net income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),28,-0.5164515783141584,0.26672223274318535,-38.80395588595427
+SW equipment,net_income_usd_m,Net income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),27,-0.04881178371622415,0.0023825902295594448,-3.905891533482084
+SW equipment,net_income_usd_m,Net income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),26,0.30280211932246365,0.09168912346617551,43.67886973038975
+SW equipment,net_income_usd_m,Net income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),25,-0.05814288461032981,0.0033805950308101276,-8.445435940263689
+SW equipment,net_income_usd_m,Net income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),24,0.021105156489780848,0.00044542763045813863,3.1030856256645634
+SW equipment,net_income_usd_m,Net income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),23,0.3191489389351076,0.10185604522340504,45.20907465222323
+SW equipment,net_income_usd_m,Net income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),22,-0.10491349412346039,0.011006841249193359,-13.978733139177345
+SW equipment,net_income_usd_m,Net income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),21,0.07490345019446028,0.005610526851033992,10.496507076745202
+Server EMS,revenue_usd_m,Revenue,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),25,0.6294959135776217,0.39626510521092456,40.009932976808386
+Server EMS,revenue_usd_m,Revenue,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.42565564536992934,0.18118272843529104,30.22760373388504
+Server EMS,revenue_usd_m,Revenue,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.4792087345900607,0.22964101130740724,33.887117374622036
+Server EMS,revenue_usd_m,Revenue,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.3849401216223558,0.14817889723463407,27.081551954549703
+Server EMS,revenue_usd_m,Revenue,YoY %,0,Same quarter,29,-0.01601312671948528,0.0002564202273342934,-0.8968397435521098
+Server EMS,revenue_usd_m,Revenue,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),29,-0.1456241426139794,0.021206390912056613,-9.38600686091164
+Server EMS,revenue_usd_m,Revenue,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),28,-0.2004984976527097,0.04019964756099363,-12.994980012092267
+Server EMS,revenue_usd_m,Revenue,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),27,-0.20375136196280616,0.04151461750169845,-13.641011699414193
+Server EMS,revenue_usd_m,Revenue,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),26,-0.30037188295103945,0.09022326806755294,-40.79252295590446
+Server EMS,revenue_usd_m,Revenue,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),25,-0.30652004075520867,0.09395453538457478,-42.13790157912705
+Server EMS,revenue_usd_m,Revenue,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),24,0.05280276077525531,0.0027881315454888404,7.319142473658664
+Server EMS,revenue_usd_m,Revenue,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),23,0.13023941330196695,0.016962304777240565,18.137575699464204
+Server EMS,revenue_usd_m,Revenue,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),23,0.061342995545499726,0.003762963102495199,8.545215781047958
+Server EMS,gross_profit_usd_m,Gross profit,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),25,0.6235507535694047,0.38881554227697246,32.915145939952396
+Server EMS,gross_profit_usd_m,Gross profit,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.4312000641796336,0.1859334953485201,25.393397778993805
+Server EMS,gross_profit_usd_m,Gross profit,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.48401973442831037,0.23427510331605209,28.384403050557435
+Server EMS,gross_profit_usd_m,Gross profit,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.3832097119934798,0.14684968336612575,22.358706711722377
+Server EMS,gross_profit_usd_m,Gross profit,YoY %,0,Same quarter,29,-0.016786808101259088,0.00028179692622849777,-0.7839629093882879
+Server EMS,gross_profit_usd_m,Gross profit,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),29,-0.1454160020563249,0.02114581365404509,-7.7595162365973085
+Server EMS,gross_profit_usd_m,Gross profit,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),28,-0.20126164763303903,0.04050625080796556,-10.782616534099839
+Server EMS,gross_profit_usd_m,Gross profit,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),27,-0.20599620964897858,0.042434438389745935,-11.456341284406253
+Server EMS,gross_profit_usd_m,Gross profit,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),26,-0.3026534090961119,0.09159908603749846,-34.09059876431613
+Server EMS,gross_profit_usd_m,Gross profit,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),25,-0.3059157561868068,0.09358444988334581,-34.87885009329952
+Server EMS,gross_profit_usd_m,Gross profit,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),24,0.0492256626113751,0.0024231658595289325,5.658730891930199
+Server EMS,gross_profit_usd_m,Gross profit,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),23,0.1286723854827227,0.016556582785814386,14.860098478621786
+Server EMS,gross_profit_usd_m,Gross profit,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),23,0.06555916680297717,0.004298004351900584,7.574188083882954
+Server EMS,operating_income_usd_m,Operating income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,0.5691512655710608,0.3239331631011401,10294.190945734359
+Server EMS,operating_income_usd_m,Operating income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.3996840516611506,0.15974734115227332,8500.844560292198
+Server EMS,operating_income_usd_m,Operating income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.5027232977474804,0.2527307140981018,10681.228209348763
+Server EMS,operating_income_usd_m,Operating income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.5302843813687408,0.2812015251236281,12375.816540297308
+Server EMS,operating_income_usd_m,Operating income,YoY delta USDm,0,Same quarter,29,0.07920984623395888,0.00627419974040741,1855.4987420386283
+Server EMS,operating_income_usd_m,Operating income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),29,-0.3592488371956972,0.12905972702646057,-10084.315968835856
+Server EMS,operating_income_usd_m,Operating income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),28,-0.6111969949773767,0.3735617666693754,-17066.730947650787
+Server EMS,operating_income_usd_m,Operating income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),27,-0.5119432991139261,0.2620859415076508,-14823.718204692475
+Server EMS,operating_income_usd_m,Operating income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),26,-0.28136561375033353,0.07916660860110188,-16073.332182963013
+Server EMS,operating_income_usd_m,Operating income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),25,-0.24213189388061965,0.05862785403421565,-13451.191902436169
+Server EMS,operating_income_usd_m,Operating income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),24,-0.02621985054610818,0.0006874805626602494,-1421.9624677700658
+Server EMS,operating_income_usd_m,Operating income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),23,0.24665991108904248,0.06084111173845434,13001.164934439335
+Server EMS,operating_income_usd_m,Operating income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),23,0.22540578900979855,0.05080776971912982,13446.986162985382
+Server EMS,net_income_usd_m,Net income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,0.552226158911009,0.304953730585607,8044.066891468037
+Server EMS,net_income_usd_m,Net income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.43627149201932486,0.19033281474876784,7510.256289851178
+Server EMS,net_income_usd_m,Net income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.5502226335221516,0.30274494644005195,9431.761927864303
+Server EMS,net_income_usd_m,Net income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.4690649525675045,0.22002192972715526,8972.24782899841
+Server EMS,net_income_usd_m,Net income,YoY delta USDm,0,Same quarter,29,-0.060709162304259864,0.003685602387684967,-1177.5404763914598
+Server EMS,net_income_usd_m,Net income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),29,-0.39048409579036936,0.15247782906522236,-8771.641019094865
+Server EMS,net_income_usd_m,Net income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),28,-0.5892453121938361,0.3472100379424114,-13359.770327010814
+Server EMS,net_income_usd_m,Net income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),27,-0.5242308107176223,0.2748179429056556,-12276.07296417738
+Server EMS,net_income_usd_m,Net income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),26,-0.2821180682328993,0.07959060442346283,-13193.789501272982
+Server EMS,net_income_usd_m,Net income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),25,-0.21628692064666405,0.046780032042816354,-9677.416280616908
+Server EMS,net_income_usd_m,Net income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),24,0.006939375306378731,4.81549296427789e-05,307.56444901789916
+Server EMS,net_income_usd_m,Net income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),23,0.26067871759073763,0.06795339380475154,11202.288317898716
+Server EMS,net_income_usd_m,Net income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),23,0.24427761607636786,0.059671553715953375,11850.040042319833
+Server Networking,revenue_usd_m,Revenue,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),25,0.17914919233846704,0.03209443311552506,0.11562187953433556
+Server Networking,revenue_usd_m,Revenue,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.6928262008283519,0.4800081445542478,0.45280744582389404
+Server Networking,revenue_usd_m,Revenue,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.42729662131958546,0.1825824025911332,0.3006329598282805
+Server Networking,revenue_usd_m,Revenue,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.10267743204217517,0.0105426550507755,0.07087608822127446
+Server Networking,revenue_usd_m,Revenue,YoY %,0,Same quarter,29,0.2592674818855429,0.0672196271632703,0.18757461192226485
+Server Networking,revenue_usd_m,Revenue,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),29,-0.13541438653161061,0.018337056079732447,-0.08996920143395917
+Server Networking,revenue_usd_m,Revenue,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),29,-0.3862944148458215,0.14922337494107563,-0.24061438404290228
+Server Networking,revenue_usd_m,Revenue,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),28,-0.4202882119034603,0.17664218106500792,-0.32786228950507496
+Server Networking,revenue_usd_m,Revenue,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),27,-0.43022024039879897,0.18508945524880038,-0.33736715032315234
+Server Networking,revenue_usd_m,Revenue,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),26,-0.13482110245074097,0.018176729666033193,-0.20328996162874519
+Server Networking,revenue_usd_m,Revenue,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),25,-0.14686005351965384,0.02156787531979559,-0.22097697126332205
+Server Networking,revenue_usd_m,Revenue,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),24,0.017070833489107606,0.0002914133560128377,0.0262472578623696
+Server Networking,revenue_usd_m,Revenue,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),23,0.323483362074595,0.10464148553908352,0.4855174558462779
+Server Networking,gross_profit_usd_m,Gross profit,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.20534421389326435,0.0421662461794427,-0.05552383857970999
+Server Networking,gross_profit_usd_m,Gross profit,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.6550388733740728,0.42907592563117464,0.1786441133732172
+Server Networking,gross_profit_usd_m,Gross profit,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.03557273877213579,0.001265419743750613,0.023382390165304995
+Server Networking,gross_profit_usd_m,Gross profit,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.295634973451343,0.08740003752757627,0.19332926096778785
+Server Networking,gross_profit_usd_m,Gross profit,YoY %,0,Same quarter,29,0.699349535595095,0.4890897729370751,0.45565114636076703
+Server Networking,gross_profit_usd_m,Gross profit,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),29,0.025612268829807862,0.0006559883146103474,0.01692163998583563
+Server Networking,gross_profit_usd_m,Gross profit,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),29,-0.2271884750052868,0.05161460317522783,-0.15686793411570085
+Server Networking,gross_profit_usd_m,Gross profit,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),28,-0.29362984569565387,0.0862184862832535,-0.2112176873384947
+Server Networking,gross_profit_usd_m,Gross profit,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),27,-0.5651248850146293,0.31936613566279803,-0.22862475118909933
+Server Networking,gross_profit_usd_m,Gross profit,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),26,-0.19318711471121233,0.037321261290443115,-0.2683807278224038
+Server Networking,gross_profit_usd_m,Gross profit,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),25,-0.3274068649257123,0.10719525520048362,-0.4566725678690024
+Server Networking,gross_profit_usd_m,Gross profit,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),24,-0.06336223862634803,0.00401477328374227,-0.08898769972340749
+Server Networking,gross_profit_usd_m,Gross profit,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),23,0.10819560577346325,0.011706289108686674,0.14812127849489987
+Server Networking,operating_income_usd_m,Operating income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.19296136225983151,0.03723408732516993,-406.64498621089353
+Server Networking,operating_income_usd_m,Operating income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.5304248166686039,0.281350486137922,1274.3891995852894
+Server Networking,operating_income_usd_m,Operating income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.01976107694212061,0.00039050016191241084,83.15365411135578
+Server Networking,operating_income_usd_m,Operating income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.08008272837726371,0.006413243384346599,332.5664822214426
+Server Networking,operating_income_usd_m,Operating income,YoY delta USDm,0,Same quarter,29,0.6141398856377759,0.3771677991311804,2758.9316841143955
+Server Networking,operating_income_usd_m,Operating income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),29,0.009198986757600613,8.462135736651145e-05,41.63389047401499
+Server Networking,operating_income_usd_m,Operating income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),29,-0.15606292515654882,0.02435563660841856,-1040.2984467473916
+Server Networking,operating_income_usd_m,Operating income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),28,-0.4172217206750989,0.17407396420309024,-2882.478964372891
+Server Networking,operating_income_usd_m,Operating income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),27,-0.7461586464792082,0.5567527257156839,-4715.0232022642285
+Server Networking,operating_income_usd_m,Operating income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),26,-0.20944544185323724,0.04386739311309778,-2821.5951952499495
+Server Networking,operating_income_usd_m,Operating income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),25,-0.14594367128557723,0.021299555188312617,-1940.0011850499377
+Server Networking,operating_income_usd_m,Operating income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),24,-0.10969668679701756,0.012033363094242968,-1510.9608026141716
+Server Networking,operating_income_usd_m,Operating income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),23,0.2592488866230986,0.06720998521531622,2426.9598192555186
+Server Networking,net_income_usd_m,Net income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.011042997454044537,0.00012194779277003412,-32.95920595224359
+Server Networking,net_income_usd_m,Net income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.30150337170725705,0.09090428315084441,976.5230750539065
+Server Networking,net_income_usd_m,Net income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),27,-0.1319547154467286,0.017412046928627117,-613.4252298936306
+Server Networking,net_income_usd_m,Net income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),28,-0.006731865050409624,4.5318007056926565e-05,-30.860155058693124
+Server Networking,net_income_usd_m,Net income,YoY delta USDm,0,Same quarter,29,0.5604432271630819,0.31409661087296986,2606.6171231495146
+Server Networking,net_income_usd_m,Net income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),29,-0.004699956465013068,2.2089590773018133e-05,-21.787099190957058
+Server Networking,net_income_usd_m,Net income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),29,-0.11145801698057325,0.012422889549241756,-737.4023941702209
+Server Networking,net_income_usd_m,Net income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),28,-0.29944982128769515,0.08967019546923256,-1994.5625605588898
+Server Networking,net_income_usd_m,Net income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),27,-0.6793395565360024,0.4615022330745324,-4195.818803352032
+Server Networking,net_income_usd_m,Net income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),26,-0.125729411424089,0.01580788489704784,-1642.5893555463692
+Server Networking,net_income_usd_m,Net income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),25,0.0017794843368938657,3.166564505250601e-06,23.18029274891418
+Server Networking,net_income_usd_m,Net income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),24,-0.14972156047652993,0.02241654567152721,-1936.9606056968466
+Server Networking,net_income_usd_m,Net income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),23,0.10135890494079489,0.010273627610797094,884.8182322684041
+Server ODM,revenue_usd_m,Revenue,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),0,,,
+Server ODM,revenue_usd_m,Revenue,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),0,,,
+Server ODM,revenue_usd_m,Revenue,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),0,,,
+Server ODM,revenue_usd_m,Revenue,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),0,,,
+Server ODM,revenue_usd_m,Revenue,YoY %,0,Same quarter,1,,,
+Server ODM,revenue_usd_m,Revenue,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),1,,,
+Server ODM,revenue_usd_m,Revenue,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),1,,,
+Server ODM,revenue_usd_m,Revenue,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),1,,,
+Server ODM,revenue_usd_m,Revenue,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),0,,,
+Server ODM,revenue_usd_m,Revenue,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),0,,,
+Server ODM,revenue_usd_m,Revenue,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),0,,,
+Server ODM,revenue_usd_m,Revenue,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),0,,,
+Server ODM,revenue_usd_m,Revenue,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),0,,,
+Server ODM,gross_profit_usd_m,Gross profit,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),0,,,
+Server ODM,gross_profit_usd_m,Gross profit,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),0,,,
+Server ODM,gross_profit_usd_m,Gross profit,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),0,,,
+Server ODM,gross_profit_usd_m,Gross profit,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),0,,,
+Server ODM,gross_profit_usd_m,Gross profit,YoY %,0,Same quarter,1,,,
+Server ODM,gross_profit_usd_m,Gross profit,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),1,,,
+Server ODM,gross_profit_usd_m,Gross profit,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),1,,,
+Server ODM,gross_profit_usd_m,Gross profit,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),1,,,
+Server ODM,gross_profit_usd_m,Gross profit,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),0,,,
+Server ODM,gross_profit_usd_m,Gross profit,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),0,,,
+Server ODM,gross_profit_usd_m,Gross profit,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),0,,,
+Server ODM,gross_profit_usd_m,Gross profit,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),0,,,
+Server ODM,gross_profit_usd_m,Gross profit,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),0,,,
+Server ODM,operating_income_usd_m,Operating income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),0,,,
+Server ODM,operating_income_usd_m,Operating income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),0,,,
+Server ODM,operating_income_usd_m,Operating income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),0,,,
+Server ODM,operating_income_usd_m,Operating income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),0,,,
+Server ODM,operating_income_usd_m,Operating income,YoY delta USDm,0,Same quarter,1,,,
+Server ODM,operating_income_usd_m,Operating income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),1,,,
+Server ODM,operating_income_usd_m,Operating income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),1,,,
+Server ODM,operating_income_usd_m,Operating income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),1,,,
+Server ODM,operating_income_usd_m,Operating income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),0,,,
+Server ODM,operating_income_usd_m,Operating income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),0,,,
+Server ODM,operating_income_usd_m,Operating income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),0,,,
+Server ODM,operating_income_usd_m,Operating income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),0,,,
+Server ODM,operating_income_usd_m,Operating income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),0,,,
+Server ODM,net_income_usd_m,Net income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),0,,,
+Server ODM,net_income_usd_m,Net income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),0,,,
+Server ODM,net_income_usd_m,Net income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),0,,,
+Server ODM,net_income_usd_m,Net income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),0,,,
+Server ODM,net_income_usd_m,Net income,YoY delta USDm,0,Same quarter,1,,,
+Server ODM,net_income_usd_m,Net income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),1,,,
+Server ODM,net_income_usd_m,Net income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),1,,,
+Server ODM,net_income_usd_m,Net income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),1,,,
+Server ODM,net_income_usd_m,Net income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),0,,,
+Server ODM,net_income_usd_m,Net income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),0,,,
+Server ODM,net_income_usd_m,Net income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),0,,,
+Server ODM,net_income_usd_m,Net income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),0,,,
+Server ODM,net_income_usd_m,Net income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),0,,,
+Server OEM,revenue_usd_m,Revenue,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),25,0.14452143967842931,0.020886446526725885,1.0252565540184886
+Server OEM,revenue_usd_m,Revenue,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.7430649124882963,0.5521454641712394,5.209572229308699
+Server OEM,revenue_usd_m,Revenue,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.6580519668535258,0.4330323910797939,4.5869908493926355
+Server OEM,revenue_usd_m,Revenue,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.05253330586826317,0.002759748225448494,0.3651008370581467
+Server OEM,revenue_usd_m,Revenue,YoY %,0,Same quarter,29,-0.059838309916983655,0.0035806233337209842,-0.41161428060026345
+Server OEM,revenue_usd_m,Revenue,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),29,-0.02642551494126107,0.000698307839910812,-0.14775473610132547
+Server OEM,revenue_usd_m,Revenue,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),29,-0.1912753321776445,0.03658625269966825,-0.8477191384699497
+Server OEM,revenue_usd_m,Revenue,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),28,-0.26978769866610264,0.0727854023515518,-1.899806098559074
+Server OEM,revenue_usd_m,Revenue,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),27,-0.23522199537627408,0.055329387108795904,-1.7691222198326808
+Server OEM,revenue_usd_m,Revenue,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),26,-0.11242288254075482,0.012638904518772354,-1.5184149299350707
+Server OEM,revenue_usd_m,Revenue,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),25,-0.12775852585187833,0.016322240927845063,-1.7491336379826141
+Server OEM,revenue_usd_m,Revenue,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),24,0.052380819686831497,0.0027437502710643542,0.7247114732309151
+Server OEM,revenue_usd_m,Revenue,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),23,0.3350582694192325,0.11226404390621099,4.668817439361684
+Server OEM,gross_profit_usd_m,Gross profit,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),25,0.15255299395682587,0.023272415965191348,4.1659769438321295
+Server OEM,gross_profit_usd_m,Gross profit,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.7846462730010402,0.6156697737344229,21.22009014842634
+Server OEM,gross_profit_usd_m,Gross profit,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.5759267601333885,0.33169163303774163,15.506179794183748
+Server OEM,gross_profit_usd_m,Gross profit,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),28,-0.09054022023678045,0.008197531480524708,-2.4271463074936483
+Server OEM,gross_profit_usd_m,Gross profit,YoY %,0,Same quarter,29,-0.13093906608446576,0.017145039027072092,-3.485295936228935
+Server OEM,gross_profit_usd_m,Gross profit,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),29,-0.042955288789404904,0.0018451568349811746,-0.8869898600381586
+Server OEM,gross_profit_usd_m,Gross profit,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),29,-0.18087040757760048,0.03271410433728732,-3.2623936272429455
+Server OEM,gross_profit_usd_m,Gross profit,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),28,-0.25180585436361347,0.06340618829178932,-6.685096598690031
+Server OEM,gross_profit_usd_m,Gross profit,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),27,-0.19485895034436104,0.03797001052930616,-5.5194115886018995
+Server OEM,gross_profit_usd_m,Gross profit,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),26,-0.07939302996987266,0.006303253207797098,-4.048786456989955
+Server OEM,gross_profit_usd_m,Gross profit,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),25,-0.16395306331775011,0.026880606971274177,-8.482986574525542
+Server OEM,gross_profit_usd_m,Gross profit,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),24,0.053250678149839276,0.00283563472341777,2.7849245496467603
+Server OEM,gross_profit_usd_m,Gross profit,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),23,0.344764025647715,0.1188622333808183,18.162273682859315
+Server OEM,operating_income_usd_m,Operating income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,0.3404132196701327,0.11588116012618603,1031.42917754055
+Server OEM,operating_income_usd_m,Operating income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.49742588631767676,0.24743251237892627,1643.042903521695
+Server OEM,operating_income_usd_m,Operating income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.4996682060694528,0.24966831615666513,1740.3156155214233
+Server OEM,operating_income_usd_m,Operating income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.4527691337014243,0.20499988843273823,1705.8448766840647
+Server OEM,operating_income_usd_m,Operating income,YoY delta USDm,0,Same quarter,29,0.11729425570462647,0.013757942421302299,504.7917358254265
+Server OEM,operating_income_usd_m,Operating income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),29,-0.341352405809598,0.1165214649520005,-1585.7243446427815
+Server OEM,operating_income_usd_m,Operating income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),29,-0.4615294643271213,0.2130094464420795,-2326.5393228487724
+Server OEM,operating_income_usd_m,Operating income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),28,-0.5514634972295929,0.3041119887766932,-2893.642155908117
+Server OEM,operating_income_usd_m,Operating income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),27,-0.47703527485800007,0.22756265345884769,-2787.6208688637084
+Server OEM,operating_income_usd_m,Operating income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),26,-0.22342191945212792,0.04991735409167313,-2342.005289162546
+Server OEM,operating_income_usd_m,Operating income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),25,-0.04275562264362422,0.0018280432676439924,-420.7560383242668
+Server OEM,operating_income_usd_m,Operating income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),24,0.09011119326812456,0.008120027152205297,903.8174498173088
+Server OEM,operating_income_usd_m,Operating income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),23,0.3088242727458506,0.09537243143700352,3038.011029702845
+Server OEM,net_income_usd_m,Net income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,0.0708128153733388,0.005014454821098568,238.28059327800605
+Server OEM,net_income_usd_m,Net income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.5399152598938618,0.2915084878662563,2069.9016620367333
+Server OEM,net_income_usd_m,Net income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.42072576606456014,0.17701017023061097,1801.6028201087731
+Server OEM,net_income_usd_m,Net income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.4637270875369169,0.21504281171547138,2258.5003490238373
+Server OEM,net_income_usd_m,Net income,YoY delta USDm,0,Same quarter,29,0.19285057112466977,0.037191342783111314,1030.1219591155984
+Server OEM,net_income_usd_m,Net income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),29,-0.3756658942220123,0.14112486408162414,-1974.8567477201511
+Server OEM,net_income_usd_m,Net income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),29,-0.3987026139932675,0.15896377440506448,-2392.2841384506737
+Server OEM,net_income_usd_m,Net income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),28,-0.4964704298198965,0.24648288768555274,-3018.732122032113
+Server OEM,net_income_usd_m,Net income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),27,-0.46782011438859006,0.2188556594265535,-3019.0797608226494
+Server OEM,net_income_usd_m,Net income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),26,-0.25252595705514186,0.06376935898661536,-2953.2935604021036
+Server OEM,net_income_usd_m,Net income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),25,-0.10659806597936262,0.011363147670540547,-1259.302730711427
+Server OEM,net_income_usd_m,Net income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),24,0.1762726857816889,0.031072059752690024,2109.762151467573
+Server OEM,net_income_usd_m,Net income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),23,0.35619053545758117,0.12687169754955838,4175.933571168073
+components,revenue_usd_m,Revenue,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),25,0.1639484349280838,0.02687908931536813,29.664944954422833
+components,revenue_usd_m,Revenue,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.821664417355185,0.6751324147476356,147.17091177793455
+components,revenue_usd_m,Revenue,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.5379484564947785,0.2893885418451146,95.7080010845648
+components,revenue_usd_m,Revenue,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),28,-0.04234104480571794,0.001792764075239814,-7.49478915767879
+components,revenue_usd_m,Revenue,YoY %,0,Same quarter,29,-0.04302892639169402,0.001851488506421822,-7.543755981403643
+components,revenue_usd_m,Revenue,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),28,-0.0024714659571803566,6.108143977501416e-06,-0.29013930891783996
+components,revenue_usd_m,Revenue,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),27,-0.1533628415271456,0.023520161161280376,-22.71548700020475
+components,revenue_usd_m,Revenue,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),26,-0.3635204511434203,0.13214711839951582,-124.42724690641712
+components,revenue_usd_m,Revenue,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),25,-0.2185161997975017,0.04774932957394168,-75.8722452745408
+components,revenue_usd_m,Revenue,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),24,-0.07759210496912007,0.0060205347535389475,-27.18216569866143
+components,revenue_usd_m,Revenue,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),23,-0.1735341859377244,0.030114113689068706,-61.190055828993444
+components,revenue_usd_m,Revenue,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),23,0.10743392542832335,0.011542048332938542,37.88571234265521
+components,revenue_usd_m,Revenue,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),22,0.32652418930125326,0.10661804619884067,116.93161431792437
+components,gross_profit_usd_m,Gross profit,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),25,0.2118391629884307,0.04487583097563891,11.914642371638502
+components,gross_profit_usd_m,Gross profit,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.798788184061069,0.6380625629955803,44.48609239282483
+components,gross_profit_usd_m,Gross profit,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.547243347708554,0.2994752816112653,30.284338131729776
+components,gross_profit_usd_m,Gross profit,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),28,-0.03627515853912656,0.0013158871270387664,-1.9913970918396504
+components,gross_profit_usd_m,Gross profit,YoY %,0,Same quarter,29,-0.05980622241036194,0.0035767842389976784,-3.2585068034764877
+components,gross_profit_usd_m,Gross profit,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),28,-0.04504405597280609,0.0020289669784812883,-1.7420858088270224
+components,gross_profit_usd_m,Gross profit,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),27,-0.17863298866076113,0.03190974463787562,-8.07122438384225
+components,gross_profit_usd_m,Gross profit,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),26,-0.3692054457492134,0.13631266117087534,-39.30013854824263
+components,gross_profit_usd_m,Gross profit,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),25,-0.24794791161936594,0.0614781668764049,-26.758533968855346
+components,gross_profit_usd_m,Gross profit,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),24,-0.06451060232389998,0.004161617812192369,-7.020464247301868
+components,gross_profit_usd_m,Gross profit,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),23,-0.13132202152825398,0.017245473338267203,-14.373837446182561
+components,gross_profit_usd_m,Gross profit,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),23,0.10034822883965726,0.01006976703125622,10.987448182208528
+components,gross_profit_usd_m,Gross profit,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),22,0.3302973885747517,0.10909636489930052,36.70575469071828
+components,operating_income_usd_m,Operating income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,0.2690562336934464,0.07239125688930244,23402.48990254029
+components,operating_income_usd_m,Operating income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.4338752474463725,0.188247730346651,51319.2842122021
+components,operating_income_usd_m,Operating income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.3803507013424495,0.14466665601169323,54402.8520326018
+components,operating_income_usd_m,Operating income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.5866060850113679,0.3441066989723642,84775.31315674269
+components,operating_income_usd_m,Operating income,YoY delta USDm,0,Same quarter,29,0.5654477424049446,0.3197311493908485,88754.12228719873
+components,operating_income_usd_m,Operating income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),28,-0.005445485119120328,2.9653308182560935e-05,-805.4769546649775
+components,operating_income_usd_m,Operating income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),27,-0.4043541847247507,0.16350230670441782,-66153.7398682737
+components,operating_income_usd_m,Operating income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),26,-0.25966586636116257,0.06742636215309314,-69209.61834490785
+components,operating_income_usd_m,Operating income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),25,-0.1676799704234439,0.02811657248120702,-44491.981523257506
+components,operating_income_usd_m,Operating income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),24,-0.3572906756429159,0.12765662690137133,-110265.0477631476
+components,operating_income_usd_m,Operating income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),23,-0.3163816774757362,0.10009736584236076,-89406.17435298319
+components,operating_income_usd_m,Operating income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),23,0.011027953620011655,0.00012161576104512817,3455.549179461199
+components,operating_income_usd_m,Operating income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),22,0.1287626354497181,0.016579816287957003,40911.29528404716
+components,net_income_usd_m,Net income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,0.34396876176353414,0.1183145090691389,19741.777073796202
+components,net_income_usd_m,Net income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.37593421264974364,0.14132653224058267,31978.064094072557
+components,net_income_usd_m,Net income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),27,0.38477263624761426,0.14804998160493887,37357.559406734516
+components,net_income_usd_m,Net income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),28,0.5687857520992942,0.3235172317911597,57977.231562225825
+components,net_income_usd_m,Net income,YoY delta USDm,0,Same quarter,29,0.5562845388785334,0.30945248819530247,60346.88174445949
+components,net_income_usd_m,Net income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),28,0.10529560792730061,0.011087165048779811,10810.533108647383
+components,net_income_usd_m,Net income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),27,-0.3439572102324237,0.11830656247087172,-39449.27520393255
+components,net_income_usd_m,Net income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),26,-0.28792720013315515,0.08290207257651798,-50722.869142745796
+components,net_income_usd_m,Net income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),25,-0.1451658492289346,0.021073123782357775,-28023.749128566324
+components,net_income_usd_m,Net income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),24,-0.3734756250276684,0.13948404248980756,-76901.96913365289
+components,net_income_usd_m,Net income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),23,-0.30032910576073313,0.09019757176704163,-59742.79344458712
+components,net_income_usd_m,Net income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),23,-0.032931234579520144,0.0010844662109313833,-7112.289142447722
+components,net_income_usd_m,Net income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),22,0.08921446747634766,0.007959221207088295,19523.838070419562
+foundry,revenue_usd_m,Revenue,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),0,,,
+foundry,revenue_usd_m,Revenue,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),0,,,
+foundry,revenue_usd_m,Revenue,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),1,,,
+foundry,revenue_usd_m,Revenue,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),2,,,
+foundry,revenue_usd_m,Revenue,YoY %,0,Same quarter,3,,,
+foundry,revenue_usd_m,Revenue,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),3,,,
+foundry,revenue_usd_m,Revenue,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),3,,,
+foundry,revenue_usd_m,Revenue,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),2,,,
+foundry,revenue_usd_m,Revenue,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),2,,,
+foundry,revenue_usd_m,Revenue,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),1,,,
+foundry,revenue_usd_m,Revenue,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),1,,,
+foundry,revenue_usd_m,Revenue,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),0,,,
+foundry,revenue_usd_m,Revenue,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),0,,,
+foundry,gross_profit_usd_m,Gross profit,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),0,,,
+foundry,gross_profit_usd_m,Gross profit,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),0,,,
+foundry,gross_profit_usd_m,Gross profit,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),1,,,
+foundry,gross_profit_usd_m,Gross profit,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),2,,,
+foundry,gross_profit_usd_m,Gross profit,YoY %,0,Same quarter,2,,,
+foundry,gross_profit_usd_m,Gross profit,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),2,,,
+foundry,gross_profit_usd_m,Gross profit,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),2,,,
+foundry,gross_profit_usd_m,Gross profit,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),1,,,
+foundry,gross_profit_usd_m,Gross profit,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),1,,,
+foundry,gross_profit_usd_m,Gross profit,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),1,,,
+foundry,gross_profit_usd_m,Gross profit,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),0,,,
+foundry,gross_profit_usd_m,Gross profit,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),0,,,
+foundry,gross_profit_usd_m,Gross profit,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),0,,,
+foundry,operating_income_usd_m,Operating income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),0,,,
+foundry,operating_income_usd_m,Operating income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),0,,,
+foundry,operating_income_usd_m,Operating income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),1,,,
+foundry,operating_income_usd_m,Operating income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),2,,,
+foundry,operating_income_usd_m,Operating income,YoY delta USDm,0,Same quarter,3,,,
+foundry,operating_income_usd_m,Operating income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),3,,,
+foundry,operating_income_usd_m,Operating income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),3,,,
+foundry,operating_income_usd_m,Operating income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),2,,,
+foundry,operating_income_usd_m,Operating income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),2,,,
+foundry,operating_income_usd_m,Operating income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),1,,,
+foundry,operating_income_usd_m,Operating income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),1,,,
+foundry,operating_income_usd_m,Operating income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),0,,,
+foundry,operating_income_usd_m,Operating income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),0,,,
+foundry,net_income_usd_m,Net income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),0,,,
+foundry,net_income_usd_m,Net income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),0,,,
+foundry,net_income_usd_m,Net income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),1,,,
+foundry,net_income_usd_m,Net income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),2,,,
+foundry,net_income_usd_m,Net income,YoY delta USDm,0,Same quarter,3,,,
+foundry,net_income_usd_m,Net income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),3,,,
+foundry,net_income_usd_m,Net income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),3,,,
+foundry,net_income_usd_m,Net income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),2,,,
+foundry,net_income_usd_m,Net income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),2,,,
+foundry,net_income_usd_m,Net income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),1,,,
+foundry,net_income_usd_m,Net income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),1,,,
+foundry,net_income_usd_m,Net income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),0,,,
+foundry,net_income_usd_m,Net income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),0,,,
+meterier,revenue_usd_m,Revenue,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),23,0.06803810983303955,0.004629184389652753,0.18219125911626857
+meterier,revenue_usd_m,Revenue,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),24,0.25558222892637694,0.06532227574297494,0.6650732092191376
+meterier,revenue_usd_m,Revenue,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),24,0.20571608818943335,0.04231910893996272,0.5439417283573277
+meterier,revenue_usd_m,Revenue,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),25,0.07765197670945703,0.006029829486886057,0.20234175255168946
+meterier,revenue_usd_m,Revenue,YoY %,0,Same quarter,27,-0.06273810816745258,0.00393607021643098,-0.16379001942285967
+meterier,revenue_usd_m,Revenue,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),25,-0.12952363443843315,0.016776371878140867,-0.29494098360716775
+meterier,revenue_usd_m,Revenue,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),24,-0.1541319901367404,0.023756670383512236,-0.6804233845432572
+meterier,revenue_usd_m,Revenue,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),24,-0.18154583250944256,0.03295888930154657,-0.7594794472765044
+meterier,revenue_usd_m,Revenue,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),24,-0.2732447077425946,0.07466267030933592,-1.1366675489208113
+meterier,revenue_usd_m,Revenue,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),22,-0.29301418771919036,0.08585731420473693,-0.9529275599879836
+meterier,revenue_usd_m,Revenue,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),21,-0.16567515033440455,0.02744825543832755,-0.15970513976554299
+meterier,revenue_usd_m,Revenue,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),21,-0.3950169340974862,0.15603837822377778,-0.26132893276089675
+meterier,revenue_usd_m,Revenue,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),20,-0.3288811428809632,0.10816280614268854,-0.32437811739097705
+meterier,gross_profit_usd_m,Gross profit,YoY %,-4,Target leads hyperscaler capex by 4 quarter(s),23,0.16091124095134574,0.025892427464502044,0.20766757643328404
+meterier,gross_profit_usd_m,Gross profit,YoY %,-3,Target leads hyperscaler capex by 3 quarter(s),24,0.3662950289319613,0.13417204822026638,0.47183700474275236
+meterier,gross_profit_usd_m,Gross profit,YoY %,-2,Target leads hyperscaler capex by 2 quarter(s),24,0.27106830700266404,0.07347802706129053,0.367172493753726
+meterier,gross_profit_usd_m,Gross profit,YoY %,-1,Target leads hyperscaler capex by 1 quarter(s),25,0.44260359196011495,0.19589793961599594,0.7178244803999274
+meterier,gross_profit_usd_m,Gross profit,YoY %,0,Same quarter,27,0.4444796396435683,0.19756215005767633,0.7203694994419628
+meterier,gross_profit_usd_m,Gross profit,YoY %,1,Hyperscaler capex leads target by 1 quarter(s),25,-0.0902109433633247,0.008138014302500978,-0.15430479014314083
+meterier,gross_profit_usd_m,Gross profit,YoY %,2,Hyperscaler capex leads target by 2 quarter(s),24,-0.24863353165793792,0.061818633064698814,-0.7894090276147658
+meterier,gross_profit_usd_m,Gross profit,YoY %,3,Hyperscaler capex leads target by 3 quarter(s),24,-0.1483132305207106,0.021996814347489443,-0.46173734204217126
+meterier,gross_profit_usd_m,Gross profit,YoY %,4,Hyperscaler capex leads target by 4 quarter(s),24,-0.42180852585000095,0.17792243247975092,-1.318615563865656
+meterier,gross_profit_usd_m,Gross profit,YoY %,5,Hyperscaler capex leads target by 5 quarter(s),22,-0.3499778500312902,0.12248449551252427,-1.1116785216394025
+meterier,gross_profit_usd_m,Gross profit,YoY %,6,Hyperscaler capex leads target by 6 quarter(s),21,0.20097567907084057,0.040391223577985504,0.6565510276192886
+meterier,gross_profit_usd_m,Gross profit,YoY %,7,Hyperscaler capex leads target by 7 quarter(s),21,0.20418594448653662,0.04169189992585902,0.6836041309235981
+meterier,gross_profit_usd_m,Gross profit,YoY %,8,Hyperscaler capex leads target by 8 quarter(s),20,0.36729376444135664,0.1349047093975028,1.203212091355495
+meterier,operating_income_usd_m,Operating income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,0.2756260344319462,0.0759697108566804,155.76807623666423
+meterier,operating_income_usd_m,Operating income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.40534810837970014,0.16430708896700114,234.45129841682012
+meterier,operating_income_usd_m,Operating income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),26,0.3137245588843395,0.09842309884717339,183.84281935596965
+meterier,operating_income_usd_m,Operating income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),27,0.46269006322065315,0.21408209460313202,292.8852899834559
+meterier,operating_income_usd_m,Operating income,YoY delta USDm,0,Same quarter,28,0.46370540984715036,0.2150227071215137,282.15464298087613
+meterier,operating_income_usd_m,Operating income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),27,-0.0016097809989842758,2.5913948646908133e-06,-1.0650748693478163
+meterier,operating_income_usd_m,Operating income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),26,-0.1361021193693383,0.018523786896825614,-160.8176223688855
+meterier,operating_income_usd_m,Operating income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),25,-0.13402559867948646,0.017962861101394764,-152.51765874267414
+meterier,operating_income_usd_m,Operating income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),24,-0.5412565514057789,0.29295865443967656,-627.9923471849354
+meterier,operating_income_usd_m,Operating income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),23,-0.4309983655435077,0.18575959110117507,-503.7917752727388
+meterier,operating_income_usd_m,Operating income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),22,-0.1455582367698675,0.02118720029155281,-169.3582207136003
+meterier,operating_income_usd_m,Operating income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),21,-0.22993623217982875,0.05287067086905611,-281.81904298878715
+meterier,operating_income_usd_m,Operating income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),20,0.10648334002515218,0.011338701702912176,126.17720480123604
+meterier,net_income_usd_m,Net income,YoY delta USDm,-4,Target leads hyperscaler capex by 4 quarter(s),25,-0.07920705532123594,0.00627375761266133,-54.80464478373811
+meterier,net_income_usd_m,Net income,YoY delta USDm,-3,Target leads hyperscaler capex by 3 quarter(s),26,0.13912307273385977,0.019355229366910833,96.59602684709422
+meterier,net_income_usd_m,Net income,YoY delta USDm,-2,Target leads hyperscaler capex by 2 quarter(s),26,0.082966784251465,0.0068834872890291415,52.604435802986316
+meterier,net_income_usd_m,Net income,YoY delta USDm,-1,Target leads hyperscaler capex by 1 quarter(s),27,0.1116202126126233,0.012459071863687228,76.83286240846294
+meterier,net_income_usd_m,Net income,YoY delta USDm,0,Same quarter,28,0.18470904589346435,0.03411743163487392,126.1779758061551
+meterier,net_income_usd_m,Net income,YoY delta USDm,1,Hyperscaler capex leads target by 1 quarter(s),27,0.05641950452611115,0.0031831604909718764,37.974719493126095
+meterier,net_income_usd_m,Net income,YoY delta USDm,2,Hyperscaler capex leads target by 2 quarter(s),26,0.09233775342977753,0.008526260708458392,88.21563112180723
+meterier,net_income_usd_m,Net income,YoY delta USDm,3,Hyperscaler capex leads target by 3 quarter(s),25,0.0663889984505238,0.004407499115263652,80.21017676022025
+meterier,net_income_usd_m,Net income,YoY delta USDm,4,Hyperscaler capex leads target by 4 quarter(s),24,-0.2533994828435672,0.06421129790538732,-308.04644873797633
+meterier,net_income_usd_m,Net income,YoY delta USDm,5,Hyperscaler capex leads target by 5 quarter(s),23,-0.4795735010030585,0.22999074286433055,-441.2269574898789
+meterier,net_income_usd_m,Net income,YoY delta USDm,6,Hyperscaler capex leads target by 6 quarter(s),22,-0.23730517533899972,0.0563137462426734,-230.90592630217603
+meterier,net_income_usd_m,Net income,YoY delta USDm,7,Hyperscaler capex leads target by 7 quarter(s),21,-0.21257825061600027,0.045189512634959024,-215.7206462398916
+meterier,net_income_usd_m,Net income,YoY delta USDm,8,Hyperscaler capex leads target by 8 quarter(s),20,0.26106080641457047,0.06815274464582584,252.37910813068706
