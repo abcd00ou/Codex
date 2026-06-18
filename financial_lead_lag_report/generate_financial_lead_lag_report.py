@@ -25,6 +25,19 @@ OUT_CHAIN_EDGE_BEST = ROOT / "value_chain_edge_best_signals.csv"
 OUT_DATA_DRIVEN_EDGE_CORR = ROOT / "data_driven_edge_lag_correlations.csv"
 OUT_DATA_DRIVEN_EDGE_BEST = ROOT / "data_driven_edge_best_signals.csv"
 
+OUTPUT_FILENAMES = {
+    "html": "financial_lead_lag_report.html",
+    "section_quarterly": "section_financial_quarterly_summary.csv",
+    "hyperscaler_capex": "hyperscaler_capex_series.csv",
+    "lag_corr": "lead_lag_correlation_summary.csv",
+    "best_signals": "lead_lag_best_signals.csv",
+    "coverage": "financial_data_coverage.csv",
+    "hypothesis_edge_corr": "hypothesis_based/hypothesis_edge_lag_correlations.csv",
+    "hypothesis_edge_best": "hypothesis_based/hypothesis_edge_best_signals.csv",
+    "data_edge_corr": "data_driven/data_driven_edge_lag_correlations.csv",
+    "data_edge_best": "data_driven/data_driven_edge_best_signals.csv",
+}
+
 ANALYSIS_START_QUARTER = "2016-Q1"
 HYPERSCALER_SECTION = "Hyperscalers"
 LAGS = list(range(-4, 9))
@@ -200,6 +213,132 @@ def load_data() -> tuple[pd.DataFrame, pd.DataFrame]:
     return matched, financials
 
 
+EXTERNAL_FINANCIAL_COLUMN_ALIASES = {
+    "company_name": ["companyname", "company_name", "company", "name", "회사명"],
+    "section": ["section", "group", "group_3", "섹션"],
+    "fs_item": ["fs_item", "item", "financial_item", "metric", "account", "계정"],
+    "date": ["date", "period", "quarter", "period_end_date", "날짜"],
+    "value": ["value", "amount", "usd_m", "financial_value", "값"],
+}
+
+EXTERNAL_FS_ITEM_MAP = {
+    "capex": "capex_usd_m",
+    "capital_expenditure": "capex_usd_m",
+    "capital expenditure": "capex_usd_m",
+    "capital expenditures": "capex_usd_m",
+    "revenue": "revenue_usd_m",
+    "sales": "revenue_usd_m",
+    "매출": "revenue_usd_m",
+    "gross_profit": "gross_profit_usd_m",
+    "gross profit": "gross_profit_usd_m",
+    "operating_income": "operating_income_usd_m",
+    "operating income": "operating_income_usd_m",
+    "op_income": "operating_income_usd_m",
+    "net_income": "net_income_usd_m",
+    "net income": "net_income_usd_m",
+}
+
+
+def _normalized_column_lookup(df: pd.DataFrame) -> dict[str, str]:
+    return {str(col).strip().lower().replace("_", " "): col for col in df.columns}
+
+
+def _resolve_external_column(df: pd.DataFrame, field: str) -> str:
+    lookup = _normalized_column_lookup(df)
+    for alias in EXTERNAL_FINANCIAL_COLUMN_ALIASES[field]:
+        key = alias.strip().lower().replace("_", " ")
+        if key in lookup:
+            return lookup[key]
+    expected = ", ".join(EXTERNAL_FINANCIAL_COLUMN_ALIASES[field])
+    raise ValueError(f"Missing required dataframe column for {field}. Expected one of: {expected}")
+
+
+def normalize_fs_item(value: object) -> str | None:
+    if pd.isna(value):
+        return None
+    key = str(value).strip().lower().replace("-", "_")
+    key = " ".join(key.replace("_", " ").split())
+    if key in EXTERNAL_FS_ITEM_MAP:
+        return EXTERNAL_FS_ITEM_MAP[key]
+    compact = key.replace(" ", "_")
+    return EXTERNAL_FS_ITEM_MAP.get(compact)
+
+
+def company_key(value: object) -> str:
+    text = "" if pd.isna(value) else str(value).strip().lower()
+    cleaned = "".join(ch if ch.isalnum() else "_" for ch in text)
+    return "_".join(part for part in cleaned.split("_") if part) or "unknown_company"
+
+
+def parse_external_quarter(value: object) -> pd.Period | pd.NaT:
+    direct = quarter_period(value)
+    if not pd.isna(direct):
+        return direct
+    date = pd.to_datetime(value, errors="coerce")
+    if pd.isna(date):
+        return pd.NaT
+    return pd.Period(date, freq="Q")
+
+
+def normalize_financial_dataframe(
+    raw: pd.DataFrame,
+    analysis_start_quarter: str | None = "2012-Q1",
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Convert a long financial DataFrame into the internal matched/financials schema.
+
+    Required logical columns are companyname, section, fs_item, date, and value.
+    fs_item should include at least capex and revenue. Optional recognized items are
+    gross_profit, operating_income, and net_income.
+    """
+    if raw.empty:
+        raise ValueError("Input dataframe is empty.")
+
+    company_col = _resolve_external_column(raw, "company_name")
+    section_col = _resolve_external_column(raw, "section")
+    item_col = _resolve_external_column(raw, "fs_item")
+    date_col = _resolve_external_column(raw, "date")
+    value_col = _resolve_external_column(raw, "value")
+
+    data = raw[[company_col, section_col, item_col, date_col, value_col]].copy()
+    data.columns = ["company_name", "section", "fs_item", "date", "value"]
+    data["company_name"] = data["company_name"].astype(str).str.strip()
+    data["section"] = data["section"].astype(str).str.strip()
+    data["metric_col"] = data["fs_item"].map(normalize_fs_item)
+    data["quarter_period"] = data["date"].map(parse_external_quarter)
+    data["value"] = pd.to_numeric(data["value"], errors="coerce")
+    data = data.dropna(subset=["company_name", "section", "metric_col", "quarter_period", "value"])
+    if analysis_start_quarter:
+        data = data[data["quarter_period"] >= quarter_period(analysis_start_quarter)]
+    if data.empty:
+        raise ValueError("No valid financial rows remain after cleaning and date filtering.")
+
+    data["db_ticker"] = data["section"].map(company_key) + "__" + data["company_name"].map(company_key)
+    data["ticker"] = data["db_ticker"]
+    pivot = (
+        data.pivot_table(
+            index=["section", "company_name", "db_ticker", "ticker", "quarter_period"],
+            columns="metric_col",
+            values="value",
+            aggfunc="sum",
+        )
+        .reset_index()
+        .rename_axis(None, axis=1)
+    )
+    for col in ["capex_usd_m", *METRICS.keys()]:
+        if col not in pivot.columns:
+            pivot[col] = np.nan
+    pivot["calendar_quarter"] = pivot["quarter_period"].astype(str).str.replace("Q", "-Q", regex=False)
+
+    matched = (
+        pivot[["section", "company_name", "db_ticker", "ticker"]]
+        .drop_duplicates()
+        .sort_values(["section", "company_name"])
+        .reset_index(drop=True)
+    )
+    financials = pivot.sort_values(["section", "company_name", "quarter_period"]).reset_index(drop=True)
+    return matched, financials
+
+
 def yoy_pct(series: pd.Series) -> pd.Series:
     previous = series.shift(4)
     out = series / previous - 1.0
@@ -356,7 +495,26 @@ def lag_correlations(section_quarterly: pd.DataFrame) -> tuple[pd.DataFrame, pd.
                 "interpretation": interpret_signal(best_pos, best_forward, best_abs),
             }
         )
-    best_df = pd.DataFrame(best_rows).sort_values(["target_metric", "best_positive_corr"], ascending=[True, False])
+    if not best_rows:
+        best_df = pd.DataFrame(
+            columns=[
+                "section",
+                "target_metric",
+                "target_metric_label",
+                "target_transform",
+                "best_positive_lag_quarters",
+                "best_positive_corr",
+                "best_forward_lag_quarters",
+                "best_forward_corr",
+                "best_same_or_forward_lag_quarters",
+                "best_same_or_forward_corr",
+                "best_abs_lag_quarters",
+                "best_abs_corr",
+                "interpretation",
+            ]
+        )
+    else:
+        best_df = pd.DataFrame(best_rows).sort_values(["target_metric", "best_positive_corr"], ascending=[True, False])
     return corr_df, best_df
 
 
@@ -994,12 +1152,11 @@ def routed_edge_path(x1: int, y1: int, x2: int, y2: int, idx: int) -> tuple[str,
 
 def edge_timing_label(edge: pd.Series) -> str:
     lag = int(edge["best_lag_quarters"])
-    corr = float(edge["best_corr"])
     if edge["timing"] == "target revenue leads":
-        return f"rev leads {abs(lag)}Q r={corr:.2f}"
+        return f"t-{abs(lag)}Q"
     if edge["timing"] == "synchronous":
-        return f"0Q r={corr:.2f}"
-    return f"capex leads {lag}Q r={corr:.2f}"
+        return "t+0Q"
+    return f"t+{lag}Q"
 
 
 def data_driven_edge_stroke(edge: pd.Series) -> tuple[str, float, str]:
@@ -1137,6 +1294,32 @@ def top_summary(best_df: pd.DataFrame) -> list[str]:
     return bullets
 
 
+def revenue_leads_interpretation_html(data_best_df: pd.DataFrame) -> str:
+    if data_best_df.empty:
+        return "<p>No data-driven timing edges were available for interpretation.</p>"
+    reverse = data_best_df[(data_best_df["timing"] == "target revenue leads") & (data_best_df["map_eligible"])].copy()
+    if reverse.empty:
+        return "<p>현재 필터를 통과한 revenue-leads-capex 관계는 없다.</p>"
+    top_rows = reverse.sort_values(["best_corr", "best_observations"], ascending=[False, False]).head(8)
+    rows = []
+    for _, row in top_rows.iterrows():
+        rows.append(
+            f"<li><b>{esc(row['target_section'])} revenue → {esc(row['source_section'])} capex</b>: "
+            f"{int(row['best_lag_quarters']):+d}Q, corr={num(row['best_corr'], 2)}, n={int(row['best_observations'])}</li>"
+        )
+    return f"""
+    <p><b>중요:</b> revenue가 capex에 선행한다고 해서 “매출이 투자를 원인적으로 만든다”는 뜻은 아니다. 이 분석은 재무제표의 인식 시점 간 상관을 보는 것이므로, 아래와 같은 해석 후보로 읽어야 한다.</p>
+    <ul>
+      <li><b>납품/매출 인식 vs 자본화 시점 차이.</b> 공급업체는 제품 출하나 진행률 기준으로 매출을 먼저 인식할 수 있고, 구매자는 설비 인도, 설치, 검수, 사용 가능 시점에 capex를 뒤늦게 자본화할 수 있다.</li>
+      <li><b>주문-생산-검수 lag.</b> 네트워킹, 메모리, 서버 부품 매출은 주문/출하 사이클을 빠르게 반영하지만, 하이퍼스케일러 capex는 데이터센터 build-out 예산 집행과 회계 처리 후 분기 재무제표에 잡힐 수 있다.</li>
+      <li><b>공통 수요 shock의 다른 회계 표현.</b> AI 수요 확대라는 동일한 shock이 공급업체에는 revenue로, 고객/플랫폼 사업자에는 capex로 나타나는 시점이 다를 수 있다.</li>
+      <li><b>데이터/분류 한계.</b> section aggregate는 회사 mix, fiscal quarter 차이, segment mix, 환율/통화 단위, capex 정의 차이를 포함한다. 따라서 reverse timing은 인과 결론이 아니라 “회계상 먼저 관측되는 지표” 후보로 보는 것이 맞다.</li>
+    </ul>
+    <p>현재 필터를 통과한 대표적인 reverse timing 관계는 다음과 같다.</p>
+    <ul>{''.join(rows)}</ul>
+    """
+
+
 def line_chart_svg(df: pd.DataFrame) -> str:
     data = df.dropna(subset=["capex_yoy_pct"]).tail(28).copy()
     if data.empty:
@@ -1220,6 +1403,8 @@ def build_html(
     edge_best_df: pd.DataFrame,
     data_corr_df: pd.DataFrame,
     data_best_df: pd.DataFrame,
+    source_label: str = "financials.db",
+    source_detail: str = str(DB_PATH),
 ) -> str:
     revenue_top = metric_best(best_df, "revenue_usd_m")
     revenue_forward_top = metric_best_forward(best_df, "revenue_usd_m")
@@ -1229,7 +1414,7 @@ def build_html(
 
     payload = {
         "generated_at": pd.Timestamp.now(tz="Asia/Seoul").strftime("%Y-%m-%d %H:%M KST"),
-        "source_db": str(DB_PATH),
+        "source": source_detail,
         "source_master": str(MASTER_PATH),
         "chain_hypotheses": VALUE_CHAIN_HYPOTHESES,
         "data_driven_filter": {
@@ -1281,7 +1466,7 @@ def build_html(
 <body>
 <header>
   <h1>Hyperscaler Capex vs AI Supply Chain Financial Lead-Lag</h1>
-  <div class="meta">Generated {esc(payload["generated_at"])} · DB: {esc(DB_PATH.name)} · Master: {esc(MASTER_PATH.name)}</div>
+  <div class="meta">Generated {esc(payload["generated_at"])} · Source: {esc(source_label)} · Master: {esc(MASTER_PATH.name)}</div>
 </header>
 <main>
   <section class="grid">
@@ -1299,8 +1484,11 @@ def build_html(
   </section>
 
   <section>
-    <h2>Data-Driven Value-Chain Map</h2>
+    <h2>Data-Driven Analysis</h2>
+    <p class="note">이 블록은 가정 edge를 사용하지 않는다. 가능한 모든 ordered section pair를 탐색해서 <code>source capex change</code>와 <code>target revenue YoY</code> 사이의 가장 강한 timing 관계를 찾는다. 상세 백데이터는 <code>data_driven/</code> 폴더의 CSV에 저장된다.</p>
+    <h3>Data-Driven Value-Chain Map</h3>
     <p>이 맵은 사용자의 가설 edge를 사용하지 않고, 가능한 모든 <code>source section capex change</code>와 <code>target section revenue YoY</code> 조합을 탐색해서 만든다. 기본 맵에는 <code>n ≥ {MIN_OBS}</code>이고 <code>corr ≥ {DATA_DRIVEN_MIN_ABS_CORR}</code>인 관계를 우선 표시한다. 왼쪽일수록 먼저 움직이는 노드이고, 노드 아래의 <code>t+…Q</code>는 선택된 edge들의 lag를 동시에 맞춘 상대적인 체인 위치다. 초록은 source capex가 target revenue를 선행, 파란 점선은 동행, 붉은 점선은 target revenue가 source capex보다 먼저 움직이는 관계, 회색 짧은 점선은 low-n 탐색 신호다.</p>
+    <p>맵의 선 라벨은 timing만 표시한다. <code>t+3Q</code>는 source capex가 target revenue보다 3분기 먼저 관측된다는 뜻이고, <code>t-2Q</code>는 target revenue가 source capex보다 2분기 먼저 관측된다는 뜻이다. 상관계수와 관측치 수는 아래 표에서 확인한다.</p>
     {data_driven_chain_map_svg(data_best_df)}
     <div class="tablewrap">
       {table_html(data_best_df, [
@@ -1316,17 +1504,19 @@ def build_html(
         ("interpretation", "Interpretation"),
       ], limit=40)}
     </div>
-  </section>
-
-  <section>
-    <h2>Data-Driven Lag Impact Profiles</h2>
+    <h3>How to Interpret Revenue-Leads-Capex</h3>
+    {revenue_leads_interpretation_html(data_best_df)}
+    <h3>Data-Driven Lag Impact Profiles</h3>
     <p>아래 그래프는 데이터 기반으로 선정된 edge의 lag별 상관계수다. +Q는 source capex가 target revenue를 선행, 0Q는 동행, -Q는 target revenue가 source capex보다 먼저 움직인다는 뜻이다.</p>
     {lag_profile_svg(data_corr_df, data_best_df.rename(columns={"best_lag_quarters": "best_forward_lag_quarters", "best_corr": "best_forward_corr"}), limit=14)}
   </section>
 
   <section>
-    <h2>Hypothesis-Constrained Value-Chain Map</h2>
+    <h2>Hypothesis-Based Analysis</h2>
+    <p class="note">이 블록은 사용자가 사전에 정의한 supply-chain 가정 edge만 검증한다. 데이터 드리븐 탐색 결과와 섞지 않으며, 상세 백데이터는 <code>hypothesis_based/</code> 폴더의 CSV에 저장된다.</p>
+    <h3>Hypothesis-Constrained Value-Chain Map</h3>
     <p>아래 맵은 사용자의 가설을 edge로 고정한 뒤, 각 edge의 <code>source capex change</code>가 <code>target revenue YoY</code>에 선행하는 가장 강한 양의 lag를 붙인 것이다. 초록 실선은 상대적으로 강한 forward evidence, 황색 점선은 약한 forward evidence, 회색 짧은 점선은 low-n exploratory evidence, 적색/회색 점선은 현재 데이터에서 forward evidence가 약하거나 부족하다는 뜻이다.</p>
+    <p>맵의 선 라벨은 timing만 표시하고, 상관계수와 관측치 수는 아래 hypothesis table에서 확인한다.</p>
     {value_chain_map_svg(edge_best_df)}
     <div class="tablewrap">
       {table_html(edge_best_df, [
@@ -1343,10 +1533,7 @@ def build_html(
         ("evidence_note", "Evidence note"),
       ], limit=30)}
     </div>
-  </section>
-
-  <section>
-    <h2>Lag Impact Profiles by Hypothesis Edge</h2>
+    <h3>Lag Impact Profiles by Hypothesis Edge</h3>
     <p>각 행은 하나의 가설 edge다. 막대가 0선 위면 양의 상관, 아래면 음의 상관이다. 오른쪽 라벨은 <code>lag &gt; 0</code> 중 가장 강한 양의 상관을 표시한다.</p>
     {lag_profile_svg(edge_corr_df, edge_best_df, limit=14)}
   </section>
@@ -1449,19 +1636,19 @@ def build_html(
 
   <section>
     <h2>Methodology</h2>
-    <p><b>Aggregation.</b> Company financial rows are mapped to the user-defined supply-chain section in <code>company_master.xlsx</code>. Quarterly values are summed by <code>section × calendar_quarter</code>. Capex is converted to positive investment spend using absolute value because cash-flow statements can encode capex as an outflow.</p>
+    <p><b>Aggregation.</b> Company financial rows are mapped to the user-defined supply-chain section. In DB mode, the section mapping comes from <code>company_master.xlsx</code>; in DataFrame mode, the input <code>section</code> column is used directly. Quarterly values are summed by <code>section × calendar_quarter</code>. Capex is converted to positive investment spend using absolute value because cash-flow statements can encode capex as an outflow.</p>
     <p><b>Variable transformation.</b> For capex and revenue/gross profit, the report uses year-over-year percentage change to reduce scale and seasonality effects: <code>x_t / x_(t-4) - 1</code>. For operating income and net income, the report uses year-over-year USD delta because profit can cross zero and make percentage growth unstable.</p>
     <p><b>Lead-lag convention.</b> lag +N means hyperscaler capex at quarter t is compared with target section metric at quarter t+N. lag 0 is same-quarter coupling. lag -N means the target section moved before hyperscaler capex.</p>
     <p><b>Data-driven edge discovery.</b> The data-driven map ignores the hypothesis list and evaluates every ordered section pair: <code>source section capex change(t)</code> → <code>target section revenue YoY(t+lag)</code>. For each pair, it keeps the strongest positive correlation across -4Q to +8Q, then labels timing as source-capex-leads, synchronous, or target-revenue-leads. The map filters to <code>n ≥ {MIN_OBS}</code> and <code>corr ≥ {DATA_DRIVEN_MIN_ABS_CORR}</code> for the primary picture.</p>
     <p><b>Hypothesis edge method.</b> The hypothesis-constrained chain-map section uses the directed hypothesis list supplied by the user. It reports the same lag convention, but it does not search outside those proposed edges. This makes it useful for checking whether a prior business narrative is supported, while the data-driven map is better for discovering unexpected timing.</p>
     <p><b>Capex transform fallback.</b> The primary source investment transform is <code>capex_yoy_pct</code>. If a source section has fewer than {MIN_OBS} capex YoY observations, the chain-edge analysis falls back to <code>capex_qoq_pct</code>. QoQ fallback edges are accepted with at least {MIN_SUPPLEMENTAL_OBS} overlapping observations, but if they remain below {MIN_OBS} observations they are classified as <code>exploratory low-n</code>. This is especially relevant for AI Chip, DRAM, and NAND capex, where available quarterly capex history is sparse in the current DB.</p>
     <p><b>Signal classes.</b> Forward evidence is classified from the best positive forward-lag correlation: strong ≥ 0.65, moderate ≥ 0.45, weak ≥ 0.25, very weak &lt; 0.25, and no forward evidence when no positive forward-lag correlation has enough observations. These are analytical thresholds for exploration, not literature constants.</p>
-    <p><b>Files generated.</b> CSV provenance is saved beside this HTML: <code>{esc(OUT_SECTION_QUARTERLY.name)}</code>, <code>{esc(OUT_HYPERSCALER_CAPEX.name)}</code>, <code>{esc(OUT_LAG_CORR.name)}</code>, <code>{esc(OUT_BEST_SIGNALS.name)}</code>, <code>{esc(OUT_DATA_DRIVEN_EDGE_CORR.name)}</code>, <code>{esc(OUT_DATA_DRIVEN_EDGE_BEST.name)}</code>, <code>{esc(OUT_CHAIN_EDGE_CORR.name)}</code>, <code>{esc(OUT_CHAIN_EDGE_BEST.name)}</code>, and <code>{esc(OUT_COVERAGE.name)}</code>.</p>
+    <p><b>Files generated.</b> Common section-level data is saved beside this HTML: <code>{esc(OUTPUT_FILENAMES["section_quarterly"])}</code>, <code>{esc(OUTPUT_FILENAMES["hyperscaler_capex"])}</code>, <code>{esc(OUTPUT_FILENAMES["lag_corr"])}</code>, <code>{esc(OUTPUT_FILENAMES["best_signals"])}</code>, and <code>{esc(OUTPUT_FILENAMES["coverage"])}</code>. Data-driven results are saved under <code>data_driven/</code>: <code>{esc(OUTPUT_FILENAMES["data_edge_corr"])}</code>, <code>{esc(OUTPUT_FILENAMES["data_edge_best"])}</code>. Hypothesis-based results are saved under <code>hypothesis_based/</code>: <code>{esc(OUTPUT_FILENAMES["hypothesis_edge_corr"])}</code>, <code>{esc(OUTPUT_FILENAMES["hypothesis_edge_best"])}</code>.</p>
   </section>
 
   <section>
     <h2>References and Interpretation Anchors</h2>
-    <p>아래 문헌은 모델 계수의 근거가 아니라, 왜 lead-lag/cross-correlation 접근을 쓰는지와 AI 인프라 공급망 edge를 어떻게 해석할지에 대한 참고 anchor다. 실제 상관계수와 lag는 이 폴더의 DB 분석 결과에서만 산출했다.</p>
+    <p>아래 문헌은 모델 계수의 근거가 아니라, 왜 lead-lag/cross-correlation 접근을 쓰는지와 AI 인프라 공급망 edge를 어떻게 해석할지에 대한 참고 anchor다. 실제 상관계수와 lag는 입력 재무 데이터에서 산출했다.</p>
     {references_html()}
   </section>
 
@@ -1472,8 +1659,22 @@ def build_html(
 """
 
 
-def write_outputs() -> None:
-    matched, financials = load_data()
+def output_paths(output_dir: Path) -> dict[str, Path]:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    paths = {key: output_dir / filename for key, filename in OUTPUT_FILENAMES.items()}
+    for path in paths.values():
+        path.parent.mkdir(parents=True, exist_ok=True)
+    return paths
+
+
+def write_report_outputs(
+    matched: pd.DataFrame,
+    financials: pd.DataFrame,
+    output_dir: Path = ROOT,
+    source_label: str = "financials.db",
+    source_detail: str = str(DB_PATH),
+) -> dict[str, Path]:
+    paths = output_paths(output_dir)
     section_quarterly = aggregate_section_quarterly(financials)
     coverage = coverage_table(financials, section_quarterly, matched)
     hyper_series = hyperscaler_capex_series(section_quarterly)
@@ -1483,34 +1684,77 @@ def write_outputs() -> None:
 
     csv_section = section_quarterly.copy()
     csv_section["quarter_period"] = csv_section["quarter_period"].astype(str)
-    csv_section.to_csv(OUT_SECTION_QUARTERLY, index=False)
+    csv_section.to_csv(paths["section_quarterly"], index=False)
     hyper_csv = hyper_series.copy()
     hyper_csv["quarter_period"] = hyper_csv["quarter_period"].astype(str)
-    hyper_csv.to_csv(OUT_HYPERSCALER_CAPEX, index=False)
-    corr_df.to_csv(OUT_LAG_CORR, index=False)
-    best_df.to_csv(OUT_BEST_SIGNALS, index=False)
-    edge_corr_df.to_csv(OUT_CHAIN_EDGE_CORR, index=False)
-    edge_best_df.to_csv(OUT_CHAIN_EDGE_BEST, index=False)
-    data_corr_df.to_csv(OUT_DATA_DRIVEN_EDGE_CORR, index=False)
-    data_best_df.to_csv(OUT_DATA_DRIVEN_EDGE_BEST, index=False)
-    coverage.to_csv(OUT_COVERAGE, index=False)
+    hyper_csv.to_csv(paths["hyperscaler_capex"], index=False)
+    corr_df.to_csv(paths["lag_corr"], index=False)
+    best_df.to_csv(paths["best_signals"], index=False)
+    edge_corr_df.to_csv(paths["hypothesis_edge_corr"], index=False)
+    edge_best_df.to_csv(paths["hypothesis_edge_best"], index=False)
+    data_corr_df.to_csv(paths["data_edge_corr"], index=False)
+    data_best_df.to_csv(paths["data_edge_best"], index=False)
+    coverage.to_csv(paths["coverage"], index=False)
 
-    OUT_HTML.write_text(
-        build_html(section_quarterly, hyper_series, corr_df, best_df, coverage, edge_corr_df, edge_best_df, data_corr_df, data_best_df),
+    paths["html"].write_text(
+        build_html(
+            section_quarterly,
+            hyper_series,
+            corr_df,
+            best_df,
+            coverage,
+            edge_corr_df,
+            edge_best_df,
+            data_corr_df,
+            data_best_df,
+            source_label=source_label,
+            source_detail=source_detail,
+        ),
         encoding="utf-8",
     )
 
-    print(f"Wrote {OUT_HTML}")
+    print(f"Wrote {paths['html']}")
     print(f"Valid lag correlations: {corr_df['corr'].notna().sum():,}")
     print("Top capex-leads revenue signals:")
     cols = ["section", "best_forward_lag_quarters", "best_forward_corr", "best_forward_observations"]
-    print(metric_best_forward(best_df, "revenue_usd_m")[cols].head(10).to_string(index=False))
+    forward = metric_best_forward(best_df, "revenue_usd_m")
+    print(forward[cols].head(10).to_string(index=False) if not forward.empty else "(none)")
     print("Top value-chain edge signals:")
     edge_cols = ["source_section", "target_section", "best_forward_lag_quarters", "best_forward_corr", "signal_class"]
-    print(edge_best_df[edge_cols].head(10).to_string(index=False))
+    print(edge_best_df[edge_cols].head(10).to_string(index=False) if not edge_best_df.empty else "(none)")
     print("Top data-driven edges:")
     data_cols = ["source_section", "target_section", "best_lag_quarters", "timing", "best_corr", "best_observations", "signal_class", "map_eligible"]
-    print(data_best_df[data_cols].head(12).to_string(index=False))
+    print(data_best_df[data_cols].head(12).to_string(index=False) if not data_best_df.empty else "(none)")
+    return paths
+
+
+def generate_report_from_dataframe(
+    df: pd.DataFrame,
+    output_dir: str | Path = ROOT / "dataframe_report",
+    analysis_start_quarter: str | None = "2012-Q1",
+) -> dict[str, Path]:
+    """Generate the same HTML/CSV report from a long financial DataFrame.
+
+    Expected logical columns:
+    - companyname
+    - section
+    - fs_item: capex, revenue, and optionally gross_profit, operating_income, net_income
+    - date: any date inside the fiscal/calendar quarter, or strings such as 2024-Q1
+    - value
+    """
+    matched, financials = normalize_financial_dataframe(df, analysis_start_quarter=analysis_start_quarter)
+    return write_report_outputs(
+        matched,
+        financials,
+        output_dir=Path(output_dir),
+        source_label="input dataframe",
+        source_detail="long dataframe columns: companyname, section, fs_item, date, value",
+    )
+
+
+def write_outputs() -> None:
+    matched, financials = load_data()
+    write_report_outputs(matched, financials, output_dir=ROOT, source_label=DB_PATH.name, source_detail=str(DB_PATH))
 
 
 if __name__ == "__main__":
