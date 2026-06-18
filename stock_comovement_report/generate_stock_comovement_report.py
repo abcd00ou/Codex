@@ -1274,7 +1274,7 @@ def render_report(
         weak_members = members[members["member_role"] == "weakly coupled"]
         sections.append(
             f"""
-      <section class="group-card">
+      <section class="group-card" data-group="{esc(r.group)}">
         <h3>{esc(r.group)} <span>{esc(r.classification)}</span></h3>
         <p>{esc(r.interpretation)}</p>
         <div class="kpis">
@@ -1293,6 +1293,21 @@ def render_report(
       </section>
 """
         )
+
+    group_options = "".join(f'<option value="{esc(r.group)}">{esc(r.group)}</option>' for r in results)
+    role_financial_section = f"""
+    <section class="section">
+      <h2>Core Coupling vs Weak Members: Financial Weight</h2>
+      <p>여기서는 주가 coupling으로 나뉜 member role이 실제 섹션 내 경제적 비중과도 연결되는지 확인한다. 즉, <strong>coupling core</strong>가 단순히 많이 같이 움직이는 종목인지, 아니면 섹션 매출/이익의 큰 부분을 차지하는 종목인지 비교한다.</p>
+      <p class="small">Revenue, operating income, net income은 DB의 최신 annual financials 기준이다. 이익 지표는 손실 기업이 섞이면 role share가 음수 또는 100% 초과로 보일 수 있으므로, 매출 비중보다 더 조심해서 읽어야 한다. Market cap 컬럼은 stock_prices에 있으나 현재 값이 없어 표에는 coverage 0 또는 빈 값으로 표시된다.</p>
+      <div class="chart">{role_share_svg(role_deepdive, "revenue_usd_m_share_of_group", "Revenue Share by Coupling Role")}</div>
+      <div class="chart" style="margin-top:12px;">{role_share_svg(role_deepdive, "operating_income_usd_m_share_of_group", "Operating Income Share by Coupling Role")}</div>
+      <h3>Interpretive read</h3>
+      {role_deepdive_story(role_deepdive)}
+      <h3>Role-level financial table</h3>
+      {table_html(role_display, ["group", "member_role", "members", "companies", "avg_mean_corr_to_group", "revenue_usd_m", "revenue_usd_m_share_of_group", "operating_income_usd_m", "operating_income_usd_m_share_of_group", "net_income_usd_m", "net_income_usd_m_share_of_group", "market_cap_usd_b", "market_cap_usd_b_share_of_group"], max_rows=120) if not role_display.empty else "<p>No role-level financial table available.</p>"}
+    </section>
+"""
 
     html_doc = f"""<!doctype html>
 <html lang="ko">
@@ -1317,6 +1332,9 @@ def render_report(
     .tab-button.active {{ background: #10243d; color: #fff; border-color: #10243d; }}
     .tab-panel {{ display: none; }}
     .tab-panel.active {{ display: block; }}
+    .filter-row {{ display: flex; gap: 10px; align-items: end; flex-wrap: wrap; margin: 10px 0 16px; }}
+    .filter-row label {{ display: block; color: #5f6b7a; font-size: 12px; font-weight: 700; margin-bottom: 4px; }}
+    .filter-row select {{ min-width: 260px; border: 1px solid #cbd5e1; border-radius: 7px; padding: 9px 10px; background: #fff; color: #172033; font-size: 14px; }}
     .small {{ color: #5f6b7a; font-size: 13px; }}
     .kpis {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 12px 0; }}
     .kpis div {{ border: 1px solid #d9e0ea; border-radius: 8px; padding: 10px; background: #f8fafc; }}
@@ -1381,23 +1399,6 @@ def render_report(
     </section>
 
     <section class="section">
-      <h2>Frequency Cross-Check</h2>
-      <p>메인 분석은 monthly return으로 통일했다. 아래 표는 daily/weekly/monthly 결과를 보조적으로 비교해, 월별 기준에서 잡히는 중기 coupling이 단기 noise 때문인지 아닌지 확인하기 위한 cross-check다.</p>
-      {frequency_pivot_html(frequency_summary)}
-      {frequency_story_html(frequency_summary)}
-      <h3>Frequency detail</h3>
-      {table_html(frequency_display, ["frequency", "group", "n_assets", "observations", "avg_pair_corr", "pc1_share", "strong_pair_share", "corr_vs_monthly_delta"], max_rows=90)}
-    </section>
-
-    <section class="section">
-      <h2>Supply Chain Bottleneck Lens</h2>
-      <p>이 리포트의 가격 데이터만으로 현재 병목 위치를 확정하지는 않는다. 대신 각 AI 공급망 section이 병목/shortage narrative에 얼마나 민감한지 사전 분류하고, 그 section의 월별 주가 coupling이 강한지 확인하는 <strong>screening framework</strong>로 사용한다.</p>
-      <p>해석 규칙은 보수적으로 잡았다. <strong>Coupling 강화</strong>는 해당 section이 시장에서 하나의 병목 또는 공통 factor로 가격 반영되고 있다는 후보 신호다. 실제 shortage claim은 lead time, ASP, backlog, utilization, inventory, capex, grid interconnection 같은 운영 데이터가 붙어야 한다.</p>
-      {table_html(bottleneck_display, ["group", "supply_chain_role", "bottleneck_sensitivity", "current_coupling_signal", "avg_pair_corr", "pc1_share", "latest_12m_avg_pair_corr", "latest_year_avg_pair_corr", "latest_year_yoy_change", "bottleneck_proxy_to_verify", "price_data_interpretation", "evidence_needed_before_claiming_bottleneck"], max_rows=30)}
-      <p class="small">External grounding: IEA-reported data-center electricity demand growth; AI data-center power-system stress literature; public reporting on HBM/memory shortages; AI cooling and power-density literature. See methodology references file for URLs.</p>
-    </section>
-
-    <section class="section">
       <h2>Yearly Coupling Timeline</h2>
       <p>연도별로 같은 그룹 내 <strong>monthly return coupling</strong>을 다시 계산했다. 이 표는 특정 연도에 어떤 섹션이 시장에서 같이 움직였는지, 그리고 어느 해에 coupling이 강화됐는지 보는 용도다.</p>
       <div class="chart">{yearly_heatmap_html(yearly_summary)}</div>
@@ -1421,23 +1422,39 @@ def render_report(
       <div class="chart">{bar_svg(results, "avg_pair_corr", "Average Pairwise Correlation by Group")}</div>
       {table_html(display_group, ["group", "classification", "n_assets", "common_days", "avg_pair_corr", "median_pair_corr", "pc1_share", "strong_pair_share", "latest_rolling_corr", "tickers"])}
     </section>
+
+    {role_financial_section}
+
+    <section class="section">
+      <h2>Frequency Cross-Check</h2>
+      <p>메인 분석은 monthly return으로 통일했다. 아래 표는 daily/weekly/monthly 결과를 보조적으로 비교해, 월별 기준에서 잡히는 중기 coupling이 단기 noise 때문인지 아닌지 확인하기 위한 cross-check다.</p>
+      {frequency_pivot_html(frequency_summary)}
+      {frequency_story_html(frequency_summary)}
+      <h3>Frequency detail</h3>
+      {table_html(frequency_display, ["frequency", "group", "n_assets", "observations", "avg_pair_corr", "pc1_share", "strong_pair_share", "corr_vs_monthly_delta"], max_rows=90)}
+    </section>
+
+    <section class="section">
+      <h2>Supply Chain Bottleneck Lens</h2>
+      <p>이 리포트의 가격 데이터만으로 현재 병목 위치를 확정하지는 않는다. 대신 각 AI 공급망 section이 병목/shortage narrative에 얼마나 민감한지 사전 분류하고, 그 section의 월별 주가 coupling이 강한지 확인하는 <strong>screening framework</strong>로 사용한다.</p>
+      <p>해석 규칙은 보수적으로 잡았다. <strong>Coupling 강화</strong>는 해당 section이 시장에서 하나의 병목 또는 공통 factor로 가격 반영되고 있다는 후보 신호다. 실제 shortage claim은 lead time, ASP, backlog, utilization, inventory, capex, grid interconnection 같은 운영 데이터가 붙어야 한다.</p>
+      {table_html(bottleneck_display, ["group", "supply_chain_role", "bottleneck_sensitivity", "current_coupling_signal", "avg_pair_corr", "pc1_share", "latest_12m_avg_pair_corr", "latest_year_avg_pair_corr", "latest_year_yoy_change", "bottleneck_proxy_to_verify", "price_data_interpretation", "evidence_needed_before_claiming_bottleneck"], max_rows=30)}
+      <p class="small">External grounding: IEA-reported data-center electricity demand growth; AI data-center power-system stress literature; public reporting on HBM/memory shortages; AI cooling and power-density literature. See methodology references file for URLs.</p>
+    </section>
     </section>
 
     <section class="tab-panel" id="tab-deepdive">
     <section class="section">
-      <h2>Core Coupling vs Weak Members: Financial Weight</h2>
-      <p>여기서는 주가 coupling으로 나뉜 member role이 실제 섹션 내 경제적 비중과도 연결되는지 확인한다. 즉, <strong>coupling core</strong>가 단순히 많이 같이 움직이는 종목인지, 아니면 섹션 매출/이익의 큰 부분을 차지하는 종목인지 비교한다.</p>
-      <p class="small">Revenue, operating income, net income은 DB의 최신 annual financials 기준이다. 이익 지표는 손실 기업이 섞이면 role share가 음수 또는 100% 초과로 보일 수 있으므로, 매출 비중보다 더 조심해서 읽어야 한다. Market cap 컬럼은 stock_prices에 있으나 현재 값이 없어 표에는 coverage 0 또는 빈 값으로 표시된다.</p>
-      <div class="chart">{role_share_svg(role_deepdive, "revenue_usd_m_share_of_group", "Revenue Share by Coupling Role")}</div>
-      <div class="chart" style="margin-top:12px;">{role_share_svg(role_deepdive, "operating_income_usd_m_share_of_group", "Operating Income Share by Coupling Role")}</div>
-      <h3>Interpretive read</h3>
-      {role_deepdive_story(role_deepdive)}
-      <h3>Role-level financial table</h3>
-      {table_html(role_display, ["group", "member_role", "members", "companies", "avg_mean_corr_to_group", "revenue_usd_m", "revenue_usd_m_share_of_group", "operating_income_usd_m", "operating_income_usd_m_share_of_group", "net_income_usd_m", "net_income_usd_m_share_of_group", "market_cap_usd_b", "market_cap_usd_b_share_of_group"], max_rows=120) if not role_display.empty else "<p>No role-level financial table available.</p>"}
-    </section>
-
-    <section class="section">
       <h2>Group Deep Dives</h2>
+      <div class="filter-row">
+        <div>
+          <label for="deepDiveGroupSelect">Section</label>
+          <select id="deepDiveGroupSelect">
+            {group_options}
+          </select>
+        </div>
+        <p class="small" id="deepDiveFilterMeta"></p>
+      </div>
       {''.join(sections)}
     </section>
     </section>
@@ -1471,6 +1488,26 @@ def render_report(
           window.scrollTo({{ top: 0, behavior: "smooth" }});
         }});
       }});
+
+      const deepDiveSelect = document.getElementById("deepDiveGroupSelect");
+      const deepDiveMeta = document.getElementById("deepDiveFilterMeta");
+      function applyDeepDiveFilter() {{
+        if (!deepDiveSelect) return;
+        const selected = deepDiveSelect.value;
+        let visible = 0;
+        document.querySelectorAll("#tab-deepdive .group-card").forEach(card => {{
+          const show = card.dataset.group === selected;
+          card.style.display = show ? "" : "none";
+          if (show) visible += 1;
+        }});
+        if (deepDiveMeta) {{
+          deepDiveMeta.textContent = visible ? `${{selected}} section detail only` : "No section detail available.";
+        }}
+      }}
+      if (deepDiveSelect) {{
+        deepDiveSelect.addEventListener("change", applyDeepDiveFilter);
+        applyDeepDiveFilter();
+      }}
 
       const data = JSON.parse(document.getElementById("yearlyScatterData").textContent || "{{}}");
       const chart = document.getElementById("scatterChart");
