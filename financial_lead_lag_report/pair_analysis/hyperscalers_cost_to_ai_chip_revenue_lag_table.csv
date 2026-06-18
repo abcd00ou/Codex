@@ -1,0 +1,18 @@
+source_section,target_section,source_metric,target_metric,lag_quarters,timing,observations,corr,r_squared,beta_target_per_1_source
+Hyperscalers,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,-8,target leads,21,0.22522933695405403,0.050728254224762806,0.025803968822876555
+Hyperscalers,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,-7,target leads,22,0.3069385829220673,0.0942112936862068,0.03587095194319438
+Hyperscalers,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,-6,target leads,23,0.649600154757728,0.4219803610612642,0.10034384455448174
+Hyperscalers,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,-5,target leads,24,-0.11700170341076693,0.01368939860102107,-0.01869447621480935
+Hyperscalers,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,-4,target leads,25,-0.2558351507010549,0.06545162433423146,-0.04201025068139089
+Hyperscalers,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,-3,target leads,26,-0.2851876403676357,0.08133199021845992,-0.04828241794704362
+Hyperscalers,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,-2,target leads,27,-0.4054229824750636,0.16436779471897572,-0.07461978495943312
+Hyperscalers,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,-1,target leads,28,0.01708169842167664,0.0002917844209691102,0.0031096914641440313
+Hyperscalers,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,29,0.13327987098494942,0.01776352400976476,0.02021604780560258
+Hyperscalers,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,29,0.23239056863672491,0.054005376391300354,0.04257142810697266
+Hyperscalers,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,2,source leads,29,0.9837614871605818,0.9677866636203994,4.318721960772863
+Hyperscalers,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,3,source leads,28,0.06233319835493122,0.0038854276171552005,1.4908125580553044
+Hyperscalers,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,4,source leads,27,-0.4113524821523836,0.16921086457292708,-9.847271170454817
+Hyperscalers,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,5,source leads,26,-0.440976557012382,0.19446032383449458,-11.58971547808789
+Hyperscalers,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,6,source leads,25,-0.5338345546342161,0.2849793317215119,-15.574385504477993
+Hyperscalers,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,7,source leads,24,-0.6207543762397539,0.385335995620806,-21.326956795511986
+Hyperscalers,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,8,source leads,23,-0.2599991510543691,0.06759955854899265,-0.4737609828528339
