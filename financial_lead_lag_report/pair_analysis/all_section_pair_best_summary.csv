@@ -1,0 +1,273 @@
+source_section,target_section,source_metric,target_metric,best_lag_quarters,best_timing,best_corr,best_observations,best_abs_lag_quarters,best_abs_corr,abs_best_corr
+AI Software,DRAM,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.9999999946910324,5,0,0.9999999946910324,0.9999999946910324
+AI Software,components,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.9999996647358289,5,1,0.9999996647358289,0.9999996647358289
+AI Software,Server EMS,cost_of_revenue_usd_m,revenue_usd_m,-1,target leads,0.9999982426798874,5,-1,0.9999982426798874,0.9999982426798874
+CPU,components,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.9999928156713329,28,1,0.9999928156713329,0.9999928156713329
+AI Software,Server Networking,cost_of_revenue_usd_m,revenue_usd_m,3,source leads,0.9999902355410987,5,3,0.9999902355410987,0.9999902355410987
+AI Software,CPU,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.9999890208227568,5,1,0.9999890208227568,0.9999890208227568
+components,Server Networking,cost_of_revenue_usd_m,revenue_usd_m,2,source leads,0.9999816080114224,30,2,0.9999816080114224,0.9999816080114224
+CPU,Server Networking,cost_of_revenue_usd_m,revenue_usd_m,3,source leads,0.999972410101723,28,3,0.999972410101723,0.999972410101723
+AI Software,HW equipment,cost_of_revenue_usd_m,revenue_usd_m,-5,target leads,0.9999332014400253,5,-5,0.9999332014400253,0.9999332014400253
+AI Software,Cooling,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.9999240697387973,5,1,0.9999240697387973,0.9999240697387973
+AI Software,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,3,source leads,0.9998224609343807,5,3,0.9998224609343807,0.9998224609343807
+AI Software,Energy,cost_of_revenue_usd_m,revenue_usd_m,-2,target leads,0.9996875884057197,5,-2,0.9996875884057197,0.9996875884057197
+components,Cooling,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.9996173846564315,30,0,0.9996173846564315,0.9996173846564315
+CPU,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,3,source leads,0.9991613679581273,28,3,0.9991613679581273,0.9991613679581273
+components,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,2,source leads,0.9991500055157219,30,2,0.9991500055157219,0.9991500055157219
+Server Networking,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.9990644365015792,32,0,0.9990644365015792,0.9990644365015792
+AI Software,Server OEM,cost_of_revenue_usd_m,revenue_usd_m,-8,target leads,0.9989500586755333,5,-8,0.9989500586755333,0.9989500586755333
+AI Software,OSAT / packiging,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.9987491946478534,5,0,0.9987491946478534,0.9987491946478534
+components,CPU,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.9982042238420553,29,0,0.9982042238420553,0.9982042238420553
+components,Server EMS,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.9968481116111302,30,0,0.9968481116111302,0.9968481116111302
+Server EMS,Server Networking,cost_of_revenue_usd_m,revenue_usd_m,2,source leads,0.9967239413570952,30,2,0.9967239413570952,0.9967239413570952
+Server EMS,components,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.996595901770646,30,0,0.996595901770646,0.996595901770646
+Server EMS,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,2,source leads,0.9963416565468072,30,2,0.9963416565468072,0.9963416565468072
+AI Chip,Server Networking,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.99584019559325,32,0,0.99584019559325,0.99584019559325
+AI Software,Hyperscalers,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.9946508993549368,5,-4,-0.9993926842752889,0.9946508993549368
+Cooling,components,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.994593545682386,29,0,0.994593545682386,0.994593545682386
+Cooling,Server Networking,cost_of_revenue_usd_m,revenue_usd_m,2,source leads,0.9945439863715889,29,2,0.9945439863715889,0.9945439863715889
+Cooling,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,2,source leads,0.9941311020908775,29,2,0.9941311020908775,0.9941311020908775
+Hyperscalers,Server EMS,cost_of_revenue_usd_m,revenue_usd_m,-1,target leads,0.9927881487981703,28,-1,0.9927881487981703,0.9927881487981703
+Server EMS,Hyperscalers,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.9924589419303063,29,1,0.9924589419303063,0.9924589419303063
+CPU,Server EMS,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.9919495145951961,29,1,0.9919495145951961,0.9919495145951961
+components,Hyperscalers,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.9895946954247511,29,0,0.9895946954247511,0.9895946954247511
+AI Software,AI Platforms,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.9893721998774054,5,1,0.9893721998774054,0.9893721998774054
+Server OEM,CPU,cost_of_revenue_usd_m,revenue_usd_m,8,source leads,0.9885510292052536,22,8,0.9885510292052536,0.9885510292052536
+meterier,Energy,cost_of_revenue_usd_m,revenue_usd_m,-5,target leads,0.9861329502215499,23,-5,0.9861329502215499,0.9861329502215499
+Hyperscalers,Cooling,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.9844024701641017,29,0,0.9844024701641017,0.9844024701641017
+Hyperscalers,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,2,source leads,0.9837614871605818,29,2,0.9837614871605818,0.9837614871605818
+Hyperscalers,components,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.9832526908186221,29,0,0.9832526908186221,0.9832526908186221
+Hyperscalers,Server Networking,cost_of_revenue_usd_m,revenue_usd_m,2,source leads,0.9826087981387702,29,2,0.9826087981387702,0.9826087981387702
+AI Platforms,Server EMS,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.9812859301873728,30,0,0.9812859301873728,0.9812859301873728
+CPU,AI Platforms,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.9805001782764622,30,1,0.9805001782764622,0.9805001782764622
+Hyperscalers,CPU,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.9795470726178758,29,0,0.9795470726178758,0.9795470726178758
+CPU,Hyperscalers,cost_of_revenue_usd_m,revenue_usd_m,2,source leads,0.97911842541598,28,2,0.97911842541598,0.97911842541598
+Cooling,Hyperscalers,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.9772383523003659,28,1,0.9772383523003659,0.9772383523003659
+Server EMS,AI Platforms,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.9768567622296593,30,0,0.9768567622296593,0.9768567622296593
+HW equipment,Energy,cost_of_revenue_usd_m,revenue_usd_m,-2,target leads,0.9723530270670343,27,-2,0.9723530270670343,0.9723530270670343
+AI Software,SW equipment,cost_of_revenue_usd_m,revenue_usd_m,-6,target leads,0.9701241910726647,5,-6,0.9701241910726647,0.9701241910726647
+Server EMS,CPU,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.9649880672259995,30,0,0.9649880672259995,0.9649880672259995
+CPU,Server OEM,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.9647874232841579,30,1,0.9647874232841579,0.9647874232841579
+AI Platforms,CPU,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.9575548048175807,30,0,0.9575548048175807,0.9575548048175807
+AI Platforms,components,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.9566477860234264,29,0,0.9566477860234264,0.9566477860234264
+AI Platforms,Server Networking,cost_of_revenue_usd_m,revenue_usd_m,2,source leads,0.9562985259490883,29,2,0.9562985259490883,0.9562985259490883
+AI Platforms,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,2,source leads,0.9512891152445828,29,2,0.9512891152445828,0.9512891152445828
+Hyperscalers,AI Platforms,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.939393599514349,29,0,0.939393599514349,0.939393599514349
+AI Platforms,Server OEM,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.9381603997925987,31,0,0.9381603997925987,0.9381603997925987
+components,AI Platforms,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.9366462402412244,29,0,0.9366462402412244,0.9366462402412244
+Server Networking,AI Platforms,cost_of_revenue_usd_m,revenue_usd_m,-2,target leads,0.9352932776752108,29,-2,0.9352932776752108,0.9352932776752108
+meterier,HW equipment,cost_of_revenue_usd_m,revenue_usd_m,-3,target leads,0.9343412734146791,25,-3,0.9343412734146791,0.9343412734146791
+AI Software,meterier,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.9331978820623212,5,0,0.9331978820623212,0.9331978820623212
+AI Platforms,Hyperscalers,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.9331221464517202,29,1,0.9331221464517202,0.9331221464517202
+Server Networking,Hyperscalers,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.9322048841766996,29,1,0.9322048841766996,0.9322048841766996
+AI Chip,AI Platforms,cost_of_revenue_usd_m,revenue_usd_m,-2,target leads,0.9243173315127577,29,-2,0.9243173315127577,0.9243173315127577
+Server EMS,Server OEM,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.92157280194534,31,0,0.92157280194534,0.92157280194534
+Server Networking,Energy,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.9088372302887207,29,0,0.9088372302887207,0.9088372302887207
+Server Networking,components,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.9019304520692728,30,0,0.9019304520692728,0.9019304520692728
+CPU,Cooling,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.8978329716407609,29,1,0.8978329716407609,0.8978329716407609
+Server Networking,Cooling,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.8972578520738895,31,0,0.8972578520738895,0.8972578520738895
+AI Software,NAND,cost_of_revenue_usd_m,revenue_usd_m,-6,target leads,0.8963806072576382,5,-6,0.8963806072576382,0.8963806072576382
+Server Networking,Server EMS,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.8640839419714772,30,1,0.8640839419714772,0.8640839419714772
+DRAM,Server EMS,cost_of_revenue_usd_m,revenue_usd_m,-1,target leads,0.8632968993545324,27,-1,0.8632968993545324,0.8632968993545324
+DRAM,OSAT / packiging,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.8497052659808546,28,0,0.8497052659808546,0.8497052659808546
+Server EMS,AI Software,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.8484119298149019,28,0,0.8484119298149019,0.8484119298149019
+AI Platforms,Cooling,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.847475230898687,30,0,0.847475230898687,0.847475230898687
+Server OEM,Hyperscalers,cost_of_revenue_usd_m,revenue_usd_m,8,source leads,0.8464749540374094,22,8,0.8464749540374094,0.8464749540374094
+Energy,AI Software,cost_of_revenue_usd_m,revenue_usd_m,2,source leads,0.8432899627247472,23,2,0.8432899627247472,0.8432899627247472
+Energy,components,cost_of_revenue_usd_m,revenue_usd_m,3,source leads,0.840342009247916,24,3,0.840342009247916,0.840342009247916
+Hyperscalers,Server OEM,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.839686666578204,29,0,0.839686666578204,0.839686666578204
+Energy,Server Networking,cost_of_revenue_usd_m,revenue_usd_m,5,source leads,0.8390806974222563,24,5,0.8390806974222563,0.8390806974222563
+Server OEM,AI Software,cost_of_revenue_usd_m,revenue_usd_m,7,source leads,0.8383307675016837,21,7,0.8383307675016837,0.8383307675016837
+Energy,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,5,source leads,0.8380935466679446,24,5,0.8380935466679446,0.8380935466679446
+Server EMS,Cooling,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.8370831768292977,31,6,-0.8499993847140078,0.8370831768292977
+CPU,AI Software,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.8320034994369367,28,0,0.8320034994369367,0.8320034994369367
+components,Server OEM,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.82449061123059,30,0,0.82449061123059,0.82449061123059
+Server Networking,Server OEM,cost_of_revenue_usd_m,revenue_usd_m,-2,target leads,0.8222829633816445,30,-2,0.8222829633816445,0.8222829633816445
+AI Chip,Server OEM,cost_of_revenue_usd_m,revenue_usd_m,-2,target leads,0.8202548492954896,30,-2,0.8202548492954896,0.8202548492954896
+Cooling,Server EMS,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.8191467494558269,29,1,0.8191467494558269,0.8191467494558269
+Energy,Hyperscalers,cost_of_revenue_usd_m,revenue_usd_m,4,source leads,0.8046396125938413,23,4,0.8046396125938413,0.8046396125938413
+OSAT / packiging,Server EMS,cost_of_revenue_usd_m,revenue_usd_m,-1,target leads,0.8029130181576688,28,6,-0.8647373375217516,0.8029130181576688
+Server Networking,CPU,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.8014368657599393,30,6,-0.81128435300844,0.8014368657599393
+OSAT / packiging,components,cost_of_revenue_usd_m,revenue_usd_m,-1,target leads,0.7911273892637154,28,-1,0.7911273892637154,0.7911273892637154
+DRAM,SW equipment,cost_of_revenue_usd_m,revenue_usd_m,-8,target leads,0.7873736730692983,20,-8,0.7873736730692983,0.7873736730692983
+components,OSAT / packiging,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.7856654492789825,28,1,0.7856654492789825,0.7856654492789825
+Energy,Cooling,cost_of_revenue_usd_m,revenue_usd_m,3,source leads,0.782627716480054,25,3,0.782627716480054,0.782627716480054
+Hyperscalers,OSAT / packiging,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.7773504866165293,28,0,0.7773504866165293,0.7773504866165293
+Server Networking,AI Software,cost_of_revenue_usd_m,revenue_usd_m,2,source leads,0.7768620609762459,26,2,0.7768620609762459,0.7768620609762459
+DRAM,components,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.7761873622178938,28,5,-0.790876361419796,0.7761873622178938
+NAND,meterier,cost_of_revenue_usd_m,revenue_usd_m,-3,target leads,0.77149800658357,23,-3,0.77149800658357,0.77149800658357
+Server EMS,OSAT / packiging,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.7662296156161312,28,1,0.7662296156161312,0.7662296156161312
+Cooling,Server OEM,cost_of_revenue_usd_m,revenue_usd_m,2,source leads,0.755544120844452,29,2,0.755544120844452,0.755544120844452
+DRAM,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,-8,target leads,0.7477687851391945,20,7,-0.8033117162459816,0.7477687851391945
+Cooling,AI Platforms,cost_of_revenue_usd_m,revenue_usd_m,2,source leads,0.7475256514538209,28,2,0.7475256514538209,0.7475256514538209
+OSAT / packiging,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,-8,target leads,0.7456529979315276,21,8,-0.7776183814731639,0.7456529979315276
+Cooling,CPU,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.7412440864051042,29,0,0.7412440864051042,0.7412440864051042
+components,DRAM,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.7384140359074254,27,1,0.7384140359074254,0.7384140359074254
+Energy,Server OEM,cost_of_revenue_usd_m,revenue_usd_m,3,source leads,0.7277904775118405,26,3,0.7277904775118405,0.7277904775118405
+Server OEM,components,cost_of_revenue_usd_m,revenue_usd_m,8,source leads,0.7245914190139134,22,8,0.7245914190139134,0.7245914190139134
+Server OEM,meterier,cost_of_revenue_usd_m,revenue_usd_m,8,source leads,0.7223843623771482,20,8,0.7223843623771482,0.7223843623771482
+OSAT / packiging,SW equipment,cost_of_revenue_usd_m,revenue_usd_m,-8,target leads,0.7138391772799305,20,-8,0.7138391772799305,0.7138391772799305
+DRAM,Server Networking,cost_of_revenue_usd_m,revenue_usd_m,-2,target leads,0.69666968565833,26,7,-0.7908275791895287,0.69666968565833
+Server OEM,AI Platforms,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.6805577694275852,31,0,0.6805577694275852,0.6805577694275852
+Energy,AI Platforms,cost_of_revenue_usd_m,revenue_usd_m,3,source leads,0.6749405746633996,25,3,0.6749405746633996,0.6749405746633996
+AI Platforms,NAND,cost_of_revenue_usd_m,revenue_usd_m,8,source leads,0.6716406272745628,22,8,0.6716406272745628,0.6716406272745628
+DRAM,Hyperscalers,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.6599884938553507,28,6,-0.7828862021129278,0.6599884938553507
+Cooling,NAND,cost_of_revenue_usd_m,revenue_usd_m,7,source leads,0.6538670763419633,22,7,0.6538670763419633,0.6538670763419633
+Server OEM,Cooling,cost_of_revenue_usd_m,revenue_usd_m,8,source leads,0.6485591451157038,23,8,0.6485591451157038,0.6485591451157038
+AI Chip,Cooling,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.6418130565160666,30,1,0.6418130565160666,0.6418130565160666
+AI Chip,CPU,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.6387228248007522,29,1,0.6387228248007522,0.6387228248007522
+Energy,CPU,cost_of_revenue_usd_m,revenue_usd_m,3,source leads,0.638113848948907,24,3,0.638113848948907,0.638113848948907
+Cooling,meterier,cost_of_revenue_usd_m,revenue_usd_m,8,source leads,0.6356423038218443,19,8,0.6356423038218443,0.6356423038218443
+NAND,CPU,cost_of_revenue_usd_m,revenue_usd_m,-7,target leads,0.6196631141527398,23,-7,0.6196631141527398,0.6196631141527398
+Energy,Server EMS,cost_of_revenue_usd_m,revenue_usd_m,4,source leads,0.6160651668511451,24,-3,-0.6656527411637279,0.6160651668511451
+OSAT / packiging,DRAM,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.6133818621156868,28,0,0.6133818621156868,0.6133818621156868
+AI Chip,AI Software,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.6115355675566119,28,0,0.6115355675566119,0.6115355675566119
+AI Chip,Server EMS,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.6083498773062187,30,1,0.6083498773062187,0.6083498773062187
+AI Platforms,OSAT / packiging,cost_of_revenue_usd_m,revenue_usd_m,-6,target leads,0.6080612040204648,22,-6,0.6080612040204648,0.6080612040204648
+AI Chip,SW equipment,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.6043759203520456,29,0,0.6043759203520456,0.6043759203520456
+DRAM,AI Platforms,cost_of_revenue_usd_m,revenue_usd_m,-5,target leads,0.6002128798145991,23,5,-0.8466569354687208,0.6002128798145991
+CPU,NAND,cost_of_revenue_usd_m,revenue_usd_m,-6,target leads,0.5995105772948296,24,-6,0.5995105772948296,0.5995105772948296
+Server EMS,DRAM,cost_of_revenue_usd_m,revenue_usd_m,7,source leads,0.5993913598544006,21,7,0.5993913598544006,0.5993913598544006
+Server OEM,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,-8,target leads,0.5986652667575949,24,-4,-0.6103598098019998,0.5986652667575949
+NAND,Server OEM,cost_of_revenue_usd_m,revenue_usd_m,-8,target leads,0.5948809933194876,22,-8,0.5948809933194876,0.5948809933194876
+Server OEM,DRAM,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.5943730956819064,27,1,0.5943730956819064,0.5943730956819064
+AI Chip,HW equipment,cost_of_revenue_usd_m,revenue_usd_m,-5,target leads,0.5867359137847179,26,-5,0.5867359137847179,0.5867359137847179
+SW equipment,AI Software,cost_of_revenue_usd_m,revenue_usd_m,6,source leads,0.5842418371149881,22,1,-0.6832117201445729,0.5842418371149881
+Hyperscalers,SW equipment,cost_of_revenue_usd_m,revenue_usd_m,-7,target leads,0.5832637604590876,22,-2,-0.6887899716371559,0.5832637604590876
+OSAT / packiging,Server Networking,cost_of_revenue_usd_m,revenue_usd_m,-2,target leads,0.5832415679318503,27,8,-0.7732252676996053,0.5832415679318503
+AI Chip,components,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.582973794339254,29,-6,-0.7443675633994258,0.582973794339254
+OSAT / packiging,Hyperscalers,cost_of_revenue_usd_m,revenue_usd_m,-1,target leads,0.5801264641568972,27,6,-0.7976761955874979,0.5801264641568972
+AI Platforms,DRAM,cost_of_revenue_usd_m,revenue_usd_m,6,source leads,0.5785291936765753,22,6,0.5785291936765753,0.5785291936765753
+Server EMS,NAND,cost_of_revenue_usd_m,revenue_usd_m,8,source leads,0.5718207082539405,22,8,0.5718207082539405,0.5718207082539405
+NAND,AI Software,cost_of_revenue_usd_m,revenue_usd_m,-5,target leads,0.5620203552517926,23,-5,0.5620203552517926,0.5620203552517926
+SW equipment,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.5591012099214355,29,4,-0.7519668225556656,0.5591012099214355
+Server OEM,Server EMS,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.5561419263337406,31,0,0.5561419263337406,0.5561419263337406
+Energy,meterier,cost_of_revenue_usd_m,revenue_usd_m,3,source leads,0.5528856672171859,22,3,0.5528856672171859,0.5528856672171859
+Server OEM,Server Networking,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.5528285695371116,32,0,0.5528285695371116,0.5528285695371116
+Server OEM,Energy,cost_of_revenue_usd_m,revenue_usd_m,8,source leads,0.5441729551854001,21,8,0.5441729551854001,0.5441729551854001
+AI Chip,Energy,cost_of_revenue_usd_m,revenue_usd_m,-7,target leads,0.5406813194435068,23,-7,0.5406813194435068,0.5406813194435068
+CPU,Energy,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.5387697635108435,28,0,0.5387697635108435,0.5387697635108435
+CPU,SW equipment,cost_of_revenue_usd_m,revenue_usd_m,-6,target leads,0.5350430131537457,23,-6,0.5350430131537457,0.5350430131537457
+Server EMS,Energy,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.5344671370180215,29,0,0.5344671370180215,0.5344671370180215
+AI Chip,Hyperscalers,cost_of_revenue_usd_m,revenue_usd_m,2,source leads,0.5332491441877372,28,-4,-0.6160596901073387,0.5332491441877372
+SW equipment,OSAT / packiging,cost_of_revenue_usd_m,revenue_usd_m,-4,target leads,0.5329634074250286,24,-4,0.5329634074250286,0.5329634074250286
+NAND,Hyperscalers,cost_of_revenue_usd_m,revenue_usd_m,4,source leads,0.5321031229592081,21,4,0.5321031229592081,0.5321031229592081
+OSAT / packiging,AI Platforms,cost_of_revenue_usd_m,revenue_usd_m,-5,target leads,0.5318749993020024,23,5,-0.8336081424272375,0.5318749993020024
+meterier,Hyperscalers,cost_of_revenue_usd_m,revenue_usd_m,-8,target leads,0.5303555804571239,20,-8,0.5303555804571239,0.5303555804571239
+NAND,Server Networking,cost_of_revenue_usd_m,revenue_usd_m,5,source leads,0.524557191862411,21,5,0.524557191862411,0.524557191862411
+NAND,components,cost_of_revenue_usd_m,revenue_usd_m,3,source leads,0.5232096019586899,21,6,-0.5359155414148854,0.5232096019586899
+Cooling,SW equipment,cost_of_revenue_usd_m,revenue_usd_m,-7,target leads,0.518788875330605,22,-2,-0.641495214000882,0.518788875330605
+components,SW equipment,cost_of_revenue_usd_m,revenue_usd_m,-7,target leads,0.5150675510360085,22,-2,-0.6364934672373925,0.5150675510360085
+SW equipment,Server OEM,cost_of_revenue_usd_m,revenue_usd_m,8,source leads,0.5125310731570949,23,-6,-0.6145658685160905,0.5125310731570949
+NAND,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,5,source leads,0.5104168838718782,21,5,0.5104168838718782,0.5104168838718782
+Cooling,OSAT / packiging,cost_of_revenue_usd_m,revenue_usd_m,-6,target leads,0.5095191424939789,23,-6,0.5095191424939789,0.5095191424939789
+AI Platforms,SW equipment,cost_of_revenue_usd_m,revenue_usd_m,-7,target leads,0.5027896299775065,22,-2,-0.5524684458453974,0.5027896299775065
+HW equipment,NAND,cost_of_revenue_usd_m,revenue_usd_m,-8,target leads,0.5005160619107162,22,-8,0.5005160619107162,0.5005160619107162
+NAND,Energy,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.49720353111893045,23,0,0.49720353111893045,0.49720353111893045
+Energy,DRAM,cost_of_revenue_usd_m,revenue_usd_m,-5,target leads,0.496535188364514,23,-5,0.496535188364514,0.496535188364514
+OSAT / packiging,Server OEM,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.4962169968201436,29,6,-0.8429600920592087,0.4962169968201436
+Server EMS,SW equipment,cost_of_revenue_usd_m,revenue_usd_m,-7,target leads,0.4937293263644126,22,-2,-0.6426639150573007,0.4937293263644126
+Hyperscalers,meterier,cost_of_revenue_usd_m,revenue_usd_m,5,source leads,0.4915341736862055,23,-3,-0.6564430340240751,0.4915341736862055
+NAND,Server EMS,cost_of_revenue_usd_m,revenue_usd_m,4,source leads,0.4913337582469511,21,-3,-0.5785299113295455,0.4913337582469511
+CPU,DRAM,cost_of_revenue_usd_m,revenue_usd_m,-6,target leads,0.4871717144549079,22,-6,0.4871717144549079,0.4871717144549079
+AI Chip,OSAT / packiging,cost_of_revenue_usd_m,revenue_usd_m,8,source leads,0.4766927395145965,21,8,0.4766927395145965,0.4766927395145965
+NAND,AI Platforms,cost_of_revenue_usd_m,revenue_usd_m,5,source leads,0.47502965031478783,21,-4,-0.5430587282513863,0.47502965031478783
+SW equipment,DRAM,cost_of_revenue_usd_m,revenue_usd_m,-1,target leads,0.4739900118536804,27,-5,-0.5092649210637793,0.4739900118536804
+NAND,Cooling,cost_of_revenue_usd_m,revenue_usd_m,3,source leads,0.47107488563951594,22,3,0.47107488563951594,0.47107488563951594
+Server OEM,NAND,cost_of_revenue_usd_m,revenue_usd_m,2,source leads,0.46657543609341173,28,2,0.46657543609341173,0.46657543609341173
+Server Networking,OSAT / packiging,cost_of_revenue_usd_m,revenue_usd_m,3,source leads,0.4662198503502831,26,-3,-0.4778176050643777,0.4662198503502831
+DRAM,Server OEM,cost_of_revenue_usd_m,revenue_usd_m,-2,target leads,0.4612240795715951,26,5,-0.876110525989168,0.4612240795715951
+DRAM,AI Software,cost_of_revenue_usd_m,revenue_usd_m,7,source leads,0.4517672128121839,21,4,-0.8493255204873768,0.4517672128121839
+Server Networking,SW equipment,cost_of_revenue_usd_m,revenue_usd_m,-6,target leads,0.4496309229898884,23,-2,-0.6615160663014499,0.4496309229898884
+DRAM,Energy,cost_of_revenue_usd_m,revenue_usd_m,6,source leads,0.4468501184589981,23,6,0.4468501184589981,0.4468501184589981
+Hyperscalers,DRAM,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.4461807693263661,28,-4,-0.49174087922747733,0.4461807693263661
+Energy,SW equipment,cost_of_revenue_usd_m,revenue_usd_m,-3,target leads,0.44514198823707724,25,-8,-0.4709173037327895,0.44514198823707724
+HW equipment,CPU,cost_of_revenue_usd_m,revenue_usd_m,-8,target leads,0.44467869634207463,22,-8,0.44467869634207463,0.44467869634207463
+AI Platforms,HW equipment,cost_of_revenue_usd_m,revenue_usd_m,7,source leads,0.44404825713622115,23,7,0.44404825713622115,0.44404825713622115
+SW equipment,CPU,cost_of_revenue_usd_m,revenue_usd_m,7,source leads,0.4433765962562425,23,3,-0.5267719049432676,0.4433765962562425
+Server Networking,NAND,cost_of_revenue_usd_m,revenue_usd_m,-6,target leads,0.4400894600954495,24,-6,0.4400894600954495,0.4400894600954495
+SW equipment,Cooling,cost_of_revenue_usd_m,revenue_usd_m,8,source leads,0.42606078432356176,23,2,-0.5806744868046021,0.42606078432356176
+Hyperscalers,NAND,cost_of_revenue_usd_m,revenue_usd_m,-7,target leads,0.42520089348442675,22,-7,0.42520089348442675,0.42520089348442675
+components,AI Software,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.4155686457018381,28,5,-0.6706935763875586,0.4155686457018381
+HW equipment,SW equipment,cost_of_revenue_usd_m,revenue_usd_m,-7,target leads,0.41538585883217627,22,-7,0.41538585883217627,0.41538585883217627
+OSAT / packiging,AI Software,cost_of_revenue_usd_m,revenue_usd_m,-1,target leads,0.41519084981614995,27,-5,-0.8226240602434012,0.41519084981614995
+Hyperscalers,Energy,cost_of_revenue_usd_m,revenue_usd_m,-3,target leads,0.4100494636754287,25,-3,0.4100494636754287,0.4100494636754287
+components,NAND,cost_of_revenue_usd_m,revenue_usd_m,-7,target leads,0.4036737964713083,22,-7,0.4036737964713083,0.4036737964713083
+DRAM,Cooling,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.3990682758662012,28,5,-0.8089864203464162,0.3990682758662012
+Energy,OSAT / packiging,cost_of_revenue_usd_m,revenue_usd_m,-8,target leads,0.39817820025011574,21,-3,-0.5762424231318626,0.39817820025011574
+HW equipment,Hyperscalers,cost_of_revenue_usd_m,revenue_usd_m,-8,target leads,0.3891906509103448,22,-8,0.3891906509103448,0.3891906509103448
+Energy,NAND,cost_of_revenue_usd_m,revenue_usd_m,8,source leads,0.3883099580471022,19,8,0.3883099580471022,0.3883099580471022
+meterier,NAND,cost_of_revenue_usd_m,revenue_usd_m,-8,target leads,0.3881652358340228,20,-3,-0.48115679982379744,0.3881652358340228
+Server Networking,DRAM,cost_of_revenue_usd_m,revenue_usd_m,-5,target leads,0.38719488997617063,23,-2,-0.547313949611735,0.38719488997617063
+Server OEM,SW equipment,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.3851889113633634,28,-2,-0.5409362494229922,0.3851889113633634
+SW equipment,components,cost_of_revenue_usd_m,revenue_usd_m,8,source leads,0.382759715371715,22,2,-0.7401242597838286,0.382759715371715
+SW equipment,AI Platforms,cost_of_revenue_usd_m,revenue_usd_m,7,source leads,0.38176672458012223,24,4,-0.5222081714671053,0.38176672458012223
+meterier,AI Software,cost_of_revenue_usd_m,revenue_usd_m,-1,target leads,0.37987218136009454,27,-5,-0.43800710583082886,0.37987218136009454
+AI Platforms,meterier,cost_of_revenue_usd_m,revenue_usd_m,5,source leads,0.37159647351750585,23,-8,-0.4492433263360982,0.37159647351750585
+SW equipment,Server EMS,cost_of_revenue_usd_m,revenue_usd_m,8,source leads,0.37046735213133003,23,3,-0.6299150138721687,0.37046735213133003
+SW equipment,NAND,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.36886734177920966,29,-4,-0.4510639701924451,0.36886734177920966
+meterier,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,2,source leads,0.3627425127907021,28,2,0.3627425127907021,0.3627425127907021
+DRAM,CPU,cost_of_revenue_usd_m,revenue_usd_m,8,source leads,0.36182820274864014,22,5,-0.8781976553690141,0.36182820274864014
+Server OEM,OSAT / packiging,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.3608610568592289,29,6,-0.5452245065288045,0.3608610568592289
+Hyperscalers,AI Software,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.35857999099331045,28,-6,-0.7040714704588454,0.35857999099331045
+CPU,OSAT / packiging,cost_of_revenue_usd_m,revenue_usd_m,-8,target leads,0.3575561784698923,20,-5,-0.7101410097784944,0.3575561784698923
+AI Chip,DRAM,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.3551383404737119,27,-4,-0.6074735886608659,0.3551383404737119
+CPU,HW equipment,cost_of_revenue_usd_m,revenue_usd_m,7,source leads,0.3496342886684029,23,7,0.3496342886684029,0.3496342886684029
+meterier,AI Platforms,cost_of_revenue_usd_m,revenue_usd_m,-8,target leads,0.34957785171768313,20,-3,-0.41063493229825687,0.34957785171768313
+meterier,Cooling,cost_of_revenue_usd_m,revenue_usd_m,-7,target leads,0.34924512498780413,21,0,-0.3683644203478248,0.34924512498780413
+OSAT / packiging,CPU,cost_of_revenue_usd_m,revenue_usd_m,8,source leads,0.3486013180834221,22,5,-0.883443297989004,0.3486013180834221
+SW equipment,Hyperscalers,cost_of_revenue_usd_m,revenue_usd_m,-2,target leads,0.34847558175556437,27,3,-0.7378692922842889,0.34847558175556437
+SW equipment,meterier,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.34757701888528325,28,-8,-0.38100508576523867,0.34757701888528325
+meterier,DRAM,cost_of_revenue_usd_m,revenue_usd_m,-8,target leads,0.34603692654102836,20,-4,-0.34657876366199264,0.34603692654102836
+OSAT / packiging,meterier,cost_of_revenue_usd_m,revenue_usd_m,7,source leads,0.3445720601551542,21,-4,-0.5578571935684553,0.3445720601551542
+meterier,OSAT / packiging,cost_of_revenue_usd_m,revenue_usd_m,-1,target leads,0.34201758208926275,27,-1,0.34201758208926275,0.34201758208926275
+SW equipment,Server Networking,cost_of_revenue_usd_m,revenue_usd_m,-2,target leads,0.33844665517163414,27,4,-0.739170032630213,0.33844665517163414
+DRAM,NAND,cost_of_revenue_usd_m,revenue_usd_m,3,source leads,0.3377640292818186,27,7,-0.6327430129067548,0.3377640292818186
+AI Platforms,AI Software,cost_of_revenue_usd_m,revenue_usd_m,5,source leads,0.33531284505912023,23,5,0.33531284505912023,0.33531284505912023
+OSAT / packiging,Cooling,cost_of_revenue_usd_m,revenue_usd_m,-2,target leads,0.3327212250777612,27,6,-0.7873395585175318,0.3327212250777612
+Cooling,Energy,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.32624184016266494,28,5,-0.48278805742943337,0.32624184016266494
+HW equipment,Cooling,cost_of_revenue_usd_m,revenue_usd_m,-4,target leads,0.3252587220702301,27,-4,0.3252587220702301,0.3252587220702301
+meterier,Server EMS,cost_of_revenue_usd_m,revenue_usd_m,-7,target leads,0.32345026683014455,21,-7,0.32345026683014455,0.32345026683014455
+NAND,SW equipment,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.3193941225272383,24,-8,-0.44364673680455713,0.3193941225272383
+HW equipment,AI Platforms,cost_of_revenue_usd_m,revenue_usd_m,-5,target leads,0.31701467158229174,25,-5,0.31701467158229174,0.31701467158229174
+AI Chip,NAND,cost_of_revenue_usd_m,revenue_usd_m,-8,target leads,0.3169189946053979,22,6,-0.4615367037565811,0.3169189946053979
+Server EMS,meterier,cost_of_revenue_usd_m,revenue_usd_m,7,source leads,0.3137856311933152,21,7,0.3137856311933152,0.3137856311933152
+Cooling,AI Software,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.3027445948226421,27,0,0.3027445948226421,0.3027445948226421
+Cooling,DRAM,cost_of_revenue_usd_m,revenue_usd_m,7,source leads,0.3019183927690801,20,7,0.3019183927690801,0.3019183927690801
+OSAT / packiging,Energy,cost_of_revenue_usd_m,revenue_usd_m,-4,target leads,0.3013067482649294,25,-4,0.3013067482649294,0.3013067482649294
+meterier,SW equipment,cost_of_revenue_usd_m,revenue_usd_m,-8,target leads,0.29947026386884906,20,8,-0.3245572836584659,0.29947026386884906
+NAND,DRAM,cost_of_revenue_usd_m,revenue_usd_m,-3,target leads,0.29322194297711823,23,4,-0.508364580885688,0.29322194297711823
+HW equipment,meterier,cost_of_revenue_usd_m,revenue_usd_m,6,source leads,0.2930273085245267,22,-5,-0.5928018933059703,0.2930273085245267
+meterier,Server Networking,cost_of_revenue_usd_m,revenue_usd_m,-8,target leads,0.2787427095741489,20,-8,0.2787427095741489,0.2787427095741489
+Energy,HW equipment,cost_of_revenue_usd_m,revenue_usd_m,-5,target leads,0.2739170912510115,24,-5,0.2739170912510115,0.2739170912510115
+SW equipment,HW equipment,cost_of_revenue_usd_m,revenue_usd_m,-6,target leads,0.26451804217567176,23,-6,0.26451804217567176,0.26451804217567176
+DRAM,HW equipment,cost_of_revenue_usd_m,revenue_usd_m,6,source leads,0.26377821751597774,24,6,0.26377821751597774,0.26377821751597774
+NAND,OSAT / packiging,cost_of_revenue_usd_m,revenue_usd_m,-6,target leads,0.26303039003128936,22,3,-0.6572753119560004,0.26303039003128936
+SW equipment,Energy,cost_of_revenue_usd_m,revenue_usd_m,5,source leads,0.2584027618481435,23,8,-0.30861167676605616,0.2584027618481435
+HW equipment,DRAM,cost_of_revenue_usd_m,revenue_usd_m,6,source leads,0.256669960159896,22,6,0.256669960159896,0.256669960159896
+Cooling,HW equipment,cost_of_revenue_usd_m,revenue_usd_m,-6,target leads,0.25301335114791507,25,6,-0.35683442548398675,0.25301335114791507
+CPU,meterier,cost_of_revenue_usd_m,revenue_usd_m,-5,target leads,0.24544474231330868,23,8,-0.26836277979702206,0.24544474231330868
+Server Networking,meterier,cost_of_revenue_usd_m,revenue_usd_m,2,source leads,0.24503205544491383,25,2,0.24503205544491383,0.24503205544491383
+HW equipment,OSAT / packiging,cost_of_revenue_usd_m,revenue_usd_m,2,source leads,0.24254254700222191,27,-7,-0.2798222665753439,0.24254254700222191
+components,HW equipment,cost_of_revenue_usd_m,revenue_usd_m,-6,target leads,0.2372007353331265,24,-6,0.2372007353331265,0.2372007353331265
+components,Energy,cost_of_revenue_usd_m,revenue_usd_m,-7,target leads,0.23208788650116047,23,6,-0.28492444001422906,0.23208788650116047
+Hyperscalers,HW equipment,cost_of_revenue_usd_m,revenue_usd_m,-6,target leads,0.23189563588499024,23,6,-0.24528373046390023,0.23189563588499024
+Server Networking,HW equipment,cost_of_revenue_usd_m,revenue_usd_m,-6,target leads,0.23175170825256142,25,-6,0.23175170825256142,0.23175170825256142
+meterier,Server OEM,cost_of_revenue_usd_m,revenue_usd_m,-2,target leads,0.22157558812537692,26,-2,0.22157558812537692,0.22157558812537692
+OSAT / packiging,NAND,cost_of_revenue_usd_m,revenue_usd_m,-8,target leads,0.22136165418031697,20,-3,-0.7315925191732839,0.22136165418031697
+meterier,components,cost_of_revenue_usd_m,revenue_usd_m,-8,target leads,0.2138173977719823,20,-6,-0.24710721468669875,0.2138173977719823
+NAND,HW equipment,cost_of_revenue_usd_m,revenue_usd_m,8,source leads,0.2032430049628152,18,0,-0.37837407820926344,0.2032430049628152
+OSAT / packiging,HW equipment,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.17393452028498937,29,7,-0.25243557127091987,0.17393452028498937
+Server OEM,HW equipment,cost_of_revenue_usd_m,revenue_usd_m,2,source leads,0.17283470992091254,29,2,0.17283470992091254,0.17283470992091254
+HW equipment,Server OEM,cost_of_revenue_usd_m,revenue_usd_m,-3,target leads,0.1714170605855685,28,-3,0.1714170605855685,0.1714170605855685
+Server EMS,HW equipment,cost_of_revenue_usd_m,revenue_usd_m,-7,target leads,0.16917609099317335,24,-7,0.16917609099317335,0.16917609099317335
+HW equipment,Server Networking,cost_of_revenue_usd_m,revenue_usd_m,-6,target leads,0.167121253533333,25,-6,0.167121253533333,0.167121253533333
+components,meterier,cost_of_revenue_usd_m,revenue_usd_m,1,source leads,0.16393522532148272,26,-4,-0.5912257273361907,0.16393522532148272
+HW equipment,components,cost_of_revenue_usd_m,revenue_usd_m,-6,target leads,0.1606339951863934,24,-6,0.1606339951863934,0.1606339951863934
+AI Chip,meterier,cost_of_revenue_usd_m,revenue_usd_m,8,source leads,0.1532975714844472,20,-4,-0.3357830266468185,0.1532975714844472
+HW equipment,Server EMS,cost_of_revenue_usd_m,revenue_usd_m,-4,target leads,0.1487341623245119,27,-7,-0.21678549231830377,0.1487341623245119
+HW equipment,AI Chip,cost_of_revenue_usd_m,revenue_usd_m,-6,target leads,0.13767711313282763,25,-8,-0.27792000975102116,0.13767711313282763
+HW equipment,AI Software,cost_of_revenue_usd_m,revenue_usd_m,2,source leads,0.12588492308689095,26,-7,-0.6740817504951577,0.12588492308689095
+DRAM,meterier,cost_of_revenue_usd_m,revenue_usd_m,0,same quarter,0.10357854679618472,28,8,-0.561938551595372,0.10357854679618472
+meterier,CPU,cost_of_revenue_usd_m,revenue_usd_m,-1,target leads,0.09452021530614714,27,-8,-0.283814782153589,0.09452021530614714
+AI Platforms,Energy,cost_of_revenue_usd_m,revenue_usd_m,-5,target leads,0.06434071730962486,23,8,-0.648664698891146,0.06434071730962486
