@@ -29,7 +29,7 @@
     .tablewrap { overflow:auto; max-height:560px; border:1px solid var(--line); }
     .heatmap td { min-width:52px; font-variant-numeric:tabular-nums; }
     .heatmap th:first-child { min-width:170px; }
-    svg { width:100%; min-width:1500px; height:auto; background:#fff; border:1px solid var(--line); border-radius:8px; }
+    svg { width:100%; min-width:1900px; height:auto; background:#fff; border:1px solid var(--line); border-radius:8px; }
     svg text { font-size:11px; fill:var(--muted); }
     .axis { stroke:#aab5ae; stroke-width:1; }
     .two { display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start; }
@@ -39,31 +39,31 @@
 </head>
 <body>
 <header>
-  <h1>AI Supply Chain Financial Lead-Lag: Data-Driven Metric Layers</h1>
-  <div class="meta">Generated 2026-06-18 12:19 KST · Source: financials.db · Master: company_master.xlsx</div>
+  <h1>AI Supply Chain Financial Lead-Lag: Section Money Flow</h1>
+  <div class="meta">Generated 2026-06-18 12:44 KST · Source: financials.db · Master: company_master.xlsx</div>
 </header>
 <main>
   <section class="grid">
     <div class="kpi"><b>136</b><span>matched companies in master</span></div>
     <div class="kpi"><b>20</b><span>supply-chain sections</span></div>
     <div class="kpi"><b>39</b><span>calendar quarters</span></div>
-    <div class="kpi"><b>30,201</b><span>valid metric-layer lag correlations</span></div>
+    <div class="kpi"><b>6,228</b><span>valid metric-layer lag correlations</span></div>
   </section>
 
   <section>
     <h2>Executive Read</h2>
-    <p>이 버전은 가정 기반 edge를 사용하지 않는다. 가능한 모든 section pair에 대해 <code>capex</code>, <code>cost of revenue</code>, <code>inventories</code>, <code>revenue</code>, <code>operating income</code>, <code>net income</code>의 변환 지표를 조합해 lead-lag correlation을 계산하고, 각 metric layer별로 가장 강한 양의 관계를 선택한다.</p>
-    <p class="note">핵심 산출물은 <code>data_driven/data_driven_edge_lag_correlations.csv</code>와 <code>data_driven/data_driven_edge_best_signals.csv</code>다. 현재 map filter를 통과한 edge는 <b>1,111</b>개이고, strong/moderate로 분류된 best signal은 <b>1,077</b>개다. 이 값은 인과관계 증명이 아니라 “재무제표상 먼저 관측되는 공급망 지표 후보”를 찾는 탐색 결과다.</p>
-    <table><thead><tr><th>Analysis layer</th><th>Best signals</th><th>Map edges</th><th>Median corr</th><th>Top corr</th><th>Median obs</th></tr></thead><tbody><tr><td>Revenue -&gt; Operating income</td><td>286</td><td>163</td><td>0.50</td><td>1.00</td><td>27.0</td></tr><tr><td>Inventory -&gt; Revenue</td><td>251</td><td>161</td><td>0.59</td><td>1.00</td><td>27.0</td></tr><tr><td>Inventory -&gt; Operating income</td><td>271</td><td>156</td><td>0.52</td><td>1.00</td><td>26.0</td></tr><tr><td>Revenue -&gt; Inventory</td><td>252</td><td>156</td><td>0.55</td><td>1.00</td><td>27.0</td></tr><tr><td>Cost of revenue -&gt; Operating income</td><td>269</td><td>148</td><td>0.50</td><td>1.00</td><td>27.0</td></tr><tr><td>Revenue -&gt; Net income</td><td>287</td><td>145</td><td>0.45</td><td>1.00</td><td>26.0</td></tr><tr><td>Demand cost -&gt; Upstream revenue</td><td>252</td><td>141</td><td>0.51</td><td>1.00</td><td>27.0</td></tr><tr><td>Investment -&gt; Cost of revenue</td><td>248</td><td>21</td><td>0.73</td><td>1.00</td><td>11.0</td></tr><tr><td>Investment -&gt; Revenue</td><td>259</td><td>20</td><td>0.83</td><td>1.00</td><td>12.0</td></tr></tbody></table>
+    <p>이 버전은 “각 section의 지출이 다른 section의 매출로 어떻게 관측되는가”에 집중하기 위해 변수를 줄였다. 분석에 쓰는 source 지표는 <code>capex investment</code>와 <code>cost of revenue</code> 두 가지이고, target 지표는 <code>supplier revenue</code>로 고정한다. <code>inventory</code>, <code>operating income</code>, <code>net income</code>은 해석을 흐리기 때문에 체인맵 분석에서 제외했다.</p>
+    <p class="note">핵심 산출물은 <code>data_driven/data_driven_edge_lag_correlations.csv</code>와 <code>data_driven/data_driven_edge_best_signals.csv</code>다. 현재 map filter를 통과한 edge는 <b>161</b>개이고, strong/moderate로 분류된 best signal은 <b>187</b>개다. 이 값은 인과관계 증명이 아니라 “section-level spending proxy가 supplier revenue와 시간적으로 같이 움직이는 후보”를 찾는 탐색 결과다.</p>
+    <table><thead><tr><th>Analysis layer</th><th>Best signals</th><th>Map edges</th><th>Median corr</th><th>Top corr</th><th>Median obs</th></tr></thead><tbody><tr><td>Procurement spend -&gt; Supplier revenue</td><td>252</td><td>141</td><td>0.51</td><td>1.00</td><td>27.0</td></tr><tr><td>Capex spend -&gt; Supplier revenue</td><td>259</td><td>20</td><td>0.83</td><td>1.00</td><td>12.0</td></tr></tbody></table>
   </section>
 
   <section>
     <h2>Data-Driven Chain Map</h2>
     <h3>Data-Driven Value-Chain Map</h3>
-    <p>기본 맵에는 <code>n ≥ 16</code>이고 <code>corr ≥ 0.45</code>인 관계를 우선 표시한다. <code>n=8~11</code>인 결과는 CSV에는 남기되 <code>exploratory low-n</code>으로 분리하고, <code>n ≥ 12</code>부터 table-grade signal로 분류한다. 왼쪽일수록 먼저 움직이는 노드이고, 노드 아래의 <code>t+…Q</code>는 선택된 edge들의 lag를 동시에 맞춘 상대적인 체인 위치다. 초록은 source metric이 target metric을 선행, 파란 점선은 동행, 붉은 점선은 target metric이 source metric보다 먼저 움직이는 관계, 회색 짧은 점선은 low-n 탐색 신호다.</p>
-    <p>맵의 선 라벨은 timing만 표시한다. <code>t+3Q</code>는 source metric이 target metric보다 3분기 먼저 관측된다는 뜻이고, <code>t-2Q</code>는 target metric이 source metric보다 2분기 먼저 관측된다는 뜻이다. metric 종류, 상관계수, 관측치 수는 아래 표에서 확인한다.</p>
+    <p>기본 맵에는 <code>n ≥ 16</code>이고 <code>corr ≥ 0.45</code>인 관계를 우선 표시한다. <code>n=8~11</code>인 결과는 CSV에는 남기되 <code>exploratory low-n</code>으로 분리하고, <code>n ≥ 12</code>부터 table-grade signal로 분류한다. 왼쪽일수록 먼저 움직이는 노드이고, 노드 아래의 <code>t+…Q</code>는 선택된 edge들의 lag를 동시에 맞춘 상대적인 체인 위치다. 초록은 source spending proxy가 supplier revenue를 선행, 파란 점선은 동행, 붉은 점선은 supplier revenue가 source spending proxy보다 먼저 움직이는 관계다.</p>
+    <p>맵의 선 라벨은 timing만 표시한다. <code>t+3Q</code>는 source spending proxy가 supplier revenue보다 3분기 먼저 관측된다는 뜻이고, <code>t-2Q</code>는 supplier revenue가 source spending proxy보다 2분기 먼저 관측된다는 뜻이다. metric 종류, 상관계수, 관측치 수는 아래 표에서 확인한다.</p>
     
-    <svg viewBox="0 0 2200 720" role="img" aria-label="Data-driven multi-metric value chain map">
+    <svg viewBox="0 0 2600 1080" role="img" aria-label="Data-driven section money-flow map">
       <defs>
         <marker id="arrow_data" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
           <path d="M0,0 L0,6 L8,3 z" fill="#50615a"/>
@@ -80,16 +80,16 @@
         .edge-tag rect { fill:#ffffff; stroke:#d3ddd6; opacity:0.94; }
         .edge-tag text { font-size:11px; fill:#39473f; font-weight:600; }
       </style>
-      <rect class="map-bg" x="0" y="0" width="2200" height="1100"/>
-      <rect class="time-band" x="140.0" y="42" width="384.0" height="628"/><rect class="time-band" x="908.0" y="42" width="384.0" height="628"/><rect class="time-band" x="1676.0" y="42" width="384.0" height="628"/>
-      <line x1="140.0" x2="140.0" y1="42" y2="670" class="tick"/><text x="140.0" y="30" text-anchor="middle" class="axis-label">t+0Q</text><line x1="524.0" x2="524.0" y1="42" y2="670" class="tick"/><text x="524.0" y="30" text-anchor="middle" class="axis-label">t+1Q</text><line x1="908.0" x2="908.0" y1="42" y2="670" class="tick"/><text x="908.0" y="30" text-anchor="middle" class="axis-label">t+2Q</text><line x1="1292.0" x2="1292.0" y1="42" y2="670" class="tick"/><text x="1292.0" y="30" text-anchor="middle" class="axis-label">t+3Q</text><line x1="1676.0" x2="1676.0" y1="42" y2="670" class="tick"/><text x="1676.0" y="30" text-anchor="middle" class="axis-label">t+4Q</text><line x1="2060.0" x2="2060.0" y1="42" y2="670" class="tick"/><text x="2060.0" y="30" text-anchor="middle" class="axis-label">t+5Q</text>
-      <path d="M230,242 C618.92,188 587.08,240 976,294" fill="none" stroke="#2563eb" stroke-width="5.2" stroke-dasharray="6 3" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M956,346 C1126,400 806,348 976,294" fill="none" stroke="#2563eb" stroke-width="5.2" stroke-dasharray="6 3" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M230,242 C623.12,134 592.88,342 986,450" fill="none" stroke="#2563eb" stroke-width="5.2" stroke-dasharray="6 3" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M776,346 C471.08,454 534.9200000000001,350 230,242" fill="none" stroke="#2563eb" stroke-width="5.2" stroke-dasharray="6 3" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M230,242 C623.12,80 592.88,288 986,450" fill="none" stroke="#087f5b" stroke-width="5.8" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M1660,450 C1372.72,612 1443.28,456 1156,294" fill="none" stroke="#2563eb" stroke-width="5.2" stroke-dasharray="6 3" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M986,450 C816,234 1126,130 956,346" fill="none" stroke="#087f5b" stroke-width="5.8" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M778,346 C592,562 592,-26 894,190" fill="none" stroke="#b03737" stroke-width="5.2" stroke-dasharray="3 4" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M1070,190 C1172,136 1172,140 1182,86" fill="none" stroke="#2563eb" stroke-width="5.2" stroke-dasharray="6 3" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M894,190 C764,244 764,32 1006,86" fill="none" stroke="#2563eb" stroke-width="5.2" stroke-dasharray="6 3" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M1182,86 C1340,-22 1340,298 1070,190" fill="none" stroke="#2563eb" stroke-width="5.2" stroke-dasharray="6 3" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M894,190 C708,298 708,238 778,346" fill="none" stroke="#2563eb" stroke-width="5.2" stroke-dasharray="6 3" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M1070,190 C1172,28 1172,508 954,346" fill="none" stroke="#2563eb" stroke-width="5.2" stroke-dasharray="6 3" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M778,346 C648,508 648,28 894,190" fill="none" stroke="#2563eb" stroke-width="5.2" stroke-dasharray="6 3" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M1184,86 C1589.72,-130 1564.28,-26 1970,190" fill="none" stroke="#087f5b" stroke-width="5.8" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M1166,450 C1579.28,666 1556.72,406 1970,190" fill="none" stroke="#087f5b" stroke-width="5.8" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M1840,450 C2010,396 1800,136 1970,190" fill="none" stroke="#2563eb" stroke-width="5.2" stroke-dasharray="6 3" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M988,450 C858,504 858,500 1041,554" fill="none" stroke="#087f5b" stroke-width="5.8" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M1182,86 C1340,-22 1340,662 1217,554" fill="none" stroke="#2563eb" stroke-width="5.2" stroke-dasharray="6 3" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M1041,554 C855,662 855,-22 1006,86" fill="none" stroke="#2563eb" stroke-width="5.2" stroke-dasharray="6 3" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M1164,450 C1266,288 1266,716 1217,554" fill="none" stroke="#087f5b" stroke-width="5.8" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M1219,554 C1479.82,716 1399.18,612 1660,450" fill="none" stroke="#087f5b" stroke-width="5.8" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M1219,554 C1479.82,338 1399.18,234 1660,450" fill="none" stroke="#087f5b" stroke-width="5.8" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M1219,554 C1479.82,770 1399.18,666 1660,450" fill="none" stroke="#087f5b" stroke-width="5.8" marker-end="url(#arrow_data)" opacity="0.78"/>
-      <g class="edge-tag"><rect x="551.0" y="200.0" width="104.0" height="22" rx="11"/><text x="603.0" y="215.0" text-anchor="middle">t+0Q</text></g><g class="edge-tag"><rect x="914.0" y="360.0" width="104.0" height="22" rx="11"/><text x="966.0" y="375.0" text-anchor="middle">t+0Q</text></g><g class="edge-tag"><rect x="556.0" y="224.0" width="104.0" height="22" rx="11"/><text x="608.0" y="239.0" text-anchor="middle">t+0Q</text></g><g class="edge-tag"><rect x="451.0" y="388.0" width="104.0" height="22" rx="11"/><text x="503.0" y="403.0" text-anchor="middle">t+0Q</text></g><g class="edge-tag"><rect x="556.0" y="170.0" width="104.0" height="22" rx="11"/><text x="608.0" y="185.0" text-anchor="middle">t+8Q</text></g><g class="edge-tag"><rect x="1356.0" y="520.0" width="104.0" height="22" rx="11"/><text x="1408.0" y="535.0" text-anchor="middle">t+0Q</text></g><g class="edge-tag"><rect x="919.0" y="168.0" width="104.0" height="22" rx="11"/><text x="971.0" y="183.0" text-anchor="middle">t+1Q</text></g><g class="edge-tag"><rect x="540.0" y="301.5" width="104.0" height="22" rx="11"/><text x="592.0" y="316.5" text-anchor="middle">t-1Q</text></g><g class="edge-tag"><rect x="1120.0" y="112.1" width="104.0" height="22" rx="11"/><text x="1172.0" y="127.1" text-anchor="middle">t+0Q</text></g><g class="edge-tag"><rect x="712.0" y="135.9" width="104.0" height="22" rx="11"/><text x="764.0" y="150.9" text-anchor="middle">t+0Q</text></g><g class="edge-tag"><rect x="1288.0" y="100.2" width="104.0" height="22" rx="11"/><text x="1340.0" y="115.2" text-anchor="middle">t+0Q</text></g><g class="edge-tag"><rect x="656.0" y="277.8" width="104.0" height="22" rx="11"/><text x="708.0" y="292.8" text-anchor="middle">t+0Q</text></g><g class="edge-tag"><rect x="1120.0" y="218.4" width="104.0" height="22" rx="11"/><text x="1172.0" y="233.4" text-anchor="middle">t+0Q</text></g><g class="edge-tag"><rect x="596.0" y="289.6" width="104.0" height="22" rx="11"/><text x="648.0" y="304.6" text-anchor="middle">t+0Q</text></g><g class="edge-tag"><rect x="1525.0" y="-92.0" width="104.0" height="22" rx="11"/><text x="1577.0" y="-77.0" text-anchor="middle">t+2Q</text></g><g class="edge-tag"><rect x="1516.0" y="522.0" width="104.0" height="22" rx="11"/><text x="1568.0" y="537.0" text-anchor="middle">t+3Q</text></g><g class="edge-tag"><rect x="1853.0" y="252.0" width="104.0" height="22" rx="11"/><text x="1905.0" y="267.0" text-anchor="middle">t+0Q</text></g><g class="edge-tag"><rect x="806.0" y="499.9" width="104.0" height="22" rx="11"/><text x="858.0" y="514.9" text-anchor="middle">t+1Q</text></g><g class="edge-tag"><rect x="1288.0" y="282.2" width="104.0" height="22" rx="11"/><text x="1340.0" y="297.2" text-anchor="middle">t+0Q</text></g><g class="edge-tag"><rect x="803.0" y="329.8" width="104.0" height="22" rx="11"/><text x="855.0" y="344.8" text-anchor="middle">t+0Q</text></g><g class="edge-tag"><rect x="1214.0" y="452.4" width="104.0" height="22" rx="11"/><text x="1266.0" y="467.4" text-anchor="middle">t+1Q</text></g><g class="edge-tag"><rect x="1387.5" y="650.0" width="104.0" height="22" rx="11"/><text x="1439.5" y="665.0" text-anchor="middle">t+2Q</text></g><g class="edge-tag"><rect x="1387.5" y="272.0" width="104.0" height="22" rx="11"/><text x="1439.5" y="287.0" text-anchor="middle">t+2Q</text></g><g class="edge-tag"><rect x="1387.5" y="704.0" width="104.0" height="22" rx="11"/><text x="1439.5" y="719.0" text-anchor="middle">t+2Q</text></g>
-      <g class="node"><rect class="node-shadow" x="52" y="218" width="176" height="50" rx="8"/><rect x="52" y="218" width="176" height="50" rx="8" fill="#eef4f8" stroke="#aebfca"/><rect x="52" y="218" width="7" height="50" rx="4" fill="#486574"/><text x="140" y="240" text-anchor="middle">Server OEM</text><text x="140" y="257" text-anchor="middle" class="node-q">t+0.0Q</text></g><g class="node"><rect class="node-shadow" x="778" y="322" width="176" height="50" rx="8"/><rect x="778" y="322" width="176" height="50" rx="8" fill="#eef4f8" stroke="#aebfca"/><rect x="778" y="322" width="7" height="50" rx="4" fill="#486574"/><text x="866" y="344" text-anchor="middle">Server EMS</text><text x="866" y="361" text-anchor="middle" class="node-q">t+1.7Q</text></g><g class="node"><rect class="node-shadow" x="894" y="166" width="176" height="50" rx="8"/><rect x="894" y="166" width="176" height="50" rx="8" fill="#edf6ff" stroke="#a8c9ee"/><rect x="894" y="166" width="7" height="50" rx="4" fill="#1f6feb"/><text x="982" y="188" text-anchor="middle">Hyperscalers</text><text x="982" y="205" text-anchor="middle" class="node-q">t+2.0Q</text></g><g class="node"><rect class="node-shadow" x="978" y="270" width="176" height="50" rx="8"/><rect x="978" y="270" width="176" height="50" rx="8" fill="#edf6ff" stroke="#a8c9ee"/><rect x="978" y="270" width="7" height="50" rx="4" fill="#1f6feb"/><text x="1066" y="292" text-anchor="middle">AI Platforms</text><text x="1066" y="309" text-anchor="middle" class="node-q">t+2.2Q</text></g><g class="node"><rect class="node-shadow" x="988" y="426" width="176" height="50" rx="8"/><rect x="988" y="426" width="176" height="50" rx="8" fill="#f1efff" stroke="#beb7ee"/><rect x="988" y="426" width="7" height="50" rx="4" fill="#6f58d9"/><text x="1076" y="448" text-anchor="middle">CPU</text><text x="1076" y="465" text-anchor="middle" class="node-q">t+2.2Q</text></g><g class="node"><rect class="node-shadow" x="1006" y="62" width="176" height="50" rx="8"/><rect x="1006" y="62" width="176" height="50" rx="8" fill="#fff2eb" stroke="#ebb08d"/><rect x="1006" y="62" width="7" height="50" rx="4" fill="#c65f27"/><text x="1094" y="84" text-anchor="middle">Cooling</text><text x="1094" y="101" text-anchor="middle" class="node-q">t+2.3Q</text></g><g class="node"><rect class="node-shadow" x="1041" y="530" width="176" height="50" rx="8"/><rect x="1041" y="530" width="176" height="50" rx="8" fill="#edf8f5" stroke="#9fcfc1"/><rect x="1041" y="530" width="7" height="50" rx="4" fill="#087f5b"/><text x="1129" y="552" text-anchor="middle">components</text><text x="1129" y="569" text-anchor="middle" class="node-q">t+2.3Q</text></g><g class="node"><rect class="node-shadow" x="1662" y="426" width="176" height="50" rx="8"/><rect x="1662" y="426" width="176" height="50" rx="8" fill="#eef4f8" stroke="#aebfca"/><rect x="1662" y="426" width="7" height="50" rx="4" fill="#486574"/><text x="1750" y="448" text-anchor="middle">Server Networking</text><text x="1750" y="465" text-anchor="middle" class="node-q">t+3.8Q</text></g><g class="node"><rect class="node-shadow" x="1972" y="166" width="176" height="50" rx="8"/><rect x="1972" y="166" width="176" height="50" rx="8" fill="#f1efff" stroke="#beb7ee"/><rect x="1972" y="166" width="7" height="50" rx="4" fill="#6f58d9"/><text x="2060" y="188" text-anchor="middle">AI Chip</text><text x="2060" y="205" text-anchor="middle" class="node-q">t+4.5Q</text></g>
+      <rect class="map-bg" x="0" y="0" width="2600" height="1080"/>
+      <rect class="time-band" x="180.0" y="76" width="203.6" height="934"/><rect class="time-band" x="587.3" y="76" width="203.6" height="934"/><rect class="time-band" x="994.5" y="76" width="203.6" height="934"/><rect class="time-band" x="1401.8" y="76" width="203.6" height="934"/><rect class="time-band" x="1809.1" y="76" width="203.6" height="934"/><rect class="time-band" x="2216.4" y="76" width="203.6" height="934"/>
+      <line x1="180.0" x2="180.0" y1="76" y2="1010" class="tick"/><text x="180.0" y="38" text-anchor="middle" class="axis-label">t+0Q</text><line x1="383.6" x2="383.6" y1="76" y2="1010" class="tick"/><text x="383.6" y="38" text-anchor="middle" class="axis-label">t+1Q</text><line x1="587.3" x2="587.3" y1="76" y2="1010" class="tick"/><text x="587.3" y="38" text-anchor="middle" class="axis-label">t+2Q</text><line x1="790.9" x2="790.9" y1="76" y2="1010" class="tick"/><text x="790.9" y="38" text-anchor="middle" class="axis-label">t+3Q</text><line x1="994.5" x2="994.5" y1="76" y2="1010" class="tick"/><text x="994.5" y="38" text-anchor="middle" class="axis-label">t+4Q</text><line x1="1198.2" x2="1198.2" y1="76" y2="1010" class="tick"/><text x="1198.2" y="38" text-anchor="middle" class="axis-label">t+5Q</text><line x1="1401.8" x2="1401.8" y1="76" y2="1010" class="tick"/><text x="1401.8" y="38" text-anchor="middle" class="axis-label">t+6Q</text><line x1="1605.5" x2="1605.5" y1="76" y2="1010" class="tick"/><text x="1605.5" y="38" text-anchor="middle" class="axis-label">t+7Q</text><line x1="1809.1" x2="1809.1" y1="76" y2="1010" class="tick"/><text x="1809.1" y="38" text-anchor="middle" class="axis-label">t+8Q</text><line x1="2012.7" x2="2012.7" y1="76" y2="1010" class="tick"/><text x="2012.7" y="38" text-anchor="middle" class="axis-label">t+9Q</text><line x1="2216.4" x2="2216.4" y1="76" y2="1010" class="tick"/><text x="2216.4" y="38" text-anchor="middle" class="axis-label">t+10Q</text><line x1="2420.0" x2="2420.0" y1="76" y2="1010" class="tick"/><text x="2420.0" y="38" text-anchor="middle" class="axis-label">t+11Q</text>
+      <path d="M2254,330 C2356,286 2356,554 2081,510" fill="none" stroke="#2563eb" stroke-width="5.2" stroke-dasharray="6 3" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M2040,210 C1910,254 1910,166 1970,210" fill="none" stroke="#2563eb" stroke-width="5.2" stroke-dasharray="6 3" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M270,210 C790,122 1219,182 1739,270" fill="none" stroke="#087f5b" stroke-width="5.8" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M1741,270 C1555,358 1555,422 1905,510" fill="none" stroke="#087f5b" stroke-width="5.8" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M2081,510 C2183,378 2183,342 2216,210" fill="none" stroke="#087f5b" stroke-width="5.8" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M1905,510 C1775,642 1775,78 2040,210" fill="none" stroke="#b03737" stroke-width="5.2" stroke-dasharray="3 4" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M2427,450 C2585,274 2585,506 2254,330" fill="none" stroke="#2563eb" stroke-width="5.2" stroke-dasharray="6 3" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M1970,210 C1784,386 1784,214 1899,390" fill="none" stroke="#2563eb" stroke-width="5.2" stroke-dasharray="6 3" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M2081,510 C2183,466 2183,434 2075,390" fill="none" stroke="#2563eb" stroke-width="5.2" stroke-dasharray="6 3" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M2083,510 C2253,554 2079,494 2249,450" fill="none" stroke="#087f5b" stroke-width="5.8" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M2075,390 C2233,302 2233,358 1917,270" fill="none" stroke="#2563eb" stroke-width="5.2" stroke-dasharray="6 3" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M2077,390 C2258.86,478 2148.14,298 2330,210" fill="none" stroke="#087f5b" stroke-width="5.8" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M1919,270 C2167.22,138 2081.78,78 2330,210" fill="none" stroke="#087f5b" stroke-width="5.8" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M2251,450 C2121,582 2121,78 2332,210" fill="none" stroke="#2563eb" stroke-width="5.2" stroke-dasharray="6 3" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M2075,390 C2233,214 2233,386 2146,210" fill="none" stroke="#2563eb" stroke-width="5.2" stroke-dasharray="6 3" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M1919,270 C2133.2,446 2034.8,626 2249,450" fill="none" stroke="#087f5b" stroke-width="5.8" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M2077,390 C2247,346 2079,406 2249,450" fill="none" stroke="#087f5b" stroke-width="5.8" marker-end="url(#arrow_data)" opacity="0.78"/><path d="M1741,270 C1611,314 1611,346 1899,390" fill="none" stroke="#087f5b" stroke-width="5.8" marker-end="url(#arrow_data)" opacity="0.78"/>
+      <g class="edge-tag"><rect x="2304.0" y="396.3" width="104.0" height="22" rx="11"/><text x="2356.0" y="411.3" text-anchor="middle">t+0Q</text></g><g class="edge-tag"><rect x="1858.0" y="205.7" width="104.0" height="22" rx="11"/><text x="1910.0" y="220.7" text-anchor="middle">t+0Q</text></g><g class="edge-tag"><rect x="952.5" y="138.0" width="104.0" height="22" rx="11"/><text x="1004.5" y="153.0" text-anchor="middle">t+8Q</text></g><g class="edge-tag"><rect x="1503.0" y="395.4" width="104.0" height="22" rx="11"/><text x="1555.0" y="410.4" text-anchor="middle">t+1Q</text></g><g class="edge-tag"><rect x="2131.0" y="317.0" width="104.0" height="22" rx="11"/><text x="2183.0" y="332.0" text-anchor="middle">t+1Q</text></g><g class="edge-tag"><rect x="1723.0" y="375.0" width="104.0" height="22" rx="11"/><text x="1775.0" y="390.0" text-anchor="middle">t-1Q</text></g><g class="edge-tag"><rect x="2476.0" y="337.3" width="104.0" height="22" rx="11"/><text x="2528.0" y="352.3" text-anchor="middle">t+0Q</text></g><g class="edge-tag"><rect x="1732.0" y="324.7" width="104.0" height="22" rx="11"/><text x="1784.0" y="339.7" text-anchor="middle">t+0Q</text></g><g class="edge-tag"><rect x="2131.0" y="426.3" width="104.0" height="22" rx="11"/><text x="2183.0" y="441.3" text-anchor="middle">t+0Q</text></g><g class="edge-tag"><rect x="2114.0" y="510.0" width="104.0" height="22" rx="11"/><text x="2166.0" y="525.0" text-anchor="middle">t+2Q</text></g><g class="edge-tag"><rect x="2181.0" y="296.6" width="104.0" height="22" rx="11"/><text x="2233.0" y="311.6" text-anchor="middle">t+0Q</text></g><g class="edge-tag"><rect x="2151.5" y="374.0" width="104.0" height="22" rx="11"/><text x="2203.5" y="389.0" text-anchor="middle">t+2Q</text></g><g class="edge-tag"><rect x="2072.5" y="94.0" width="104.0" height="22" rx="11"/><text x="2124.5" y="109.0" text-anchor="middle">t+3Q</text></g><g class="edge-tag"><rect x="2069.0" y="345.0" width="104.0" height="22" rx="11"/><text x="2121.0" y="360.0" text-anchor="middle">t+0Q</text></g><g class="edge-tag"><rect x="2181.0" y="247.3" width="104.0" height="22" rx="11"/><text x="2233.0" y="262.3" text-anchor="middle">t+0Q</text></g><g class="edge-tag"><rect x="2032.0" y="522.0" width="104.0" height="22" rx="11"/><text x="2084.0" y="537.0" text-anchor="middle">t+3Q</text></g><g class="edge-tag"><rect x="2111.0" y="362.0" width="104.0" height="22" rx="11"/><text x="2163.0" y="377.0" text-anchor="middle">t+2Q</text></g><g class="edge-tag"><rect x="1559.0" y="325.7" width="104.0" height="22" rx="11"/><text x="1611.0" y="340.7" text-anchor="middle">t+1Q</text></g>
+      <g class="node"><rect class="node-shadow" x="92" y="186" width="176" height="50" rx="8"/><rect x="92" y="186" width="176" height="50" rx="8" fill="#eef4f8" stroke="#aebfca"/><rect x="92" y="186" width="7" height="50" rx="4" fill="#486574"/><text x="180" y="208" text-anchor="middle">Server OEM</text><text x="180" y="225" text-anchor="middle" class="node-q">t+0.0Q</text></g><g class="node"><rect class="node-shadow" x="1741" y="246" width="176" height="50" rx="8"/><rect x="1741" y="246" width="176" height="50" rx="8" fill="#f1efff" stroke="#beb7ee"/><rect x="1741" y="246" width="7" height="50" rx="4" fill="#6f58d9"/><text x="1829" y="268" text-anchor="middle">CPU</text><text x="1829" y="285" text-anchor="middle" class="node-q">t+8.0Q</text></g><g class="node"><rect class="node-shadow" x="1899" y="366" width="176" height="50" rx="8"/><rect x="1899" y="366" width="176" height="50" rx="8" fill="#edf8f5" stroke="#9fcfc1"/><rect x="1899" y="366" width="7" height="50" rx="4" fill="#087f5b"/><text x="1987" y="388" text-anchor="middle">components</text><text x="1987" y="405" text-anchor="middle" class="node-q">t+8.8Q</text></g><g class="node"><rect class="node-shadow" x="1905" y="486" width="176" height="50" rx="8"/><rect x="1905" y="486" width="176" height="50" rx="8" fill="#eef4f8" stroke="#aebfca"/><rect x="1905" y="486" width="7" height="50" rx="4" fill="#486574"/><text x="1993" y="508" text-anchor="middle">Server EMS</text><text x="1993" y="525" text-anchor="middle" class="node-q">t+8.8Q</text></g><g class="node"><rect class="node-shadow" x="1970" y="186" width="176" height="50" rx="8"/><rect x="1970" y="186" width="176" height="50" rx="8" fill="#fff2eb" stroke="#ebb08d"/><rect x="1970" y="186" width="7" height="50" rx="4" fill="#c65f27"/><text x="2058" y="208" text-anchor="middle">Cooling</text><text x="2058" y="225" text-anchor="middle" class="node-q">t+9.1Q</text></g><g class="node"><rect class="node-shadow" x="2040" y="186" width="176" height="50" rx="8"/><rect x="2040" y="186" width="176" height="50" rx="8" fill="#edf6ff" stroke="#a8c9ee"/><rect x="2040" y="186" width="7" height="50" rx="4" fill="#1f6feb"/><text x="2128" y="208" text-anchor="middle">Hyperscalers</text><text x="2128" y="225" text-anchor="middle" class="node-q">t+9.4Q</text></g><g class="node"><rect class="node-shadow" x="2078" y="306" width="176" height="50" rx="8"/><rect x="2078" y="306" width="176" height="50" rx="8" fill="#edf6ff" stroke="#a8c9ee"/><rect x="2078" y="306" width="7" height="50" rx="4" fill="#1f6feb"/><text x="2166" y="328" text-anchor="middle">AI Platforms</text><text x="2166" y="345" text-anchor="middle" class="node-q">t+9.6Q</text></g><g class="node"><rect class="node-shadow" x="2251" y="426" width="176" height="50" rx="8"/><rect x="2251" y="426" width="176" height="50" rx="8" fill="#eef4f8" stroke="#aebfca"/><rect x="2251" y="426" width="7" height="50" rx="4" fill="#486574"/><text x="2339" y="448" text-anchor="middle">Server Networking</text><text x="2339" y="465" text-anchor="middle" class="node-q">t+10.5Q</text></g><g class="node"><rect class="node-shadow" x="2332" y="186" width="176" height="50" rx="8"/><rect x="2332" y="186" width="176" height="50" rx="8" fill="#f1efff" stroke="#beb7ee"/><rect x="2332" y="186" width="7" height="50" rx="4" fill="#6f58d9"/><text x="2420" y="208" text-anchor="middle">AI Chip</text><text x="2420" y="225" text-anchor="middle" class="node-q">t+10.9Q</text></g>
     </svg>
     
     <div class="tablewrap">
-      <table><thead><tr><th>Layer</th><th>Source section</th><th>Source metric</th><th>Source transform</th><th>Target section</th><th>Target metric</th><th>Timing</th><th>Best lag</th><th>Corr</th><th>Obs</th><th>Class</th><th>Map</th><th>Interpretation</th></tr></thead><tbody><tr><td>Cost of revenue -&gt; Operating income</td><td>components</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Operating income</td><td>source leads</td><td>2</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 1.00, n=30. Strongest absolute relation is lag +2Q, corr 1.00.</td></tr><tr><td>Revenue -&gt; Operating income</td><td>components</td><td>Revenue</td><td>revenue_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Operating income</td><td>source leads</td><td>2</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 1.00, n=30. Strongest absolute relation is lag +2Q, corr 1.00.</td></tr><tr><td>Inventory -&gt; Operating income</td><td>components</td><td>Inventory</td><td>inventory_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Operating income</td><td>source leads</td><td>2</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 1.00, n=30. Strongest absolute relation is lag +2Q, corr 1.00.</td></tr><tr><td>Revenue -&gt; Net income</td><td>components</td><td>Revenue</td><td>revenue_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Net income</td><td>source leads</td><td>2</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 1.00, n=30. Strongest absolute relation is lag +2Q, corr 1.00.</td></tr><tr><td>Revenue -&gt; Operating income</td><td>Server Networking</td><td>Revenue</td><td>revenue_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Operating income</td><td>synchronous</td><td>0</td><td>1.00</td><td>32</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 1.00, n=32. Strongest absolute relation is lag +0Q, corr 1.00.</td></tr><tr><td>Demand cost -&gt; Upstream revenue</td><td>CPU</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>components</td><td>Revenue</td><td>source leads</td><td>1</td><td>1.00</td><td>28</td><td>strong</td><td>True</td><td>source leads; best positive lag +1Q, corr 1.00, n=28. Strongest absolute relation is lag +1Q, corr 1.00.</td></tr><tr><td>Cost of revenue -&gt; Operating income</td><td>CPU</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Operating income</td><td>source leads</td><td>3</td><td>1.00</td><td>28</td><td>strong</td><td>True</td><td>source leads; best positive lag +3Q, corr 1.00, n=28. Strongest absolute relation is lag +3Q, corr 1.00.</td></tr><tr><td>Revenue -&gt; Net income</td><td>Server Networking</td><td>Revenue</td><td>revenue_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Net income</td><td>synchronous</td><td>0</td><td>1.00</td><td>32</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 1.00, n=32. Strongest absolute relation is lag +0Q, corr 1.00.</td></tr><tr><td>Demand cost -&gt; Upstream revenue</td><td>components</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Revenue</td><td>source leads</td><td>2</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 1.00, n=30. Strongest absolute relation is lag +2Q, corr 1.00.</td></tr><tr><td>Inventory -&gt; Revenue</td><td>components</td><td>Inventory</td><td>inventory_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Revenue</td><td>source leads</td><td>2</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 1.00, n=30. Strongest absolute relation is lag +2Q, corr 1.00.</td></tr><tr><td>Cost of revenue -&gt; Operating income</td><td>Server Networking</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Operating income</td><td>synchronous</td><td>0</td><td>1.00</td><td>32</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 1.00, n=32. Strongest absolute relation is lag +0Q, corr 1.00.</td></tr><tr><td>Demand cost -&gt; Upstream revenue</td><td>CPU</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Revenue</td><td>source leads</td><td>3</td><td>1.00</td><td>28</td><td>strong</td><td>True</td><td>source leads; best positive lag +3Q, corr 1.00, n=28. Strongest absolute relation is lag +3Q, corr 1.00.</td></tr><tr><td>Inventory -&gt; Operating income</td><td>Server Networking</td><td>Inventory</td><td>inventory_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Operating income</td><td>synchronous</td><td>0</td><td>1.00</td><td>32</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 1.00, n=32. Strongest absolute relation is lag +0Q, corr 1.00.</td></tr><tr><td>Revenue -&gt; Operating income</td><td>components</td><td>Revenue</td><td>revenue_usd_m_yoy_current_ratio</td><td>components</td><td>Operating income</td><td>synchronous</td><td>0</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 1.00, n=30. Strongest absolute relation is lag +0Q, corr 1.00.</td></tr><tr><td>Inventory -&gt; Operating income</td><td>components</td><td>Inventory</td><td>inventory_usd_m_yoy_current_ratio</td><td>components</td><td>Operating income</td><td>synchronous</td><td>0</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 1.00, n=30. Strongest absolute relation is lag +0Q, corr 1.00.</td></tr><tr><td>Cost of revenue -&gt; Operating income</td><td>components</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>components</td><td>Operating income</td><td>synchronous</td><td>0</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 1.00, n=30. Strongest absolute relation is lag +0Q, corr 1.00.</td></tr><tr><td>Revenue -&gt; Inventory</td><td>components</td><td>Revenue</td><td>revenue_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Inventory</td><td>source leads</td><td>2</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 1.00, n=30. Strongest absolute relation is lag +2Q, corr 1.00.</td></tr><tr><td>Revenue -&gt; Inventory</td><td>components</td><td>Revenue</td><td>revenue_usd_m_yoy_current_ratio</td><td>Cooling</td><td>Inventory</td><td>synchronous</td><td>0</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 1.00, n=30. Strongest absolute relation is lag +0Q, corr 1.00.</td></tr><tr><td>Inventory -&gt; Revenue</td><td>Cooling</td><td>Inventory</td><td>inventory_usd_m_yoy_current_ratio</td><td>components</td><td>Revenue</td><td>synchronous</td><td>0</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 1.00, n=30. Strongest absolute relation is lag +0Q, corr 1.00.</td></tr><tr><td>Inventory -&gt; Operating income</td><td>Cooling</td><td>Inventory</td><td>inventory_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Operating income</td><td>source leads</td><td>2</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 1.00, n=30. Strongest absolute relation is lag +2Q, corr 1.00.</td></tr><tr><td>Cost of revenue -&gt; Operating income</td><td>CPU</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>components</td><td>Operating income</td><td>source leads</td><td>1</td><td>1.00</td><td>28</td><td>strong</td><td>True</td><td>source leads; best positive lag +1Q, corr 1.00, n=28. Strongest absolute relation is lag +1Q, corr 1.00.</td></tr><tr><td>Inventory -&gt; Revenue</td><td>Cooling</td><td>Inventory</td><td>inventory_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Revenue</td><td>source leads</td><td>2</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 1.00, n=30. Strongest absolute relation is lag +2Q, corr 1.00.</td></tr><tr><td>Revenue -&gt; Net income</td><td>components</td><td>Revenue</td><td>revenue_usd_m_yoy_current_ratio</td><td>AI Chip</td><td>Net income</td><td>source leads</td><td>2</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 1.00, n=30. Strongest absolute relation is lag +2Q, corr 1.00.</td></tr><tr><td>Revenue -&gt; Net income</td><td>Server Networking</td><td>Revenue</td><td>revenue_usd_m_yoy_current_ratio</td><td>AI Chip</td><td>Net income</td><td>synchronous</td><td>0</td><td>1.00</td><td>32</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 1.00, n=32. Strongest absolute relation is lag +0Q, corr 1.00.</td></tr><tr><td>Inventory -&gt; Operating income</td><td>Cooling</td><td>Inventory</td><td>inventory_usd_m_yoy_current_ratio</td><td>components</td><td>Operating income</td><td>synchronous</td><td>0</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 1.00, n=30. Strongest absolute relation is lag +0Q, corr 1.00.</td></tr><tr><td>Revenue -&gt; Operating income</td><td>AI Chip</td><td>Revenue</td><td>revenue_usd_m_yoy_current_ratio</td><td>AI Chip</td><td>Operating income</td><td>synchronous</td><td>0</td><td>1.00</td><td>32</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 1.00, n=32. Strongest absolute relation is lag +0Q, corr 1.00.</td></tr><tr><td>Inventory -&gt; Operating income</td><td>components</td><td>Inventory</td><td>inventory_usd_m_yoy_current_ratio</td><td>AI Chip</td><td>Operating income</td><td>source leads</td><td>2</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 1.00, n=30. Strongest absolute relation is lag +2Q, corr 1.00.</td></tr><tr><td>Revenue -&gt; Operating income</td><td>components</td><td>Revenue</td><td>revenue_usd_m_yoy_current_ratio</td><td>AI Chip</td><td>Operating income</td><td>source leads</td><td>2</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 1.00, n=30. Strongest absolute relation is lag +2Q, corr 1.00.</td></tr><tr><td>Cost of revenue -&gt; Operating income</td><td>CPU</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>AI Chip</td><td>Operating income</td><td>source leads</td><td>3</td><td>1.00</td><td>28</td><td>strong</td><td>True</td><td>source leads; best positive lag +3Q, corr 1.00, n=28. Strongest absolute relation is lag +3Q, corr 1.00.</td></tr><tr><td>Inventory -&gt; Revenue</td><td>components</td><td>Inventory</td><td>inventory_usd_m_yoy_current_ratio</td><td>Cooling</td><td>Revenue</td><td>synchronous</td><td>0</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 1.00, n=30. Strongest absolute relation is lag +0Q, corr 1.00.</td></tr><tr><td>Revenue -&gt; Inventory</td><td>Cooling</td><td>Revenue</td><td>revenue_usd_m_yoy_current_ratio</td><td>components</td><td>Inventory</td><td>synchronous</td><td>0</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 1.00, n=30. Strongest absolute relation is lag +0Q, corr 1.00.</td></tr><tr><td>Cost of revenue -&gt; Operating income</td><td>components</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>AI Chip</td><td>Operating income</td><td>source leads</td><td>2</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 1.00, n=30. Strongest absolute relation is lag +2Q, corr 1.00.</td></tr><tr><td>Demand cost -&gt; Upstream revenue</td><td>components</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Cooling</td><td>Revenue</td><td>synchronous</td><td>0</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 1.00, n=30. Strongest absolute relation is lag +0Q, corr 1.00.</td></tr><tr><td>Inventory -&gt; Operating income</td><td>Cooling</td><td>Inventory</td><td>inventory_usd_m_yoy_current_ratio</td><td>AI Chip</td><td>Operating income</td><td>source leads</td><td>2</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 1.00, n=30. Strongest absolute relation is lag +2Q, corr 1.00.</td></tr><tr><td>Revenue -&gt; Net income</td><td>AI Chip</td><td>Revenue</td><td>revenue_usd_m_yoy_current_ratio</td><td>AI Chip</td><td>Net income</td><td>synchronous</td><td>0</td><td>1.00</td><td>32</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 1.00, n=32. Strongest absolute relation is lag +0Q, corr 1.00.</td></tr><tr><td>Revenue -&gt; Net income</td><td>Cooling</td><td>Revenue</td><td>revenue_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Net income</td><td>source leads</td><td>2</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 1.00, n=30. Strongest absolute relation is lag +2Q, corr 1.00.</td></tr><tr><td>Revenue -&gt; Operating income</td><td>Cooling</td><td>Revenue</td><td>revenue_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Operating income</td><td>source leads</td><td>2</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 1.00, n=30. Strongest absolute relation is lag +2Q, corr 1.00.</td></tr><tr><td>Inventory -&gt; Revenue</td><td>HW equipment</td><td>Inventory</td><td>inventory_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Revenue</td><td>source leads</td><td>8</td><td>1.00</td><td>24</td><td>strong</td><td>True</td><td>source leads; best positive lag +8Q, corr 1.00, n=24. Strongest absolute relation is lag +8Q, corr 1.00.</td></tr><tr><td>Revenue -&gt; Operating income</td><td>Cooling</td><td>Revenue</td><td>revenue_usd_m_yoy_current_ratio</td><td>components</td><td>Operating income</td><td>synchronous</td><td>0</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 1.00, n=30. Strongest absolute relation is lag +0Q, corr 1.00.</td></tr><tr><td>Inventory -&gt; Operating income</td><td>HW equipment</td><td>Inventory</td><td>inventory_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Operating income</td><td>source leads</td><td>8</td><td>1.00</td><td>24</td><td>strong</td><td>True</td><td>source leads; best positive lag +8Q, corr 1.00, n=24. Strongest absolute relation is lag +8Q, corr 1.00.</td></tr></tbody></table>
+      <table><thead><tr><th>Layer</th><th>Source section</th><th>Source metric</th><th>Source transform</th><th>Target section</th><th>Target metric</th><th>Timing</th><th>Best lag</th><th>Corr</th><th>Obs</th><th>Class</th><th>Map</th><th>Interpretation</th></tr></thead><tbody><tr><td>Procurement spend -&gt; Supplier revenue</td><td>CPU</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>components</td><td>Revenue</td><td>source leads</td><td>1</td><td>1.00</td><td>28</td><td>strong</td><td>True</td><td>source leads; best positive lag +1Q, corr 1.00, n=28. Strongest absolute relation is lag +1Q, corr 1.00.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>components</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Revenue</td><td>source leads</td><td>2</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 1.00, n=30. Strongest absolute relation is lag +2Q, corr 1.00.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>CPU</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Revenue</td><td>source leads</td><td>3</td><td>1.00</td><td>28</td><td>strong</td><td>True</td><td>source leads; best positive lag +3Q, corr 1.00, n=28. Strongest absolute relation is lag +3Q, corr 1.00.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>components</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Cooling</td><td>Revenue</td><td>synchronous</td><td>0</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 1.00, n=30. Strongest absolute relation is lag +0Q, corr 1.00.</td></tr><tr><td>Capex spend -&gt; Supplier revenue</td><td>Server Networking</td><td>Capex investment</td><td>capex_yoy_current_ratio</td><td>AI Chip</td><td>Revenue</td><td>synchronous</td><td>0</td><td>1.00</td><td>17</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 1.00, n=17. Strongest absolute relation is lag +0Q, corr 1.00.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>CPU</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>AI Chip</td><td>Revenue</td><td>source leads</td><td>3</td><td>1.00</td><td>28</td><td>strong</td><td>True</td><td>source leads; best positive lag +3Q, corr 1.00, n=28. Strongest absolute relation is lag +3Q, corr 1.00.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>components</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>AI Chip</td><td>Revenue</td><td>source leads</td><td>2</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 1.00, n=30. Strongest absolute relation is lag +2Q, corr 1.00.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>Server Networking</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>AI Chip</td><td>Revenue</td><td>synchronous</td><td>0</td><td>1.00</td><td>32</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 1.00, n=32. Strongest absolute relation is lag +0Q, corr 1.00.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>components</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>CPU</td><td>Revenue</td><td>synchronous</td><td>0</td><td>1.00</td><td>29</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 1.00, n=29. Strongest absolute relation is lag +0Q, corr 1.00.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>components</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Server EMS</td><td>Revenue</td><td>synchronous</td><td>0</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 1.00, n=30. Strongest absolute relation is lag +0Q, corr 1.00.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>Server EMS</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Revenue</td><td>source leads</td><td>2</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 1.00, n=30. Strongest absolute relation is lag +2Q, corr 1.00.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>Server EMS</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>components</td><td>Revenue</td><td>synchronous</td><td>0</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 1.00, n=30. Strongest absolute relation is lag +0Q, corr 1.00.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>Server EMS</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>AI Chip</td><td>Revenue</td><td>source leads</td><td>2</td><td>1.00</td><td>30</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 1.00, n=30. Strongest absolute relation is lag +2Q, corr 1.00.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>AI Chip</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Revenue</td><td>synchronous</td><td>0</td><td>1.00</td><td>32</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 1.00, n=32. Strongest absolute relation is lag +0Q, corr 1.00.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>Cooling</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>components</td><td>Revenue</td><td>synchronous</td><td>0</td><td>0.99</td><td>29</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 0.99, n=29. Strongest absolute relation is lag +0Q, corr 0.99.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>Cooling</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Revenue</td><td>source leads</td><td>2</td><td>0.99</td><td>29</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 0.99, n=29. Strongest absolute relation is lag +2Q, corr 0.99.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>Cooling</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>AI Chip</td><td>Revenue</td><td>source leads</td><td>2</td><td>0.99</td><td>29</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 0.99, n=29. Strongest absolute relation is lag +2Q, corr 0.99.</td></tr><tr><td>Capex spend -&gt; Supplier revenue</td><td>Server Networking</td><td>Capex investment</td><td>capex_yoy_current_ratio</td><td>AI Platforms</td><td>Revenue</td><td>synchronous</td><td>0</td><td>0.99</td><td>16</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 0.99, n=16. Strongest absolute relation is lag +0Q, corr 0.99.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>Hyperscalers</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Server EMS</td><td>Revenue</td><td>target leads</td><td>-1</td><td>0.99</td><td>28</td><td>strong</td><td>True</td><td>target leads; best positive lag -1Q, corr 0.99, n=28. Strongest absolute relation is lag -1Q, corr 0.99.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>Server EMS</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Hyperscalers</td><td>Revenue</td><td>source leads</td><td>1</td><td>0.99</td><td>29</td><td>strong</td><td>True</td><td>source leads; best positive lag +1Q, corr 0.99, n=29. Strongest absolute relation is lag +1Q, corr 0.99.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>CPU</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Server EMS</td><td>Revenue</td><td>source leads</td><td>1</td><td>0.99</td><td>29</td><td>strong</td><td>True</td><td>source leads; best positive lag +1Q, corr 0.99, n=29. Strongest absolute relation is lag +1Q, corr 0.99.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>components</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Hyperscalers</td><td>Revenue</td><td>synchronous</td><td>0</td><td>0.99</td><td>29</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 0.99, n=29. Strongest absolute relation is lag +0Q, corr 0.99.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>Server OEM</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>CPU</td><td>Revenue</td><td>source leads</td><td>8</td><td>0.99</td><td>22</td><td>strong</td><td>True</td><td>source leads; best positive lag +8Q, corr 0.99, n=22. Strongest absolute relation is lag +8Q, corr 0.99.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>Hyperscalers</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Cooling</td><td>Revenue</td><td>synchronous</td><td>0</td><td>0.98</td><td>29</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 0.98, n=29. Strongest absolute relation is lag +0Q, corr 0.98.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>Hyperscalers</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>AI Chip</td><td>Revenue</td><td>source leads</td><td>2</td><td>0.98</td><td>29</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 0.98, n=29. Strongest absolute relation is lag +2Q, corr 0.98.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>Hyperscalers</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>components</td><td>Revenue</td><td>synchronous</td><td>0</td><td>0.98</td><td>29</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 0.98, n=29. Strongest absolute relation is lag +0Q, corr 0.98.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>Hyperscalers</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Revenue</td><td>source leads</td><td>2</td><td>0.98</td><td>29</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 0.98, n=29. Strongest absolute relation is lag +2Q, corr 0.98.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>AI Platforms</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Server EMS</td><td>Revenue</td><td>synchronous</td><td>0</td><td>0.98</td><td>30</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 0.98, n=30. Strongest absolute relation is lag +0Q, corr 0.98.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>CPU</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>AI Platforms</td><td>Revenue</td><td>source leads</td><td>1</td><td>0.98</td><td>30</td><td>strong</td><td>True</td><td>source leads; best positive lag +1Q, corr 0.98, n=30. Strongest absolute relation is lag +1Q, corr 0.98.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>Hyperscalers</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>CPU</td><td>Revenue</td><td>synchronous</td><td>0</td><td>0.98</td><td>29</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 0.98, n=29. Strongest absolute relation is lag +0Q, corr 0.98.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>CPU</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Hyperscalers</td><td>Revenue</td><td>source leads</td><td>2</td><td>0.98</td><td>28</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 0.98, n=28. Strongest absolute relation is lag +2Q, corr 0.98.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>Cooling</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Hyperscalers</td><td>Revenue</td><td>source leads</td><td>1</td><td>0.98</td><td>28</td><td>strong</td><td>True</td><td>source leads; best positive lag +1Q, corr 0.98, n=28. Strongest absolute relation is lag +1Q, corr 0.98.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>Server EMS</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>AI Platforms</td><td>Revenue</td><td>synchronous</td><td>0</td><td>0.98</td><td>30</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 0.98, n=30. Strongest absolute relation is lag +0Q, corr 0.98.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>HW equipment</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Energy</td><td>Revenue</td><td>target leads</td><td>-2</td><td>0.97</td><td>27</td><td>strong</td><td>True</td><td>target leads; best positive lag -2Q, corr 0.97, n=27. Strongest absolute relation is lag -2Q, corr 0.97.</td></tr><tr><td>Capex spend -&gt; Supplier revenue</td><td>Server Networking</td><td>Capex investment</td><td>capex_yoy_current_ratio</td><td>Server OEM</td><td>Revenue</td><td>synchronous</td><td>0</td><td>0.97</td><td>17</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 0.97, n=17. Strongest absolute relation is lag +0Q, corr 0.97.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>Server EMS</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>CPU</td><td>Revenue</td><td>synchronous</td><td>0</td><td>0.96</td><td>30</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 0.96, n=30. Strongest absolute relation is lag +0Q, corr 0.96.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>CPU</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Server OEM</td><td>Revenue</td><td>source leads</td><td>1</td><td>0.96</td><td>30</td><td>strong</td><td>True</td><td>source leads; best positive lag +1Q, corr 0.96, n=30. Strongest absolute relation is lag +1Q, corr 0.96.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>AI Platforms</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>CPU</td><td>Revenue</td><td>synchronous</td><td>0</td><td>0.96</td><td>30</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 0.96, n=30. Strongest absolute relation is lag +0Q, corr 0.96.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>AI Platforms</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>components</td><td>Revenue</td><td>synchronous</td><td>0</td><td>0.96</td><td>29</td><td>strong</td><td>True</td><td>synchronous; best positive lag +0Q, corr 0.96, n=29. Strongest absolute relation is lag +0Q, corr 0.96.</td></tr><tr><td>Procurement spend -&gt; Supplier revenue</td><td>AI Platforms</td><td>Cost of revenue</td><td>cost_of_revenue_usd_m_yoy_current_ratio</td><td>Server Networking</td><td>Revenue</td><td>source leads</td><td>2</td><td>0.96</td><td>29</td><td>strong</td><td>True</td><td>source leads; best positive lag +2Q, corr 0.96, n=29. Strongest absolute relation is lag +2Q, corr 0.96.</td></tr></tbody></table>
     </div>
     <h3>How to Interpret Target-Leads Timing</h3>
     
@@ -102,19 +102,19 @@
       <li><b>데이터/분류 한계.</b> section aggregate는 회사 mix, fiscal quarter 차이, segment mix, 환율/통화 단위, capex 정의 차이를 포함한다. 따라서 reverse timing은 인과 결론이 아니라 “회계상 먼저 관측되는 지표” 후보로 보는 것이 맞다.</li>
     </ul>
     <p>현재 필터를 통과한 대표적인 target-leads 관계는 다음과 같다.</p>
-    <ul><li><b>Server EMS Inventory → Hyperscalers Revenue</b>: -1Q, corr=1.00, n=29, layer=Revenue -&gt; Inventory</li><li><b>Server EMS Inventory → components Revenue</b>: -1Q, corr=1.00, n=29, layer=Revenue -&gt; Inventory</li><li><b>Server EMS Revenue → Hyperscalers Cost of revenue</b>: -1Q, corr=0.99, n=28, layer=Demand cost -&gt; Upstream revenue</li><li><b>Server EMS Operating income → Hyperscalers Revenue</b>: -1Q, corr=0.99, n=29, layer=Revenue -&gt; Operating income</li><li><b>Server OEM Inventory → Hyperscalers Revenue</b>: -1Q, corr=0.98, n=29, layer=Revenue -&gt; Inventory</li><li><b>Server OEM Inventory → AI Chip Revenue</b>: -2Q, corr=0.98, n=30, layer=Revenue -&gt; Inventory</li><li><b>Server OEM Net income → AI Chip Revenue</b>: -2Q, corr=0.98, n=30, layer=Revenue -&gt; Net income</li><li><b>Server OEM Net income → Server Networking Revenue</b>: -2Q, corr=0.98, n=30, layer=Revenue -&gt; Net income</li></ul>
+    <ul><li><b>Server EMS Revenue → Hyperscalers Cost of revenue</b>: -1Q, corr=0.99, n=28, layer=Procurement spend -&gt; Supplier revenue</li><li><b>Energy Revenue → HW equipment Cost of revenue</b>: -2Q, corr=0.97, n=27, layer=Procurement spend -&gt; Supplier revenue</li><li><b>AI Platforms Revenue → Server Networking Cost of revenue</b>: -2Q, corr=0.94, n=29, layer=Procurement spend -&gt; Supplier revenue</li><li><b>HW equipment Revenue → meterier Cost of revenue</b>: -3Q, corr=0.93, n=25, layer=Procurement spend -&gt; Supplier revenue</li><li><b>AI Platforms Revenue → AI Chip Cost of revenue</b>: -2Q, corr=0.92, n=29, layer=Procurement spend -&gt; Supplier revenue</li><li><b>Server EMS Revenue → DRAM Cost of revenue</b>: -1Q, corr=0.86, n=27, layer=Procurement spend -&gt; Supplier revenue</li><li><b>Server OEM Revenue → Server Networking Cost of revenue</b>: -2Q, corr=0.82, n=30, layer=Procurement spend -&gt; Supplier revenue</li><li><b>Server OEM Revenue → AI Chip Cost of revenue</b>: -2Q, corr=0.82, n=30, layer=Procurement spend -&gt; Supplier revenue</li></ul>
     
     <h3>Data-Driven Lag Impact Profiles</h3>
-    <p>아래 그래프는 데이터 기반으로 선정된 edge의 lag별 상관계수다. +Q는 source metric이 target metric을 선행, 0Q는 동행, -Q는 target metric이 source metric보다 먼저 움직인다는 뜻이다.</p>
+    <p>아래 그래프는 데이터 기반으로 선정된 edge의 lag별 상관계수다. +Q는 source spending proxy가 supplier revenue를 선행, 0Q는 동행, -Q는 supplier revenue가 source spending proxy보다 먼저 움직인다는 뜻이다.</p>
     <svg viewBox="0 0 1060 802" role="img" aria-label="Lead-lag influence profiles">
 <style>.row-label{font-size:12px;fill:#17211c}.axis-label{font-size:10px;fill:#68766e}.bar-label{font-size:10px;fill:#39473f}</style>
-<text x="8" y="65" class="row-label">Investment -&gt; Cost of revenue: DRAM → components</text>
+<text x="8" y="65" class="row-label">Capex spend -&gt; Supplier revenue: DRAM → components</text>
 <line x1="230" x2="1036" y1="61" y2="61" stroke="#c8d1cb"/>
-<rect x="233.0" y="61.0" width="56.0" height="15.1" fill="#b03737" opacity="0.82"/>
-<rect x="295.0" y="61.0" width="56.0" height="12.0" fill="#b03737" opacity="0.82"/>
-<rect x="357.0" y="61.0" width="56.0" height="9.8" fill="#b03737" opacity="0.82"/>
-<rect x="419.0" y="61.0" width="56.0" height="10.0" fill="#b03737" opacity="0.82"/>
-<rect x="481.0" y="52.8" width="56.0" height="8.2" fill="#087f5b" opacity="0.82"/>
+<rect x="233.0" y="61.0" width="56.0" height="15.0" fill="#b03737" opacity="0.82"/>
+<rect x="295.0" y="61.0" width="56.0" height="12.1" fill="#b03737" opacity="0.82"/>
+<rect x="357.0" y="61.0" width="56.0" height="9.5" fill="#b03737" opacity="0.82"/>
+<rect x="419.0" y="61.0" width="56.0" height="9.8" fill="#b03737" opacity="0.82"/>
+<rect x="481.0" y="53.1" width="56.0" height="7.9" fill="#087f5b" opacity="0.82"/>
 <rect x="543.0" y="38.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
 <rect x="605.0" y="61.0" width="56.0" height="3.0" fill="#b03737" opacity="0.82"/>
 <rect x="667.0" y="61.0" width="56.0" height="3.3" fill="#b03737" opacity="0.82"/>
@@ -124,13 +124,13 @@
 <rect x="915.0" y="59" width="56.0" height="4" fill="#e5e9e6"/>
 <rect x="977.0" y="59" width="56.0" height="4" fill="#e5e9e6"/>
 <text x="1036" y="65" text-anchor="end" class="bar-label">best +4Q r=1.00</text>
-<text x="8" y="119" class="row-label">Investment -&gt; Cost of revenue: SW equipment → components</text>
+<text x="8" y="119" class="row-label">Capex spend -&gt; Supplier revenue: NAND → components</text>
 <line x1="230" x2="1036" y1="115" y2="115" stroke="#c8d1cb"/>
 <rect x="233.0" y="115.0" width="56.0" height="18.8" fill="#b03737" opacity="0.82"/>
 <rect x="295.0" y="115.0" width="56.0" height="18.1" fill="#b03737" opacity="0.82"/>
-<rect x="357.0" y="115.0" width="56.0" height="14.0" fill="#b03737" opacity="0.82"/>
-<rect x="419.0" y="115.0" width="56.0" height="14.4" fill="#b03737" opacity="0.82"/>
-<rect x="481.0" y="107.8" width="56.0" height="7.2" fill="#087f5b" opacity="0.82"/>
+<rect x="357.0" y="115.0" width="56.0" height="13.6" fill="#b03737" opacity="0.82"/>
+<rect x="419.0" y="115.0" width="56.0" height="14.3" fill="#b03737" opacity="0.82"/>
+<rect x="481.0" y="108.1" width="56.0" height="6.9" fill="#087f5b" opacity="0.82"/>
 <rect x="543.0" y="92.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
 <rect x="605.0" y="113" width="56.0" height="4" fill="#e5e9e6"/>
 <rect x="667.0" y="113" width="56.0" height="4" fill="#e5e9e6"/>
@@ -140,13 +140,13 @@
 <rect x="915.0" y="113" width="56.0" height="4" fill="#e5e9e6"/>
 <rect x="977.0" y="113" width="56.0" height="4" fill="#e5e9e6"/>
 <text x="1036" y="119" text-anchor="end" class="bar-label">best +1Q r=1.00</text>
-<text x="8" y="173" class="row-label">Investment -&gt; Cost of revenue: CPU → components</text>
+<text x="8" y="173" class="row-label">Capex spend -&gt; Supplier revenue: CPU → components</text>
 <line x1="230" x2="1036" y1="169" y2="169" stroke="#c8d1cb"/>
 <rect x="233.0" y="169.0" width="56.0" height="18.8" fill="#b03737" opacity="0.82"/>
 <rect x="295.0" y="169.0" width="56.0" height="18.1" fill="#b03737" opacity="0.82"/>
-<rect x="357.0" y="169.0" width="56.0" height="14.0" fill="#b03737" opacity="0.82"/>
-<rect x="419.0" y="169.0" width="56.0" height="14.4" fill="#b03737" opacity="0.82"/>
-<rect x="481.0" y="161.8" width="56.0" height="7.2" fill="#087f5b" opacity="0.82"/>
+<rect x="357.0" y="169.0" width="56.0" height="13.6" fill="#b03737" opacity="0.82"/>
+<rect x="419.0" y="169.0" width="56.0" height="14.3" fill="#b03737" opacity="0.82"/>
+<rect x="481.0" y="162.1" width="56.0" height="6.9" fill="#087f5b" opacity="0.82"/>
 <rect x="543.0" y="146.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
 <rect x="605.0" y="167" width="56.0" height="4" fill="#e5e9e6"/>
 <rect x="667.0" y="167" width="56.0" height="4" fill="#e5e9e6"/>
@@ -156,13 +156,13 @@
 <rect x="915.0" y="167" width="56.0" height="4" fill="#e5e9e6"/>
 <rect x="977.0" y="167" width="56.0" height="4" fill="#e5e9e6"/>
 <text x="1036" y="173" text-anchor="end" class="bar-label">best +1Q r=1.00</text>
-<text x="8" y="227" class="row-label">Investment -&gt; Cost of revenue: NAND → components</text>
+<text x="8" y="227" class="row-label">Capex spend -&gt; Supplier revenue: SW equipment → components</text>
 <line x1="230" x2="1036" y1="223" y2="223" stroke="#c8d1cb"/>
 <rect x="233.0" y="223.0" width="56.0" height="18.8" fill="#b03737" opacity="0.82"/>
 <rect x="295.0" y="223.0" width="56.0" height="18.1" fill="#b03737" opacity="0.82"/>
-<rect x="357.0" y="223.0" width="56.0" height="14.0" fill="#b03737" opacity="0.82"/>
-<rect x="419.0" y="223.0" width="56.0" height="14.4" fill="#b03737" opacity="0.82"/>
-<rect x="481.0" y="215.8" width="56.0" height="7.2" fill="#087f5b" opacity="0.82"/>
+<rect x="357.0" y="223.0" width="56.0" height="13.6" fill="#b03737" opacity="0.82"/>
+<rect x="419.0" y="223.0" width="56.0" height="14.3" fill="#b03737" opacity="0.82"/>
+<rect x="481.0" y="216.1" width="56.0" height="6.9" fill="#087f5b" opacity="0.82"/>
 <rect x="543.0" y="200.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
 <rect x="605.0" y="221" width="56.0" height="4" fill="#e5e9e6"/>
 <rect x="667.0" y="221" width="56.0" height="4" fill="#e5e9e6"/>
@@ -172,31 +172,31 @@
 <rect x="915.0" y="221" width="56.0" height="4" fill="#e5e9e6"/>
 <rect x="977.0" y="221" width="56.0" height="4" fill="#e5e9e6"/>
 <text x="1036" y="227" text-anchor="end" class="bar-label">best +1Q r=1.00</text>
-<text x="8" y="281" class="row-label">Investment -&gt; Cost of revenue: Cooling → components</text>
+<text x="8" y="281" class="row-label">Capex spend -&gt; Supplier revenue: Server EMS → components</text>
 <line x1="230" x2="1036" y1="277" y2="277" stroke="#c8d1cb"/>
-<rect x="233.0" y="277.0" width="56.0" height="23.0" fill="#b03737" opacity="0.82"/>
-<rect x="295.0" y="277.0" width="56.0" height="21.0" fill="#b03737" opacity="0.82"/>
-<rect x="357.0" y="277.0" width="56.0" height="19.9" fill="#b03737" opacity="0.82"/>
-<rect x="419.0" y="277.0" width="56.0" height="16.3" fill="#b03737" opacity="0.82"/>
-<rect x="481.0" y="277.0" width="56.0" height="3.5" fill="#b03737" opacity="0.82"/>
-<rect x="543.0" y="255.7" width="56.0" height="21.3" fill="#087f5b" opacity="0.82"/>
+<rect x="233.0" y="277.0" width="56.0" height="16.4" fill="#b03737" opacity="0.82"/>
+<rect x="295.0" y="277.0" width="56.0" height="13.4" fill="#b03737" opacity="0.82"/>
+<rect x="357.0" y="277.0" width="56.0" height="10.7" fill="#b03737" opacity="0.82"/>
+<rect x="419.0" y="277.0" width="56.0" height="9.3" fill="#b03737" opacity="0.82"/>
+<rect x="481.0" y="269.5" width="56.0" height="7.5" fill="#087f5b" opacity="0.82"/>
+<rect x="543.0" y="254.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
 <rect x="605.0" y="254.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
-<rect x="667.0" y="277.0" width="56.0" height="14.4" fill="#b03737" opacity="0.82"/>
+<rect x="667.0" y="277.0" width="56.0" height="3.0" fill="#b03737" opacity="0.82"/>
 <rect x="729.0" y="277.0" width="56.0" height="3.3" fill="#b03737" opacity="0.82"/>
 <rect x="791.0" y="254.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
 <rect x="853.0" y="275" width="56.0" height="4" fill="#e5e9e6"/>
 <rect x="915.0" y="275" width="56.0" height="4" fill="#e5e9e6"/>
 <rect x="977.0" y="275" width="56.0" height="4" fill="#e5e9e6"/>
 <text x="1036" y="281" text-anchor="end" class="bar-label">best +5Q r=1.00</text>
-<text x="8" y="335" class="row-label">Investment -&gt; Cost of revenue: OSAT / packiging → components</text>
+<text x="8" y="335" class="row-label">Capex spend -&gt; Supplier revenue: AI Chip → components</text>
 <line x1="230" x2="1036" y1="331" y2="331" stroke="#c8d1cb"/>
-<rect x="233.0" y="331.0" width="56.0" height="17.8" fill="#b03737" opacity="0.82"/>
-<rect x="295.0" y="331.0" width="56.0" height="14.4" fill="#b03737" opacity="0.82"/>
-<rect x="357.0" y="331.0" width="56.0" height="12.0" fill="#b03737" opacity="0.82"/>
-<rect x="419.0" y="331.0" width="56.0" height="10.3" fill="#b03737" opacity="0.82"/>
-<rect x="481.0" y="324.3" width="56.0" height="6.7" fill="#087f5b" opacity="0.82"/>
+<rect x="233.0" y="331.0" width="56.0" height="14.9" fill="#b03737" opacity="0.82"/>
+<rect x="295.0" y="331.0" width="56.0" height="11.8" fill="#b03737" opacity="0.82"/>
+<rect x="357.0" y="331.0" width="56.0" height="10.9" fill="#b03737" opacity="0.82"/>
+<rect x="419.0" y="331.0" width="56.0" height="9.6" fill="#b03737" opacity="0.82"/>
+<rect x="481.0" y="323.9" width="56.0" height="7.1" fill="#087f5b" opacity="0.82"/>
 <rect x="543.0" y="308.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
-<rect x="605.0" y="308.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
+<rect x="605.0" y="331.0" width="56.0" height="0.5" fill="#b03737" opacity="0.82"/>
 <rect x="667.0" y="331.0" width="56.0" height="3.0" fill="#b03737" opacity="0.82"/>
 <rect x="729.0" y="331.0" width="56.0" height="3.3" fill="#b03737" opacity="0.82"/>
 <rect x="791.0" y="308.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
@@ -204,31 +204,31 @@
 <rect x="915.0" y="329" width="56.0" height="4" fill="#e5e9e6"/>
 <rect x="977.0" y="329" width="56.0" height="4" fill="#e5e9e6"/>
 <text x="1036" y="335" text-anchor="end" class="bar-label">best +5Q r=1.00</text>
-<text x="8" y="389" class="row-label">Investment -&gt; Cost of revenue: Server EMS → components</text>
+<text x="8" y="389" class="row-label">Capex spend -&gt; Supplier revenue: Cooling → components</text>
 <line x1="230" x2="1036" y1="385" y2="385" stroke="#c8d1cb"/>
-<rect x="233.0" y="385.0" width="56.0" height="16.5" fill="#b03737" opacity="0.82"/>
-<rect x="295.0" y="385.0" width="56.0" height="13.3" fill="#b03737" opacity="0.82"/>
-<rect x="357.0" y="385.0" width="56.0" height="11.0" fill="#b03737" opacity="0.82"/>
-<rect x="419.0" y="385.0" width="56.0" height="9.5" fill="#b03737" opacity="0.82"/>
-<rect x="481.0" y="377.3" width="56.0" height="7.7" fill="#087f5b" opacity="0.82"/>
-<rect x="543.0" y="362.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
+<rect x="233.0" y="385.0" width="56.0" height="23.0" fill="#b03737" opacity="0.82"/>
+<rect x="295.0" y="385.0" width="56.0" height="21.2" fill="#b03737" opacity="0.82"/>
+<rect x="357.0" y="385.0" width="56.0" height="19.7" fill="#b03737" opacity="0.82"/>
+<rect x="419.0" y="385.0" width="56.0" height="16.0" fill="#b03737" opacity="0.82"/>
+<rect x="481.0" y="385.0" width="56.0" height="3.5" fill="#b03737" opacity="0.82"/>
+<rect x="543.0" y="363.7" width="56.0" height="21.3" fill="#087f5b" opacity="0.82"/>
 <rect x="605.0" y="362.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
-<rect x="667.0" y="385.0" width="56.0" height="3.0" fill="#b03737" opacity="0.82"/>
+<rect x="667.0" y="385.0" width="56.0" height="14.3" fill="#b03737" opacity="0.82"/>
 <rect x="729.0" y="385.0" width="56.0" height="3.3" fill="#b03737" opacity="0.82"/>
 <rect x="791.0" y="362.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
 <rect x="853.0" y="383" width="56.0" height="4" fill="#e5e9e6"/>
 <rect x="915.0" y="383" width="56.0" height="4" fill="#e5e9e6"/>
 <rect x="977.0" y="383" width="56.0" height="4" fill="#e5e9e6"/>
 <text x="1036" y="389" text-anchor="end" class="bar-label">best +5Q r=1.00</text>
-<text x="8" y="443" class="row-label">Investment -&gt; Cost of revenue: AI Chip → components</text>
+<text x="8" y="443" class="row-label">Capex spend -&gt; Supplier revenue: OSAT / packiging → components</text>
 <line x1="230" x2="1036" y1="439" y2="439" stroke="#c8d1cb"/>
-<rect x="233.0" y="439.0" width="56.0" height="14.9" fill="#b03737" opacity="0.82"/>
-<rect x="295.0" y="439.0" width="56.0" height="11.6" fill="#b03737" opacity="0.82"/>
-<rect x="357.0" y="439.0" width="56.0" height="11.2" fill="#b03737" opacity="0.82"/>
-<rect x="419.0" y="439.0" width="56.0" height="9.8" fill="#b03737" opacity="0.82"/>
-<rect x="481.0" y="431.6" width="56.0" height="7.4" fill="#087f5b" opacity="0.82"/>
+<rect x="233.0" y="439.0" width="56.0" height="17.7" fill="#b03737" opacity="0.82"/>
+<rect x="295.0" y="439.0" width="56.0" height="14.4" fill="#b03737" opacity="0.82"/>
+<rect x="357.0" y="439.0" width="56.0" height="11.7" fill="#b03737" opacity="0.82"/>
+<rect x="419.0" y="439.0" width="56.0" height="10.0" fill="#b03737" opacity="0.82"/>
+<rect x="481.0" y="432.5" width="56.0" height="6.5" fill="#087f5b" opacity="0.82"/>
 <rect x="543.0" y="416.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
-<rect x="605.0" y="439.0" width="56.0" height="0.5" fill="#b03737" opacity="0.82"/>
+<rect x="605.0" y="416.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
 <rect x="667.0" y="439.0" width="56.0" height="3.0" fill="#b03737" opacity="0.82"/>
 <rect x="729.0" y="439.0" width="56.0" height="3.3" fill="#b03737" opacity="0.82"/>
 <rect x="791.0" y="416.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
@@ -236,102 +236,102 @@
 <rect x="915.0" y="437" width="56.0" height="4" fill="#e5e9e6"/>
 <rect x="977.0" y="437" width="56.0" height="4" fill="#e5e9e6"/>
 <text x="1036" y="443" text-anchor="end" class="bar-label">best +5Q r=1.00</text>
-<text x="8" y="497" class="row-label">Investment -&gt; Cost of revenue: OSAT / packiging → CPU</text>
+<text x="8" y="497" class="row-label">Capex spend -&gt; Supplier revenue: DRAM → Server Networking</text>
 <line x1="230" x2="1036" y1="493" y2="493" stroke="#c8d1cb"/>
-<rect x="233.0" y="478.2" width="56.0" height="14.8" fill="#087f5b" opacity="0.82"/>
-<rect x="295.0" y="493.0" width="56.0" height="2.8" fill="#b03737" opacity="0.82"/>
-<rect x="357.0" y="493.0" width="56.0" height="14.5" fill="#b03737" opacity="0.82"/>
-<rect x="419.0" y="493.0" width="56.0" height="2.2" fill="#b03737" opacity="0.82"/>
-<rect x="481.0" y="470.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
+<rect x="233.0" y="493.0" width="56.0" height="19.3" fill="#b03737" opacity="0.82"/>
+<rect x="295.0" y="493.0" width="56.0" height="16.5" fill="#b03737" opacity="0.82"/>
+<rect x="357.0" y="472.8" width="56.0" height="20.2" fill="#087f5b" opacity="0.82"/>
+<rect x="419.0" y="493.0" width="56.0" height="11.0" fill="#b03737" opacity="0.82"/>
+<rect x="481.0" y="479.0" width="56.0" height="14.0" fill="#087f5b" opacity="0.82"/>
 <rect x="543.0" y="470.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
-<rect x="605.0" y="470.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
-<rect x="667.0" y="470.9" width="56.0" height="22.1" fill="#087f5b" opacity="0.82"/>
-<rect x="729.0" y="483.3" width="56.0" height="9.7" fill="#087f5b" opacity="0.82"/>
-<rect x="791.0" y="479.1" width="56.0" height="13.9" fill="#087f5b" opacity="0.82"/>
+<rect x="605.0" y="482.9" width="56.0" height="10.1" fill="#087f5b" opacity="0.82"/>
+<rect x="667.0" y="470.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
+<rect x="729.0" y="493.0" width="56.0" height="2.9" fill="#b03737" opacity="0.82"/>
+<rect x="791.0" y="493.0" width="56.0" height="3.3" fill="#b03737" opacity="0.82"/>
 <rect x="853.0" y="470.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
 <rect x="915.0" y="491" width="56.0" height="4" fill="#e5e9e6"/>
 <rect x="977.0" y="491" width="56.0" height="4" fill="#e5e9e6"/>
 <text x="1036" y="497" text-anchor="end" class="bar-label">best +6Q r=1.00</text>
-<text x="8" y="551" class="row-label">Investment -&gt; Cost of revenue: Cooling → CPU</text>
+<text x="8" y="551" class="row-label">Capex spend -&gt; Supplier revenue: NAND → Server Networking</text>
 <line x1="230" x2="1036" y1="547" y2="547" stroke="#c8d1cb"/>
-<rect x="233.0" y="525.4" width="56.0" height="21.6" fill="#087f5b" opacity="0.82"/>
-<rect x="295.0" y="534.8" width="56.0" height="12.2" fill="#087f5b" opacity="0.82"/>
-<rect x="357.0" y="547.0" width="56.0" height="10.3" fill="#b03737" opacity="0.82"/>
-<rect x="419.0" y="547.0" width="56.0" height="7.0" fill="#b03737" opacity="0.82"/>
-<rect x="481.0" y="525.8" width="56.0" height="21.2" fill="#087f5b" opacity="0.82"/>
+<rect x="233.0" y="547.0" width="56.0" height="23.0" fill="#b03737" opacity="0.82"/>
+<rect x="295.0" y="547.0" width="56.0" height="20.2" fill="#b03737" opacity="0.82"/>
+<rect x="357.0" y="525.9" width="56.0" height="21.1" fill="#087f5b" opacity="0.82"/>
+<rect x="419.0" y="547.0" width="56.0" height="17.2" fill="#b03737" opacity="0.82"/>
+<rect x="481.0" y="526.6" width="56.0" height="20.4" fill="#087f5b" opacity="0.82"/>
 <rect x="543.0" y="524.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
-<rect x="605.0" y="524.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
+<rect x="605.0" y="536.9" width="56.0" height="10.1" fill="#087f5b" opacity="0.82"/>
 <rect x="667.0" y="524.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
-<rect x="729.0" y="528.9" width="56.0" height="18.1" fill="#087f5b" opacity="0.82"/>
-<rect x="791.0" y="533.1" width="56.0" height="13.9" fill="#087f5b" opacity="0.82"/>
-<rect x="853.0" y="524.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
+<rect x="729.0" y="545" width="56.0" height="4" fill="#e5e9e6"/>
+<rect x="791.0" y="545" width="56.0" height="4" fill="#e5e9e6"/>
+<rect x="853.0" y="545" width="56.0" height="4" fill="#e5e9e6"/>
 <rect x="915.0" y="545" width="56.0" height="4" fill="#e5e9e6"/>
 <rect x="977.0" y="545" width="56.0" height="4" fill="#e5e9e6"/>
-<text x="1036" y="551" text-anchor="end" class="bar-label">best +6Q r=1.00</text>
-<text x="8" y="605" class="row-label">Investment -&gt; Cost of revenue: Server EMS → CPU</text>
+<text x="1036" y="551" text-anchor="end" class="bar-label">best +3Q r=1.00</text>
+<text x="8" y="605" class="row-label">Capex spend -&gt; Supplier revenue: SW equipment → Server Networking</text>
 <line x1="230" x2="1036" y1="601" y2="601" stroke="#c8d1cb"/>
-<rect x="233.0" y="587.4" width="56.0" height="13.6" fill="#087f5b" opacity="0.82"/>
-<rect x="295.0" y="601.0" width="56.0" height="4.1" fill="#b03737" opacity="0.82"/>
-<rect x="357.0" y="601.0" width="56.0" height="14.4" fill="#b03737" opacity="0.82"/>
-<rect x="419.0" y="601.0" width="56.0" height="1.1" fill="#b03737" opacity="0.82"/>
-<rect x="481.0" y="578.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
+<rect x="233.0" y="601.0" width="56.0" height="23.0" fill="#b03737" opacity="0.82"/>
+<rect x="295.0" y="601.0" width="56.0" height="20.2" fill="#b03737" opacity="0.82"/>
+<rect x="357.0" y="579.9" width="56.0" height="21.1" fill="#087f5b" opacity="0.82"/>
+<rect x="419.0" y="601.0" width="56.0" height="17.2" fill="#b03737" opacity="0.82"/>
+<rect x="481.0" y="580.6" width="56.0" height="20.4" fill="#087f5b" opacity="0.82"/>
 <rect x="543.0" y="578.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
-<rect x="605.0" y="578.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
-<rect x="667.0" y="578.9" width="56.0" height="22.1" fill="#087f5b" opacity="0.82"/>
-<rect x="729.0" y="591.3" width="56.0" height="9.7" fill="#087f5b" opacity="0.82"/>
-<rect x="791.0" y="587.1" width="56.0" height="13.9" fill="#087f5b" opacity="0.82"/>
-<rect x="853.0" y="578.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
+<rect x="605.0" y="590.9" width="56.0" height="10.1" fill="#087f5b" opacity="0.82"/>
+<rect x="667.0" y="578.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
+<rect x="729.0" y="599" width="56.0" height="4" fill="#e5e9e6"/>
+<rect x="791.0" y="599" width="56.0" height="4" fill="#e5e9e6"/>
+<rect x="853.0" y="599" width="56.0" height="4" fill="#e5e9e6"/>
 <rect x="915.0" y="599" width="56.0" height="4" fill="#e5e9e6"/>
 <rect x="977.0" y="599" width="56.0" height="4" fill="#e5e9e6"/>
-<text x="1036" y="605" text-anchor="end" class="bar-label">best +6Q r=1.00</text>
-<text x="8" y="659" class="row-label">Investment -&gt; Cost of revenue: AI Chip → CPU</text>
+<text x="1036" y="605" text-anchor="end" class="bar-label">best +3Q r=1.00</text>
+<text x="8" y="659" class="row-label">Capex spend -&gt; Supplier revenue: CPU → Server Networking</text>
 <line x1="230" x2="1036" y1="655" y2="655" stroke="#c8d1cb"/>
-<rect x="233.0" y="642.6" width="56.0" height="12.4" fill="#087f5b" opacity="0.82"/>
-<rect x="295.0" y="655.0" width="56.0" height="4.4" fill="#b03737" opacity="0.82"/>
-<rect x="357.0" y="655.0" width="56.0" height="13.4" fill="#b03737" opacity="0.82"/>
-<rect x="419.0" y="653.5" width="56.0" height="1.5" fill="#087f5b" opacity="0.82"/>
-<rect x="481.0" y="632.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
-<rect x="543.0" y="633.4" width="56.0" height="21.6" fill="#087f5b" opacity="0.82"/>
-<rect x="605.0" y="633.1" width="56.0" height="21.9" fill="#087f5b" opacity="0.82"/>
-<rect x="667.0" y="655.0" width="56.0" height="4.0" fill="#b03737" opacity="0.82"/>
-<rect x="729.0" y="645.3" width="56.0" height="9.7" fill="#087f5b" opacity="0.82"/>
-<rect x="791.0" y="641.1" width="56.0" height="13.9" fill="#087f5b" opacity="0.82"/>
-<rect x="853.0" y="632.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
+<rect x="233.0" y="655.0" width="56.0" height="23.0" fill="#b03737" opacity="0.82"/>
+<rect x="295.0" y="655.0" width="56.0" height="20.2" fill="#b03737" opacity="0.82"/>
+<rect x="357.0" y="633.9" width="56.0" height="21.1" fill="#087f5b" opacity="0.82"/>
+<rect x="419.0" y="655.0" width="56.0" height="17.2" fill="#b03737" opacity="0.82"/>
+<rect x="481.0" y="634.6" width="56.0" height="20.4" fill="#087f5b" opacity="0.82"/>
+<rect x="543.0" y="632.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
+<rect x="605.0" y="644.9" width="56.0" height="10.1" fill="#087f5b" opacity="0.82"/>
+<rect x="667.0" y="632.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
+<rect x="729.0" y="653" width="56.0" height="4" fill="#e5e9e6"/>
+<rect x="791.0" y="653" width="56.0" height="4" fill="#e5e9e6"/>
+<rect x="853.0" y="653" width="56.0" height="4" fill="#e5e9e6"/>
 <rect x="915.0" y="653" width="56.0" height="4" fill="#e5e9e6"/>
 <rect x="977.0" y="653" width="56.0" height="4" fill="#e5e9e6"/>
-<text x="1036" y="659" text-anchor="end" class="bar-label">best +6Q r=1.00</text>
-<text x="8" y="713" class="row-label">Investment -&gt; Revenue: DRAM → components</text>
+<text x="1036" y="659" text-anchor="end" class="bar-label">best +3Q r=1.00</text>
+<text x="8" y="713" class="row-label">Capex spend -&gt; Supplier revenue: Server EMS → Server Networking</text>
 <line x1="230" x2="1036" y1="709" y2="709" stroke="#c8d1cb"/>
-<rect x="233.0" y="709.0" width="56.0" height="15.0" fill="#b03737" opacity="0.82"/>
-<rect x="295.0" y="709.0" width="56.0" height="12.1" fill="#b03737" opacity="0.82"/>
-<rect x="357.0" y="709.0" width="56.0" height="9.5" fill="#b03737" opacity="0.82"/>
-<rect x="419.0" y="709.0" width="56.0" height="9.8" fill="#b03737" opacity="0.82"/>
-<rect x="481.0" y="701.1" width="56.0" height="7.9" fill="#087f5b" opacity="0.82"/>
+<rect x="233.0" y="709.0" width="56.0" height="20.3" fill="#b03737" opacity="0.82"/>
+<rect x="295.0" y="709.0" width="56.0" height="17.9" fill="#b03737" opacity="0.82"/>
+<rect x="357.0" y="690.1" width="56.0" height="18.9" fill="#087f5b" opacity="0.82"/>
+<rect x="419.0" y="709.0" width="56.0" height="8.3" fill="#b03737" opacity="0.82"/>
+<rect x="481.0" y="695.6" width="56.0" height="13.4" fill="#087f5b" opacity="0.82"/>
 <rect x="543.0" y="686.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
-<rect x="605.0" y="709.0" width="56.0" height="3.0" fill="#b03737" opacity="0.82"/>
-<rect x="667.0" y="709.0" width="56.0" height="3.3" fill="#b03737" opacity="0.82"/>
+<rect x="605.0" y="696.7" width="56.0" height="12.3" fill="#087f5b" opacity="0.82"/>
+<rect x="667.0" y="686.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
 <rect x="729.0" y="686.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
-<rect x="791.0" y="707" width="56.0" height="4" fill="#e5e9e6"/>
-<rect x="853.0" y="707" width="56.0" height="4" fill="#e5e9e6"/>
-<rect x="915.0" y="707" width="56.0" height="4" fill="#e5e9e6"/>
+<rect x="791.0" y="709.0" width="56.0" height="2.9" fill="#b03737" opacity="0.82"/>
+<rect x="853.0" y="709.0" width="56.0" height="3.3" fill="#b03737" opacity="0.82"/>
+<rect x="915.0" y="686.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
 <rect x="977.0" y="707" width="56.0" height="4" fill="#e5e9e6"/>
-<text x="1036" y="713" text-anchor="end" class="bar-label">best +4Q r=1.00</text>
-<text x="8" y="767" class="row-label">Investment -&gt; Revenue: NAND → components</text>
+<text x="1036" y="713" text-anchor="end" class="bar-label">best +7Q r=1.00</text>
+<text x="8" y="767" class="row-label">Capex spend -&gt; Supplier revenue: AI Chip → Server Networking</text>
 <line x1="230" x2="1036" y1="763" y2="763" stroke="#c8d1cb"/>
-<rect x="233.0" y="763.0" width="56.0" height="18.8" fill="#b03737" opacity="0.82"/>
-<rect x="295.0" y="763.0" width="56.0" height="18.1" fill="#b03737" opacity="0.82"/>
-<rect x="357.0" y="763.0" width="56.0" height="13.6" fill="#b03737" opacity="0.82"/>
-<rect x="419.0" y="763.0" width="56.0" height="14.3" fill="#b03737" opacity="0.82"/>
-<rect x="481.0" y="756.1" width="56.0" height="6.9" fill="#087f5b" opacity="0.82"/>
+<rect x="233.0" y="763.0" width="56.0" height="16.5" fill="#b03737" opacity="0.82"/>
+<rect x="295.0" y="745.5" width="56.0" height="17.5" fill="#087f5b" opacity="0.82"/>
+<rect x="357.0" y="740.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
+<rect x="419.0" y="743.1" width="56.0" height="19.9" fill="#087f5b" opacity="0.82"/>
+<rect x="481.0" y="740.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
 <rect x="543.0" y="740.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
-<rect x="605.0" y="761" width="56.0" height="4" fill="#e5e9e6"/>
-<rect x="667.0" y="761" width="56.0" height="4" fill="#e5e9e6"/>
-<rect x="729.0" y="761" width="56.0" height="4" fill="#e5e9e6"/>
-<rect x="791.0" y="761" width="56.0" height="4" fill="#e5e9e6"/>
-<rect x="853.0" y="761" width="56.0" height="4" fill="#e5e9e6"/>
-<rect x="915.0" y="761" width="56.0" height="4" fill="#e5e9e6"/>
+<rect x="605.0" y="751.9" width="56.0" height="11.1" fill="#087f5b" opacity="0.82"/>
+<rect x="667.0" y="740.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
+<rect x="729.0" y="763.0" width="56.0" height="0.5" fill="#b03737" opacity="0.82"/>
+<rect x="791.0" y="763.0" width="56.0" height="2.9" fill="#b03737" opacity="0.82"/>
+<rect x="853.0" y="763.0" width="56.0" height="3.3" fill="#b03737" opacity="0.82"/>
+<rect x="915.0" y="740.0" width="56.0" height="23.0" fill="#087f5b" opacity="0.82"/>
 <rect x="977.0" y="761" width="56.0" height="4" fill="#e5e9e6"/>
-<text x="1036" y="767" text-anchor="end" class="bar-label">best +1Q r=1.00</text>
+<text x="1036" y="767" text-anchor="end" class="bar-label">best +7Q r=1.00</text>
 <text x="261.0" y="18" text-anchor="middle" class="axis-label">-4Q</text>
 <text x="323.0" y="18" text-anchor="middle" class="axis-label">-3Q</text>
 <text x="385.0" y="18" text-anchor="middle" class="axis-label">-2Q</text>
@@ -350,9 +350,9 @@
 
   <section>
     <h2>Financial Data Coverage</h2>
-    <p>section별 회사 수, 관측 분기 수, 재무 항목별 row 수와 변환 가능 관측치를 확인한다. capex, inventory, cost of revenue row가 적은 section은 관련 layer 결과가 불안정할 수 있다.</p>
+    <p>section별 회사 수, 관측 분기 수, 분석에 직접 쓰는 revenue/cost/capex row 수와 변환 가능 관측치를 확인한다. inventory와 profit 항목은 현재 money-flow chain 분석에서는 사용하지 않는다.</p>
     <div class="tablewrap">
-      <table><thead><tr><th>Section</th><th>Master companies</th><th>Observed companies</th><th>First qtr</th><th>Last qtr</th><th>Quarters</th><th>Revenue rows</th><th>Cost rows</th><th>Capex rows</th><th>Inventory rows</th><th>Op income rows</th><th>Net income rows</th><th>Revenue YoY obs</th><th>Cost YoY obs</th><th>Capex YoY obs</th><th>Inventory YoY obs</th><th>Op income YoY obs</th><th>Net income YoY obs</th></tr></thead><tbody><tr><td>Energy</td><td>18</td><td>16</td><td>2016-Q1</td><td>2026-Q1</td><td>34</td><td>283</td><td>71</td><td>126</td><td>206</td><td>249</td><td>287</td><td>30</td><td>26</td><td>30</td><td>30</td><td>30</td><td>30</td></tr><tr><td>Server Networking</td><td>15</td><td>14</td><td>2016-Q1</td><td>2027-Q1</td><td>36</td><td>327</td><td>293</td><td>131</td><td>326</td><td>320</td><td>326</td><td>32</td><td>32</td><td>17</td><td>32</td><td>32</td><td>32</td></tr><tr><td>HW equipment</td><td>14</td><td>9</td><td>2016-Q1</td><td>2026-Q3</td><td>35</td><td>212</td><td>179</td><td>100</td><td>212</td><td>179</td><td>210</td><td>31</td><td>31</td><td>24</td><td>31</td><td>31</td><td>31</td></tr><tr><td>components</td><td>14</td><td>13</td><td>2016-Q1</td><td>2026-Q2</td><td>34</td><td>194</td><td>182</td><td>98</td><td>197</td><td>200</td><td>200</td><td>30</td><td>30</td><td>14</td><td>30</td><td>30</td><td>30</td></tr><tr><td>AI Platforms</td><td>9</td><td>9</td><td>2016-Q1</td><td>2027-Q1</td><td>35</td><td>227</td><td>227</td><td>110</td><td>32</td><td>205</td><td>236</td><td>31</td><td>31</td><td>31</td><td>28</td><td>31</td><td>31</td></tr><tr><td>Server OEM</td><td>9</td><td>8</td><td>2016-Q1</td><td>2027-Q1</td><td>37</td><td>118</td><td>85</td><td>54</td><td>117</td><td>116</td><td>117</td><td>33</td><td>33</td><td>15</td><td>33</td><td>32</td><td>33</td></tr><tr><td>meterier</td><td>8</td><td>4</td><td>2016-Q1</td><td>2026-Q1</td><td>33</td><td>85</td><td>63</td><td>27</td><td>91</td><td>94</td><td>94</td><td>28</td><td>28</td><td>12</td><td>28</td><td>29</td><td>29</td></tr><tr><td>Server ODM</td><td>7</td><td>7</td><td>2024-Q4</td><td>2025-Q4</td><td>5</td><td>35</td><td>35</td><td>35</td><td>35</td><td>35</td><td>35</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td></tr><tr><td>Hyperscalers</td><td>6</td><td>6</td><td>2016-Q1</td><td>2026-Q3</td><td>34</td><td>135</td><td>48</td><td>96</td><td>98</td><td>135</td><td>135</td><td>30</td><td>29</td><td>29</td><td>29</td><td>30</td><td>30</td></tr><tr><td>OSAT / packiging</td><td>6</td><td>6</td><td>2016-Q1</td><td>2026-Q1</td><td>33</td><td>57</td><td>57</td><td>37</td><td>57</td><td>57</td><td>57</td><td>29</td><td>29</td><td>13</td><td>29</td><td>29</td><td>29</td></tr><tr><td>AI Chip</td><td>5</td><td>5</td><td>2016-Q1</td><td>2027-Q1</td><td>36</td><td>118</td><td>86</td><td>44</td><td>118</td><td>118</td><td>118</td><td>32</td><td>32</td><td>14</td><td>32</td><td>32</td><td>32</td></tr><tr><td>Server EMS</td><td>5</td><td>5</td><td>2016-Q1</td><td>2026-Q3</td><td>35</td><td>82</td><td>82</td><td>39</td><td>82</td><td>63</td><td>82</td><td>31</td><td>31</td><td>13</td><td>31</td><td>31</td><td>31</td></tr><tr><td>Cooling</td><td>4</td><td>4</td><td>2016-Q1</td><td>2026-Q3</td><td>35</td><td>88</td><td>38</td><td>36</td><td>88</td><td>88</td><td>88</td><td>31</td><td>30</td><td>12</td><td>31</td><td>31</td><td>31</td></tr><tr><td>DRAM</td><td>3</td><td>3</td><td>2016-Q1</td><td>2026-Q1</td><td>32</td><td>43</td><td>42</td><td>22</td><td>42</td><td>42</td><td>42</td><td>28</td><td>28</td><td>12</td><td>28</td><td>28</td><td>28</td></tr><tr><td>NAND</td><td>3</td><td>2</td><td>2016-Q1</td><td>2026-Q3</td><td>34</td><td>59</td><td>26</td><td>24</td><td>68</td><td>68</td><td>68</td><td>30</td><td>25</td><td>10</td><td>30</td><td>30</td><td>30</td></tr><tr><td>Neocloud</td><td>3</td><td>3</td><td>2025-Q1</td><td>2026-Q3</td><td>7</td><td>17</td><td>10</td><td>13</td><td>0</td><td>17</td><td>17</td><td>3</td><td>1</td><td>1</td><td>0</td><td>3</td><td>3</td></tr><tr><td>AI Software</td><td>2</td><td>2</td><td>2016-Q1</td><td>2026-Q1</td><td>32</td><td>37</td><td>6</td><td>13</td><td>1</td><td>37</td><td>37</td><td>28</td><td>5</td><td>11</td><td>1</td><td>28</td><td>28</td></tr><tr><td>CPU</td><td>2</td><td>2</td><td>2016-Q1</td><td>2026-Q3</td><td>34</td><td>42</td><td>41</td><td>15</td><td>31</td><td>42</td><td>41</td><td>30</td><td>30</td><td>10</td><td>27</td><td>30</td><td>30</td></tr><tr><td>foundry</td><td>2</td><td>2</td><td>2024-Q3</td><td>2026-Q1</td><td>7</td><td>7</td><td>6</td><td>5</td><td>6</td><td>6</td><td>6</td><td>3</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td></tr><tr><td>SW equipment</td><td>1</td><td>1</td><td>2016-Q1</td><td>2026-Q2</td><td>33</td><td>33</td><td>33</td><td>12</td><td>24</td><td>33</td><td>33</td><td>29</td><td>29</td><td>10</td><td>24</td><td>29</td><td>29</td></tr></tbody></table>
+      <table><thead><tr><th>Section</th><th>Master companies</th><th>Observed companies</th><th>First qtr</th><th>Last qtr</th><th>Quarters</th><th>Revenue rows</th><th>Cost rows</th><th>Capex rows</th><th>Revenue YoY obs</th><th>Cost YoY obs</th><th>Capex YoY obs</th></tr></thead><tbody><tr><td>Energy</td><td>18</td><td>16</td><td>2016-Q1</td><td>2026-Q1</td><td>34</td><td>283</td><td>71</td><td>126</td><td>30</td><td>26</td><td>30</td></tr><tr><td>Server Networking</td><td>15</td><td>14</td><td>2016-Q1</td><td>2027-Q1</td><td>36</td><td>327</td><td>293</td><td>131</td><td>32</td><td>32</td><td>17</td></tr><tr><td>HW equipment</td><td>14</td><td>9</td><td>2016-Q1</td><td>2026-Q3</td><td>35</td><td>212</td><td>179</td><td>100</td><td>31</td><td>31</td><td>24</td></tr><tr><td>components</td><td>14</td><td>13</td><td>2016-Q1</td><td>2026-Q2</td><td>34</td><td>194</td><td>182</td><td>98</td><td>30</td><td>30</td><td>14</td></tr><tr><td>AI Platforms</td><td>9</td><td>9</td><td>2016-Q1</td><td>2027-Q1</td><td>35</td><td>227</td><td>227</td><td>110</td><td>31</td><td>31</td><td>31</td></tr><tr><td>Server OEM</td><td>9</td><td>8</td><td>2016-Q1</td><td>2027-Q1</td><td>37</td><td>118</td><td>85</td><td>54</td><td>33</td><td>33</td><td>15</td></tr><tr><td>meterier</td><td>8</td><td>4</td><td>2016-Q1</td><td>2026-Q1</td><td>33</td><td>85</td><td>63</td><td>27</td><td>28</td><td>28</td><td>12</td></tr><tr><td>Server ODM</td><td>7</td><td>7</td><td>2024-Q4</td><td>2025-Q4</td><td>5</td><td>35</td><td>35</td><td>35</td><td>1</td><td>1</td><td>1</td></tr><tr><td>Hyperscalers</td><td>6</td><td>6</td><td>2016-Q1</td><td>2026-Q3</td><td>34</td><td>135</td><td>48</td><td>96</td><td>30</td><td>29</td><td>29</td></tr><tr><td>OSAT / packiging</td><td>6</td><td>6</td><td>2016-Q1</td><td>2026-Q1</td><td>33</td><td>57</td><td>57</td><td>37</td><td>29</td><td>29</td><td>13</td></tr><tr><td>AI Chip</td><td>5</td><td>5</td><td>2016-Q1</td><td>2027-Q1</td><td>36</td><td>118</td><td>86</td><td>44</td><td>32</td><td>32</td><td>14</td></tr><tr><td>Server EMS</td><td>5</td><td>5</td><td>2016-Q1</td><td>2026-Q3</td><td>35</td><td>82</td><td>82</td><td>39</td><td>31</td><td>31</td><td>13</td></tr><tr><td>Cooling</td><td>4</td><td>4</td><td>2016-Q1</td><td>2026-Q3</td><td>35</td><td>88</td><td>38</td><td>36</td><td>31</td><td>30</td><td>12</td></tr><tr><td>DRAM</td><td>3</td><td>3</td><td>2016-Q1</td><td>2026-Q1</td><td>32</td><td>43</td><td>42</td><td>22</td><td>28</td><td>28</td><td>12</td></tr><tr><td>NAND</td><td>3</td><td>2</td><td>2016-Q1</td><td>2026-Q3</td><td>34</td><td>59</td><td>26</td><td>24</td><td>30</td><td>25</td><td>10</td></tr><tr><td>Neocloud</td><td>3</td><td>3</td><td>2025-Q1</td><td>2026-Q3</td><td>7</td><td>17</td><td>10</td><td>13</td><td>3</td><td>1</td><td>1</td></tr><tr><td>AI Software</td><td>2</td><td>2</td><td>2016-Q1</td><td>2026-Q1</td><td>32</td><td>37</td><td>6</td><td>13</td><td>28</td><td>5</td><td>11</td></tr><tr><td>CPU</td><td>2</td><td>2</td><td>2016-Q1</td><td>2026-Q3</td><td>34</td><td>42</td><td>41</td><td>15</td><td>30</td><td>30</td><td>10</td></tr><tr><td>foundry</td><td>2</td><td>2</td><td>2024-Q3</td><td>2026-Q1</td><td>7</td><td>7</td><td>6</td><td>5</td><td>3</td><td>2</td><td>2</td></tr><tr><td>SW equipment</td><td>1</td><td>1</td><td>2016-Q1</td><td>2026-Q2</td><td>33</td><td>33</td><td>33</td><td>12</td><td>29</td><td>29</td><td>10</td></tr></tbody></table>
     </div>
   </section>
 
@@ -362,7 +362,7 @@
     <p><b>Cost of revenue.</b> DB mode derives <code>cost_of_revenue_usd_m</code> as <code>revenue_usd_m - gross_profit_usd_m</code>. DataFrame mode accepts direct <code>cost_of_revenue</code>, <code>cost of sales</code>, or <code>cogs</code> rows and fills remaining gaps from revenue minus gross profit when possible.</p>
     <p><b>Variable transformation.</b> The report uses the user-defined current-base YoY ratio for every financial metric: <code>(x_t - x_(t-4)) / x_t</code>. If <code>x_t</code> is zero, the transformed observation is treated as missing.</p>
     <p><b>Lead-lag convention.</b> lag +N means source metric at quarter t is compared with target metric at quarter t+N. lag 0 is same-quarter coupling. lag -N means the target metric moved before the source metric.</p>
-    <p><b>Data-driven edge discovery.</b> The report ignores predefined business edges and evaluates every ordered section pair for the configured metric layers. For each source-target-layer tuple, it keeps the strongest positive correlation across -4Q to +8Q, then labels timing as source-leads, synchronous, or target-leads. Correlations are calculated when <code>n ≥ 8</code>, classified as table-grade when <code>n ≥ 12</code>, and shown on the map only when <code>n ≥ 16</code> plus <code>corr ≥ 0.45</code>.</p>
+    <p><b>Data-driven edge discovery.</b> The report ignores predefined business edges and evaluates every ordered section pair for two money-flow layers: <code>capex spend → supplier revenue</code> and <code>cost of revenue / procurement spend → supplier revenue</code>. For each source-target-layer tuple, it keeps the strongest positive correlation across -4Q to +8Q, then labels timing as source-leads, synchronous, or target-leads. Correlations are calculated when <code>n ≥ 8</code>, classified as table-grade when <code>n ≥ 12</code>, and shown on the map only when <code>n ≥ 16</code> plus <code>corr ≥ 0.45</code>.</p>
     <p><b>No QoQ fallback.</b> The source investment transform is <code>capex_yoy_current_ratio</code>. Sparse edges remain in the CSV as <code>exploratory low-n</code> rather than falling back to QoQ.</p>
     <p><b>Signal classes.</b> Best positive correlations are classified as strong ≥ 0.65, moderate ≥ 0.50, weak ≥ 0.45, very weak below that, and exploratory low-n when observations are below 12. These are analytical thresholds for exploration, not literature constants.</p>
     <p><b>Files generated.</b> Section-level data is saved beside this HTML: <code>section_financial_quarterly_summary.csv</code> and <code>financial_data_coverage.csv</code>. Data-driven results are saved under <code>data_driven/</code>: <code>data_driven/data_driven_edge_lag_correlations.csv</code> and <code>data_driven/data_driven_edge_best_signals.csv</code>.</p>
@@ -375,7 +375,7 @@
   </section>
 
   <script type="application/json" id="report-provenance">{
-  &quot;generated_at&quot;: &quot;2026-06-18 12:19 KST&quot;,
+  &quot;generated_at&quot;: &quot;2026-06-18 12:44 KST&quot;,
   &quot;source&quot;: &quot;/Users/idongseong/Claude/agents/data/dba/financials.db&quot;,
   &quot;source_master&quot;: &quot;/Users/idongseong/Downloads/company_master.xlsx&quot;,
   &quot;data_driven_filter&quot;: {
@@ -383,7 +383,7 @@
     &quot;min_report_observations&quot;: 12,
     &quot;min_map_observations&quot;: 16,
     &quot;min_corr_for_map&quot;: 0.45,
-    &quot;max_map_edges&quot;: 24,
+    &quot;max_map_edges&quot;: 18,
     &quot;lags&quot;: [
       -4,
       -3,
@@ -401,7 +401,7 @@
     ],
     &quot;analysis_layers&quot;: [
       {
-        &quot;analysis_layer&quot;: &quot;Investment -&gt; Revenue&quot;,
+        &quot;analysis_layer&quot;: &quot;Capex spend -&gt; Supplier revenue&quot;,
         &quot;source_metric&quot;: &quot;Capex investment&quot;,
         &quot;source_options&quot;: [
           &quot;capex_yoy_current_ratio&quot;
@@ -412,18 +412,7 @@
         &quot;allow_same_section&quot;: false
       },
       {
-        &quot;analysis_layer&quot;: &quot;Investment -&gt; Cost of revenue&quot;,
-        &quot;source_metric&quot;: &quot;Capex investment&quot;,
-        &quot;source_options&quot;: [
-          &quot;capex_yoy_current_ratio&quot;
-        ],
-        &quot;target_metric&quot;: &quot;Cost of revenue&quot;,
-        &quot;target_col&quot;: &quot;cost_of_revenue_usd_m_yoy_current_ratio&quot;,
-        &quot;target_transform&quot;: &quot;YoY current-base ratio&quot;,
-        &quot;allow_same_section&quot;: false
-      },
-      {
-        &quot;analysis_layer&quot;: &quot;Demand cost -&gt; Upstream revenue&quot;,
+        &quot;analysis_layer&quot;: &quot;Procurement spend -&gt; Supplier revenue&quot;,
         &quot;source_metric&quot;: &quot;Cost of revenue&quot;,
         &quot;source_options&quot;: [
           &quot;cost_of_revenue_usd_m_yoy_current_ratio&quot;
@@ -432,72 +421,6 @@
         &quot;target_col&quot;: &quot;revenue_usd_m_yoy_current_ratio&quot;,
         &quot;target_transform&quot;: &quot;YoY current-base ratio&quot;,
         &quot;allow_same_section&quot;: false
-      },
-      {
-        &quot;analysis_layer&quot;: &quot;Inventory -&gt; Revenue&quot;,
-        &quot;source_metric&quot;: &quot;Inventory&quot;,
-        &quot;source_options&quot;: [
-          &quot;inventory_usd_m_yoy_current_ratio&quot;
-        ],
-        &quot;target_metric&quot;: &quot;Revenue&quot;,
-        &quot;target_col&quot;: &quot;revenue_usd_m_yoy_current_ratio&quot;,
-        &quot;target_transform&quot;: &quot;YoY current-base ratio&quot;,
-        &quot;allow_same_section&quot;: false
-      },
-      {
-        &quot;analysis_layer&quot;: &quot;Revenue -&gt; Inventory&quot;,
-        &quot;source_metric&quot;: &quot;Revenue&quot;,
-        &quot;source_options&quot;: [
-          &quot;revenue_usd_m_yoy_current_ratio&quot;
-        ],
-        &quot;target_metric&quot;: &quot;Inventory&quot;,
-        &quot;target_col&quot;: &quot;inventory_usd_m_yoy_current_ratio&quot;,
-        &quot;target_transform&quot;: &quot;YoY current-base ratio&quot;,
-        &quot;allow_same_section&quot;: false
-      },
-      {
-        &quot;analysis_layer&quot;: &quot;Revenue -&gt; Operating income&quot;,
-        &quot;source_metric&quot;: &quot;Revenue&quot;,
-        &quot;source_options&quot;: [
-          &quot;revenue_usd_m_yoy_current_ratio&quot;
-        ],
-        &quot;target_metric&quot;: &quot;Operating income&quot;,
-        &quot;target_col&quot;: &quot;operating_income_usd_m_yoy_current_ratio&quot;,
-        &quot;target_transform&quot;: &quot;YoY current-base ratio&quot;,
-        &quot;allow_same_section&quot;: true
-      },
-      {
-        &quot;analysis_layer&quot;: &quot;Cost of revenue -&gt; Operating income&quot;,
-        &quot;source_metric&quot;: &quot;Cost of revenue&quot;,
-        &quot;source_options&quot;: [
-          &quot;cost_of_revenue_usd_m_yoy_current_ratio&quot;
-        ],
-        &quot;target_metric&quot;: &quot;Operating income&quot;,
-        &quot;target_col&quot;: &quot;operating_income_usd_m_yoy_current_ratio&quot;,
-        &quot;target_transform&quot;: &quot;YoY current-base ratio&quot;,
-        &quot;allow_same_section&quot;: true
-      },
-      {
-        &quot;analysis_layer&quot;: &quot;Revenue -&gt; Net income&quot;,
-        &quot;source_metric&quot;: &quot;Revenue&quot;,
-        &quot;source_options&quot;: [
-          &quot;revenue_usd_m_yoy_current_ratio&quot;
-        ],
-        &quot;target_metric&quot;: &quot;Net income&quot;,
-        &quot;target_col&quot;: &quot;net_income_usd_m_yoy_current_ratio&quot;,
-        &quot;target_transform&quot;: &quot;YoY current-base ratio&quot;,
-        &quot;allow_same_section&quot;: true
-      },
-      {
-        &quot;analysis_layer&quot;: &quot;Inventory -&gt; Operating income&quot;,
-        &quot;source_metric&quot;: &quot;Inventory&quot;,
-        &quot;source_options&quot;: [
-          &quot;inventory_usd_m_yoy_current_ratio&quot;
-        ],
-        &quot;target_metric&quot;: &quot;Operating income&quot;,
-        &quot;target_col&quot;: &quot;operating_income_usd_m_yoy_current_ratio&quot;,
-        &quot;target_transform&quot;: &quot;YoY current-base ratio&quot;,
-        &quot;allow_same_section&quot;: true
       }
     ]
   },

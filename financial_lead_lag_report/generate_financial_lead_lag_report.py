@@ -35,7 +35,7 @@ MIN_CALC_OBS = 8
 MIN_REPORT_OBS = 12
 MIN_MAP_OBS = 16
 DATA_DRIVEN_MIN_ABS_CORR = 0.45
-DATA_DRIVEN_MAX_MAP_EDGES = 24
+DATA_DRIVEN_MAX_MAP_EDGES = 18
 
 
 FINANCIAL_VALUE_METRICS = {
@@ -51,7 +51,7 @@ METRICS = FINANCIAL_VALUE_METRICS
 
 DATA_DRIVEN_LAYER_CONFIGS = [
     {
-        "analysis_layer": "Investment -> Revenue",
+        "analysis_layer": "Capex spend -> Supplier revenue",
         "source_metric": "Capex investment",
         "source_options": ["capex_yoy_current_ratio"],
         "target_metric": "Revenue",
@@ -60,76 +60,13 @@ DATA_DRIVEN_LAYER_CONFIGS = [
         "allow_same_section": False,
     },
     {
-        "analysis_layer": "Investment -> Cost of revenue",
-        "source_metric": "Capex investment",
-        "source_options": ["capex_yoy_current_ratio"],
-        "target_metric": "Cost of revenue",
-        "target_col": "cost_of_revenue_usd_m_yoy_current_ratio",
-        "target_transform": "YoY current-base ratio",
-        "allow_same_section": False,
-    },
-    {
-        "analysis_layer": "Demand cost -> Upstream revenue",
+        "analysis_layer": "Procurement spend -> Supplier revenue",
         "source_metric": "Cost of revenue",
         "source_options": ["cost_of_revenue_usd_m_yoy_current_ratio"],
         "target_metric": "Revenue",
         "target_col": "revenue_usd_m_yoy_current_ratio",
         "target_transform": "YoY current-base ratio",
         "allow_same_section": False,
-    },
-    {
-        "analysis_layer": "Inventory -> Revenue",
-        "source_metric": "Inventory",
-        "source_options": ["inventory_usd_m_yoy_current_ratio"],
-        "target_metric": "Revenue",
-        "target_col": "revenue_usd_m_yoy_current_ratio",
-        "target_transform": "YoY current-base ratio",
-        "allow_same_section": False,
-    },
-    {
-        "analysis_layer": "Revenue -> Inventory",
-        "source_metric": "Revenue",
-        "source_options": ["revenue_usd_m_yoy_current_ratio"],
-        "target_metric": "Inventory",
-        "target_col": "inventory_usd_m_yoy_current_ratio",
-        "target_transform": "YoY current-base ratio",
-        "allow_same_section": False,
-    },
-    {
-        "analysis_layer": "Revenue -> Operating income",
-        "source_metric": "Revenue",
-        "source_options": ["revenue_usd_m_yoy_current_ratio"],
-        "target_metric": "Operating income",
-        "target_col": "operating_income_usd_m_yoy_current_ratio",
-        "target_transform": "YoY current-base ratio",
-        "allow_same_section": True,
-    },
-    {
-        "analysis_layer": "Cost of revenue -> Operating income",
-        "source_metric": "Cost of revenue",
-        "source_options": ["cost_of_revenue_usd_m_yoy_current_ratio"],
-        "target_metric": "Operating income",
-        "target_col": "operating_income_usd_m_yoy_current_ratio",
-        "target_transform": "YoY current-base ratio",
-        "allow_same_section": True,
-    },
-    {
-        "analysis_layer": "Revenue -> Net income",
-        "source_metric": "Revenue",
-        "source_options": ["revenue_usd_m_yoy_current_ratio"],
-        "target_metric": "Net income",
-        "target_col": "net_income_usd_m_yoy_current_ratio",
-        "target_transform": "YoY current-base ratio",
-        "allow_same_section": True,
-    },
-    {
-        "analysis_layer": "Inventory -> Operating income",
-        "source_metric": "Inventory",
-        "source_options": ["inventory_usd_m_yoy_current_ratio"],
-        "target_metric": "Operating income",
-        "target_col": "operating_income_usd_m_yoy_current_ratio",
-        "target_transform": "YoY current-base ratio",
-        "allow_same_section": True,
     },
 ]
 
@@ -739,10 +676,14 @@ def data_driven_chain_map_svg(edge_best: pd.DataFrame) -> str:
     edges = data_driven_map_edges(edge_best)
     if edges.empty:
         return '<p class="note">No data-driven edges passed the map filter.</p>'
-    return timeline_chain_map_svg(edges, "Data-driven multi-metric value chain map", marker_id="arrow_data", style_variant="data")
+    return timeline_chain_map_svg(edges, "Data-driven section money-flow map", marker_id="arrow_data", style_variant="data")
 
 
 def timeline_chain_map_svg(edges: pd.DataFrame, aria_label: str, marker_id: str, style_variant: str = "standard") -> str:
+    map_width = 2600
+    map_height = 1080
+    axis_y1 = 76
+    axis_y2 = 1010
     positions, quarter_scores = timeline_layout_positions(edges)
     edge_parts = []
     label_parts = []
@@ -754,6 +695,8 @@ def timeline_chain_map_svg(edges: pd.DataFrame, aria_label: str, marker_id: str,
         color, width, dash = data_driven_edge_stroke(edge)
         dash_attr = f' stroke-dasharray="{dash}"' if dash else ""
         path, label_x, label_y = routed_edge_path(x1, y1, x2, y2, idx)
+        label_x = max(72, min(map_width - 72, label_x))
+        label_y = max(74, min(map_height - 44, label_y))
         label = edge_timing_label(edge)
         label_w = max(104, min(210, len(label) * 7.2 + 18))
         edge_parts.append(f'<path d="{path}" fill="none" stroke="{color}" stroke-width="{width:.1f}"{dash_attr} marker-end="url(#{marker_id})" opacity="0.78"/>')
@@ -775,11 +718,11 @@ def timeline_chain_map_svg(edges: pd.DataFrame, aria_label: str, marker_id: str,
         max_score = math.ceil(max(quarter_scores.values()))
         score_span = max(max_score - min_score, 1)
         for tick in range(min_score, max_score + 1):
-            x = 140 + (tick - min_score) / score_span * 1920
-            axis_ticks.append(f'<line x1="{x:.1f}" x2="{x:.1f}" y1="42" y2="670" class="tick"/><text x="{x:.1f}" y="30" text-anchor="middle" class="axis-label">t{tick:+d}Q</text>')
+            x = 180 + (tick - min_score) / score_span * 2240
+            axis_ticks.append(f'<line x1="{x:.1f}" x2="{x:.1f}" y1="{axis_y1}" y2="{axis_y2}" class="tick"/><text x="{x:.1f}" y="38" text-anchor="middle" class="axis-label">t{tick:+d}Q</text>')
 
     return f"""
-    <svg viewBox="0 0 2200 720" role="img" aria-label="{esc(aria_label)}">
+    <svg viewBox="0 0 {map_width} {map_height}" role="img" aria-label="{esc(aria_label)}">
       <defs>
         <marker id="{esc(marker_id)}" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
           <path d="M0,0 L0,6 L8,3 z" fill="#50615a"/>
@@ -796,8 +739,8 @@ def timeline_chain_map_svg(edges: pd.DataFrame, aria_label: str, marker_id: str,
         .edge-tag rect {{ fill:#ffffff; stroke:#d3ddd6; opacity:0.94; }}
         .edge-tag text {{ font-size:11px; fill:#39473f; font-weight:600; }}
       </style>
-      <rect class="map-bg" x="0" y="0" width="2200" height="1100"/>
-      {map_time_bands(quarter_scores)}
+      <rect class="map-bg" x="0" y="0" width="{map_width}" height="{map_height}"/>
+      {map_time_bands(quarter_scores, map_width=map_width, y1=axis_y1, y2=axis_y2)}
       {''.join(axis_ticks)}
       {''.join(edge_parts)}
       {''.join(label_parts)}
@@ -822,7 +765,7 @@ def node_palette(node: str) -> tuple[str, str, str]:
     return "#f6f7f6", "#c8d1cb", "#68766e"
 
 
-def map_time_bands(quarter_scores: dict[str, float]) -> str:
+def map_time_bands(quarter_scores: dict[str, float], map_width: int = 2600, y1: int = 58, y2: int = 880) -> str:
     if not quarter_scores:
         return ""
     min_score = math.floor(min(quarter_scores.values()))
@@ -832,9 +775,9 @@ def map_time_bands(quarter_scores: dict[str, float]) -> str:
     for idx, tick in enumerate(range(min_score, max_score)):
         if idx % 2:
             continue
-        x1 = 140 + (tick - min_score) / score_span * 1920
-        x2 = 140 + (tick + 1 - min_score) / score_span * 1920
-        parts.append(f'<rect class="time-band" x="{x1:.1f}" y="42" width="{x2-x1:.1f}" height="628"/>')
+        x1 = 180 + (tick - min_score) / score_span * (map_width - 360)
+        x2 = 180 + (tick + 1 - min_score) / score_span * (map_width - 360)
+        parts.append(f'<rect class="time-band" x="{x1:.1f}" y="{y1}" width="{x2-x1:.1f}" height="{y2-y1}"/>')
     return "".join(parts)
 
 
@@ -877,8 +820,8 @@ def timeline_layout_positions(edges: pd.DataFrame) -> tuple[dict[str, tuple[int,
     lanes: list[tuple[float, int]] = []
     positions: dict[str, tuple[int, int]] = {}
     for node in sorted_nodes:
-        x = int(140 + raw_scores[node] / max_score * 1920)
-        available = [86, 138, 190, 242, 294, 346, 398, 450, 502, 554, 606, 658]
+        x = int(180 + raw_scores[node] / max_score * 2240)
+        available = [210, 270, 330, 390, 450, 510, 570, 630, 690, 750, 810, 870]
         preferred = preferred_y[node]
         best_lane = min(available, key=lambda lane: abs(lane - preferred) + lane_penalty(x, lane, lanes))
         lanes.append((float(x), best_lane))
@@ -895,7 +838,7 @@ def lane_penalty(x: int, lane: int, occupied: list[tuple[float, int]]) -> float:
 
 
 def routed_edge_path(x1: int, y1: int, x2: int, y2: int, idx: int) -> tuple[str, float, float]:
-    lane_offsets = [-54, 54, -108, 108, -162, 162, -216, 216]
+    lane_offsets = [-44, 44, -88, 88, -132, 132, -176, 176]
     offset = lane_offsets[idx % len(lane_offsets)]
     curve = max(170, min(520, abs(x2 - x1) * 0.42))
     if abs(x2 - x1) < 190:
@@ -1229,7 +1172,7 @@ def build_html(
     .tablewrap {{ overflow:auto; max-height:560px; border:1px solid var(--line); }}
     .heatmap td {{ min-width:52px; font-variant-numeric:tabular-nums; }}
     .heatmap th:first-child {{ min-width:170px; }}
-    svg {{ width:100%; min-width:1500px; height:auto; background:#fff; border:1px solid var(--line); border-radius:8px; }}
+    svg {{ width:100%; min-width:1900px; height:auto; background:#fff; border:1px solid var(--line); border-radius:8px; }}
     svg text {{ font-size:11px; fill:var(--muted); }}
     .axis {{ stroke:#aab5ae; stroke-width:1; }}
     .two {{ display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start; }}
@@ -1239,7 +1182,7 @@ def build_html(
 </head>
 <body>
 <header>
-  <h1>AI Supply Chain Financial Lead-Lag: Data-Driven Metric Layers</h1>
+  <h1>AI Supply Chain Financial Lead-Lag: Section Money Flow</h1>
   <div class="meta">Generated {esc(payload["generated_at"])} · Source: {esc(source_label)} · Master: {esc(MASTER_PATH.name)}</div>
 </header>
 <main>
@@ -1252,16 +1195,16 @@ def build_html(
 
   <section>
     <h2>Executive Read</h2>
-    <p>이 버전은 가정 기반 edge를 사용하지 않는다. 가능한 모든 section pair에 대해 <code>capex</code>, <code>cost of revenue</code>, <code>inventories</code>, <code>revenue</code>, <code>operating income</code>, <code>net income</code>의 변환 지표를 조합해 lead-lag correlation을 계산하고, 각 metric layer별로 가장 강한 양의 관계를 선택한다.</p>
-    <p class="note">핵심 산출물은 <code>data_driven/data_driven_edge_lag_correlations.csv</code>와 <code>data_driven/data_driven_edge_best_signals.csv</code>다. 현재 map filter를 통과한 edge는 <b>{map_edges:,}</b>개이고, strong/moderate로 분류된 best signal은 <b>{strong_or_moderate:,}</b>개다. 이 값은 인과관계 증명이 아니라 “재무제표상 먼저 관측되는 공급망 지표 후보”를 찾는 탐색 결과다.</p>
+    <p>이 버전은 “각 section의 지출이 다른 section의 매출로 어떻게 관측되는가”에 집중하기 위해 변수를 줄였다. 분석에 쓰는 source 지표는 <code>capex investment</code>와 <code>cost of revenue</code> 두 가지이고, target 지표는 <code>supplier revenue</code>로 고정한다. <code>inventory</code>, <code>operating income</code>, <code>net income</code>은 해석을 흐리기 때문에 체인맵 분석에서 제외했다.</p>
+    <p class="note">핵심 산출물은 <code>data_driven/data_driven_edge_lag_correlations.csv</code>와 <code>data_driven/data_driven_edge_best_signals.csv</code>다. 현재 map filter를 통과한 edge는 <b>{map_edges:,}</b>개이고, strong/moderate로 분류된 best signal은 <b>{strong_or_moderate:,}</b>개다. 이 값은 인과관계 증명이 아니라 “section-level spending proxy가 supplier revenue와 시간적으로 같이 움직이는 후보”를 찾는 탐색 결과다.</p>
     {layer_summary}
   </section>
 
   <section>
     <h2>Data-Driven Chain Map</h2>
     <h3>Data-Driven Value-Chain Map</h3>
-    <p>기본 맵에는 <code>n ≥ {MIN_MAP_OBS}</code>이고 <code>corr ≥ {DATA_DRIVEN_MIN_ABS_CORR}</code>인 관계를 우선 표시한다. <code>n={MIN_CALC_OBS}~{MIN_REPORT_OBS - 1}</code>인 결과는 CSV에는 남기되 <code>exploratory low-n</code>으로 분리하고, <code>n ≥ {MIN_REPORT_OBS}</code>부터 table-grade signal로 분류한다. 왼쪽일수록 먼저 움직이는 노드이고, 노드 아래의 <code>t+…Q</code>는 선택된 edge들의 lag를 동시에 맞춘 상대적인 체인 위치다. 초록은 source metric이 target metric을 선행, 파란 점선은 동행, 붉은 점선은 target metric이 source metric보다 먼저 움직이는 관계, 회색 짧은 점선은 low-n 탐색 신호다.</p>
-    <p>맵의 선 라벨은 timing만 표시한다. <code>t+3Q</code>는 source metric이 target metric보다 3분기 먼저 관측된다는 뜻이고, <code>t-2Q</code>는 target metric이 source metric보다 2분기 먼저 관측된다는 뜻이다. metric 종류, 상관계수, 관측치 수는 아래 표에서 확인한다.</p>
+    <p>기본 맵에는 <code>n ≥ {MIN_MAP_OBS}</code>이고 <code>corr ≥ {DATA_DRIVEN_MIN_ABS_CORR}</code>인 관계를 우선 표시한다. <code>n={MIN_CALC_OBS}~{MIN_REPORT_OBS - 1}</code>인 결과는 CSV에는 남기되 <code>exploratory low-n</code>으로 분리하고, <code>n ≥ {MIN_REPORT_OBS}</code>부터 table-grade signal로 분류한다. 왼쪽일수록 먼저 움직이는 노드이고, 노드 아래의 <code>t+…Q</code>는 선택된 edge들의 lag를 동시에 맞춘 상대적인 체인 위치다. 초록은 source spending proxy가 supplier revenue를 선행, 파란 점선은 동행, 붉은 점선은 supplier revenue가 source spending proxy보다 먼저 움직이는 관계다.</p>
+    <p>맵의 선 라벨은 timing만 표시한다. <code>t+3Q</code>는 source spending proxy가 supplier revenue보다 3분기 먼저 관측된다는 뜻이고, <code>t-2Q</code>는 supplier revenue가 source spending proxy보다 2분기 먼저 관측된다는 뜻이다. metric 종류, 상관계수, 관측치 수는 아래 표에서 확인한다.</p>
     {data_driven_chain_map_svg(data_best_df)}
     <div class="tablewrap">
       {table_html(data_best_df, [
@@ -1283,13 +1226,13 @@ def build_html(
     <h3>How to Interpret Target-Leads Timing</h3>
     {revenue_leads_interpretation_html(data_best_df)}
     <h3>Data-Driven Lag Impact Profiles</h3>
-    <p>아래 그래프는 데이터 기반으로 선정된 edge의 lag별 상관계수다. +Q는 source metric이 target metric을 선행, 0Q는 동행, -Q는 target metric이 source metric보다 먼저 움직인다는 뜻이다.</p>
+    <p>아래 그래프는 데이터 기반으로 선정된 edge의 lag별 상관계수다. +Q는 source spending proxy가 supplier revenue를 선행, 0Q는 동행, -Q는 supplier revenue가 source spending proxy보다 먼저 움직인다는 뜻이다.</p>
     {lag_profile_svg(data_corr_df, data_best_df, limit=14)}
   </section>
 
   <section>
     <h2>Financial Data Coverage</h2>
-    <p>section별 회사 수, 관측 분기 수, 재무 항목별 row 수와 변환 가능 관측치를 확인한다. capex, inventory, cost of revenue row가 적은 section은 관련 layer 결과가 불안정할 수 있다.</p>
+    <p>section별 회사 수, 관측 분기 수, 분석에 직접 쓰는 revenue/cost/capex row 수와 변환 가능 관측치를 확인한다. inventory와 profit 항목은 현재 money-flow chain 분석에서는 사용하지 않는다.</p>
     <div class="tablewrap">
       {table_html(coverage, [
         ("section", "Section"),
@@ -1301,15 +1244,9 @@ def build_html(
         ("revenue_rows", "Revenue rows"),
         ("cost_of_revenue_rows", "Cost rows"),
         ("capex_rows", "Capex rows"),
-        ("inventory_rows", "Inventory rows"),
-        ("operating_income_rows", "Op income rows"),
-        ("net_income_rows", "Net income rows"),
         ("revenue_yoy_obs", "Revenue YoY obs"),
         ("cost_of_revenue_yoy_obs", "Cost YoY obs"),
         ("capex_yoy_obs", "Capex YoY obs"),
-        ("inventory_yoy_obs", "Inventory YoY obs"),
-        ("operating_income_yoy_obs", "Op income YoY obs"),
-        ("net_income_yoy_obs", "Net income YoY obs"),
       ])}
     </div>
   </section>
@@ -1320,7 +1257,7 @@ def build_html(
     <p><b>Cost of revenue.</b> DB mode derives <code>cost_of_revenue_usd_m</code> as <code>revenue_usd_m - gross_profit_usd_m</code>. DataFrame mode accepts direct <code>cost_of_revenue</code>, <code>cost of sales</code>, or <code>cogs</code> rows and fills remaining gaps from revenue minus gross profit when possible.</p>
     <p><b>Variable transformation.</b> The report uses the user-defined current-base YoY ratio for every financial metric: <code>(x_t - x_(t-4)) / x_t</code>. If <code>x_t</code> is zero, the transformed observation is treated as missing.</p>
     <p><b>Lead-lag convention.</b> lag +N means source metric at quarter t is compared with target metric at quarter t+N. lag 0 is same-quarter coupling. lag -N means the target metric moved before the source metric.</p>
-    <p><b>Data-driven edge discovery.</b> The report ignores predefined business edges and evaluates every ordered section pair for the configured metric layers. For each source-target-layer tuple, it keeps the strongest positive correlation across -4Q to +8Q, then labels timing as source-leads, synchronous, or target-leads. Correlations are calculated when <code>n ≥ {MIN_CALC_OBS}</code>, classified as table-grade when <code>n ≥ {MIN_REPORT_OBS}</code>, and shown on the map only when <code>n ≥ {MIN_MAP_OBS}</code> plus <code>corr ≥ {DATA_DRIVEN_MIN_ABS_CORR}</code>.</p>
+    <p><b>Data-driven edge discovery.</b> The report ignores predefined business edges and evaluates every ordered section pair for two money-flow layers: <code>capex spend → supplier revenue</code> and <code>cost of revenue / procurement spend → supplier revenue</code>. For each source-target-layer tuple, it keeps the strongest positive correlation across -4Q to +8Q, then labels timing as source-leads, synchronous, or target-leads. Correlations are calculated when <code>n ≥ {MIN_CALC_OBS}</code>, classified as table-grade when <code>n ≥ {MIN_REPORT_OBS}</code>, and shown on the map only when <code>n ≥ {MIN_MAP_OBS}</code> plus <code>corr ≥ {DATA_DRIVEN_MIN_ABS_CORR}</code>.</p>
     <p><b>No QoQ fallback.</b> The source investment transform is <code>capex_yoy_current_ratio</code>. Sparse edges remain in the CSV as <code>exploratory low-n</code> rather than falling back to QoQ.</p>
     <p><b>Signal classes.</b> Best positive correlations are classified as strong ≥ 0.65, moderate ≥ 0.50, weak ≥ {DATA_DRIVEN_MIN_ABS_CORR}, very weak below that, and exploratory low-n when observations are below {MIN_REPORT_OBS}. These are analytical thresholds for exploration, not literature constants.</p>
     <p><b>Files generated.</b> Section-level data is saved beside this HTML: <code>{esc(OUTPUT_FILENAMES["section_quarterly"])}</code> and <code>{esc(OUTPUT_FILENAMES["coverage"])}</code>. Data-driven results are saved under <code>data_driven/</code>: <code>{esc(OUTPUT_FILENAMES["data_edge_corr"])}</code> and <code>{esc(OUTPUT_FILENAMES["data_edge_best"])}</code>.</p>
