@@ -35,7 +35,7 @@ MIN_CALC_OBS = 8
 MIN_REPORT_OBS = 12
 MIN_MAP_OBS = 16
 DATA_DRIVEN_MIN_ABS_CORR = 0.45
-DATA_DRIVEN_MAX_MAP_EDGES = 18
+DATA_DRIVEN_MAX_MAP_EDGES = 42
 
 
 FINANCIAL_VALUE_METRICS = {
@@ -50,15 +50,6 @@ FINANCIAL_VALUE_METRICS = {
 METRICS = FINANCIAL_VALUE_METRICS
 
 DATA_DRIVEN_LAYER_CONFIGS = [
-    {
-        "analysis_layer": "Capex spend -> Supplier revenue",
-        "source_metric": "Capex investment",
-        "source_options": ["capex_yoy_current_ratio"],
-        "target_metric": "Revenue",
-        "target_col": "revenue_usd_m_yoy_current_ratio",
-        "target_transform": "YoY current-base ratio",
-        "allow_same_section": False,
-    },
     {
         "analysis_layer": "Procurement spend -> Supplier revenue",
         "source_metric": "Cost of revenue",
@@ -659,7 +650,7 @@ def data_driven_map_edges(edge_best: pd.DataFrame) -> pd.DataFrame:
     target_counts: dict[str, int] = {}
     source_counts: dict[str, int] = {}
     for _, row in eligible.iterrows():
-        source, target = visual_edge_direction(row)
+        source, target = str(row["source_section"]), str(row["target_section"])
         if source == target:
             continue
         if target_counts.get(target, 0) >= 3 or source_counts.get(source, 0) >= 4:
@@ -676,7 +667,348 @@ def data_driven_chain_map_svg(edge_best: pd.DataFrame) -> str:
     edges = data_driven_map_edges(edge_best)
     if edges.empty:
         return '<p class="note">No data-driven edges passed the map filter.</p>'
-    return timeline_chain_map_svg(edges, "Data-driven section money-flow map", marker_id="arrow_data", style_variant="data")
+    return section_influence_flow_svg(edges)
+
+
+def section_influence_flow_svg(edges: pd.DataFrame) -> str:
+    selected = edges.sort_values(["best_corr", "best_observations"], ascending=[False, False]).head(DATA_DRIVEN_MAX_MAP_EDGES).copy()
+    buyers = sorted(selected["source_section"].astype(str).unique(), key=node_sort_key)
+    suppliers = sorted(selected["target_section"].astype(str).unique(), key=node_sort_key)
+    cell_w = 128
+    cell_h = 48
+    left = 208
+    top = 108
+    matrix_w = cell_w * len(suppliers)
+    matrix_h = cell_h * len(buyers)
+    width = max(1500, left + matrix_w + 58)
+    board_top = top + matrix_h + 92
+    lag_col_w = 150
+    lag_cols = len(LAGS)
+    board_w = lag_col_w * lag_cols
+    board_h = 315
+    height = board_top + board_h + 48
+
+    edge_lookup = {
+        (str(row["source_section"]), str(row["target_section"])): row
+        for _, row in selected.iterrows()
+    }
+    matrix_parts = []
+    for j, supplier in enumerate(suppliers):
+        x = left + j * cell_w + cell_w / 2
+        matrix_parts.append(
+            f'<text x="{x:.1f}" y="74" text-anchor="middle" class="col-label">{esc(short_label(supplier))}</text>'
+        )
+    for i, buyer in enumerate(buyers):
+        y = top + i * cell_h + cell_h / 2
+        matrix_parts.append(f'<text x="{left-14}" y="{y+4:.1f}" text-anchor="end" class="row-label">{esc(buyer)}</text>')
+        for j, supplier in enumerate(suppliers):
+            x0 = left + j * cell_w
+            y0 = top + i * cell_h
+            edge = edge_lookup.get((buyer, supplier))
+            if edge is None:
+                matrix_parts.append(f'<rect x="{x0}" y="{y0}" width="{cell_w}" height="{cell_h}" class="empty-cell"/>')
+                continue
+            color, opacity = lag_cell_color(edge)
+            lag = int(edge["best_lag_quarters"])
+            corr = float(edge["best_corr"])
+            matrix_parts.append(
+                f'<rect x="{x0}" y="{y0}" width="{cell_w}" height="{cell_h}" fill="{color}" opacity="{opacity:.2f}" stroke="#ffffff"/>'
+            )
+            matrix_parts.append(
+                f'<text x="{x0+cell_w/2:.1f}" y="{y0+20:.1f}" text-anchor="middle" class="cell-main">t{lag:+d}Q</text>'
+            )
+            matrix_parts.append(
+                f'<text x="{x0+cell_w/2:.1f}" y="{y0+36:.1f}" text-anchor="middle" class="cell-sub">r={corr:.2f} · n={int(edge["best_observations"])}</text>'
+            )
+
+    board_parts = []
+    board_left = max(58, (width - board_w) / 2)
+    for idx, lag in enumerate(LAGS):
+        x0 = board_left + idx * lag_col_w
+        fill = "#eef7f2" if lag > 0 else "#eef4ff" if lag == 0 else "#fff0ed"
+        board_parts.append(f'<rect x="{x0:.1f}" y="{board_top}" width="{lag_col_w-8}" height="{board_h}" rx="8" fill="{fill}" stroke="#d8ded9"/>')
+        board_parts.append(f'<text x="{x0+(lag_col_w-8)/2:.1f}" y="{board_top+24}" text-anchor="middle" class="lag-title">t{lag:+d}Q</text>')
+        sub = selected[selected["best_lag_quarters"] == lag].sort_values(["best_corr", "best_observations"], ascending=[False, False]).head(4)
+        for k, (_, edge) in enumerate(sub.iterrows()):
+            y = board_top + 48 + k * 62
+            buyer = short_label(str(edge["source_section"]), 15)
+            supplier = short_label(str(edge["target_section"]), 15)
+            color, opacity = lag_cell_color(edge)
+            board_parts.append(
+                f'<rect x="{x0+8:.1f}" y="{y:.1f}" width="{lag_col_w-24}" height="50" rx="7" fill="#ffffff" stroke="{color}" opacity="0.96"/>'
+            )
+            board_parts.append(f'<text x="{x0+16:.1f}" y="{y+18:.1f}" class="flow-card-main">{esc(buyer)} →</text>')
+            board_parts.append(f'<text x="{x0+16:.1f}" y="{y+34:.1f}" class="flow-card-main">{esc(supplier)}</text>')
+            board_parts.append(f'<text x="{x0+16:.1f}" y="{y+46:.1f}" class="flow-card-sub">r={float(edge["best_corr"]):.2f}, n={int(edge["best_observations"])}</text>')
+
+    return f"""
+    <svg viewBox="0 0 {width:.0f} {height:.0f}" role="img" aria-label="Section influence matrix and quarter lag flow board">
+      <style>
+        .map-bg {{ fill:#fbfcfb; }}
+        .title {{ font-size:18px; font-weight:750; fill:#17211c; }}
+        .subtitle {{ font-size:12px; fill:#68766e; }}
+        .row-label, .col-label {{ font-size:12px; fill:#17211c; font-weight:650; }}
+        .empty-cell {{ fill:#f3f5f3; stroke:#ffffff; }}
+        .cell-main {{ font-size:14px; fill:#102018; font-weight:750; }}
+        .cell-sub {{ font-size:10px; fill:#39473f; font-weight:650; }}
+        .lag-title {{ font-size:13px; fill:#17211c; font-weight:750; }}
+        .flow-card-main {{ font-size:11px; fill:#17211c; font-weight:700; }}
+        .flow-card-sub {{ font-size:9px; fill:#68766e; font-weight:650; }}
+        .legend text {{ font-size:12px; fill:#39473f; font-weight:650; }}
+      </style>
+      <rect class="map-bg" x="0" y="0" width="{width:.0f}" height="{height:.0f}"/>
+      <text x="24" y="34" class="title">Section-to-section influence by quarter lag</text>
+      <text x="24" y="56" class="subtitle">Rows are buyer cost-of-revenue sections. Columns are supplier revenue sections. Cell text shows best lag, correlation, and observations.</text>
+      <g class="legend">
+        <rect x="24" y="76" width="14" height="14" fill="#087f5b" opacity="0.65"/><text x="44" y="88">buyer cost leads supplier revenue</text>
+        <rect x="258" y="76" width="14" height="14" fill="#2563eb" opacity="0.65"/><text x="278" y="88">same-quarter</text>
+        <rect x="390" y="76" width="14" height="14" fill="#b03737" opacity="0.65"/><text x="410" y="88">supplier revenue leads buyer cost</text>
+      </g>
+      {''.join(matrix_parts)}
+      <text x="24" y="{board_top-32}" class="title">Quarter flow board</text>
+      <text x="24" y="{board_top-12}" class="subtitle">Edges are grouped by the quarter where supplier revenue is most coupled with buyer cost at t+0Q.</text>
+      {''.join(board_parts)}
+    </svg>
+    """
+
+
+def lag_cell_color(edge: pd.Series) -> tuple[str, float]:
+    corr = 0.0 if pd.isna(edge.get("best_corr")) else min(float(edge["best_corr"]), 1.0)
+    opacity = 0.32 + 0.58 * max(corr, DATA_DRIVEN_MIN_ABS_CORR)
+    timing = edge.get("timing")
+    if timing == "target leads":
+        return "#b03737", opacity
+    if timing == "synchronous":
+        return "#2563eb", opacity
+    return "#087f5b", opacity
+
+
+def short_label(value: str, max_len: int = 16) -> str:
+    if len(value) <= max_len:
+        return value
+    return value[: max_len - 1] + "…"
+
+
+def money_flow_lag_timeline_svg(edges: pd.DataFrame) -> str:
+    rows = edges.sort_values(["best_corr", "best_observations"], ascending=[False, False]).head(DATA_DRIVEN_MAX_MAP_EDGES)
+    width = 2300
+    left = 460
+    right = 110
+    top = 122
+    row_h = 66
+    bottom = 72
+    height = top + bottom + row_h * len(rows)
+    chart_w = width - left - right
+    lag_min, lag_max = min(LAGS), max(LAGS)
+    lag_span = lag_max - lag_min
+
+    def x_for_lag(lag: int | float) -> float:
+        return left + (float(lag) - lag_min) / lag_span * chart_w
+
+    axis_parts = []
+    for lag in LAGS:
+        x = x_for_lag(lag)
+        cls = "zero-tick" if lag == 0 else "tick"
+        axis_parts.append(f'<line x1="{x:.1f}" x2="{x:.1f}" y1="72" y2="{height-46}" class="{cls}"/>')
+        axis_parts.append(f'<text x="{x:.1f}" y="52" text-anchor="middle" class="axis-label">t{lag:+d}Q</text>')
+
+    edge_parts = []
+    node_parts = []
+    label_parts = []
+    buyer_x = x_for_lag(0)
+    for idx, (_, edge) in enumerate(rows.iterrows()):
+        y = top + idx * row_h
+        lag = int(edge["best_lag_quarters"])
+        supplier_x = x_for_lag(lag)
+        color, stroke_width, dash = money_flow_edge_stroke(edge)
+        dash_attr = f' stroke-dasharray="{dash}"' if dash else ""
+        source = str(edge["source_section"])
+        target = str(edge["target_section"])
+        timing = edge_timing_label(edge)
+        direction = 1 if supplier_x >= buyer_x else -1
+        label_x = max(36, min(left - 28, 34 + len(f"{source} cost -> {target} revenue") * 4.3))
+        edge_y = y + ((idx % 3) - 1) * 7
+        c1 = buyer_x + direction * 155
+        c2 = supplier_x - direction * 155
+        path = f"M{buyer_x:.1f},{edge_y:.1f} C{c1:.1f},{edge_y-26:.1f} {c2:.1f},{edge_y+26:.1f} {supplier_x:.1f},{edge_y:.1f}"
+        edge_parts.append(
+            f'<path d="{path}" fill="none" stroke="{color}" stroke-width="{stroke_width:.1f}"{dash_attr} marker-end="url(#arrow_lag)" opacity="0.78"/>'
+        )
+        label_parts.append(f'<text x="24" y="{y-8}" class="row-title">{esc(source)} cost → {esc(target)} revenue</text>')
+        label_parts.append(
+            f'<text x="24" y="{y+12}" class="row-meta">r={num(edge["best_corr"], 2)} · n={int(edge["best_observations"])} · {esc(edge["signal_class"])}</text>'
+        )
+        node_parts.append(
+            f'<g class="flow-node"><circle cx="{buyer_x:.1f}" cy="{edge_y:.1f}" r="9" class="buyer-dot"/><text x="{buyer_x:.1f}" y="{edge_y-15:.1f}" text-anchor="middle">cost</text></g>'
+        )
+        node_parts.append(
+            f'<g class="flow-node"><circle cx="{supplier_x:.1f}" cy="{edge_y:.1f}" r="9" class="supplier-dot"/><text x="{supplier_x:.1f}" y="{edge_y+25:.1f}" text-anchor="middle">rev</text></g>'
+        )
+        tag_x = max(left + 48, min(width - right - 48, supplier_x))
+        tag_y = max(82, min(height - 34, edge_y - 21 if idx % 2 == 0 else edge_y + 31))
+        label_parts.append(
+            f'<g class="edge-tag"><rect x="{tag_x-44:.1f}" y="{tag_y-14:.1f}" width="88" height="22" rx="11"/><text x="{tag_x:.1f}" y="{tag_y+1:.1f}" text-anchor="middle">{esc(timing)}</text></g>'
+        )
+
+    return f"""
+    <svg viewBox="0 0 {width} {height}" role="img" aria-label="Organic quarter lag flow for buyer cost to supplier revenue">
+      <defs>
+        <marker id="arrow_lag" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,6 L8,3 z" fill="#50615a"/>
+        </marker>
+      </defs>
+      <style>
+        .map-bg {{ fill:#fbfcfb; }}
+        .tick {{ stroke:#e0e6e2; stroke-width:1; }}
+        .zero-tick {{ stroke:#9fb2a7; stroke-width:2; }}
+        .axis-label {{ font-size:11px; fill:#68766e; font-weight:600; }}
+        .row-line {{ stroke:#edf1ee; stroke-width:1; }}
+        .row-title {{ font-size:13px; fill:#17211c; font-weight:650; }}
+        .row-meta {{ font-size:11px; fill:#68766e; }}
+        .buyer-dot {{ fill:#2563eb; stroke:#ffffff; stroke-width:2; }}
+        .supplier-dot {{ fill:#087f5b; stroke:#ffffff; stroke-width:2; }}
+        .flow-node text {{ font-size:10px; fill:#53615a; font-weight:650; }}
+        .legend text {{ font-size:12px; fill:#39473f; font-weight:600; }}
+        .edge-tag rect {{ fill:#ffffff; stroke:#d3ddd6; opacity:0.96; }}
+        .edge-tag text {{ font-size:11px; fill:#39473f; font-weight:650; }}
+      </style>
+      <rect class="map-bg" x="0" y="0" width="{width}" height="{height}"/>
+      <text x="24" y="38" class="row-title">Buyer cost → Supplier revenue quarter-lag flow</text>
+      <g class="legend">
+        <circle cx="{left:.1f}" cy="24" r="7" class="buyer-dot"/><text x="{left+14:.1f}" y="28">buyer cost anchored at t+0Q</text>
+        <circle cx="{left+246:.1f}" cy="24" r="7" class="supplier-dot"/><text x="{left+260:.1f}" y="28">supplier revenue placed at best lag</text>
+      </g>
+      {''.join(axis_parts)}
+      {''.join(edge_parts)}
+      {''.join(node_parts)}
+      {''.join(label_parts)}
+    </svg>
+    """
+
+
+def money_flow_map_svg(edges: pd.DataFrame) -> str:
+    left_nodes = sorted(edges["source_section"].astype(str).unique(), key=node_sort_key)
+    right_nodes = sorted(edges["target_section"].astype(str).unique(), key=node_sort_key)
+    lane_count = max(len(left_nodes), len(right_nodes), 8)
+    row_gap = 76
+    top = 118
+    bottom = 86
+    width = 2300
+    height = top + bottom + row_gap * (lane_count - 1)
+    left_x = 250
+    right_x = width - 250
+    left_pos = {node: (left_x, top + idx * row_gap) for idx, node in enumerate(left_nodes)}
+    right_pos = {node: (right_x, top + idx * row_gap) for idx, node in enumerate(right_nodes)}
+
+    sorted_edges = edges.sort_values(["best_corr", "best_observations"], ascending=[True, True]).reset_index(drop=True)
+    edge_parts = []
+    label_parts = []
+    for idx, (_, edge) in enumerate(sorted_edges.iterrows()):
+        source = str(edge["source_section"])
+        target = str(edge["target_section"])
+        x1, y1 = left_pos[source]
+        x2, y2 = right_pos[target]
+        color, stroke_width, dash = money_flow_edge_stroke(edge)
+        dash_attr = f' stroke-dasharray="{dash}"' if dash else ""
+        curve = 470 + 18 * (idx % 5)
+        offset = ((idx % 7) - 3) * 8
+        path = f"M{x1 + 92},{y1} C{x1 + curve},{y1 + offset} {x2 - curve},{y2 - offset} {x2 - 92},{y2}"
+        edge_parts.append(
+            f'<path d="{path}" fill="none" stroke="{color}" stroke-width="{stroke_width:.1f}"{dash_attr} marker-end="url(#arrow_money)" opacity="0.74"/>'
+        )
+        label = edge_timing_label(edge)
+        label_x = width / 2
+        label_y = max(72, min(height - 32, (y1 + y2) / 2 + offset * 0.45))
+        label_parts.append(
+            f'<g class="edge-tag"><rect x="{label_x-52:.1f}" y="{label_y-14:.1f}" width="104" height="22" rx="11"/><text x="{label_x:.1f}" y="{label_y+1:.1f}" text-anchor="middle">{esc(label)}</text></g>'
+        )
+
+    node_parts = []
+    for node, (x, y) in left_pos.items():
+        fill, stroke, accent = node_palette(node)
+        node_parts.append(section_node_svg(node, x, y, fill, stroke, accent, "buyer cost"))
+    for node, (x, y) in right_pos.items():
+        fill, stroke, accent = node_palette(node)
+        node_parts.append(section_node_svg(node, x, y, fill, stroke, accent, "supplier revenue"))
+
+    return f"""
+    <svg viewBox="0 0 {width} {height}" role="img" aria-label="Section cost to supplier revenue money-flow map">
+      <defs>
+        <marker id="arrow_money" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,6 L8,3 z" fill="#50615a"/>
+        </marker>
+      </defs>
+      <style>
+        .map-bg {{ fill:#fbfcfb; }}
+        .map-col {{ fill:#f1f6f3; stroke:#d8ded9; }}
+        .map-title {{ font-size:18px; font-weight:700; fill:#17211c; }}
+        .map-subtitle {{ font-size:12px; fill:#68766e; }}
+        .node .node-shadow {{ fill:#102018; opacity:0.08; transform:translate(4px,5px); }}
+        .node text {{ font-size:13px; font-weight:650; fill:#17211c; }}
+        .node .node-q {{ font-size:10px; font-weight:500; fill:#68766e; }}
+        .edge-tag rect {{ fill:#ffffff; stroke:#d3ddd6; opacity:0.96; }}
+        .edge-tag text {{ font-size:11px; fill:#39473f; font-weight:650; }}
+      </style>
+      <rect class="map-bg" x="0" y="0" width="{width}" height="{height}"/>
+      <rect class="map-col" x="54" y="54" width="392" height="{height-96}" rx="10"/>
+      <rect class="map-col" x="{width-446}" y="54" width="392" height="{height-96}" rx="10"/>
+      <text class="map-title" x="{left_x}" y="42" text-anchor="middle">Buyer section cost</text>
+      <text class="map-subtitle" x="{left_x}" y="66" text-anchor="middle">source: cost of revenue YoY</text>
+      <text class="map-title" x="{right_x}" y="42" text-anchor="middle">Supplier section revenue</text>
+      <text class="map-subtitle" x="{right_x}" y="66" text-anchor="middle">target: revenue YoY</text>
+      {''.join(edge_parts)}
+      {''.join(label_parts)}
+      {''.join(node_parts)}
+    </svg>
+    """
+
+
+def section_node_svg(node: str, x: int, y: int, fill: str, stroke: str, accent: str, caption: str) -> str:
+    return (
+        f'<g class="node"><rect class="node-shadow" x="{x-95}" y="{y-26}" width="190" height="54" rx="8"/>'
+        f'<rect x="{x-95}" y="{y-26}" width="190" height="54" rx="8" fill="{fill}" stroke="{stroke}"/>'
+        f'<rect x="{x-95}" y="{y-26}" width="7" height="54" rx="4" fill="{accent}"/>'
+        f'<text x="{x}" y="{y-4}" text-anchor="middle">{esc(node)}</text>'
+        f'<text x="{x}" y="{y+15}" text-anchor="middle" class="node-q">{esc(caption)}</text></g>'
+    )
+
+
+def node_sort_key(node: str) -> tuple[int, str]:
+    preferred = [
+        "Hyperscalers",
+        "Neocloud",
+        "AI Platforms",
+        "AI Software",
+        "Server OEM",
+        "Server ODM",
+        "Server EMS",
+        "Server Networking",
+        "AI Chip",
+        "CPU",
+        "DRAM",
+        "NAND",
+        "foundry",
+        "OSAT / packiging",
+        "HW equipment",
+        "SW equipment",
+        "meterier",
+        "components",
+        "Cooling",
+        "Energy",
+    ]
+    return (preferred.index(node) if node in preferred else 999, node)
+
+
+def money_flow_edge_stroke(edge: pd.Series) -> tuple[str, float, str]:
+    corr = edge.get("best_corr")
+    if pd.isna(corr):
+        return "#9aa4a0", 1.4, "5 5"
+    corr = float(corr)
+    if edge.get("timing") == "target leads":
+        return "#b03737", 2.0 + 5.0 * min(corr, 0.9), "4 4"
+    if edge.get("timing") == "synchronous":
+        return "#2563eb", 2.0 + 5.0 * min(corr, 0.9), "7 4"
+    return "#087f5b", 2.3 + 5.5 * min(corr, 0.9), ""
 
 
 def timeline_chain_map_svg(edges: pd.DataFrame, aria_label: str, marker_id: str, style_variant: str = "standard") -> str:
@@ -1016,24 +1348,23 @@ def revenue_leads_interpretation_html(data_best_df: pd.DataFrame) -> str:
         return "<p>No data-driven timing edges were available for interpretation.</p>"
     reverse = data_best_df[(data_best_df["timing"] == "target leads") & (data_best_df["map_eligible"])].copy()
     if reverse.empty:
-        return "<p>현재 필터를 통과한 target-metric-leads-source-metric 관계는 없다.</p>"
+        return "<p>현재 필터를 통과한 supplier-revenue-leads-buyer-cost 관계는 없다.</p>"
     top_rows = reverse.sort_values(["best_corr", "best_observations"], ascending=[False, False]).head(8)
     rows = []
     for _, row in top_rows.iterrows():
         rows.append(
-            f"<li><b>{esc(row['target_section'])} {esc(row['target_metric'])} → {esc(row['source_section'])} {esc(row['source_metric'])}</b>: "
-            f"{int(row['best_lag_quarters']):+d}Q, corr={num(row['best_corr'], 2)}, n={int(row['best_observations'])}, layer={esc(row['analysis_layer'])}</li>"
+            f"<li><b>{esc(row['target_section'])} supplier revenue → {esc(row['source_section'])} buyer cost</b>: "
+            f"{int(row['best_lag_quarters']):+d}Q, corr={num(row['best_corr'], 2)}, n={int(row['best_observations'])}</li>"
         )
     return f"""
-    <p><b>중요:</b> target metric이 source metric보다 먼저 관측된다고 해서 target이 source의 원인이라는 뜻은 아니다. 이 분석은 재무제표의 인식 시점 간 상관을 보는 것이므로, 아래와 같은 해석 후보로 읽어야 한다.</p>
+    <p><b>중요:</b> supplier revenue가 buyer cost보다 먼저 관측된다고 해서 supplier가 buyer 비용을 원인적으로 만든다는 뜻은 아니다. 이 분석은 section aggregate 재무제표의 인식 시점 간 상관을 보는 것이므로, 아래와 같은 해석 후보로 읽어야 한다.</p>
     <ul>
-      <li><b>납품/매출 인식 vs 자본화 시점 차이.</b> 공급업체는 제품 출하나 진행률 기준으로 매출을 먼저 인식할 수 있고, 구매자는 설비 인도, 설치, 검수, 사용 가능 시점에 capex를 뒤늦게 자본화할 수 있다.</li>
-      <li><b>재고와 비용의 선행성.</b> inventory 증가는 출하 전 생산/조달 압력을 먼저 보여줄 수 있고, cost of revenue는 판매량과 원가 압력이 섞인 지표라 revenue보다 먼저 또는 동시에 움직일 수 있다.</li>
-      <li><b>주문-생산-검수 lag.</b> 네트워킹, 메모리, 서버 부품 매출은 주문/출하 사이클을 빠르게 반영하지만, 고객 capex는 데이터센터 build-out 예산 집행과 회계 처리 후 분기 재무제표에 잡힐 수 있다.</li>
-      <li><b>공통 수요 shock의 다른 회계 표현.</b> AI 수요 확대라는 동일한 shock이 공급업체에는 revenue/cost/inventory로, 고객/플랫폼 사업자에는 capex로 나타나는 시점이 다를 수 있다.</li>
-      <li><b>데이터/분류 한계.</b> section aggregate는 회사 mix, fiscal quarter 차이, segment mix, 환율/통화 단위, capex 정의 차이를 포함한다. 따라서 reverse timing은 인과 결론이 아니라 “회계상 먼저 관측되는 지표” 후보로 보는 것이 맞다.</li>
+      <li><b>공급업체 매출 인식이 더 빠른 경우.</b> 공급업체는 출하, 진행률, 서비스 제공 기준으로 revenue를 먼저 잡지만, 구매자 쪽 cost of revenue는 판매/사용/매칭 원칙에 따라 뒤늦게 잡힐 수 있다.</li>
+      <li><b>매출원가가 직접 구매액이 아닌 경우.</b> buyer section의 cost of revenue는 원재료 구매, 제조원가, 감가상각, 물류, 인건비, 서비스 비용이 섞인 값이다. 따라서 특정 supplier section으로 흘러간 현금 지급액과 1:1로 대응하지 않는다.</li>
+      <li><b>공통 수요 shock의 다른 회계 표현.</b> 같은 AI 수요 shock이 supplier에는 revenue로, buyer에는 cost of revenue로 나타나지만, 각 section의 회계 인식 시점이 다를 수 있다.</li>
+      <li><b>데이터/분류 한계.</b> section aggregate는 회사 mix, fiscal quarter 차이, segment mix, 환율/통화 단위, 회계정책 차이를 포함한다. 따라서 reverse timing은 인과 결론이 아니라 “회계상 먼저 관측되는 지표” 후보로 보는 것이 맞다.</li>
     </ul>
-    <p>현재 필터를 통과한 대표적인 target-leads 관계는 다음과 같다.</p>
+    <p>현재 필터를 통과한 대표적인 supplier-revenue-leads-buyer-cost 관계는 다음과 같다.</p>
     <ul>{''.join(rows)}</ul>
     """
 
@@ -1195,25 +1526,25 @@ def build_html(
 
   <section>
     <h2>Executive Read</h2>
-    <p>이 버전은 “각 section의 지출이 다른 section의 매출로 어떻게 관측되는가”에 집중하기 위해 변수를 줄였다. 분석에 쓰는 source 지표는 <code>capex investment</code>와 <code>cost of revenue</code> 두 가지이고, target 지표는 <code>supplier revenue</code>로 고정한다. <code>inventory</code>, <code>operating income</code>, <code>net income</code>은 해석을 흐리기 때문에 체인맵 분석에서 제외했다.</p>
-    <p class="note">핵심 산출물은 <code>data_driven/data_driven_edge_lag_correlations.csv</code>와 <code>data_driven/data_driven_edge_best_signals.csv</code>다. 현재 map filter를 통과한 edge는 <b>{map_edges:,}</b>개이고, strong/moderate로 분류된 best signal은 <b>{strong_or_moderate:,}</b>개다. 이 값은 인과관계 증명이 아니라 “section-level spending proxy가 supplier revenue와 시간적으로 같이 움직이는 후보”를 찾는 탐색 결과다.</p>
+    <p>이 버전은 “각 section의 비용이 다른 section의 매출로 어떻게 관측되는가”에 집중하기 위해 변수를 더 줄였다. 분석에 쓰는 source 지표는 <code>cost of revenue</code> 하나이고, target 지표는 <code>supplier revenue</code>로 고정한다. <code>capex</code>, <code>inventory</code>, <code>operating income</code>, <code>net income</code>은 현재 체인맵에서 제외했다.</p>
+    <p class="note">핵심 산출물은 <code>data_driven/data_driven_edge_lag_correlations.csv</code>와 <code>data_driven/data_driven_edge_best_signals.csv</code>다. 현재 map filter를 통과한 edge는 <b>{map_edges:,}</b>개이고, strong/moderate로 분류된 best signal은 <b>{strong_or_moderate:,}</b>개다. 이 값은 인과관계 증명이 아니라 “buyer section의 cost of revenue 변화가 supplier section의 revenue 변화와 시간적으로 같이 움직이는 후보”를 찾는 탐색 결과다.</p>
     {layer_summary}
   </section>
 
   <section>
     <h2>Data-Driven Chain Map</h2>
-    <h3>Data-Driven Value-Chain Map</h3>
-    <p>기본 맵에는 <code>n ≥ {MIN_MAP_OBS}</code>이고 <code>corr ≥ {DATA_DRIVEN_MIN_ABS_CORR}</code>인 관계를 우선 표시한다. <code>n={MIN_CALC_OBS}~{MIN_REPORT_OBS - 1}</code>인 결과는 CSV에는 남기되 <code>exploratory low-n</code>으로 분리하고, <code>n ≥ {MIN_REPORT_OBS}</code>부터 table-grade signal로 분류한다. 왼쪽일수록 먼저 움직이는 노드이고, 노드 아래의 <code>t+…Q</code>는 선택된 edge들의 lag를 동시에 맞춘 상대적인 체인 위치다. 초록은 source spending proxy가 supplier revenue를 선행, 파란 점선은 동행, 붉은 점선은 supplier revenue가 source spending proxy보다 먼저 움직이는 관계다.</p>
-    <p>맵의 선 라벨은 timing만 표시한다. <code>t+3Q</code>는 source spending proxy가 supplier revenue보다 3분기 먼저 관측된다는 뜻이고, <code>t-2Q</code>는 supplier revenue가 source spending proxy보다 2분기 먼저 관측된다는 뜻이다. metric 종류, 상관계수, 관측치 수는 아래 표에서 확인한다.</p>
+    <h3>Section Influence Matrix</h3>
+    <p>기본 그래프에는 <code>n ≥ {MIN_MAP_OBS}</code>이고 <code>corr ≥ {DATA_DRIVEN_MIN_ABS_CORR}</code>인 관계를 우선 표시한다. 위쪽 matrix는 row를 buyer cost-of-revenue section, column을 supplier revenue section으로 둔다. 각 cell의 <code>t+…Q</code>는 buyer cost를 <code>t+0Q</code>로 볼 때 supplier revenue가 어느 분기에 가장 강하게 연결되는지를 의미한다.</p>
+    <p>아래 quarter flow board는 같은 edge를 lag별로 다시 묶은 것이다. 초록은 buyer cost가 supplier revenue를 선행, 파란색은 동분기, 붉은색은 supplier revenue가 buyer cost보다 먼저 관측되는 관계다. <code>n={MIN_CALC_OBS}~{MIN_REPORT_OBS - 1}</code>인 결과는 CSV에는 남기되 <code>exploratory low-n</code>으로 분리하고, <code>n ≥ {MIN_REPORT_OBS}</code>부터 table-grade signal로 분류한다.</p>
     {data_driven_chain_map_svg(data_best_df)}
     <div class="tablewrap">
       {table_html(data_best_df, [
         ("analysis_layer", "Layer"),
-        ("source_section", "Source section"),
-        ("source_metric", "Source metric"),
+        ("source_section", "Buyer section"),
+        ("source_metric", "Buyer cost metric"),
         ("source_transform", "Source transform"),
-        ("target_section", "Target section"),
-        ("target_metric", "Target metric"),
+        ("target_section", "Supplier section"),
+        ("target_metric", "Supplier metric"),
         ("timing", "Timing"),
         ("best_lag_quarters", "Best lag"),
         ("best_corr", "Corr"),
@@ -1226,13 +1557,13 @@ def build_html(
     <h3>How to Interpret Target-Leads Timing</h3>
     {revenue_leads_interpretation_html(data_best_df)}
     <h3>Data-Driven Lag Impact Profiles</h3>
-    <p>아래 그래프는 데이터 기반으로 선정된 edge의 lag별 상관계수다. +Q는 source spending proxy가 supplier revenue를 선행, 0Q는 동행, -Q는 supplier revenue가 source spending proxy보다 먼저 움직인다는 뜻이다.</p>
+    <p>아래 그래프는 데이터 기반으로 선정된 edge의 lag별 상관계수다. +Q는 buyer cost가 supplier revenue를 선행, 0Q는 동행, -Q는 supplier revenue가 buyer cost보다 먼저 움직인다는 뜻이다.</p>
     {lag_profile_svg(data_corr_df, data_best_df, limit=14)}
   </section>
 
   <section>
     <h2>Financial Data Coverage</h2>
-    <p>section별 회사 수, 관측 분기 수, 분석에 직접 쓰는 revenue/cost/capex row 수와 변환 가능 관측치를 확인한다. inventory와 profit 항목은 현재 money-flow chain 분석에서는 사용하지 않는다.</p>
+    <p>section별 회사 수, 관측 분기 수, 분석에 직접 쓰는 revenue/cost row 수와 변환 가능 관측치를 확인한다. capex, inventory, profit 항목은 현재 cost-flow chain 분석에서는 사용하지 않는다.</p>
     <div class="tablewrap">
       {table_html(coverage, [
         ("section", "Section"),
@@ -1243,10 +1574,8 @@ def build_html(
         ("quarters", "Quarters"),
         ("revenue_rows", "Revenue rows"),
         ("cost_of_revenue_rows", "Cost rows"),
-        ("capex_rows", "Capex rows"),
         ("revenue_yoy_obs", "Revenue YoY obs"),
         ("cost_of_revenue_yoy_obs", "Cost YoY obs"),
-        ("capex_yoy_obs", "Capex YoY obs"),
       ])}
     </div>
   </section>
@@ -1257,8 +1586,8 @@ def build_html(
     <p><b>Cost of revenue.</b> DB mode derives <code>cost_of_revenue_usd_m</code> as <code>revenue_usd_m - gross_profit_usd_m</code>. DataFrame mode accepts direct <code>cost_of_revenue</code>, <code>cost of sales</code>, or <code>cogs</code> rows and fills remaining gaps from revenue minus gross profit when possible.</p>
     <p><b>Variable transformation.</b> The report uses the user-defined current-base YoY ratio for every financial metric: <code>(x_t - x_(t-4)) / x_t</code>. If <code>x_t</code> is zero, the transformed observation is treated as missing.</p>
     <p><b>Lead-lag convention.</b> lag +N means source metric at quarter t is compared with target metric at quarter t+N. lag 0 is same-quarter coupling. lag -N means the target metric moved before the source metric.</p>
-    <p><b>Data-driven edge discovery.</b> The report ignores predefined business edges and evaluates every ordered section pair for two money-flow layers: <code>capex spend → supplier revenue</code> and <code>cost of revenue / procurement spend → supplier revenue</code>. For each source-target-layer tuple, it keeps the strongest positive correlation across -4Q to +8Q, then labels timing as source-leads, synchronous, or target-leads. Correlations are calculated when <code>n ≥ {MIN_CALC_OBS}</code>, classified as table-grade when <code>n ≥ {MIN_REPORT_OBS}</code>, and shown on the map only when <code>n ≥ {MIN_MAP_OBS}</code> plus <code>corr ≥ {DATA_DRIVEN_MIN_ABS_CORR}</code>.</p>
-    <p><b>No QoQ fallback.</b> The source investment transform is <code>capex_yoy_current_ratio</code>. Sparse edges remain in the CSV as <code>exploratory low-n</code> rather than falling back to QoQ.</p>
+    <p><b>Data-driven edge discovery.</b> The report ignores predefined business edges and evaluates every ordered section pair for one money-flow layer: <code>buyer cost of revenue → supplier revenue</code>. For each source-target tuple, it keeps the strongest positive correlation across -4Q to +8Q, then labels timing as source-leads, synchronous, or target-leads. Correlations are calculated when <code>n ≥ {MIN_CALC_OBS}</code>, classified as table-grade when <code>n ≥ {MIN_REPORT_OBS}</code>, and shown on the map only when <code>n ≥ {MIN_MAP_OBS}</code> plus <code>corr ≥ {DATA_DRIVEN_MIN_ABS_CORR}</code>.</p>
+    <p><b>No QoQ fallback.</b> The source spending transform is <code>cost_of_revenue_usd_m_yoy_current_ratio</code>. Sparse edges remain in the CSV as <code>exploratory low-n</code> rather than falling back to QoQ.</p>
     <p><b>Signal classes.</b> Best positive correlations are classified as strong ≥ 0.65, moderate ≥ 0.50, weak ≥ {DATA_DRIVEN_MIN_ABS_CORR}, very weak below that, and exploratory low-n when observations are below {MIN_REPORT_OBS}. These are analytical thresholds for exploration, not literature constants.</p>
     <p><b>Files generated.</b> Section-level data is saved beside this HTML: <code>{esc(OUTPUT_FILENAMES["section_quarterly"])}</code> and <code>{esc(OUTPUT_FILENAMES["coverage"])}</code>. Data-driven results are saved under <code>data_driven/</code>: <code>{esc(OUTPUT_FILENAMES["data_edge_corr"])}</code> and <code>{esc(OUTPUT_FILENAMES["data_edge_best"])}</code>.</p>
   </section>
