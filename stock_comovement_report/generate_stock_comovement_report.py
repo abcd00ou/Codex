@@ -21,6 +21,7 @@ OUT_MEMBER_CSV = ROOT / "member_coupling_summary.csv"
 OUT_YEARLY_CSV = ROOT / "yearly_group_coupling_summary.csv"
 OUT_FREQUENCY_CSV = ROOT / "frequency_group_coupling_summary.csv"
 OUT_BOTTLENECK_CSV = ROOT / "bottleneck_interpretation_summary.csv"
+OUT_ROLE_DEEPDIVE_CSV = ROOT / "member_role_financial_deepdive.csv"
 OUT_COVERAGE_CSV = ROOT / "ticker_coverage_used.csv"
 OUT_REFERENCES_MD = ROOT / "comovement_methodology_references.md"
 
@@ -40,7 +41,30 @@ EXTERNAL_COLUMN_ALIASES = {
     "section": ["section", "group", "group_3", "섹션"],
     "company_name": ["companyname", "company_name", "company", "name", "회사명"],
     "ticker": ["ticker", "symbol", "티커"],
+    "item": ["item", "fs_item", "metric", "항목"],
+    "value": ["value", "값"],
     "adjusted_close": ["adjusted close", "adjusted_close", "adj_close", "adj_close_usd", "close", "수정종가"],
+}
+
+ITEM_ALIASES = {
+    "adjusted_close": "adjusted_close",
+    "adjusted close": "adjusted_close",
+    "adj_close": "adjusted_close",
+    "adj close": "adjusted_close",
+    "adj_close_usd": "adjusted_close",
+    "close": "adjusted_close",
+    "revenue": "revenue_usd_m",
+    "sales": "revenue_usd_m",
+    "매출": "revenue_usd_m",
+    "capex": "capex_usd_m",
+    "capital expenditure": "capex_usd_m",
+    "capital_expenditure": "capex_usd_m",
+    "operating income": "operating_income_usd_m",
+    "operating_income": "operating_income_usd_m",
+    "operating_income_usd_m": "operating_income_usd_m",
+    "net income": "net_income_usd_m",
+    "net_income": "net_income_usd_m",
+    "net_income_usd_m": "net_income_usd_m",
 }
 
 
@@ -105,7 +129,7 @@ def norm_ticker(ticker: str) -> str:
     return t
 
 
-def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     master = pd.read_excel(MASTER_PATH)
     master["ticker_norm"] = master["ticker"].map(norm_ticker)
 
@@ -113,10 +137,19 @@ def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         companies = pd.read_sql_query("select ticker, slug, name, segments, hq_country from companies", conn)
         prices = pd.read_sql_query(
             """
-            select ticker, price_date, adj_close_usd
+            select ticker, price_date, adj_close_usd, market_cap_usd_b
             from stock_prices
             where adj_close_usd is not null
             order by ticker, price_date
+            """,
+            conn,
+        )
+        annual_financials = pd.read_sql_query(
+            """
+            select ticker, fiscal_year, period_end_date,
+                   revenue_usd_m, operating_income_usd_m, net_income_usd_m
+            from annual_financials
+            order by ticker, fiscal_year, period_end_date
             """,
             conn,
         )
@@ -140,7 +173,7 @@ def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
 
     master["db_ticker"] = master.apply(match_db_ticker, axis=1)
     matched = master.dropna(subset=["db_ticker"]).merge(companies, left_on="db_ticker", right_on="ticker", how="left")
-    return matched, companies, prices
+    return matched, companies, prices, annual_financials
 
 
 def _normalized_column_lookup(df: pd.DataFrame) -> dict[str, str]:
@@ -157,10 +190,26 @@ def _resolve_external_column(df: pd.DataFrame, field: str) -> str:
     raise ValueError(f"Missing required dataframe column for {field}. Expected one of: {expected}")
 
 
+def _optional_external_column(df: pd.DataFrame, field: str) -> str | None:
+    try:
+        return _resolve_external_column(df, field)
+    except ValueError:
+        return None
+
+
+def normalize_external_item(value: object) -> str | None:
+    if pd.isna(value):
+        return None
+    key = str(value).strip().lower().replace("-", " ").replace("_", " ")
+    key = " ".join(key.split())
+    return ITEM_ALIASES.get(key) or ITEM_ALIASES.get(key.replace(" ", "_"))
+
+
 def normalize_price_dataframe(raw: pd.DataFrame, analysis_start_date: str | None = "2012-01-01") -> tuple[pd.DataFrame, pd.DataFrame]:
     """Convert a generic price DataFrame into the internal matched/prices schema.
 
-    Required logical columns are date, section, companyname, ticker, and adjusted close.
+    Required logical columns are date, section, ticker, and adjusted close.
+    companyname is optional; ticker is used as the display name when absent.
     Column names are matched case-insensitively and may use spaces or underscores.
     """
     if raw.empty:
@@ -168,16 +217,21 @@ def normalize_price_dataframe(raw: pd.DataFrame, analysis_start_date: str | None
 
     date_col = _resolve_external_column(raw, "date")
     section_col = _resolve_external_column(raw, "section")
-    company_col = _resolve_external_column(raw, "company_name")
+    company_col = _optional_external_column(raw, "company_name")
     ticker_col = _resolve_external_column(raw, "ticker")
     price_col = _resolve_external_column(raw, "adjusted_close")
 
-    data = raw[[date_col, section_col, company_col, ticker_col, price_col]].copy()
-    data.columns = ["price_date", "group_3", "company_name", "ticker", "adj_close_usd"]
+    columns = [date_col, section_col, ticker_col, price_col]
+    if company_col:
+        columns.insert(2, company_col)
+    data = raw[columns].copy()
+    data.columns = ["price_date", "group_3", "company_name", "ticker", "adj_close_usd"] if company_col else ["price_date", "group_3", "ticker", "adj_close_usd"]
     data["price_date"] = pd.to_datetime(data["price_date"], errors="coerce")
     data["group_3"] = data["group_3"].astype(str).str.strip()
-    data["company_name"] = data["company_name"].astype(str).str.strip()
     data["ticker"] = data["ticker"].astype(str).str.strip().str.upper()
+    if "company_name" not in data.columns:
+        data["company_name"] = data["ticker"]
+    data["company_name"] = data["company_name"].astype(str).str.strip()
     data["adj_close_usd"] = pd.to_numeric(data["adj_close_usd"], errors="coerce")
     data = data.dropna(subset=["price_date", "group_3", "company_name", "ticker", "adj_close_usd"])
     if analysis_start_date:
@@ -199,7 +253,96 @@ def normalize_price_dataframe(raw: pd.DataFrame, analysis_start_date: str | None
         .rename(columns={"db_ticker": "ticker"})
         .sort_values(["ticker", "price_date"])
     )
+    prices["market_cap_usd_b"] = np.nan
     return matched, prices
+
+
+def normalize_long_item_dataframe(
+    raw: pd.DataFrame,
+    analysis_start_date: str | None = "2012-01-01",
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Normalize ticker-section-item-date-value rows into price and financial inputs.
+
+    Expected logical columns:
+    - ticker
+    - section
+    - item
+    - date
+    - value
+
+    Supported item values include adjusted_close, revenue, capex, operating income, and net income.
+    """
+    if raw.empty:
+        raise ValueError("Input dataframe is empty.")
+    ticker_col = _resolve_external_column(raw, "ticker")
+    section_col = _resolve_external_column(raw, "section")
+    item_col = _resolve_external_column(raw, "item")
+    date_col = _resolve_external_column(raw, "date")
+    value_col = _resolve_external_column(raw, "value")
+    company_col = _optional_external_column(raw, "company_name")
+
+    columns = [ticker_col, section_col, item_col, date_col, value_col]
+    if company_col:
+        columns.append(company_col)
+    data = raw[columns].copy()
+    rename = {
+        ticker_col: "ticker",
+        section_col: "group_3",
+        item_col: "item",
+        date_col: "date",
+        value_col: "value",
+    }
+    if company_col:
+        rename[company_col] = "company_name"
+    data = data.rename(columns=rename)
+    data["ticker"] = data["ticker"].astype(str).str.strip().str.upper()
+    data["group_3"] = data["group_3"].astype(str).str.strip()
+    data["metric"] = data["item"].map(normalize_external_item)
+    data["date"] = pd.to_datetime(data["date"], errors="coerce")
+    data["value"] = pd.to_numeric(data["value"], errors="coerce")
+    if "company_name" not in data.columns:
+        data["company_name"] = data["ticker"]
+    data["company_name"] = data["company_name"].astype(str).str.strip()
+    data = data.dropna(subset=["ticker", "group_3", "metric", "date", "value"])
+    if analysis_start_date:
+        data = data[data["date"] >= pd.Timestamp(analysis_start_date)]
+    if data.empty:
+        raise ValueError("No valid rows remain after cleaning and date filtering.")
+
+    price_rows = data[data["metric"] == "adjusted_close"].copy()
+    if price_rows.empty:
+        raise ValueError("Long dataframe must include item='adjusted_close' rows for price comovement.")
+    price_wide = price_rows.rename(columns={"date": "price_date", "value": "adj_close_usd"})[
+        ["price_date", "group_3", "company_name", "ticker", "adj_close_usd"]
+    ]
+    matched, prices = normalize_price_dataframe(price_wide, analysis_start_date=None)
+
+    financial_rows = data[data["metric"].isin(["revenue_usd_m", "capex_usd_m", "operating_income_usd_m", "net_income_usd_m"])].copy()
+    if financial_rows.empty:
+        annual_financials = pd.DataFrame(
+            columns=["ticker", "fiscal_year", "period_end_date", "revenue_usd_m", "capex_usd_m", "operating_income_usd_m", "net_income_usd_m"]
+        )
+    else:
+        financial_rows["fiscal_year"] = financial_rows["date"].dt.year
+        annual_financials = (
+            financial_rows.pivot_table(
+                index=["ticker", "fiscal_year"],
+                columns="metric",
+                values="value",
+                aggfunc="last",
+            )
+            .reset_index()
+            .rename_axis(None, axis=1)
+        )
+        period_end = financial_rows.groupby(["ticker", "fiscal_year"])["date"].max().reset_index().rename(columns={"date": "period_end_date"})
+        annual_financials = annual_financials.merge(period_end, on=["ticker", "fiscal_year"], how="left")
+        for col in ["revenue_usd_m", "capex_usd_m", "operating_income_usd_m", "net_income_usd_m"]:
+            if col not in annual_financials.columns:
+                annual_financials[col] = np.nan
+        annual_financials = annual_financials[
+            ["ticker", "fiscal_year", "period_end_date", "revenue_usd_m", "capex_usd_m", "operating_income_usd_m", "net_income_usd_m"]
+        ]
+    return matched, prices, annual_financials
 
 
 def price_matrix(prices: pd.DataFrame, tickers: list[str], frequency: str = "daily") -> pd.DataFrame:
@@ -436,6 +579,102 @@ def frequency_group_rows(group: str, prices: pd.DataFrame, tickers: list[str]) -
     return rows
 
 
+def latest_annual_financials(annual_financials: pd.DataFrame | None) -> pd.DataFrame:
+    if annual_financials is None or annual_financials.empty:
+        return pd.DataFrame(
+            columns=["ticker_x", "financial_year", "revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]
+        )
+    fin = annual_financials.copy()
+    fin["ticker_x"] = fin["ticker"].astype(str).str.strip().str.upper()
+    fin["period_end_date"] = pd.to_datetime(fin["period_end_date"], errors="coerce")
+    for col in ["revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]:
+        fin[col] = pd.to_numeric(fin[col], errors="coerce")
+    fin = fin.dropna(subset=["ticker_x", "fiscal_year"])
+    fin["_has_metric"] = fin[["revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]].notna().any(axis=1)
+    fin = fin[fin["_has_metric"]]
+    if fin.empty:
+        return pd.DataFrame(
+            columns=["ticker_x", "financial_year", "revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]
+        )
+    fin = fin.sort_values(["ticker_x", "fiscal_year", "period_end_date"])
+    latest = fin.groupby("ticker_x", as_index=False).tail(1)
+    return latest.rename(columns={"fiscal_year": "financial_year"})[
+        ["ticker_x", "financial_year", "revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]
+    ]
+
+
+def latest_market_caps(prices: pd.DataFrame) -> pd.DataFrame:
+    if "market_cap_usd_b" not in prices.columns:
+        return pd.DataFrame(columns=["db_ticker", "market_cap_date", "market_cap_usd_b"])
+    caps = prices[["ticker", "price_date", "market_cap_usd_b"]].copy()
+    caps["market_cap_usd_b"] = pd.to_numeric(caps["market_cap_usd_b"], errors="coerce")
+    caps["price_date"] = pd.to_datetime(caps["price_date"], errors="coerce")
+    caps = caps.dropna(subset=["ticker", "price_date", "market_cap_usd_b"])
+    if caps.empty:
+        return pd.DataFrame(columns=["db_ticker", "market_cap_date", "market_cap_usd_b"])
+    caps = caps.sort_values(["ticker", "price_date"]).groupby("ticker", as_index=False).tail(1)
+    return caps.rename(columns={"ticker": "db_ticker", "price_date": "market_cap_date"})
+
+
+def role_financial_deepdive_rows(
+    member_summary: pd.DataFrame,
+    matched: pd.DataFrame,
+    prices: pd.DataFrame,
+    annual_financials: pd.DataFrame | None = None,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Attach latest scale metrics to coupling roles and aggregate by section-role."""
+    if member_summary.empty:
+        return pd.DataFrame(), pd.DataFrame()
+
+    member_keys = (
+        matched[["group_3", "ticker_x", "db_ticker"]]
+        .drop_duplicates()
+        .rename(columns={"group_3": "group"})
+    )
+    member_keys["ticker_x"] = member_keys["ticker_x"].astype(str).str.strip().str.upper()
+    member_detail = member_summary.merge(member_keys, on=["group", "company", "db_ticker"], how="left") if "db_ticker" in member_summary.columns else member_summary.merge(
+        member_keys,
+        left_on=["group", "ticker"],
+        right_on=["group", "db_ticker"],
+        how="left",
+    )
+    if "ticker_x" not in member_detail.columns:
+        member_detail["ticker_x"] = member_detail["ticker"]
+    member_detail["ticker_x"] = member_detail["ticker_x"].fillna(member_detail["ticker"]).astype(str).str.strip().str.upper()
+
+    financials = latest_annual_financials(annual_financials)
+    caps = latest_market_caps(prices)
+    member_detail = member_detail.merge(financials, on="ticker_x", how="left").merge(caps, left_on="ticker", right_on="db_ticker", how="left")
+
+    for col in ["market_cap_usd_b", "revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]:
+        if col not in member_detail.columns:
+            member_detail[col] = np.nan
+        member_detail[col] = pd.to_numeric(member_detail[col], errors="coerce")
+
+    role_rows = []
+    metrics = ["market_cap_usd_b", "revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]
+    for (group, role), sub in member_detail.groupby(["group", "member_role"], dropna=False):
+        group_all = member_detail[member_detail["group"] == group]
+        row = {
+            "group": group,
+            "member_role": role,
+            "members": int(len(sub)),
+            "companies": ", ".join(sub["company"].dropna().astype(str).tolist()),
+            "avg_mean_corr_to_group": float(sub["mean_corr_to_group"].mean()),
+            "avg_pc1_loading": float(sub["pc1_loading"].mean()),
+        }
+        for metric in metrics:
+            total = group_all[metric].sum(min_count=1)
+            value = sub[metric].sum(min_count=1)
+            row[metric] = value
+            row[f"{metric}_share_of_group"] = float(value / total) if pd.notna(total) and total != 0 and pd.notna(value) else np.nan
+            row[f"{metric}_coverage"] = int(sub[metric].notna().sum())
+        role_rows.append(row)
+
+    role_summary = pd.DataFrame(role_rows).sort_values(["group", "member_role"])
+    return role_summary, member_detail
+
+
 def classify(avg_corr: float, pc1_share: float, strong_pair_share: float) -> str:
     if avg_corr >= 0.60 and pc1_share >= 0.60:
         return "high coupling"
@@ -452,7 +691,11 @@ def interpretation(group: str, result: GroupResult) -> str:
     return f"{group}는 동조화가 약하거나 내부 하위 테마가 갈린다. 같은 그룹이어도 국가, 상장시장, business mix, 데이터 기간 차이가 수익률 상관을 낮춘다."
 
 
-def analyze_dataset(matched: pd.DataFrame, prices: pd.DataFrame) -> tuple[list[GroupResult], pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def analyze_dataset(
+    matched: pd.DataFrame,
+    prices: pd.DataFrame,
+    annual_financials: pd.DataFrame | None = None,
+) -> tuple[list[GroupResult], pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     matched = matched.copy()
     prices = prices.copy()
     prices["price_date"] = pd.to_datetime(prices["price_date"])
@@ -467,6 +710,7 @@ def analyze_dataset(matched: pd.DataFrame, prices: pd.DataFrame) -> tuple[list[G
             )
         else:
             matched["display_name"] = matched["company_name"]
+    matched["ticker_x"] = matched["ticker_x"].astype(str).str.strip().str.upper()
     names = dict(zip(matched["db_ticker"], matched["display_name"]))
 
     coverage = (
@@ -559,12 +803,13 @@ def analyze_dataset(matched: pd.DataFrame, prices: pd.DataFrame) -> tuple[list[G
         frequency_summary["corr_vs_monthly_delta"] = frequency_summary["avg_pair_corr"] - frequency_summary["monthly_avg_pair_corr"]
         frequency_summary["monthly_vs_daily_delta"] = frequency_summary["monthly_avg_pair_corr"] - frequency_summary["daily_avg_pair_corr"]
     group_summary = pd.DataFrame([r.__dict__ for r in group_results])
-    return group_results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage
+    role_deepdive, _member_detail = role_financial_deepdive_rows(member_summary, matched, prices, annual_financials)
+    return group_results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage, role_deepdive
 
 
-def analyze() -> tuple[list[GroupResult], pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    matched, _companies, prices = load_data()
-    return analyze_dataset(matched, prices)
+def analyze() -> tuple[list[GroupResult], pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    matched, _companies, prices, annual_financials = load_data()
+    return analyze_dataset(matched, prices, annual_financials=annual_financials)
 
 
 def table_html(df: pd.DataFrame, columns: list[str] | None = None, max_rows: int | None = None) -> str:
@@ -698,6 +943,74 @@ def frequency_story_html(frequency_summary: pd.DataFrame) -> str:
         <li><strong>Monthly uplift vs daily:</strong> {esc(delta_phrase)}</li>
       </ul>
 """
+
+
+def role_share_svg(role_deepdive: pd.DataFrame, metric_share_col: str, title: str) -> str:
+    if role_deepdive.empty or metric_share_col not in role_deepdive.columns:
+        return "<p>No role deep-dive data available.</p>"
+    data = role_deepdive.dropna(subset=[metric_share_col]).copy()
+    if data.empty:
+        return "<p>No role deep-dive data available for this metric.</p>"
+    roles = ["coupling core", "partial / bridge", "weakly coupled"]
+    colors = {"coupling core": "#2563eb", "partial / bridge": "#0f766e", "weakly coupled": "#b45309"}
+    groups = sorted(data["group"].unique())
+    width = 1120
+    row_h = 34
+    height = max(260, 72 + row_h * len(groups))
+    left, right, top = 190, 80, 46
+    chart_w = width - left - right
+    parts = [
+        f'<svg viewBox="0 0 {width} {height}" role="img" aria-label="{esc(title)}">',
+        f'<text x="{left}" y="24" class="chart-title">{esc(title)}</text>',
+    ]
+    for i, group in enumerate(groups):
+        y = top + i * row_h
+        parts.append(f'<text x="{left - 12}" y="{y + 17}" text-anchor="end" class="bar-label">{esc(group)}</text>')
+        x = left
+        group_rows = data[data["group"] == group].set_index("member_role")
+        for role in roles:
+            if role not in group_rows.index:
+                continue
+            val = group_rows.loc[role, metric_share_col]
+            if pd.isna(val) or val <= 0:
+                continue
+            w = chart_w * min(1, float(val))
+            parts.append(
+                f'<rect x="{x:.1f}" y="{y}" width="{w:.1f}" height="22" fill="{colors[role]}" opacity="0.86">'
+                f'<title>{esc(group)} · {esc(role)} · {pct(float(val))}</title></rect>'
+            )
+            if w > 34:
+                parts.append(f'<text x="{x + w / 2:.1f}" y="{y + 15}" text-anchor="middle" fill="#fff" font-size="11">{pct(float(val))}</text>')
+            x += w
+        parts.append(f'<line x1="{left}" x2="{left + chart_w}" y1="{y + 27}" y2="{y + 27}" stroke="#e2e8f0"/>')
+    legend_x = left
+    legend_y = height - 18
+    for role in roles:
+        parts.append(f'<rect x="{legend_x}" y="{legend_y - 10}" width="10" height="10" fill="{colors[role]}"/>')
+        parts.append(f'<text x="{legend_x + 16}" y="{legend_y}" class="bar-label">{esc(role)}</text>')
+        legend_x += 150
+    parts.append("</svg>")
+    return "".join(parts)
+
+
+def role_deepdive_story(role_deepdive: pd.DataFrame) -> str:
+    if role_deepdive.empty:
+        return "<p>No role deep-dive data available.</p>"
+    rows = []
+    for group, sub in role_deepdive.groupby("group"):
+        core = sub[sub["member_role"] == "coupling core"]
+        weak = sub[sub["member_role"] == "weakly coupled"]
+        core_rev = core["revenue_usd_m_share_of_group"].iloc[0] if not core.empty and "revenue_usd_m_share_of_group" in core else np.nan
+        weak_rev = weak["revenue_usd_m_share_of_group"].iloc[0] if not weak.empty and "revenue_usd_m_share_of_group" in weak else np.nan
+        core_profit = core["operating_income_usd_m_share_of_group"].iloc[0] if not core.empty and "operating_income_usd_m_share_of_group" in core else np.nan
+        weak_profit = weak["operating_income_usd_m_share_of_group"].iloc[0] if not weak.empty and "operating_income_usd_m_share_of_group" in weak else np.nan
+        if pd.isna(core_rev) and pd.isna(weak_rev):
+            continue
+        rows.append(
+            f"<li><strong>{esc(group)}</strong>: coupling core revenue share {pct(core_rev)}, weak-member revenue share {pct(weak_rev)}, "
+            f"core operating-income share {pct(core_profit)}, weak operating-income share {pct(weak_profit)}.</li>"
+        )
+    return "<ul>" + "".join(rows[:18]) + "</ul>" if rows else "<p>No comparable revenue/profit role split available.</p>"
 
 
 BOTTLENECK_CONTEXT = {
@@ -877,6 +1190,7 @@ def render_report(
     frequency_summary: pd.DataFrame,
     group_summary: pd.DataFrame,
     coverage: pd.DataFrame,
+    role_deepdive: pd.DataFrame,
     analysis_start_date: str = ANALYSIS_START_DATE,
 ) -> str:
     bottleneck_summary = bottleneck_interpretation_rows(group_summary, yearly_summary)
@@ -930,6 +1244,22 @@ def render_report(
         ]:
             frequency_display[col] = frequency_display[col].map(lambda x: num(x, 2))
 
+    role_display = role_deepdive.copy()
+    if not role_display.empty:
+        for col in ["avg_mean_corr_to_group", "avg_pc1_loading"]:
+            role_display[col] = role_display[col].map(lambda x: num(x, 2))
+        for col in ["market_cap_usd_b", "revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]:
+            if col in role_display:
+                role_display[col] = role_display[col].map(lambda x: num(x, 1))
+        for col in [
+            "market_cap_usd_b_share_of_group",
+            "revenue_usd_m_share_of_group",
+            "operating_income_usd_m_share_of_group",
+            "net_income_usd_m_share_of_group",
+        ]:
+            if col in role_display:
+                role_display[col] = role_display[col].map(pct)
+
     high = [r for r in results if r.classification == "high coupling"]
     moderate = [r for r in results if r.classification == "moderate coupling"]
     weak = [r for r in results if r.classification == "weak / fragmented"]
@@ -982,6 +1312,11 @@ def render_report(
     a {{ color: #2b6cb0; }}
     main {{ padding: 24px 0 46px; }}
     .section, .group-card {{ background: #fff; border: 1px solid #d9e0ea; border-radius: 8px; padding: 18px; margin: 16px 0; }}
+    .tabs {{ position: sticky; top: 0; z-index: 5; display: flex; gap: 8px; flex-wrap: wrap; background: rgba(238, 242, 247, 0.96); padding: 10px 0; backdrop-filter: blur(8px); }}
+    .tab-button {{ border: 1px solid #cbd5e1; background: #fff; color: #26364d; border-radius: 7px; padding: 9px 12px; font-weight: 700; cursor: pointer; }}
+    .tab-button.active {{ background: #10243d; color: #fff; border-color: #10243d; }}
+    .tab-panel {{ display: none; }}
+    .tab-panel.active {{ display: block; }}
     .small {{ color: #5f6b7a; font-size: 13px; }}
     .kpis {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 12px 0; }}
     .kpis div {{ border: 1px solid #d9e0ea; border-radius: 8px; padding: 10px; background: #f8fafc; }}
@@ -1020,6 +1355,14 @@ def render_report(
     </div>
   </header>
   <main class="wrap">
+    <nav class="tabs" aria-label="Report tabs">
+      <button class="tab-button active" data-tab="comovement" type="button">Comovement</button>
+      <button class="tab-button" data-tab="deepdive" type="button">Deep Dive</button>
+      <button class="tab-button" data-tab="methodology" type="button">Methodology</button>
+      <button class="tab-button" data-tab="coverage" type="button">Coverage</button>
+    </nav>
+
+    <section class="tab-panel active" id="tab-comovement">
     <section class="section">
       <h2>Executive Takeaways</h2>
       <p>분석 대상은 그룹 내 가격 데이터가 2개 종목 이상 존재하는 경우로 제한했다. 총 {len(results)}개 그룹이 분석 가능했고, high coupling {len(high)}개, moderate coupling {len(moderate)}개, weak/fragmented {len(weak)}개로 분류됐다.</p>
@@ -1078,28 +1421,57 @@ def render_report(
       <div class="chart">{bar_svg(results, "avg_pair_corr", "Average Pairwise Correlation by Group")}</div>
       {table_html(display_group, ["group", "classification", "n_assets", "common_days", "avg_pair_corr", "median_pair_corr", "pc1_share", "strong_pair_share", "latest_rolling_corr", "tickers"])}
     </section>
+    </section>
 
+    <section class="tab-panel" id="tab-deepdive">
     <section class="section">
-      <h2>Methodology and Literature Grounding</h2>
-      <p>주가 동조화 분석은 가격 레벨보다 수익률을 기준으로 한다. 가격은 비정상 시계열인 경우가 많아 단순 가격 상관이 spurious coupling을 만들 수 있기 때문이다. 이 리포트는 adjusted close의 월별 로그수익률을 기본 단위로 만들고, 같은 그룹 내 종목들의 pairwise correlation과 12개월 rolling correlation을 계산했다.</p>
-      <p>문헌상 correlation matrix, spectral/PCA, network 방식은 주식 수익률 동조화와 cluster를 보는 표준적인 도구다. PCA의 첫 번째 component가 큰 비중을 차지하면 그룹 전체를 움직이는 common factor가 강하다고 해석할 수 있다. 다만 단순 상관 증가는 contagion이 아니라 interdependence일 수 있으므로, 여기서는 causal claim 없이 coupling strength로만 표현한다.</p>
-      <p class="small">References: Fenn et al., “Temporal Evolution of Financial Market Correlations”; Heimo et al., “Spectral and network methods in the analysis of correlation matrices of stock returns”; Forbes & Rigobon, “No Contagion, Only Interdependence”; recent network-correlation literature on stock return comovement.</p>
+      <h2>Core Coupling vs Weak Members: Financial Weight</h2>
+      <p>여기서는 주가 coupling으로 나뉜 member role이 실제 섹션 내 경제적 비중과도 연결되는지 확인한다. 즉, <strong>coupling core</strong>가 단순히 많이 같이 움직이는 종목인지, 아니면 섹션 매출/이익의 큰 부분을 차지하는 종목인지 비교한다.</p>
+      <p class="small">Revenue, operating income, net income은 DB의 최신 annual financials 기준이다. 이익 지표는 손실 기업이 섞이면 role share가 음수 또는 100% 초과로 보일 수 있으므로, 매출 비중보다 더 조심해서 읽어야 한다. Market cap 컬럼은 stock_prices에 있으나 현재 값이 없어 표에는 coverage 0 또는 빈 값으로 표시된다.</p>
+      <div class="chart">{role_share_svg(role_deepdive, "revenue_usd_m_share_of_group", "Revenue Share by Coupling Role")}</div>
+      <div class="chart" style="margin-top:12px;">{role_share_svg(role_deepdive, "operating_income_usd_m_share_of_group", "Operating Income Share by Coupling Role")}</div>
+      <h3>Interpretive read</h3>
+      {role_deepdive_story(role_deepdive)}
+      <h3>Role-level financial table</h3>
+      {table_html(role_display, ["group", "member_role", "members", "companies", "avg_mean_corr_to_group", "revenue_usd_m", "revenue_usd_m_share_of_group", "operating_income_usd_m", "operating_income_usd_m_share_of_group", "net_income_usd_m", "net_income_usd_m_share_of_group", "market_cap_usd_b", "market_cap_usd_b_share_of_group"], max_rows=120) if not role_display.empty else "<p>No role-level financial table available.</p>"}
     </section>
 
     <section class="section">
       <h2>Group Deep Dives</h2>
       {''.join(sections)}
     </section>
+    </section>
 
+    <section class="tab-panel" id="tab-methodology">
+    <section class="section">
+      <h2>Methodology and Literature Grounding</h2>
+      <p>주가 동조화 분석은 가격 레벨보다 수익률을 기준으로 한다. 가격은 비정상 시계열인 경우가 많아 단순 가격 상관이 spurious coupling을 만들 수 있기 때문이다. 이 리포트는 adjusted close의 월별 로그수익률을 기본 단위로 만들고, 같은 그룹 내 종목들의 pairwise correlation과 12개월 rolling correlation을 계산했다.</p>
+      <p>문헌상 correlation matrix, spectral/PCA, network 방식은 주식 수익률 동조화와 cluster를 보는 표준적인 도구다. PCA의 첫 번째 component가 큰 비중을 차지하면 그룹 전체를 움직이는 common factor가 강하다고 해석할 수 있다. 다만 단순 상관 증가는 contagion이 아니라 interdependence일 수 있으므로, 여기서는 causal claim 없이 coupling strength로만 표현한다.</p>
+      <p class="small">References: Fenn et al., “Temporal Evolution of Financial Market Correlations”; Heimo et al., “Spectral and network methods in the analysis of correlation matrices of stock returns”; Forbes & Rigobon, “No Contagion, Only Interdependence”; recent network-correlation literature on stock return comovement.</p>
+    </section>
+    </section>
+
+    <section class="tab-panel" id="tab-coverage">
     <section class="section">
       <h2>Coverage Used</h2>
       <p>아래는 company_master.xlsx에서 financials.db와 매칭된 종목이다. <code>has_price_data</code>가 false인 종목은 DB company table에는 있으나 분석에 필요한 가격 row가 부족해 coupling 계산에서 제외했다.</p>
       {table_html(coverage.rename(columns={"group_3": "group", "display_name": "company", "ticker_x": "master_ticker"}), max_rows=150)}
     </section>
+    </section>
   </main>
   <script id="yearlyScatterData" type="application/json">{scatter_json}</script>
   <script>
     (() => {{
+      document.querySelectorAll(".tab-button").forEach(button => {{
+        button.addEventListener("click", () => {{
+          document.querySelectorAll(".tab-button").forEach(el => el.classList.remove("active"));
+          document.querySelectorAll(".tab-panel").forEach(el => el.classList.remove("active"));
+          button.classList.add("active");
+          document.getElementById(`tab-${{button.dataset.tab}}`).classList.add("active");
+          window.scrollTo({{ top: 0, behavior: "smooth" }});
+        }});
+      }});
+
       const data = JSON.parse(document.getElementById("yearlyScatterData").textContent || "{{}}");
       const chart = document.getElementById("scatterChart");
       const title = document.getElementById("scatterTitle");
@@ -1204,6 +1576,7 @@ def output_paths(output_dir: str | Path) -> dict[str, Path]:
         "yearly": root / "yearly_group_coupling_summary.csv",
         "frequency": root / "frequency_group_coupling_summary.csv",
         "bottleneck": root / "bottleneck_interpretation_summary.csv",
+        "role_deepdive": root / "member_role_financial_deepdive.csv",
         "coverage": root / "ticker_coverage_used.csv",
     }
 
@@ -1217,6 +1590,7 @@ def write_report_outputs(
     frequency_summary: pd.DataFrame,
     group_summary: pd.DataFrame,
     coverage: pd.DataFrame,
+    role_deepdive: pd.DataFrame,
     output_dir: str | Path = ROOT,
     analysis_start_date: str = ANALYSIS_START_DATE,
 ) -> dict[str, Path]:
@@ -1229,6 +1603,7 @@ def write_report_outputs(
     yearly_summary.to_csv(paths["yearly"], index=False)
     frequency_summary.to_csv(paths["frequency"], index=False)
     bottleneck_summary.to_csv(paths["bottleneck"], index=False)
+    role_deepdive.to_csv(paths["role_deepdive"], index=False)
     coverage.to_csv(paths["coverage"], index=False)
     paths["html"].write_text(
         render_report(
@@ -1240,6 +1615,7 @@ def write_report_outputs(
             frequency_summary,
             group_summary,
             coverage,
+            role_deepdive,
             analysis_start_date=analysis_start_date,
         ),
         encoding="utf-8",
@@ -1252,17 +1628,30 @@ def generate_report_from_dataframe(
     output_dir: str | Path,
     analysis_start_date: str | None = "2012-01-01",
 ) -> dict[str, Path]:
-    """Run the full comovement analysis from a generic price DataFrame and write HTML/CSV outputs.
+    """Run the full comovement analysis from a generic DataFrame and write HTML/CSV outputs.
 
-    The DataFrame must contain logical columns for:
-    date, section, companyname, ticker, and adjusted close.
+    Supported input shapes:
+    - price-wide rows: date, section, optional companyname, ticker, adjusted close
+    - long item rows: ticker, section, item, date, value
+
+    For long item rows, adjusted_close drives the stock comovement analysis while
+    revenue / operating income / net income feed the Deep Dive role financial weights.
 
     Example:
         paths = generate_report_from_dataframe(my_df, "outputs/comovement", analysis_start_date="2012-01-01")
         print(paths["html"])
     """
-    matched, prices = normalize_price_dataframe(df, analysis_start_date=analysis_start_date)
-    results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage = analyze_dataset(matched, prices)
+    is_long_item = all(_optional_external_column(df, field) for field in ["ticker", "section", "item", "date", "value"])
+    if is_long_item:
+        matched, prices, annual_financials = normalize_long_item_dataframe(df, analysis_start_date=analysis_start_date)
+    else:
+        matched, prices = normalize_price_dataframe(df, analysis_start_date=analysis_start_date)
+        annual_financials = None
+    results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage, role_deepdive = analyze_dataset(
+        matched,
+        prices,
+        annual_financials=annual_financials,
+    )
     if not results:
         raise ValueError("No analyzable sections found. Need at least two tickers per section with enough observations.")
     return write_report_outputs(
@@ -1274,14 +1663,15 @@ def generate_report_from_dataframe(
         frequency_summary,
         group_summary,
         coverage,
+        role_deepdive,
         output_dir=output_dir,
         analysis_start_date=analysis_start_date or "",
     )
 
 
 def main() -> None:
-    results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage = analyze()
-    paths = write_report_outputs(results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage, output_dir=ROOT, analysis_start_date=ANALYSIS_START_DATE)
+    results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage, role_deepdive = analyze()
+    paths = write_report_outputs(results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage, role_deepdive, output_dir=ROOT, analysis_start_date=ANALYSIS_START_DATE)
     print(f"groups={len(results)} pairs={len(pair_summary)}")
     for path in paths.values():
         print(f"wrote {path}")
