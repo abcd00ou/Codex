@@ -22,6 +22,7 @@ OUT_YEARLY_CSV = ROOT / "yearly_group_coupling_summary.csv"
 OUT_FREQUENCY_CSV = ROOT / "frequency_group_coupling_summary.csv"
 OUT_BOTTLENECK_CSV = ROOT / "bottleneck_interpretation_summary.csv"
 OUT_ROLE_DEEPDIVE_CSV = ROOT / "member_role_financial_deepdive.csv"
+OUT_COMPANY_WEIGHT_CSV = ROOT / "member_company_financial_weights.csv"
 OUT_COVERAGE_CSV = ROOT / "ticker_coverage_used.csv"
 OUT_REFERENCES_MD = ROOT / "comovement_methodology_references.md"
 
@@ -238,6 +239,7 @@ def normalize_price_dataframe(raw: pd.DataFrame, analysis_start_date: str | None
         data = data[data["price_date"] >= pd.Timestamp(analysis_start_date)]
     if data.empty:
         raise ValueError("No valid price rows remain after cleaning and date filtering.")
+    data = data.sort_values(["ticker", "price_date", "group_3", "company_name"])
 
     matched = (
         data[["group_3", "company_name", "ticker"]]
@@ -346,7 +348,16 @@ def normalize_long_item_dataframe(
 
 
 def price_matrix(prices: pd.DataFrame, tickers: list[str], frequency: str = "daily") -> pd.DataFrame:
-    px = prices[prices["ticker"].isin(tickers)].pivot(index="price_date", columns="ticker", values="adj_close_usd").sort_index()
+    px_data = prices[prices["ticker"].isin(tickers)].copy()
+    px_data["price_date"] = pd.to_datetime(px_data["price_date"], errors="coerce")
+    px_data["adj_close_usd"] = pd.to_numeric(px_data["adj_close_usd"], errors="coerce")
+    px_data = px_data.dropna(subset=["ticker", "price_date", "adj_close_usd"])
+    px = px_data.pivot_table(
+        index="price_date",
+        columns="ticker",
+        values="adj_close_usd",
+        aggfunc="last",
+    ).sort_index()
     if frequency == "weekly":
         px = px.resample("W-FRI").last()
     elif frequency == "monthly":
@@ -651,8 +662,16 @@ def role_financial_deepdive_rows(
             member_detail[col] = np.nan
         member_detail[col] = pd.to_numeric(member_detail[col], errors="coerce")
 
-    role_rows = []
     metrics = ["market_cap_usd_b", "revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]
+    for metric in metrics:
+        totals = member_detail.groupby("group")[metric].transform(lambda s: s.sum(min_count=1))
+        member_detail[f"{metric}_share_of_group"] = np.where(
+            totals.notna() & (totals != 0) & member_detail[metric].notna(),
+            member_detail[metric] / totals,
+            np.nan,
+        )
+
+    role_rows = []
     for (group, role), sub in member_detail.groupby(["group", "member_role"], dropna=False):
         group_all = member_detail[member_detail["group"] == group]
         row = {
@@ -803,11 +822,11 @@ def analyze_dataset(
         frequency_summary["corr_vs_monthly_delta"] = frequency_summary["avg_pair_corr"] - frequency_summary["monthly_avg_pair_corr"]
         frequency_summary["monthly_vs_daily_delta"] = frequency_summary["monthly_avg_pair_corr"] - frequency_summary["daily_avg_pair_corr"]
     group_summary = pd.DataFrame([r.__dict__ for r in group_results])
-    role_deepdive, _member_detail = role_financial_deepdive_rows(member_summary, matched, prices, annual_financials)
-    return group_results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage, role_deepdive
+    role_deepdive, member_financial_detail = role_financial_deepdive_rows(member_summary, matched, prices, annual_financials)
+    return group_results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage, role_deepdive, member_financial_detail
 
 
-def analyze() -> tuple[list[GroupResult], pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def analyze() -> tuple[list[GroupResult], pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     matched, _companies, prices, annual_financials = load_data()
     return analyze_dataset(matched, prices, annual_financials=annual_financials)
 
@@ -849,7 +868,7 @@ def bar_svg(results: list[GroupResult], metric: str, title: str) -> str:
 def yearly_heatmap_html(yearly_summary: pd.DataFrame) -> str:
     if yearly_summary.empty:
         return "<p>No yearly summary available.</p>"
-    pivot = yearly_summary.pivot(index="group", columns="year", values="avg_pair_corr")
+    pivot = yearly_summary.pivot_table(index="group", columns="year", values="avg_pair_corr", aggfunc="mean")
     ordered = pivot.mean(axis=1).sort_values(ascending=False).index
     pivot = pivot.loc[ordered]
     years = list(pivot.columns)
@@ -911,7 +930,7 @@ def yearly_story_html(yearly_summary: pd.DataFrame) -> str:
 def frequency_pivot_html(frequency_summary: pd.DataFrame) -> str:
     if frequency_summary.empty:
         return "<p>No frequency comparison available.</p>"
-    pivot = frequency_summary.pivot(index="group", columns="frequency", values="avg_pair_corr")
+    pivot = frequency_summary.pivot_table(index="group", columns="frequency", values="avg_pair_corr", aggfunc="mean")
     order_cols = [c for c in ["daily", "weekly", "monthly"] if c in pivot.columns]
     pivot = pivot[order_cols]
     pivot = pivot.sort_values(order_cols[-1] if order_cols else pivot.columns[0], ascending=False)
@@ -993,6 +1012,153 @@ def role_share_svg(role_deepdive: pd.DataFrame, metric_share_col: str, title: st
     return "".join(parts)
 
 
+def role_financial_weight_svg(role_deepdive: pd.DataFrame, title: str, group: str | None = None) -> str:
+    if role_deepdive.empty:
+        return "<p>No role deep-dive data available.</p>"
+    data = role_deepdive.copy()
+    if group is not None:
+        data = data[data["group"] == group]
+    required = {"revenue_usd_m_share_of_group", "operating_income_usd_m_share_of_group", "member_role"}
+    if data.empty or not required <= set(data.columns):
+        return "<p>No comparable role financial-weight data available.</p>"
+
+    roles = ["coupling core", "partial / bridge", "weakly coupled"]
+    colors = {"coupling core": "#2563eb", "partial / bridge": "#0f766e", "weakly coupled": "#b45309"}
+    metrics = [
+        ("revenue_usd_m_share_of_group", "Revenue"),
+        ("operating_income_usd_m_share_of_group", "Op income"),
+    ]
+    groups = [group] if group is not None else sorted(data["group"].dropna().unique())
+    width = 1160
+    row_h = 58
+    height = max(210, 72 + row_h * len(groups))
+    left, right, top = 190, 80, 48
+    chart_w = width - left - right
+    parts = [
+        f'<svg viewBox="0 0 {width} {height}" role="img" aria-label="{esc(title)}">',
+        f'<text x="{left}" y="24" class="chart-title">{esc(title)}</text>',
+        f'<text x="{left}" y="40" class="bar-label">Segment width is each role share inside the same section. Tooltip includes average member coupling strength.</text>',
+    ]
+    for i, group_name in enumerate(groups):
+        group_rows = data[data["group"] == group_name].set_index("member_role")
+        y0 = top + i * row_h
+        parts.append(f'<text x="{left - 12}" y="{y0 + 23}" text-anchor="end" class="bar-label">{esc(group_name)}</text>')
+        for metric_i, (metric_col, metric_label) in enumerate(metrics):
+            y = y0 + metric_i * 24
+            parts.append(f'<text x="{left - 124}" y="{y + 15}" class="bar-label">{esc(metric_label)}</text>')
+            x = left
+            for role in roles:
+                if role not in group_rows.index:
+                    continue
+                val = group_rows.loc[role, metric_col]
+                if pd.isna(val):
+                    continue
+                display_val = max(0, min(1, float(val)))
+                w = chart_w * display_val
+                if w <= 0:
+                    continue
+                corr = group_rows.loc[role, "avg_mean_corr_to_group"] if "avg_mean_corr_to_group" in group_rows.columns else np.nan
+                members = group_rows.loc[role, "members"] if "members" in group_rows.columns else np.nan
+                parts.append(
+                    f'<rect x="{x:.1f}" y="{y}" width="{w:.1f}" height="18" fill="{colors[role]}" opacity="0.86">'
+                    f'<title>{esc(group_name)} · {esc(metric_label)} · {esc(role)} · share {pct(float(val))} · avg corr {num(corr, 2)} · members {esc(members)}</title></rect>'
+                )
+                if w > 42:
+                    parts.append(f'<text x="{x + w / 2:.1f}" y="{y + 13}" text-anchor="middle" fill="#fff" font-size="11">{pct(float(val))}</text>')
+                x += w
+            parts.append(f'<rect x="{left}" y="{y}" width="{chart_w}" height="18" fill="none" stroke="#d9e0ea"/>')
+        parts.append(f'<line x1="{left}" x2="{left + chart_w}" y1="{y0 + 50}" y2="{y0 + 50}" stroke="#e2e8f0"/>')
+    legend_x = left
+    legend_y = height - 18
+    for role in roles:
+        parts.append(f'<rect x="{legend_x}" y="{legend_y - 10}" width="10" height="10" fill="{colors[role]}"/>')
+        parts.append(f'<text x="{legend_x + 16}" y="{legend_y}" class="bar-label">{esc(role)}</text>')
+        legend_x += 150
+    parts.append("</svg>")
+    return "".join(parts)
+
+
+def company_financial_weight_svg(member_financial_detail: pd.DataFrame, title: str, group: str | None = None) -> str:
+    if member_financial_detail.empty:
+        return "<p>No company financial-weight data available.</p>"
+    data = member_financial_detail.copy()
+    if group is not None:
+        data = data[data["group"] == group]
+    required = {"company", "ticker", "revenue_usd_m_share_of_group", "operating_income_usd_m_share_of_group"}
+    if data.empty or not required <= set(data.columns):
+        return "<p>No comparable company financial-weight data available.</p>"
+
+    metrics = [
+        ("revenue_usd_m_share_of_group", "Revenue"),
+        ("operating_income_usd_m_share_of_group", "Op income"),
+    ]
+    groups = [group] if group is not None else sorted(data["group"].dropna().unique())
+    palette = [
+        "#2563eb",
+        "#dc2626",
+        "#059669",
+        "#7c3aed",
+        "#ea580c",
+        "#0891b2",
+        "#be123c",
+        "#4d7c0f",
+        "#9333ea",
+        "#0f766e",
+        "#b45309",
+        "#64748b",
+        "#0e7490",
+        "#a21caf",
+        "#15803d",
+        "#b91c1c",
+        "#1d4ed8",
+        "#6d28d9",
+    ]
+    width = 1160
+    row_h = 58
+    height = max(210, 72 + row_h * len(groups))
+    left, right, top = 190, 80, 48
+    chart_w = width - left - right
+    parts = [
+        f'<svg viewBox="0 0 {width} {height}" role="img" aria-label="{esc(title)}">',
+        f'<text x="{left}" y="24" class="chart-title">{esc(title)}</text>',
+        f'<text x="{left}" y="40" class="bar-label">Each segment is an individual company share inside the section. Hover for company, ticker, and coupling stats.</text>',
+    ]
+    for i, group_name in enumerate(groups):
+        group_rows = data[data["group"] == group_name].copy()
+        group_rows = group_rows.sort_values("revenue_usd_m_share_of_group", ascending=False, na_position="last")
+        y0 = top + i * row_h
+        parts.append(f'<text x="{left - 12}" y="{y0 + 23}" text-anchor="end" class="bar-label">{esc(group_name)}</text>')
+        color_map = {ticker: palette[j % len(palette)] for j, ticker in enumerate(group_rows["ticker"].astype(str).tolist())}
+        for metric_i, (metric_col, metric_label) in enumerate(metrics):
+            y = y0 + metric_i * 24
+            parts.append(f'<text x="{left - 124}" y="{y + 15}" class="bar-label">{esc(metric_label)}</text>')
+            x = left
+            for row in group_rows.itertuples(index=False):
+                val = getattr(row, metric_col, np.nan)
+                if pd.isna(val):
+                    continue
+                display_val = max(0, min(1, float(val)))
+                w = chart_w * display_val
+                if w <= 0:
+                    continue
+                ticker = str(getattr(row, "ticker"))
+                company = getattr(row, "company")
+                corr = getattr(row, "mean_corr_to_group", np.nan)
+                max_corr = getattr(row, "max_corr_to_peer", np.nan)
+                parts.append(
+                    f'<rect x="{x:.1f}" y="{y}" width="{w:.1f}" height="18" fill="{color_map[ticker]}" opacity="0.86">'
+                    f'<title>{esc(group_name)} · {esc(metric_label)} · {esc(company)} ({esc(ticker)}) · share {pct(float(val))} · mean corr {num(corr, 2)} · max peer corr {num(max_corr, 2)}</title></rect>'
+                )
+                if w > 44:
+                    label = ticker if len(ticker) <= 8 else ticker[:8]
+                    parts.append(f'<text x="{x + w / 2:.1f}" y="{y + 13}" text-anchor="middle" fill="#fff" font-size="10">{esc(label)}</text>')
+                x += w
+            parts.append(f'<rect x="{left}" y="{y}" width="{chart_w}" height="18" fill="none" stroke="#d9e0ea"/>')
+        parts.append(f'<line x1="{left}" x2="{left + chart_w}" y1="{y0 + 50}" y2="{y0 + 50}" stroke="#e2e8f0"/>')
+    parts.append("</svg>")
+    return "".join(parts)
+
+
 def role_deepdive_story(role_deepdive: pd.DataFrame) -> str:
     if role_deepdive.empty:
         return "<p>No role deep-dive data available.</p>"
@@ -1011,6 +1177,27 @@ def role_deepdive_story(role_deepdive: pd.DataFrame) -> str:
             f"core operating-income share {pct(core_profit)}, weak operating-income share {pct(weak_profit)}.</li>"
         )
     return "<ul>" + "".join(rows[:18]) + "</ul>" if rows else "<p>No comparable revenue/profit role split available.</p>"
+
+
+def company_financial_weight_story(member_financial_detail: pd.DataFrame) -> str:
+    if member_financial_detail.empty:
+        return "<p>No company financial-weight data available.</p>"
+    rows = []
+    for group, sub in member_financial_detail.groupby("group"):
+        rev = sub.dropna(subset=["revenue_usd_m_share_of_group"]).sort_values("revenue_usd_m_share_of_group", ascending=False)
+        op = sub.dropna(subset=["operating_income_usd_m_share_of_group"]).sort_values("operating_income_usd_m_share_of_group", ascending=False)
+        if rev.empty and op.empty:
+            continue
+        rev_phrase = "n/a"
+        op_phrase = "n/a"
+        if not rev.empty:
+            top = rev.head(2)
+            rev_phrase = ", ".join(f"{row.company} {pct(row.revenue_usd_m_share_of_group)}" for row in top.itertuples())
+        if not op.empty:
+            top = op.head(2)
+            op_phrase = ", ".join(f"{row.company} {pct(row.operating_income_usd_m_share_of_group)}" for row in top.itertuples())
+        rows.append(f"<li><strong>{esc(group)}</strong>: revenue leaders {esc(rev_phrase)}; op-income leaders {esc(op_phrase)}.</li>")
+    return "<ul>" + "".join(rows[:18]) + "</ul>" if rows else "<p>No company-level revenue/profit split available.</p>"
 
 
 BOTTLENECK_CONTEXT = {
@@ -1191,6 +1378,7 @@ def render_report(
     group_summary: pd.DataFrame,
     coverage: pd.DataFrame,
     role_deepdive: pd.DataFrame,
+    member_financial_detail: pd.DataFrame,
     analysis_start_date: str = ANALYSIS_START_DATE,
 ) -> str:
     bottleneck_summary = bottleneck_interpretation_rows(group_summary, yearly_summary)
@@ -1260,6 +1448,15 @@ def render_report(
             if col in role_display:
                 role_display[col] = role_display[col].map(pct)
 
+    member_financial_display = member_financial_detail.copy()
+    if not member_financial_display.empty:
+        for col in ["mean_corr_to_group", "max_corr_to_peer", "revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]:
+            if col in member_financial_display:
+                member_financial_display[col] = member_financial_display[col].map(lambda x: num(x, 2))
+        for col in ["revenue_usd_m_share_of_group", "operating_income_usd_m_share_of_group", "net_income_usd_m_share_of_group"]:
+            if col in member_financial_display:
+                member_financial_display[col] = member_financial_display[col].map(pct)
+
     high = [r for r in results if r.classification == "high coupling"]
     moderate = [r for r in results if r.classification == "moderate coupling"]
     weak = [r for r in results if r.classification == "weak / fragmented"]
@@ -1269,6 +1466,7 @@ def render_report(
     for r in results:
         pairs = pair_display[pair_display["group"] == r.group].head(12)
         members = member_display[member_display["group"] == r.group].copy()
+        company_weight_detail = member_financial_display[member_financial_display["group"] == r.group].copy()
         core = members[members["member_role"] == "coupling core"]
         partial = members[members["member_role"] == "partial / bridge"]
         weak_members = members[members["member_role"] == "weakly coupled"]
@@ -1285,8 +1483,10 @@ def render_report(
         </div>
         <p class="small">Coverage: {esc(r.start_date)} to {esc(r.end_date)} · latest 12M avg pair corr {num(r.latest_rolling_corr, 2)} · rolling range {num(r.rolling_min, 2)} to {num(r.rolling_max, 2)}</p>
         <p class="small">Companies: {esc(', '.join(r.companies))}</p>
-        <h4>Coupling core vs weak members</h4>
-        <p class="small">Core: {esc(', '.join(core["company"].tolist()) or 'none')} · Partial/bridge: {esc(', '.join(partial["company"].tolist()) or 'none')} · Weak: {esc(', '.join(weak_members["company"].tolist()) or 'none')}</p>
+        <h4>Company revenue / op income weights</h4>
+        <div class="chart">{company_financial_weight_svg(member_financial_detail, f"{r.group} company revenue / op income share", group=r.group)}</div>
+        {table_html(company_weight_detail, ["company", "ticker", "mean_corr_to_group", "revenue_usd_m_share_of_group", "operating_income_usd_m_share_of_group", "net_income_usd_m_share_of_group"], max_rows=24) if not company_weight_detail.empty else "<p class='small'>No company financial weights available.</p>"}
+        <h4>Member coupling roles</h4>
         {table_html(members, ["company", "ticker", "member_role", "mean_corr_to_group", "max_corr_to_peer", "strong_link_count", "pc1_loading", "best_coupled_peer_company"])}
         <h4>Top pair links</h4>
         {table_html(pairs, ["left_company", "right_company", "observations", "pearson_corr", "same_direction_share", "start_date", "end_date"])}
@@ -1297,15 +1497,14 @@ def render_report(
     group_options = "".join(f'<option value="{esc(r.group)}">{esc(r.group)}</option>' for r in results)
     role_financial_section = f"""
     <section class="section">
-      <h2>Core Coupling vs Weak Members: Financial Weight</h2>
-      <p>여기서는 주가 coupling으로 나뉜 member role이 실제 섹션 내 경제적 비중과도 연결되는지 확인한다. 즉, <strong>coupling core</strong>가 단순히 많이 같이 움직이는 종목인지, 아니면 섹션 매출/이익의 큰 부분을 차지하는 종목인지 비교한다.</p>
+      <h2>Company Financial Weight vs Comovement</h2>
+      <p>여기서는 각 section 안에서 기업별 <strong>revenue</strong>와 <strong>operating income</strong> 비중을 직접 비교한다. 동조화가 강한 구간이 실제 매출/이익 비중이 큰 기업들 중심인지, 아니면 작은 기업들이 테마성으로 같이 움직이는지 확인하기 위한 뷰다.</p>
       <p class="small">Revenue, operating income, net income은 DB의 최신 annual financials 기준이다. 이익 지표는 손실 기업이 섞이면 role share가 음수 또는 100% 초과로 보일 수 있으므로, 매출 비중보다 더 조심해서 읽어야 한다. Market cap 컬럼은 stock_prices에 있으나 현재 값이 없어 표에는 coverage 0 또는 빈 값으로 표시된다.</p>
-      <div class="chart">{role_share_svg(role_deepdive, "revenue_usd_m_share_of_group", "Revenue Share by Coupling Role")}</div>
-      <div class="chart" style="margin-top:12px;">{role_share_svg(role_deepdive, "operating_income_usd_m_share_of_group", "Operating Income Share by Coupling Role")}</div>
+      <div class="chart">{company_financial_weight_svg(member_financial_detail, "Company Revenue and Op Income Share by Section")}</div>
       <h3>Interpretive read</h3>
-      {role_deepdive_story(role_deepdive)}
-      <h3>Role-level financial table</h3>
-      {table_html(role_display, ["group", "member_role", "members", "companies", "avg_mean_corr_to_group", "revenue_usd_m", "revenue_usd_m_share_of_group", "operating_income_usd_m", "operating_income_usd_m_share_of_group", "net_income_usd_m", "net_income_usd_m_share_of_group", "market_cap_usd_b", "market_cap_usd_b_share_of_group"], max_rows=120) if not role_display.empty else "<p>No role-level financial table available.</p>"}
+      {company_financial_weight_story(member_financial_detail)}
+      <h3>Company financial weight table</h3>
+      {table_html(member_financial_display, ["group", "company", "ticker", "mean_corr_to_group", "revenue_usd_m_share_of_group", "operating_income_usd_m_share_of_group", "net_income_usd_m_share_of_group"], max_rows=160) if not member_financial_display.empty else "<p>No company financial-weight table available.</p>"}
     </section>
 """
 
@@ -1614,6 +1813,7 @@ def output_paths(output_dir: str | Path) -> dict[str, Path]:
         "frequency": root / "frequency_group_coupling_summary.csv",
         "bottleneck": root / "bottleneck_interpretation_summary.csv",
         "role_deepdive": root / "member_role_financial_deepdive.csv",
+        "company_weight": root / "member_company_financial_weights.csv",
         "coverage": root / "ticker_coverage_used.csv",
     }
 
@@ -1628,6 +1828,7 @@ def write_report_outputs(
     group_summary: pd.DataFrame,
     coverage: pd.DataFrame,
     role_deepdive: pd.DataFrame,
+    member_financial_detail: pd.DataFrame,
     output_dir: str | Path = ROOT,
     analysis_start_date: str = ANALYSIS_START_DATE,
 ) -> dict[str, Path]:
@@ -1641,6 +1842,7 @@ def write_report_outputs(
     frequency_summary.to_csv(paths["frequency"], index=False)
     bottleneck_summary.to_csv(paths["bottleneck"], index=False)
     role_deepdive.to_csv(paths["role_deepdive"], index=False)
+    member_financial_detail.to_csv(paths["company_weight"], index=False)
     coverage.to_csv(paths["coverage"], index=False)
     paths["html"].write_text(
         render_report(
@@ -1653,6 +1855,7 @@ def write_report_outputs(
             group_summary,
             coverage,
             role_deepdive,
+            member_financial_detail,
             analysis_start_date=analysis_start_date,
         ),
         encoding="utf-8",
@@ -1684,7 +1887,7 @@ def generate_report_from_dataframe(
     else:
         matched, prices = normalize_price_dataframe(df, analysis_start_date=analysis_start_date)
         annual_financials = None
-    results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage, role_deepdive = analyze_dataset(
+    results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage, role_deepdive, member_financial_detail = analyze_dataset(
         matched,
         prices,
         annual_financials=annual_financials,
@@ -1701,14 +1904,15 @@ def generate_report_from_dataframe(
         group_summary,
         coverage,
         role_deepdive,
+        member_financial_detail,
         output_dir=output_dir,
         analysis_start_date=analysis_start_date or "",
     )
 
 
 def main() -> None:
-    results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage, role_deepdive = analyze()
-    paths = write_report_outputs(results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage, role_deepdive, output_dir=ROOT, analysis_start_date=ANALYSIS_START_DATE)
+    results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage, role_deepdive, member_financial_detail = analyze()
+    paths = write_report_outputs(results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage, role_deepdive, member_financial_detail, output_dir=ROOT, analysis_start_date=ANALYSIS_START_DATE)
     print(f"groups={len(results)} pairs={len(pair_summary)}")
     for path in paths.values():
         print(f"wrote {path}")
