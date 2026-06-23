@@ -288,7 +288,7 @@ def normalize_price_dataframe(raw: pd.DataFrame, analysis_start_date: str | None
 def normalize_long_item_dataframe(
     raw: pd.DataFrame,
     analysis_start_date: str | None = "2012-01-01",
-) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Normalize ticker-section-item-date-value rows into price and financial inputs.
 
     Expected logical columns:
@@ -299,6 +299,10 @@ def normalize_long_item_dataframe(
     - value
 
     Supported item values include adjusted_close, revenue, capex, operating income, and net income.
+    Financial rows are converted into both quarterly inputs and annual inputs:
+    - quarterly rows feed section momentum and 2025 Q4 financial-weight views
+    - annual rows feed company annual YoY growth views; if the input is quarterly,
+      annual values are summed by ticker-year.
     """
     if raw.empty:
         raise ValueError("Input dataframe is empty.")
@@ -350,6 +354,9 @@ def normalize_long_item_dataframe(
         quarterly_financials = pd.DataFrame(
             columns=["ticker", "fiscal_year", "fiscal_quarter", "period_end_date", "calendar_quarter", "revenue_usd_m", "capex_usd_m", "operating_income_usd_m", "net_income_usd_m"]
         )
+        annual_financials = pd.DataFrame(
+            columns=["ticker", "fiscal_year", "period_end_date", "revenue_usd_m", "capex_usd_m", "operating_income_usd_m", "net_income_usd_m"]
+        )
     else:
         financial_rows["fiscal_year"] = financial_rows["date"].dt.year
         financial_rows["fiscal_quarter"] = financial_rows["date"].dt.quarter
@@ -372,7 +379,25 @@ def normalize_long_item_dataframe(
         quarterly_financials = quarterly_financials[
             ["ticker", "fiscal_year", "fiscal_quarter", "period_end_date", "calendar_quarter", "revenue_usd_m", "capex_usd_m", "operating_income_usd_m", "net_income_usd_m"]
         ]
-    return matched, prices, quarterly_financials
+        annual_financials = (
+            financial_rows.pivot_table(
+                index=["ticker", "fiscal_year"],
+                columns="metric",
+                values="value",
+                aggfunc="sum",
+            )
+            .reset_index()
+            .rename_axis(None, axis=1)
+        )
+        annual_period_end = financial_rows.groupby(["ticker", "fiscal_year"])["date"].max().reset_index().rename(columns={"date": "period_end_date"})
+        annual_financials = annual_financials.merge(annual_period_end, on=["ticker", "fiscal_year"], how="left")
+        for col in ["revenue_usd_m", "capex_usd_m", "operating_income_usd_m", "net_income_usd_m"]:
+            if col not in annual_financials.columns:
+                annual_financials[col] = np.nan
+        annual_financials = annual_financials[
+            ["ticker", "fiscal_year", "period_end_date", "revenue_usd_m", "capex_usd_m", "operating_income_usd_m", "net_income_usd_m"]
+        ]
+    return matched, prices, quarterly_financials, annual_financials
 
 
 def price_matrix(prices: pd.DataFrame, tickers: list[str], frequency: str = "daily") -> pd.DataFrame:
@@ -2650,8 +2675,11 @@ def generate_report_from_dataframe(
     - price-wide rows: date, section, optional companyname, ticker, adjusted close
     - long item rows: ticker, section, item, date, value
 
-    For long item rows, adjusted_close drives the stock comovement analysis while
-    revenue / operating income / net income feed the Deep Dive role financial weights.
+    For long item rows, adjusted_close drives the stock comovement analysis.
+    Quarterly financial rows feed section momentum and financial weights; annual
+    financial rows are also built by ticker-year and feed company annual YoY
+    growth in the Deep Dive. If the input has quarterly revenue/profit rows,
+    annual revenue/profit is approximated by summing the quarters per year.
 
     Example:
         paths = generate_report_from_dataframe(my_df, "outputs/comovement", analysis_start_date="2012-01-01")
@@ -2659,15 +2687,16 @@ def generate_report_from_dataframe(
     """
     is_long_item = all(_optional_external_column(df, field) for field in ["ticker", "section", "item", "date", "value"])
     if is_long_item:
-        matched, prices, financials_source = normalize_long_item_dataframe(df, analysis_start_date=analysis_start_date)
+        matched, prices, financials_source, annual_financials = normalize_long_item_dataframe(df, analysis_start_date=analysis_start_date)
     else:
         matched, prices = normalize_price_dataframe(df, analysis_start_date=analysis_start_date)
         financials_source = None
+        annual_financials = None
     results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage, role_deepdive, member_financial_detail, annual_balance, fundamental_momentum, company_yearly_growth = analyze_dataset(
         matched,
         prices,
         financials_source=financials_source,
-        annual_financials=financials_source,
+        annual_financials=annual_financials,
     )
     if not results:
         raise ValueError("No analyzable sections found. Need at least two tickers per section with enough observations.")
