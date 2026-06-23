@@ -23,6 +23,9 @@ OUT_FREQUENCY_CSV = ROOT / "frequency_group_coupling_summary.csv"
 OUT_BOTTLENECK_CSV = ROOT / "bottleneck_interpretation_summary.csv"
 OUT_ROLE_DEEPDIVE_CSV = ROOT / "member_role_financial_deepdive.csv"
 OUT_COMPANY_WEIGHT_CSV = ROOT / "member_company_financial_weights.csv"
+OUT_ANNUAL_BALANCE_CSV = ROOT / "annual_financial_balance_vs_coupling.csv"
+OUT_FUNDAMENTAL_MOMENTUM_CSV = ROOT / "section_fundamental_momentum_vs_comovement.csv"
+OUT_COMPANY_YEARLY_GROWTH_CSV = ROOT / "company_yearly_growth_vs_comovement.csv"
 OUT_COVERAGE_CSV = ROOT / "ticker_coverage_used.csv"
 OUT_REFERENCES_MD = ROOT / "comovement_methodology_references.md"
 
@@ -36,6 +39,8 @@ COUPLING_CORR = 0.50
 CORE_MEAN_CORR = 0.50
 PARTIAL_MEAN_CORR = 0.35
 STRONG_LINK_CORR = 0.65
+FINANCIAL_WEIGHT_YEAR = 2025
+FINANCIAL_WEIGHT_QUARTER = 4
 
 EXTERNAL_COLUMN_ALIASES = {
     "date": ["date", "price_date", "날짜"],
@@ -66,6 +71,18 @@ ITEM_ALIASES = {
     "net income": "net_income_usd_m",
     "net_income": "net_income_usd_m",
     "net_income_usd_m": "net_income_usd_m",
+}
+
+FX_LOCAL_PER_USD_APPROX = {
+    "USD": {year: 1.0 for year in range(2016, 2027)},
+    "KRW": {2016: 1160, 2017: 1130, 2018: 1100, 2019: 1165, 2020: 1180, 2021: 1145, 2022: 1290, 2023: 1305, 2024: 1365, 2025: 1380, 2026: 1370},
+    "TWD": {2016: 32.3, 2017: 30.4, 2018: 30.2, 2019: 30.9, 2020: 29.5, 2021: 28.0, 2022: 29.8, 2023: 31.2, 2024: 32.1, 2025: 32.5, 2026: 32.3},
+    "JPY": {2016: 109, 2017: 112, 2018: 110, 2019: 109, 2020: 107, 2021: 110, 2022: 131, 2023: 141, 2024: 151, 2025: 149, 2026: 145},
+    "EUR": {2016: 0.90, 2017: 0.89, 2018: 0.85, 2019: 0.89, 2020: 0.88, 2021: 0.85, 2022: 0.95, 2023: 0.92, 2024: 0.92, 2025: 0.92, 2026: 0.92},
+    "CNY": {2016: 6.64, 2017: 6.76, 2018: 6.62, 2019: 6.91, 2020: 6.90, 2021: 6.45, 2022: 6.73, 2023: 7.08, 2024: 7.20, 2025: 7.20, 2026: 7.15},
+    "HKD": {year: 7.80 for year in range(2016, 2027)},
+    "SEK": {2016: 8.56, 2017: 8.54, 2018: 8.69, 2019: 9.46, 2020: 9.20, 2021: 8.58, 2022: 10.10, 2023: 10.60, 2024: 10.50, 2025: 10.50, 2026: 10.40},
+    "CHF": {2016: 0.99, 2017: 0.98, 2018: 0.98, 2019: 0.99, 2020: 0.94, 2021: 0.91, 2022: 0.95, 2023: 0.90, 2024: 0.88, 2025: 0.88, 2026: 0.88},
 }
 
 
@@ -130,7 +147,7 @@ def norm_ticker(ticker: str) -> str:
     return t
 
 
-def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     master = pd.read_excel(MASTER_PATH)
     master["ticker_norm"] = master["ticker"].map(norm_ticker)
 
@@ -138,10 +155,19 @@ def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]
         companies = pd.read_sql_query("select ticker, slug, name, segments, hq_country from companies", conn)
         prices = pd.read_sql_query(
             """
-            select ticker, price_date, adj_close_usd, market_cap_usd_b
+            select ticker, price_date, adj_close_usd, market_cap_usd_b, currency
             from stock_prices
             where adj_close_usd is not null
             order by ticker, price_date
+            """,
+            conn,
+        )
+        quarterly_financials = pd.read_sql_query(
+            """
+            select ticker, fiscal_year, fiscal_quarter, period_end_date, calendar_quarter,
+                   revenue_usd_m, operating_income_usd_m, net_income_usd_m
+            from quarterly_financials
+            order by ticker, fiscal_year, fiscal_quarter, period_end_date
             """,
             conn,
         )
@@ -174,7 +200,7 @@ def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]
 
     master["db_ticker"] = master.apply(match_db_ticker, axis=1)
     matched = master.dropna(subset=["db_ticker"]).merge(companies, left_on="db_ticker", right_on="ticker", how="left")
-    return matched, companies, prices, annual_financials
+    return matched, companies, prices, quarterly_financials, annual_financials
 
 
 def _normalized_column_lookup(df: pd.DataFrame) -> dict[str, str]:
@@ -321,14 +347,16 @@ def normalize_long_item_dataframe(
 
     financial_rows = data[data["metric"].isin(["revenue_usd_m", "capex_usd_m", "operating_income_usd_m", "net_income_usd_m"])].copy()
     if financial_rows.empty:
-        annual_financials = pd.DataFrame(
-            columns=["ticker", "fiscal_year", "period_end_date", "revenue_usd_m", "capex_usd_m", "operating_income_usd_m", "net_income_usd_m"]
+        quarterly_financials = pd.DataFrame(
+            columns=["ticker", "fiscal_year", "fiscal_quarter", "period_end_date", "calendar_quarter", "revenue_usd_m", "capex_usd_m", "operating_income_usd_m", "net_income_usd_m"]
         )
     else:
         financial_rows["fiscal_year"] = financial_rows["date"].dt.year
-        annual_financials = (
+        financial_rows["fiscal_quarter"] = financial_rows["date"].dt.quarter
+        financial_rows["calendar_quarter"] = financial_rows["date"].dt.to_period("Q").astype(str)
+        quarterly_financials = (
             financial_rows.pivot_table(
-                index=["ticker", "fiscal_year"],
+                index=["ticker", "fiscal_year", "fiscal_quarter", "calendar_quarter"],
                 columns="metric",
                 values="value",
                 aggfunc="last",
@@ -336,15 +364,15 @@ def normalize_long_item_dataframe(
             .reset_index()
             .rename_axis(None, axis=1)
         )
-        period_end = financial_rows.groupby(["ticker", "fiscal_year"])["date"].max().reset_index().rename(columns={"date": "period_end_date"})
-        annual_financials = annual_financials.merge(period_end, on=["ticker", "fiscal_year"], how="left")
+        period_end = financial_rows.groupby(["ticker", "fiscal_year", "fiscal_quarter"])["date"].max().reset_index().rename(columns={"date": "period_end_date"})
+        quarterly_financials = quarterly_financials.merge(period_end, on=["ticker", "fiscal_year", "fiscal_quarter"], how="left")
         for col in ["revenue_usd_m", "capex_usd_m", "operating_income_usd_m", "net_income_usd_m"]:
-            if col not in annual_financials.columns:
-                annual_financials[col] = np.nan
-        annual_financials = annual_financials[
-            ["ticker", "fiscal_year", "period_end_date", "revenue_usd_m", "capex_usd_m", "operating_income_usd_m", "net_income_usd_m"]
+            if col not in quarterly_financials.columns:
+                quarterly_financials[col] = np.nan
+        quarterly_financials = quarterly_financials[
+            ["ticker", "fiscal_year", "fiscal_quarter", "period_end_date", "calendar_quarter", "revenue_usd_m", "capex_usd_m", "operating_income_usd_m", "net_income_usd_m"]
         ]
-    return matched, prices, annual_financials
+    return matched, prices, quarterly_financials
 
 
 def price_matrix(prices: pd.DataFrame, tickers: list[str], frequency: str = "daily") -> pd.DataFrame:
@@ -590,7 +618,45 @@ def frequency_group_rows(group: str, prices: pd.DataFrame, tickers: list[str]) -
     return rows
 
 
-def latest_annual_financials(annual_financials: pd.DataFrame | None) -> pd.DataFrame:
+def selected_quarter_financials(
+    quarterly_financials: pd.DataFrame | None,
+    fiscal_year: int = FINANCIAL_WEIGHT_YEAR,
+    fiscal_quarter: int = FINANCIAL_WEIGHT_QUARTER,
+) -> pd.DataFrame:
+    if quarterly_financials is None or quarterly_financials.empty:
+        return pd.DataFrame(
+            columns=["ticker_x", "financial_year", "financial_quarter", "financial_period", "revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]
+        )
+    fin = quarterly_financials.copy()
+    fin["ticker_x"] = fin["ticker"].astype(str).str.strip().str.upper()
+    fin["period_end_date"] = pd.to_datetime(fin["period_end_date"], errors="coerce")
+    if "fiscal_quarter" not in fin.columns:
+        fin["fiscal_quarter"] = fin["period_end_date"].dt.quarter
+    if "calendar_quarter" not in fin.columns:
+        fin["calendar_quarter"] = pd.to_datetime(fin["period_end_date"], errors="coerce").dt.to_period("Q").astype(str)
+    for col in ["revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]:
+        fin[col] = pd.to_numeric(fin[col], errors="coerce")
+    fin = fin.dropna(subset=["ticker_x", "fiscal_year", "fiscal_quarter"])
+    fin["_has_metric"] = fin[["revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]].notna().any(axis=1)
+    fin = fin[fin["_has_metric"]]
+    if fin.empty:
+        return pd.DataFrame(
+            columns=["ticker_x", "financial_year", "financial_quarter", "financial_period", "revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]
+        )
+    fin = fin[(fin["fiscal_year"].astype(int) == int(fiscal_year)) & (fin["fiscal_quarter"].astype(int) == int(fiscal_quarter))]
+    if fin.empty:
+        return pd.DataFrame(
+            columns=["ticker_x", "financial_year", "financial_quarter", "financial_period", "revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]
+        )
+    fin = fin.sort_values(["ticker_x", "fiscal_year", "fiscal_quarter", "period_end_date"])
+    selected = fin.groupby("ticker_x", as_index=False).tail(1)
+    selected = selected.rename(columns={"fiscal_year": "financial_year", "fiscal_quarter": "financial_quarter", "calendar_quarter": "financial_period"})
+    return selected[
+        ["ticker_x", "financial_year", "financial_quarter", "financial_period", "revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]
+    ]
+
+
+def selected_annual_financials(annual_financials: pd.DataFrame | None, fiscal_year: int = FINANCIAL_WEIGHT_YEAR) -> pd.DataFrame:
     if annual_financials is None or annual_financials.empty:
         return pd.DataFrame(
             columns=["ticker_x", "financial_year", "revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]
@@ -601,15 +667,15 @@ def latest_annual_financials(annual_financials: pd.DataFrame | None) -> pd.DataF
     for col in ["revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]:
         fin[col] = pd.to_numeric(fin[col], errors="coerce")
     fin = fin.dropna(subset=["ticker_x", "fiscal_year"])
+    fin = fin[fin["fiscal_year"].astype(int) == int(fiscal_year)]
     fin["_has_metric"] = fin[["revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]].notna().any(axis=1)
     fin = fin[fin["_has_metric"]]
     if fin.empty:
         return pd.DataFrame(
             columns=["ticker_x", "financial_year", "revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]
         )
-    fin = fin.sort_values(["ticker_x", "fiscal_year", "period_end_date"])
-    latest = fin.groupby("ticker_x", as_index=False).tail(1)
-    return latest.rename(columns={"fiscal_year": "financial_year"})[
+    selected = fin.sort_values(["ticker_x", "fiscal_year", "period_end_date"]).groupby("ticker_x", as_index=False).tail(1)
+    return selected.rename(columns={"fiscal_year": "financial_year"})[
         ["ticker_x", "financial_year", "revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]
     ]
 
@@ -627,11 +693,42 @@ def latest_market_caps(prices: pd.DataFrame) -> pd.DataFrame:
     return caps.rename(columns={"ticker": "db_ticker", "price_date": "market_cap_date"})
 
 
+def latest_price_currency(prices: pd.DataFrame) -> pd.DataFrame:
+    if "currency" not in prices.columns:
+        return pd.DataFrame(columns=["db_ticker", "financial_currency"])
+    data = prices[["ticker", "price_date", "currency"]].copy()
+    data["price_date"] = pd.to_datetime(data["price_date"], errors="coerce")
+    data["currency"] = data["currency"].astype(str).str.strip().str.upper()
+    data = data.dropna(subset=["ticker", "price_date", "currency"])
+    data = data[data["currency"] != ""]
+    if data.empty:
+        return pd.DataFrame(columns=["db_ticker", "financial_currency"])
+    latest = data.sort_values(["ticker", "price_date"]).groupby("ticker", as_index=False).tail(1)
+    return latest.rename(columns={"ticker": "db_ticker", "currency": "financial_currency"})[["db_ticker", "financial_currency"]]
+
+
+def approximate_fx_local_per_usd(currency: object, year: object) -> float:
+    if pd.isna(currency):
+        return np.nan
+    currency_key = str(currency).strip().upper()
+    if currency_key not in FX_LOCAL_PER_USD_APPROX:
+        return np.nan
+    try:
+        year_int = int(year)
+    except Exception:
+        return np.nan
+    rates = FX_LOCAL_PER_USD_APPROX[currency_key]
+    if year_int in rates:
+        return float(rates[year_int])
+    nearest_year = min(rates, key=lambda candidate: abs(candidate - year_int))
+    return float(rates[nearest_year])
+
+
 def role_financial_deepdive_rows(
     member_summary: pd.DataFrame,
     matched: pd.DataFrame,
     prices: pd.DataFrame,
-    annual_financials: pd.DataFrame | None = None,
+    financials_source: pd.DataFrame | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Attach latest scale metrics to coupling roles and aggregate by section-role."""
     if member_summary.empty:
@@ -653,23 +750,51 @@ def role_financial_deepdive_rows(
         member_detail["ticker_x"] = member_detail["ticker"]
     member_detail["ticker_x"] = member_detail["ticker_x"].fillna(member_detail["ticker"]).astype(str).str.strip().str.upper()
 
-    financials = latest_annual_financials(annual_financials)
+    financials = selected_quarter_financials(financials_source)
     caps = latest_market_caps(prices)
-    member_detail = member_detail.merge(financials, on="ticker_x", how="left").merge(caps, left_on="ticker", right_on="db_ticker", how="left")
+    currencies = latest_price_currency(prices)
+    member_detail = (
+        member_detail.merge(financials, on="ticker_x", how="left")
+        .merge(caps, left_on="ticker", right_on="db_ticker", how="left")
+        .merge(currencies, left_on="ticker", right_on="db_ticker", how="left", suffixes=("", "_currency"))
+    )
 
     for col in ["market_cap_usd_b", "revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]:
         if col not in member_detail.columns:
             member_detail[col] = np.nan
         member_detail[col] = pd.to_numeric(member_detail[col], errors="coerce")
 
+    member_detail["has_financial_metric"] = member_detail[["revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]].notna().any(axis=1)
+    member_detail["fx_rate_local_per_usd"] = member_detail.apply(
+        lambda row: approximate_fx_local_per_usd(row.get("financial_currency"), row.get("financial_year")),
+        axis=1,
+    )
+    member_detail["financial_fx_normalized"] = member_detail["has_financial_metric"] & member_detail["fx_rate_local_per_usd"].notna()
+    for col in ["revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]:
+        member_detail[f"{col}_reported"] = member_detail[col]
+        member_detail[col] = np.where(
+            member_detail["financial_fx_normalized"] & member_detail[col].notna(),
+            member_detail[col] / member_detail["fx_rate_local_per_usd"],
+            member_detail[col],
+        )
+
     metrics = ["market_cap_usd_b", "revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]
+    currency_counts = member_detail.groupby("group")["financial_currency"].transform(lambda s: s.dropna().nunique())
+    member_detail["mixed_financial_currency"] = currency_counts > 1
+    member_detail["missing_fx_rate"] = member_detail["has_financial_metric"] & member_detail["financial_currency"].notna() & member_detail["fx_rate_local_per_usd"].isna()
+    missing_fx_in_group = member_detail.groupby("group")["missing_fx_rate"].transform("any")
     for metric in metrics:
         totals = member_detail.groupby("group")[metric].transform(lambda s: s.sum(min_count=1))
         member_detail[f"{metric}_share_of_group"] = np.where(
-            totals.notna() & (totals != 0) & member_detail[metric].notna(),
+            totals.notna() & (totals != 0) & member_detail[metric].notna() & ~missing_fx_in_group,
             member_detail[metric] / totals,
             np.nan,
         )
+        share_col = f"{metric}_share_of_group"
+        member_detail.loc[
+            member_detail[share_col].notna() & ~member_detail[share_col].between(0, 1),
+            share_col,
+        ] = np.nan
 
     role_rows = []
     for (group, role), sub in member_detail.groupby(["group", "member_role"], dropna=False):
@@ -685,13 +810,296 @@ def role_financial_deepdive_rows(
         for metric in metrics:
             total = group_all[metric].sum(min_count=1)
             value = sub[metric].sum(min_count=1)
+            missing_fx = bool(group_all["missing_fx_rate"].any())
             row[metric] = value
-            row[f"{metric}_share_of_group"] = float(value / total) if pd.notna(total) and total != 0 and pd.notna(value) else np.nan
+            share_value = (
+                float(value / total) if not missing_fx and pd.notna(total) and total != 0 and pd.notna(value) else np.nan
+            )
+            row[f"{metric}_share_of_group"] = share_value if pd.isna(share_value) or 0 <= share_value <= 1 else np.nan
             row[f"{metric}_coverage"] = int(sub[metric].notna().sum())
+        row["financial_currency"] = ", ".join(sorted(group_all["financial_currency"].dropna().unique()))
+        row["financial_year"] = ", ".join(sorted(group_all["financial_year"].dropna().astype(int).astype(str).unique())) if "financial_year" in group_all else ""
+        row["financial_quarter"] = ", ".join(sorted(group_all["financial_quarter"].dropna().astype(int).astype(str).unique())) if "financial_quarter" in group_all else ""
+        row["financial_period"] = ", ".join(sorted(group_all["financial_period"].dropna().astype(str).unique())) if "financial_period" in group_all else ""
+        row["mixed_financial_currency"] = bool(group_all["mixed_financial_currency"].any())
+        row["financial_fx_normalized"] = bool(group_all["financial_fx_normalized"].any())
+        row["missing_fx_rate"] = bool(group_all["missing_fx_rate"].any())
         role_rows.append(row)
 
     role_summary = pd.DataFrame(role_rows).sort_values(["group", "member_role"])
     return role_summary, member_detail
+
+
+def annual_financial_balance_rows(
+    member_summary: pd.DataFrame,
+    matched: pd.DataFrame,
+    prices: pd.DataFrame,
+    annual_financials: pd.DataFrame | None,
+    group_summary: pd.DataFrame,
+) -> pd.DataFrame:
+    if member_summary.empty or annual_financials is None or annual_financials.empty:
+        return pd.DataFrame()
+
+    member_keys = (
+        matched[["group_3", "ticker_x", "db_ticker"]]
+        .drop_duplicates()
+        .rename(columns={"group_3": "group"})
+    )
+    member_keys["ticker_x"] = member_keys["ticker_x"].astype(str).str.strip().str.upper()
+    detail = member_summary.merge(member_keys, on=["group", "company", "db_ticker"], how="left") if "db_ticker" in member_summary.columns else member_summary.merge(
+        member_keys,
+        left_on=["group", "ticker"],
+        right_on=["group", "db_ticker"],
+        how="left",
+    )
+    if "ticker_x" not in detail.columns:
+        detail["ticker_x"] = detail["ticker"]
+    detail["ticker_x"] = detail["ticker_x"].fillna(detail["ticker"]).astype(str).str.strip().str.upper()
+
+    financials = selected_annual_financials(annual_financials)
+    currencies = latest_price_currency(prices)
+    detail = detail.merge(financials, on="ticker_x", how="left").merge(currencies, left_on="ticker", right_on="db_ticker", how="left", suffixes=("", "_currency"))
+    detail["fx_rate_local_per_usd"] = detail.apply(
+        lambda row: approximate_fx_local_per_usd(row.get("financial_currency"), row.get("financial_year")),
+        axis=1,
+    )
+    for col in ["revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]:
+        detail[col] = pd.to_numeric(detail[col], errors="coerce")
+        detail[f"{col}_reported"] = detail[col]
+        detail[col] = np.where(detail[col].notna() & detail["fx_rate_local_per_usd"].notna(), detail[col] / detail["fx_rate_local_per_usd"], detail[col])
+
+    def metric_stats(sub: pd.DataFrame, metric: str) -> dict[str, object]:
+        values = pd.to_numeric(sub[metric], errors="coerce").dropna()
+        values = values[values > 0]
+        prefix = "annual_revenue" if metric == "revenue_usd_m" else "annual_op_income"
+        if values.empty:
+            return {
+                f"{prefix}_coverage": 0,
+                f"{prefix}_hhi": np.nan,
+                f"{prefix}_effective_n": np.nan,
+                f"{prefix}_evenness": np.nan,
+                f"{prefix}_top1_share": np.nan,
+            }
+        shares = values / values.sum()
+        hhi = float((shares**2).sum())
+        effective_n = float(1 / hhi) if hhi > 0 else np.nan
+        coverage = int(len(values))
+        return {
+            f"{prefix}_coverage": coverage,
+            f"{prefix}_hhi": hhi,
+            f"{prefix}_effective_n": effective_n,
+            f"{prefix}_evenness": float(effective_n / coverage) if coverage else np.nan,
+            f"{prefix}_top1_share": float(shares.max()),
+        }
+
+    rows = []
+    for group, sub in detail.groupby("group"):
+        row = {"group": group, "financial_year": FINANCIAL_WEIGHT_YEAR}
+        row.update(metric_stats(sub, "revenue_usd_m"))
+        row.update(metric_stats(sub, "operating_income_usd_m"))
+        rows.append(row)
+    out = pd.DataFrame(rows)
+    if out.empty:
+        return out
+    coupling_cols = ["group", "classification", "n_assets", "avg_pair_corr", "pc1_share", "strong_pair_share"]
+    out = out.merge(group_summary[coupling_cols], on="group", how="left")
+
+    def read(row: pd.Series) -> str:
+        even = row.get("annual_revenue_evenness", np.nan)
+        corr = row.get("avg_pair_corr", np.nan)
+        if pd.isna(even) or pd.isna(corr):
+            return "insufficient annual financial coverage"
+        if even >= 0.55 and corr >= 0.50:
+            return "consistent: balanced revenue mix with strong/moderate coupling"
+        if even >= 0.55 and corr < 0.35:
+            return "counterexample: balanced revenue mix but weak coupling"
+        if even < 0.35 and corr >= 0.50:
+            return "counterexample: concentrated revenue mix but strong/moderate coupling"
+        return "mixed / inconclusive"
+
+    out["hypothesis_read"] = out.apply(read, axis=1)
+    return out.sort_values(["annual_revenue_evenness", "avg_pair_corr"], ascending=[False, False])
+
+
+def quarterly_fundamental_growth_base(
+    matched: pd.DataFrame,
+    prices: pd.DataFrame,
+    quarterly_financials: pd.DataFrame | None,
+) -> pd.DataFrame:
+    if quarterly_financials is None or quarterly_financials.empty:
+        return pd.DataFrame()
+    member_keys = (
+        matched[["group_3", "display_name", "ticker_x", "db_ticker"]]
+        .drop_duplicates()
+        .rename(columns={"group_3": "group", "display_name": "company"})
+    )
+    member_keys["ticker_x"] = member_keys["ticker_x"].astype(str).str.strip().str.upper()
+
+    fin = quarterly_financials.copy()
+    fin["ticker_x"] = fin["ticker"].astype(str).str.strip().str.upper()
+    fin["period_end_date"] = pd.to_datetime(fin["period_end_date"], errors="coerce")
+    if "fiscal_quarter" not in fin.columns:
+        fin["fiscal_quarter"] = fin["period_end_date"].dt.quarter
+    if "calendar_quarter" not in fin.columns:
+        fin["calendar_quarter"] = fin["period_end_date"].dt.to_period("Q").astype(str)
+    for col in ["revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]:
+        if col not in fin.columns:
+            fin[col] = np.nan
+        fin[col] = pd.to_numeric(fin[col], errors="coerce")
+
+    currencies = latest_price_currency(prices)
+    fin = fin.merge(member_keys, on="ticker_x", how="inner").merge(currencies, on="db_ticker", how="left")
+    fin["fx_rate_local_per_usd"] = fin.apply(
+        lambda row: approximate_fx_local_per_usd(row.get("financial_currency"), row.get("fiscal_year")),
+        axis=1,
+    )
+    for col in ["revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]:
+        fin[col] = np.where(fin[col].notna() & fin["fx_rate_local_per_usd"].notna(), fin[col] / fin["fx_rate_local_per_usd"], fin[col])
+    fin["fiscal_year"] = fin["fiscal_year"].astype(int)
+    fin["fiscal_quarter"] = fin["fiscal_quarter"].astype(int)
+    fin["period_key"] = fin["fiscal_year"].astype(int).astype(str) + "Q" + fin["fiscal_quarter"].astype(int).astype(str)
+    fin = fin.sort_values(["group", "ticker_x", "fiscal_year", "fiscal_quarter", "period_end_date"])
+    for metric in ["revenue_usd_m", "operating_income_usd_m"]:
+        fin[f"{metric}_qoq_base"] = fin.groupby(["group", "ticker_x"])[metric].shift(1)
+        fin[f"{metric}_yoy_base"] = fin.groupby(["group", "ticker_x", "fiscal_quarter"])[metric].shift(1)
+        fin[f"{metric}_qoq_growth"] = np.where(fin[f"{metric}_qoq_base"] > 0, fin[metric] / fin[f"{metric}_qoq_base"] - 1, np.nan)
+        fin[f"{metric}_yoy_growth"] = np.where(fin[f"{metric}_yoy_base"] > 0, fin[metric] / fin[f"{metric}_yoy_base"] - 1, np.nan)
+    return fin
+
+
+def section_fundamental_momentum_rows(
+    matched: pd.DataFrame,
+    prices: pd.DataFrame,
+    quarterly_financials: pd.DataFrame | None,
+    yearly_summary: pd.DataFrame,
+    group_summary: pd.DataFrame,
+) -> pd.DataFrame:
+    if yearly_summary.empty:
+        return pd.DataFrame()
+    fin = quarterly_fundamental_growth_base(matched, prices, quarterly_financials)
+    if fin.empty:
+        return pd.DataFrame()
+
+    grouped = (
+        fin.groupby(["group", "fiscal_year", "fiscal_quarter", "period_key"], as_index=False)
+        .agg(
+            revenue_usd_m=("revenue_usd_m", lambda s: s.sum(min_count=1)),
+            operating_income_usd_m=("operating_income_usd_m", lambda s: s.sum(min_count=1)),
+            company_coverage=("ticker_x", "nunique"),
+            revenue_yoy_growth=("revenue_usd_m_yoy_growth", "mean"),
+            revenue_qoq_growth=("revenue_usd_m_qoq_growth", "mean"),
+            op_income_yoy_growth=("operating_income_usd_m_yoy_growth", "mean"),
+            op_income_qoq_growth=("operating_income_usd_m_qoq_growth", "mean"),
+        )
+    )
+    rows = []
+    for row in grouped.itertuples(index=False):
+        out = row._asdict()
+        candidates = {
+            "revenue YoY": out["revenue_yoy_growth"],
+            "revenue QoQ": out["revenue_qoq_growth"],
+            "op income YoY": out["op_income_yoy_growth"],
+            "op income QoQ": out["op_income_qoq_growth"],
+        }
+        valid = {k: v for k, v in candidates.items() if pd.notna(v) and -1 <= float(v) <= 5}
+        if valid:
+            best_metric, best_growth = max(valid.items(), key=lambda item: item[1])
+        else:
+            best_metric, best_growth = "", np.nan
+        out["best_growth_metric"] = best_metric
+        out["best_growth_rate"] = best_growth
+        rows.append(out)
+    out_df = pd.DataFrame(rows)
+    coupling_cols = ["group", "avg_pair_corr", "pc1_share", "strong_pair_share"]
+    yearly = yearly_summary.rename(columns={"year": "fiscal_year"})
+    out_df = out_df.merge(yearly[coupling_cols + ["fiscal_year"]], on=["group", "fiscal_year"], how="inner")
+    out_df = out_df.merge(group_summary[["group", "classification", "n_assets"]], on="group", how="left")
+
+    def read(row: pd.Series) -> str:
+        corr = row.get("avg_pair_corr", np.nan)
+        growth_rate = row.get("best_growth_rate", np.nan)
+        if pd.isna(corr) or pd.isna(growth_rate):
+            return "insufficient momentum coverage"
+        if corr >= 0.50 and growth_rate >= 0.15:
+            return "strong coupling with positive fundamental momentum"
+        if corr >= 0.50 and growth_rate < 0:
+            return "coupling strong despite weak fundamentals"
+        if corr < 0.35 and growth_rate >= 0.15:
+            return "fundamental momentum present but stock coupling weak"
+        return "mixed / modest signal"
+
+    out_df["momentum_read"] = out_df.apply(read, axis=1)
+    return out_df.sort_values(["fiscal_year", "fiscal_quarter", "avg_pair_corr"], ascending=[True, True, False])
+
+
+def company_yearly_growth_rows(
+    matched: pd.DataFrame,
+    prices: pd.DataFrame,
+    annual_financials: pd.DataFrame | None,
+    yearly_summary: pd.DataFrame,
+) -> pd.DataFrame:
+    if yearly_summary.empty or annual_financials is None or annual_financials.empty:
+        return pd.DataFrame()
+
+    member_keys = (
+        matched[["group_3", "display_name", "ticker_x", "db_ticker"]]
+        .drop_duplicates()
+        .rename(columns={"group_3": "group", "display_name": "company"})
+    )
+    member_keys["ticker_x"] = member_keys["ticker_x"].astype(str).str.strip().str.upper()
+
+    fin = annual_financials.copy()
+    fin["ticker_x"] = fin["ticker"].astype(str).str.strip().str.upper()
+    fin["period_end_date"] = pd.to_datetime(fin["period_end_date"], errors="coerce")
+    for col in ["revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]:
+        if col not in fin.columns:
+            fin[col] = np.nan
+        fin[col] = pd.to_numeric(fin[col], errors="coerce")
+    fin = fin.dropna(subset=["ticker_x", "fiscal_year"])
+    fin["fiscal_year"] = fin["fiscal_year"].astype(int)
+    fin = fin.sort_values(["ticker_x", "fiscal_year", "period_end_date"]).groupby(["ticker_x", "fiscal_year"], as_index=False).tail(1)
+
+    currencies = latest_price_currency(prices)
+    fin = fin.merge(member_keys, on="ticker_x", how="inner").merge(currencies, on="db_ticker", how="left")
+    fin["fx_rate_local_per_usd"] = fin.apply(
+        lambda row: approximate_fx_local_per_usd(row.get("financial_currency"), row.get("fiscal_year")),
+        axis=1,
+    )
+    for col in ["revenue_usd_m", "operating_income_usd_m", "net_income_usd_m"]:
+        fin[col] = np.where(fin[col].notna() & fin["fx_rate_local_per_usd"].notna(), fin[col] / fin["fx_rate_local_per_usd"], fin[col])
+
+    fin = fin.sort_values(["group", "ticker_x", "fiscal_year"])
+    for metric in ["revenue_usd_m", "operating_income_usd_m"]:
+        base_col = f"{metric}_prior_year"
+        growth_col = f"{metric}_annual_growth"
+        fin[base_col] = fin.groupby(["group", "ticker_x"])[metric].shift(1)
+        fin[growth_col] = np.where(fin[base_col] > 0, fin[metric] / fin[base_col] - 1, np.nan)
+
+    grouped = (
+        fin.groupby(["group", "company", "ticker_x", "db_ticker", "fiscal_year"], as_index=False)
+        .agg(
+            revenue_annual_growth=("revenue_usd_m_annual_growth", "mean"),
+            op_income_annual_growth=("operating_income_usd_m_annual_growth", "mean"),
+            annual_observations=("period_end_date", "count"),
+        )
+    )
+    for metric_col, prefix in [("revenue_annual_growth", "revenue"), ("op_income_annual_growth", "op_income")]:
+        grouped[f"{prefix}_growth_bucket_floor"] = np.floor(grouped[metric_col] / 0.10) * 0.10
+        grouped.loc[~grouped[metric_col].between(-1, 5), f"{prefix}_growth_bucket_floor"] = np.nan
+        grouped[f"{prefix}_growth_bucket_label"] = grouped[f"{prefix}_growth_bucket_floor"].map(
+            lambda x: "" if pd.isna(x) else f"{x * 100:.0f}%~{(x + 0.10) * 100:.0f}%"
+        )
+    rows = []
+    for row in grouped.itertuples(index=False):
+        out = row._asdict()
+        out["company_best_growth_metric"] = "annual revenue YoY" if pd.notna(out["revenue_annual_growth"]) else "annual op income YoY"
+        out["company_avg_growth_rate"] = out["revenue_annual_growth"] if pd.notna(out["revenue_annual_growth"]) else out["op_income_annual_growth"]
+        rows.append(out)
+    out_df = pd.DataFrame(rows)
+    yearly = yearly_summary.rename(columns={"year": "fiscal_year"})
+    coupling_cols = ["group", "fiscal_year", "avg_pair_corr", "pc1_share", "strong_pair_share"]
+    out_df = out_df.merge(yearly[coupling_cols], on=["group", "fiscal_year"], how="inner")
+    return out_df.sort_values(["group", "fiscal_year", "company"])
 
 
 def classify(avg_corr: float, pc1_share: float, strong_pair_share: float) -> str:
@@ -713,8 +1121,9 @@ def interpretation(group: str, result: GroupResult) -> str:
 def analyze_dataset(
     matched: pd.DataFrame,
     prices: pd.DataFrame,
+    financials_source: pd.DataFrame | None = None,
     annual_financials: pd.DataFrame | None = None,
-) -> tuple[list[GroupResult], pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+) -> tuple[list[GroupResult], pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     matched = matched.copy()
     prices = prices.copy()
     prices["price_date"] = pd.to_datetime(prices["price_date"])
@@ -822,13 +1231,16 @@ def analyze_dataset(
         frequency_summary["corr_vs_monthly_delta"] = frequency_summary["avg_pair_corr"] - frequency_summary["monthly_avg_pair_corr"]
         frequency_summary["monthly_vs_daily_delta"] = frequency_summary["monthly_avg_pair_corr"] - frequency_summary["daily_avg_pair_corr"]
     group_summary = pd.DataFrame([r.__dict__ for r in group_results])
-    role_deepdive, member_financial_detail = role_financial_deepdive_rows(member_summary, matched, prices, annual_financials)
-    return group_results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage, role_deepdive, member_financial_detail
+    role_deepdive, member_financial_detail = role_financial_deepdive_rows(member_summary, matched, prices, financials_source)
+    annual_balance = annual_financial_balance_rows(member_summary, matched, prices, annual_financials, group_summary)
+    fundamental_momentum = section_fundamental_momentum_rows(matched, prices, financials_source, yearly_summary, group_summary)
+    company_yearly_growth = company_yearly_growth_rows(matched, prices, annual_financials, yearly_summary)
+    return group_results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage, role_deepdive, member_financial_detail, annual_balance, fundamental_momentum, company_yearly_growth
 
 
-def analyze() -> tuple[list[GroupResult], pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    matched, _companies, prices, annual_financials = load_data()
-    return analyze_dataset(matched, prices, annual_financials=annual_financials)
+def analyze() -> tuple[list[GroupResult], pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    matched, _companies, prices, financials_source, annual_financials = load_data()
+    return analyze_dataset(matched, prices, financials_source=financials_source, annual_financials=annual_financials)
 
 
 def table_html(df: pd.DataFrame, columns: list[str] | None = None, max_rows: int | None = None) -> str:
@@ -840,7 +1252,7 @@ def table_html(df: pd.DataFrame, columns: list[str] | None = None, max_rows: int
     rows = []
     for _, row in df.iterrows():
         rows.append("<tr>" + "".join(f"<td>{esc(row[c])}</td>" for c in df.columns) + "</tr>")
-    return f"<table><thead><tr>{header}</tr></thead><tbody>{''.join(rows)}</tbody></table>"
+    return f"<div class=\"table-scroll\"><table><thead><tr>{header}</tr></thead><tbody>{''.join(rows)}</tbody></table></div>"
 
 
 def bar_svg(results: list[GroupResult], metric: str, title: str) -> str:
@@ -890,7 +1302,7 @@ def yearly_heatmap_html(yearly_summary: pd.DataFrame) -> str:
                     f'style="background:{bg};color:{fg};font-weight:650">{num(float(val), 2)}</td>'
                 )
         rows.append("<tr>" + "".join(cells) + "</tr>")
-    return f"<table><thead><tr>{header}</tr></thead><tbody>{''.join(rows)}</tbody></table>"
+    return f"<div class=\"table-scroll table-scroll-compact\"><table><thead><tr>{header}</tr></thead><tbody>{''.join(rows)}</tbody></table></div>"
 
 
 def yearly_scatter_payload(yearly_scatter: pd.DataFrame) -> str:
@@ -943,7 +1355,7 @@ def frequency_pivot_html(frequency_summary: pd.DataFrame) -> str:
         delta = row.get("monthly", np.nan) - row.get("daily", np.nan)
         cells.append(f"<td>{num(delta, 2)}</td>")
         rows.append("<tr>" + "".join(cells) + "</tr>")
-    return f"<table><thead><tr>{header}</tr></thead><tbody>{''.join(rows)}</tbody></table>"
+    return f"<div class=\"table-scroll table-scroll-compact\"><table><thead><tr>{header}</tr></thead><tbody>{''.join(rows)}</tbody></table></div>"
 
 
 def frequency_story_html(frequency_summary: pd.DataFrame) -> str:
@@ -1089,9 +1501,13 @@ def company_financial_weight_svg(member_financial_detail: pd.DataFrame, title: s
         return "<p>No comparable company financial-weight data available.</p>"
 
     metrics = [
-        ("revenue_usd_m_share_of_group", "Revenue"),
-        ("operating_income_usd_m_share_of_group", "Op income"),
+        ("revenue_usd_m_share_of_group", "매출"),
+        ("operating_income_usd_m_share_of_group", "영업이익"),
     ]
+    metric_cols = [col for col, _label in metrics]
+    data = data[data[metric_cols].notna().any(axis=1)]
+    if data.empty:
+        return f"<p>No {FINANCIAL_WEIGHT_YEAR} Q{FINANCIAL_WEIGHT_QUARTER} comparable company financial-weight data available.</p>"
     groups = [group] if group is not None else sorted(data["group"].dropna().unique())
     palette = [
         "#2563eb",
@@ -1116,7 +1532,7 @@ def company_financial_weight_svg(member_financial_detail: pd.DataFrame, title: s
     width = 1160
     row_h = 58
     height = max(210, 72 + row_h * len(groups))
-    left, right, top = 190, 80, 48
+    left, right, top = 255, 80, 48
     chart_w = width - left - right
     parts = [
         f'<svg viewBox="0 0 {width} {height}" role="img" aria-label="{esc(title)}">',
@@ -1127,27 +1543,41 @@ def company_financial_weight_svg(member_financial_detail: pd.DataFrame, title: s
         group_rows = data[data["group"] == group_name].copy()
         group_rows = group_rows.sort_values("revenue_usd_m_share_of_group", ascending=False, na_position="last")
         y0 = top + i * row_h
-        parts.append(f'<text x="{left - 12}" y="{y0 + 23}" text-anchor="end" class="bar-label">{esc(group_name)}</text>')
+        missing_fx = bool(group_rows["missing_fx_rate"].fillna(False).any()) if "missing_fx_rate" in group_rows else False
+        mixed_currency = bool(group_rows["mixed_financial_currency"].fillna(False).any()) if "mixed_financial_currency" in group_rows else False
+        currencies = ", ".join(sorted(group_rows["financial_currency"].dropna().astype(str).unique())) if "financial_currency" in group_rows else ""
+        if missing_fx:
+            parts.append(
+                f'<rect x="{left}" y="{y0}" width="{chart_w}" height="42" fill="#fff7ed" stroke="#fed7aa"/>'
+                f'<text x="{left + 12}" y="{y0 + 17}" class="bar-label">Mixed reporting currencies: {esc(currencies)}.</text>'
+                f'<text x="{left + 12}" y="{y0 + 36}" class="bar-label">Revenue/op-income shares are hidden because one or more FX rates are unavailable.</text>'
+            )
+            parts.append(f'<line x1="{left}" x2="{left + chart_w}" y1="{y0 + 50}" y2="{y0 + 50}" stroke="#e2e8f0"/>')
+            continue
+        if mixed_currency:
+            parts.append(f'<text x="{left}" y="{y0 - 2}" class="bar-label">Approx FX-normalized: {esc(currencies)}</text>')
         color_map = {ticker: palette[j % len(palette)] for j, ticker in enumerate(group_rows["ticker"].astype(str).tolist())}
         for metric_i, (metric_col, metric_label) in enumerate(metrics):
             y = y0 + metric_i * 24
-            parts.append(f'<text x="{left - 124}" y="{y + 15}" class="bar-label">{esc(metric_label)}</text>')
+            row_label = f"{group_name} · {metric_label}"
+            parts.append(f'<text x="{left - 12}" y="{y + 14}" text-anchor="end" class="bar-label financial-row-label">{esc(row_label)}</text>')
             x = left
             for row in group_rows.itertuples(index=False):
                 val = getattr(row, metric_col, np.nan)
-                if pd.isna(val):
+                if pd.isna(val) or float(val) < 0 or float(val) > 1:
                     continue
-                display_val = max(0, min(1, float(val)))
-                w = chart_w * display_val
+                w = chart_w * float(val)
                 if w <= 0:
                     continue
                 ticker = str(getattr(row, "ticker"))
                 company = getattr(row, "company")
                 corr = getattr(row, "mean_corr_to_group", np.nan)
                 max_corr = getattr(row, "max_corr_to_peer", np.nan)
+                currency = getattr(row, "financial_currency", "")
+                fx_rate = getattr(row, "fx_rate_local_per_usd", np.nan)
                 parts.append(
                     f'<rect x="{x:.1f}" y="{y}" width="{w:.1f}" height="18" fill="{color_map[ticker]}" opacity="0.86">'
-                    f'<title>{esc(group_name)} · {esc(metric_label)} · {esc(company)} ({esc(ticker)}) · share {pct(float(val))} · mean corr {num(corr, 2)} · max peer corr {num(max_corr, 2)}</title></rect>'
+                    f'<title>{esc(group_name)} · {esc(metric_label)} · {esc(company)} ({esc(ticker)}) · share {pct(float(val))} · currency {esc(currency)} · FX local/USD {num(fx_rate, 2)} · mean corr {num(corr, 2)} · max peer corr {num(max_corr, 2)}</title></rect>'
                 )
                 if w > 44:
                     label = ticker if len(ticker) <= 8 else ticker[:8]
@@ -1155,6 +1585,237 @@ def company_financial_weight_svg(member_financial_detail: pd.DataFrame, title: s
                 x += w
             parts.append(f'<rect x="{left}" y="{y}" width="{chart_w}" height="18" fill="none" stroke="#d9e0ea"/>')
         parts.append(f'<line x1="{left}" x2="{left + chart_w}" y1="{y0 + 50}" y2="{y0 + 50}" stroke="#e2e8f0"/>')
+    parts.append("</svg>")
+    return "".join(parts)
+
+
+def section_fundamental_momentum_svg(momentum: pd.DataFrame, title: str, group: str | None = None, metric_family: str = "revenue") -> str:
+    if momentum.empty:
+        return "<p>No section fundamental momentum data available.</p>"
+    data = momentum.copy()
+    if group is not None:
+        data = data[data["group"] == group]
+    metric_config = {
+        "revenue": {
+            "yoy": "revenue_yoy_growth",
+            "qoq": "revenue_qoq_growth",
+            "label": "revenue",
+            "colors": {"YoY": "#2563eb", "QoQ": "#0891b2"},
+        },
+        "op_income": {
+            "yoy": "op_income_yoy_growth",
+            "qoq": "op_income_qoq_growth",
+            "label": "operating income",
+            "colors": {"YoY": "#dc2626", "QoQ": "#ea580c"},
+        },
+    }
+    cfg = metric_config.get(metric_family, metric_config["revenue"])
+    required = {"group", "fiscal_year", "fiscal_quarter", "avg_pair_corr", cfg["yoy"], cfg["qoq"]}
+    if data.empty or not required <= set(data.columns):
+        return "<p>No comparable section fundamental momentum data available.</p>"
+    data["plot_growth_rate"] = data.apply(
+        lambda row: max(
+            [v for v in [row.get(cfg["yoy"], np.nan), row.get(cfg["qoq"], np.nan)] if pd.notna(v) and -1 <= float(v) <= 5],
+            default=np.nan,
+        ),
+        axis=1,
+    )
+    data["plot_growth_metric"] = np.where(
+        pd.to_numeric(data[cfg["yoy"]], errors="coerce") == data["plot_growth_rate"],
+        "YoY",
+        "QoQ",
+    )
+    data = data.dropna(subset=["avg_pair_corr", "plot_growth_rate"]).copy()
+    if data.empty:
+        return "<p>No section-quarter growth observations available for this view.</p>"
+    data = data.sort_values(["fiscal_year", "fiscal_quarter", "avg_pair_corr"])
+    width = 1180
+    height = 520
+    margin = {"left": 82, "right": 220, "top": 58, "bottom": 72}
+    inner_w = width - margin["left"] - margin["right"]
+    inner_h = height - margin["top"] - margin["bottom"]
+    x_vals = pd.to_numeric(data["avg_pair_corr"], errors="coerce")
+    growth_vals = pd.to_numeric(data["plot_growth_rate"], errors="coerce")
+    x_min = min(0.0, float(x_vals.min()))
+    x_max = max(0.75, float(x_vals.max()))
+    y_min = min(-0.25, float(growth_vals.min()))
+    y_max = max(0.75, float(growth_vals.max()))
+    y_pad = max(0.08, (y_max - y_min) * 0.12)
+    y_min -= y_pad
+    y_max += y_pad
+    if y_min == y_max:
+        y_min, y_max = -0.25, 0.75
+
+    def sx(x: float) -> float:
+        return margin["left"] + ((x - x_min) / (x_max - x_min)) * inner_w
+
+    def sy(y: float) -> float:
+        return margin["top"] + inner_h - ((y - y_min) / (y_max - y_min)) * inner_h
+
+    colors = cfg["colors"]
+    parts = [
+        f'<svg viewBox="0 0 {width} {height}" role="img" aria-label="{esc(title)}">',
+        f'<text x="{margin["left"]}" y="24" class="chart-title">{esc(title)}</text>',
+        f'<text x="{margin["left"]}" y="42" class="bar-label">Each point is one section-quarter. X is that year average pair correlation; Y is average quarterly {esc(cfg["label"])} growth.</text>',
+        f'<line x1="{margin["left"]}" y1="{margin["top"] + inner_h}" x2="{margin["left"] + inner_w}" y2="{margin["top"] + inner_h}" class="scatter-axis"/>',
+        f'<line x1="{margin["left"]}" y1="{margin["top"]}" x2="{margin["left"]}" y2="{margin["top"] + inner_h}" class="scatter-axis"/>',
+    ]
+    x_ticks = np.linspace(x_min, x_max, 5)
+    y_ticks = np.linspace(y_min, y_max, 5)
+    for tick in x_ticks:
+        x = sx(float(tick))
+        parts.append(f'<line x1="{x:.1f}" y1="{margin["top"]}" x2="{x:.1f}" y2="{margin["top"] + inner_h}" class="scatter-grid"/>')
+        parts.append(f'<text x="{x:.1f}" y="{height - 42}" text-anchor="middle" class="bar-label">{num(float(tick), 2)}</text>')
+    for tick in y_ticks:
+        y = sy(float(tick))
+        parts.append(f'<line x1="{margin["left"]}" y1="{y:.1f}" x2="{margin["left"] + inner_w}" y2="{y:.1f}" class="scatter-grid"/>')
+        parts.append(f'<text x="{margin["left"] - 10}" y="{y + 4:.1f}" text-anchor="end" class="bar-label">{pct(float(tick))}</text>')
+    parts.append(f'<text x="{margin["left"] + inner_w / 2:.1f}" y="{height - 14}" text-anchor="middle" class="bar-label">year average pair correlation</text>')
+    parts.append(f'<text transform="translate(20 {margin["top"] + inner_h / 2:.1f}) rotate(-90)" text-anchor="middle" class="bar-label">quarterly average growth</text>')
+
+    for row in data.itertuples(index=False):
+        group_name = getattr(row, "group")
+        corr = float(getattr(row, "avg_pair_corr"))
+        growth = float(getattr(row, "plot_growth_rate"))
+        metric = str(getattr(row, "plot_growth_metric", ""))
+        year = int(getattr(row, "fiscal_year"))
+        quarter = int(getattr(row, "fiscal_quarter"))
+        color = colors.get(metric, "#64748b")
+        x = sx(corr)
+        y = sy(growth)
+        label = group_name if group is None and corr >= 0.55 else ""
+        parts.append(
+            f'<circle cx="{x:.1f}" cy="{y:.1f}" r="5.8" fill="{color}" opacity="0.82">'
+            f'<title>{esc(group_name)} · {year}Q{quarter} · corr {num(corr, 2)} · {esc(cfg["label"])} {esc(metric)} {pct(growth)}</title></circle>'
+        )
+        if label:
+            parts.append(f'<text x="{x + 8:.1f}" y="{y - 7:.1f}" class="bar-label">{esc(label)}</text>')
+    legend_y = 78
+    legend_x = width - margin["right"] + 28
+    for metric, color in colors.items():
+        parts.append(f'<circle cx="{legend_x}" cy="{legend_y - 4}" r="5" fill="{color}"/>')
+        parts.append(f'<text x="{legend_x + 10}" y="{legend_y}" class="bar-label">{esc(metric)}</text>')
+        legend_y += 22
+    if group is not None:
+        latest = data.sort_values(["fiscal_year", "fiscal_quarter"]).tail(1).iloc[0]
+        parts.append(f'<text x="{legend_x}" y="{legend_y + 16}" class="bar-label">latest: {int(latest.fiscal_year)}Q{int(latest.fiscal_quarter)}</text>')
+        parts.append(f'<text x="{legend_x}" y="{legend_y + 34}" class="bar-label">corr {num(latest.avg_pair_corr, 2)} · growth {pct(latest.plot_growth_rate)}</text>')
+        parts.append(f'<text x="{legend_x}" y="{legend_y + 52}" class="bar-label">{esc(cfg["label"])} {esc(latest.plot_growth_metric)}</text>')
+    parts.append("</svg>")
+    return "".join(parts)
+
+
+def company_yearly_growth_scatter_svg(company_growth: pd.DataFrame, title: str, group: str | None = None, metric_family: str = "revenue") -> str:
+    if company_growth.empty:
+        return "<p>No company yearly growth data available.</p>"
+    data = company_growth.copy()
+    if group is not None:
+        data = data[data["group"] == group]
+    metric_config = {
+        "revenue": {
+            "growth": "revenue_annual_growth",
+            "label": "revenue",
+        },
+        "op_income": {
+            "growth": "op_income_annual_growth",
+            "label": "operating income",
+        },
+    }
+    cfg = metric_config.get(metric_family, metric_config["revenue"])
+    required = {"company", "fiscal_year", "avg_pair_corr", cfg["growth"]}
+    if data.empty or not required <= set(data.columns):
+        return "<p>No comparable company yearly growth data available.</p>"
+    data["plot_growth_rate"] = pd.to_numeric(data[cfg["growth"]], errors="coerce")
+    data.loc[~data["plot_growth_rate"].between(-1, 5), "plot_growth_rate"] = np.nan
+    data["plot_growth_metric"] = "annual YoY"
+    data = data.dropna(subset=["avg_pair_corr", "plot_growth_rate"]).copy()
+    if data.empty:
+        return "<p>No company-year growth observations available for this view.</p>"
+    data["growth_bucket_floor"] = np.floor(data["plot_growth_rate"] / 0.10) * 0.10
+    data["growth_bucket_mid"] = data["growth_bucket_floor"] + 0.05
+    data["growth_bucket_label"] = data["growth_bucket_floor"].map(lambda x: f"{x * 100:.0f}%~{(x + 0.10) * 100:.0f}%")
+    width, height = 1180, 520
+    margin = {"left": 82, "right": 190, "top": 58, "bottom": 72}
+    inner_w = width - margin["left"] - margin["right"]
+    inner_h = height - margin["top"] - margin["bottom"]
+    y_vals = pd.to_numeric(data["growth_bucket_mid"], errors="coerce")
+    y_min, y_max = min(-0.25, float(y_vals.min())), max(0.75, float(y_vals.max()))
+    y_pad = max(0.08, (y_max - y_min) * 0.12)
+    y_min -= y_pad
+    y_max += y_pad
+
+    def sy(y: float) -> float:
+        return margin["top"] + inner_h - ((y - y_min) / (y_max - y_min)) * inner_h
+
+    palette = ["#2563eb", "#dc2626", "#059669", "#7c3aed", "#ea580c", "#0891b2", "#be123c", "#4d7c0f", "#9333ea", "#0f766e", "#b45309", "#64748b"]
+    companies = list(dict.fromkeys(data["company"].astype(str).tolist()))
+    color_map = {company: palette[i % len(palette)] for i, company in enumerate(companies)}
+    years = sorted(data["fiscal_year"].dropna().astype(int).unique().tolist())
+    if not years:
+        return "<p>No company-year growth observations available for this view.</p>"
+    year_step = inner_w / max(1, len(years))
+    bar_w = min(54, year_step * 0.58)
+    year_x = {year: margin["left"] + year_step * i + year_step / 2 for i, year in enumerate(years)}
+    corr_by_year = data.groupby("fiscal_year")["avg_pair_corr"].mean()
+    max_corr = max(0.75, float(corr_by_year.max()))
+
+    parts = [
+        f'<svg viewBox="0 0 {width} {height}" role="img" aria-label="{esc(title)}">',
+        f'<text x="{margin["left"]}" y="24" class="chart-title">{esc(title)}</text>',
+        f'<text x="{margin["left"]}" y="42" class="bar-label">Bars are yearly average pair correlation. Dots are company annual {esc(cfg["label"])} YoY growth bucketed by 10%.</text>',
+    ]
+    for tick in np.linspace(y_min, y_max, 5):
+        y = sy(float(tick))
+        parts.append(f'<line x1="{margin["left"]}" y1="{y:.1f}" x2="{margin["left"] + inner_w}" y2="{y:.1f}" class="scatter-grid"/>')
+        parts.append(f'<text x="{margin["left"] - 10}" y="{y + 4:.1f}" text-anchor="end" class="bar-label">{pct(float(tick))}</text>')
+    parts.append(f'<line x1="{margin["left"]}" y1="{margin["top"] + inner_h}" x2="{margin["left"] + inner_w}" y2="{margin["top"] + inner_h}" class="scatter-axis"/>')
+    parts.append(f'<line x1="{margin["left"]}" y1="{margin["top"]}" x2="{margin["left"]}" y2="{margin["top"] + inner_h}" class="scatter-axis"/>')
+    parts.append(f'<line x1="{margin["left"] + inner_w}" y1="{margin["top"]}" x2="{margin["left"] + inner_w}" y2="{margin["top"] + inner_h}" class="scatter-axis"/>')
+    for year in years:
+        x = year_x[year]
+        corr = float(corr_by_year.get(year, np.nan))
+        bar_h = inner_h * max(0, corr) / max_corr if pd.notna(corr) else 0
+        parts.append(
+            f'<rect x="{x - bar_w / 2:.1f}" y="{margin["top"] + inner_h - bar_h:.1f}" width="{bar_w:.1f}" height="{bar_h:.1f}" fill="#cbd5e1" opacity="0.78" rx="3">'
+            f'<title>{year} avg pair corr {num(corr, 2)}</title></rect>'
+        )
+        parts.append(f'<text x="{x:.1f}" y="{height - 42}" text-anchor="middle" class="bar-label">{year}</text>')
+        parts.append(f'<text x="{x:.1f}" y="{margin["top"] + inner_h - bar_h - 6:.1f}" text-anchor="middle" class="bar-label">{num(corr, 2)}</text>')
+
+    point_r = 4.6
+    point_x: dict[int, float] = {}
+    for (_year, _bucket), sub in data.groupby(["fiscal_year", "growth_bucket_label"], dropna=False):
+        center = year_x[int(_year)]
+        slots = len(sub)
+        usable_w = max(point_r * 2, bar_w - point_r * 2)
+        if slots == 1:
+            offsets = [0.0]
+        else:
+            offsets = np.linspace(-usable_w / 2, usable_w / 2, slots)
+        for idx, offset in zip(sub.index.tolist(), offsets):
+            point_x[idx] = center + float(offset)
+
+    for row in data.reset_index().itertuples(index=False):
+        idx = int(getattr(row, "index"))
+        company = str(getattr(row, "company"))
+        year = int(getattr(row, "fiscal_year"))
+        x = point_x.get(idx, year_x.get(year, margin["left"]))
+        y = sy(float(getattr(row, "growth_bucket_mid")))
+        metric = str(getattr(row, "plot_growth_metric", ""))
+        bucket_label = str(getattr(row, "growth_bucket_label", ""))
+        parts.append(
+            f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{point_r:.1f}" fill="{color_map[company]}" opacity="0.78">'
+            f'<title>{esc(company)} · {year} · corr {num(float(getattr(row, "avg_pair_corr")), 2)} · {esc(cfg["label"])} {esc(metric)} {pct(float(getattr(row, "plot_growth_rate")))} · bucket {esc(bucket_label)}</title></circle>'
+        )
+    parts.append(f'<text x="{margin["left"] + inner_w / 2:.1f}" y="{height - 14}" text-anchor="middle" class="bar-label">fiscal year</text>')
+    parts.append(f'<text transform="translate(20 {margin["top"] + inner_h / 2:.1f}) rotate(-90)" text-anchor="middle" class="bar-label">company annual {esc(cfg["label"])} YoY growth bucket</text>')
+    parts.append(f'<text transform="translate({width - 18} {margin["top"] + inner_h / 2:.1f}) rotate(90)" text-anchor="middle" class="bar-label">avg pair corr bar</text>')
+    legend_x = width - margin["right"] + 18
+    legend_y = 78
+    for company in companies[:14]:
+        parts.append(f'<circle cx="{legend_x}" cy="{legend_y - 4}" r="5" fill="{color_map[company]}"/>')
+        parts.append(f'<text x="{legend_x + 10}" y="{legend_y}" class="bar-label">{esc(company[:24])}</text>')
+        legend_y += 20
     parts.append("</svg>")
     return "".join(parts)
 
@@ -1379,6 +2040,9 @@ def render_report(
     coverage: pd.DataFrame,
     role_deepdive: pd.DataFrame,
     member_financial_detail: pd.DataFrame,
+    annual_balance: pd.DataFrame,
+    fundamental_momentum: pd.DataFrame,
+    company_yearly_growth: pd.DataFrame,
     analysis_start_date: str = ANALYSIS_START_DATE,
 ) -> str:
     bottleneck_summary = bottleneck_interpretation_rows(group_summary, yearly_summary)
@@ -1457,6 +2121,93 @@ def render_report(
             if col in member_financial_display:
                 member_financial_display[col] = member_financial_display[col].map(pct)
 
+    annual_balance_display = annual_balance.copy()
+    annual_balance_story = "<p>No annual revenue/profit balance analysis available.</p>"
+    if not annual_balance_display.empty:
+        corr_revenue = annual_balance["annual_revenue_evenness"].corr(annual_balance["avg_pair_corr"]) if annual_balance["annual_revenue_evenness"].notna().sum() >= 3 else np.nan
+        corr_profit = annual_balance["annual_op_income_evenness"].corr(annual_balance["avg_pair_corr"]) if annual_balance["annual_op_income_evenness"].notna().sum() >= 3 else np.nan
+        consistent = int(annual_balance["hypothesis_read"].astype(str).str.startswith("consistent").sum())
+        counter = int(annual_balance["hypothesis_read"].astype(str).str.startswith("counterexample").sum())
+        annual_balance_story = (
+            f"<p>가정 체크: section 내 연간 매출 비중이 더 고르게 분산될수록 avg pair corr가 높아지는지 봤다. "
+            f"현재 표본에서 revenue evenness와 avg pair corr의 단순 상관은 <strong>{num(corr_revenue, 2)}</strong>, "
+            f"operating-income evenness와 avg pair corr의 단순 상관은 <strong>{num(corr_profit, 2)}</strong>이다. "
+            f"consistent case {consistent}개, counterexample {counter}개로, 인과라기보다 추가 확인용 screening signal로 읽는 것이 맞다.</p>"
+        )
+        for col in [
+            "annual_revenue_hhi",
+            "annual_revenue_effective_n",
+            "annual_revenue_evenness",
+            "annual_revenue_top1_share",
+            "annual_op_income_hhi",
+            "annual_op_income_effective_n",
+            "annual_op_income_evenness",
+            "annual_op_income_top1_share",
+            "avg_pair_corr",
+            "pc1_share",
+            "strong_pair_share",
+        ]:
+            if col in annual_balance_display:
+                annual_balance_display[col] = annual_balance_display[col].map(lambda x: num(x, 2))
+
+    momentum_display = fundamental_momentum.copy()
+    momentum_story = "<p>No section fundamental momentum data available.</p>"
+    if not momentum_display.empty:
+        revenue_plot_growth = fundamental_momentum[["revenue_yoy_growth", "revenue_qoq_growth"]].apply(
+            lambda row: max([v for v in row if pd.notna(v) and -1 <= float(v) <= 5], default=np.nan),
+            axis=1,
+        )
+        op_plot_growth = fundamental_momentum[["op_income_yoy_growth", "op_income_qoq_growth"]].apply(
+            lambda row: max([v for v in row if pd.notna(v) and -1 <= float(v) <= 5], default=np.nan),
+            axis=1,
+        )
+        corr_revenue_growth = revenue_plot_growth.corr(fundamental_momentum["avg_pair_corr"]) if revenue_plot_growth.notna().sum() >= 3 else np.nan
+        corr_op_growth = op_plot_growth.corr(fundamental_momentum["avg_pair_corr"]) if op_plot_growth.notna().sum() >= 3 else np.nan
+        top = fundamental_momentum.sort_values("avg_pair_corr", ascending=False).head(5)
+        top_phrase = "; ".join(
+            f"{row.group} {int(row.fiscal_year)}Q{int(row.fiscal_quarter)} corr {row.avg_pair_corr:.2f}, {row.best_growth_metric} {row.best_growth_rate * 100:.1f}%"
+            for row in top.itertuples()
+            if pd.notna(row.best_growth_rate)
+        )
+        momentum_story = (
+            f"<p>각 분기마다 section 내 기업별 revenue/op-income YoY/QoQ 성장률의 평균을 계산하고, 해당 분기가 속한 연도의 avg pair corr와 매칭했다. "
+            f"그래프는 revenue와 operating income을 분리했고, 각 그래프 안에서는 안정적인 범위(-100%~+500%) 안의 YoY/QoQ 중 큰 값을 사용한다. "
+            f"revenue growth와 같은 연도 avg pair corr의 단순 상관은 <strong>{num(corr_revenue_growth, 2)}</strong>, "
+            f"operating-income growth와의 단순 상관은 <strong>{num(corr_op_growth, 2)}</strong>이다. "
+            f"상위 coupling 관측치: {esc(top_phrase)}.</p>"
+        )
+        for col in [
+            "revenue_usd_m",
+            "operating_income_usd_m",
+            "revenue_yoy_growth",
+            "revenue_qoq_growth",
+            "op_income_yoy_growth",
+            "op_income_qoq_growth",
+            "best_growth_rate",
+            "avg_pair_corr",
+            "pc1_share",
+            "strong_pair_share",
+        ]:
+            if col in momentum_display:
+                if col.endswith("_growth") or col in {"best_growth_rate", "strong_pair_share"}:
+                    momentum_display[col] = momentum_display[col].map(pct)
+                else:
+                    momentum_display[col] = momentum_display[col].map(lambda x: num(x, 2))
+
+    company_growth_display = company_yearly_growth.copy()
+    if not company_growth_display.empty:
+        for col in [
+            "revenue_annual_growth",
+            "op_income_annual_growth",
+            "company_avg_growth_rate",
+            "strong_pair_share",
+        ]:
+            if col in company_growth_display:
+                company_growth_display[col] = company_growth_display[col].map(pct)
+        for col in ["avg_pair_corr", "pc1_share"]:
+            if col in company_growth_display:
+                company_growth_display[col] = company_growth_display[col].map(lambda x: num(x, 2))
+
     high = [r for r in results if r.classification == "high coupling"]
     moderate = [r for r in results if r.classification == "moderate coupling"]
     weak = [r for r in results if r.classification == "weak / fragmented"]
@@ -1483,9 +2234,11 @@ def render_report(
         </div>
         <p class="small">Coverage: {esc(r.start_date)} to {esc(r.end_date)} · latest 12M avg pair corr {num(r.latest_rolling_corr, 2)} · rolling range {num(r.rolling_min, 2)} to {num(r.rolling_max, 2)}</p>
         <p class="small">Companies: {esc(', '.join(r.companies))}</p>
-        <h4>Company revenue / op income weights</h4>
-        <div class="chart">{company_financial_weight_svg(member_financial_detail, f"{r.group} company revenue / op income share", group=r.group)}</div>
-        {table_html(company_weight_detail, ["company", "ticker", "mean_corr_to_group", "revenue_usd_m_share_of_group", "operating_income_usd_m_share_of_group", "net_income_usd_m_share_of_group"], max_rows=24) if not company_weight_detail.empty else "<p class='small'>No company financial weights available.</p>"}
+        <h4>Company yearly revenue growth vs yearly coupling</h4>
+        <div class="chart">{company_yearly_growth_scatter_svg(company_yearly_growth, f"{r.group} company yearly revenue growth vs coupling", group=r.group, metric_family="revenue")}</div>
+        <h4>Company yearly operating income growth vs yearly coupling</h4>
+        <div class="chart">{company_yearly_growth_scatter_svg(company_yearly_growth, f"{r.group} company yearly operating income growth vs coupling", group=r.group, metric_family="op_income")}</div>
+        {table_html(company_growth_display[company_growth_display["group"] == r.group], ["company", "fiscal_year", "annual_observations", "revenue_annual_growth", "revenue_growth_bucket_label", "op_income_annual_growth", "op_income_growth_bucket_label", "avg_pair_corr", "pc1_share"], max_rows=80) if not company_growth_display.empty else "<p class='small'>No company yearly growth data available.</p>"}
         <h4>Member coupling roles</h4>
         {table_html(members, ["company", "ticker", "member_role", "mean_corr_to_group", "max_corr_to_peer", "strong_link_count", "pc1_loading", "best_coupled_peer_company"])}
         <h4>Top pair links</h4>
@@ -1497,14 +2250,24 @@ def render_report(
     group_options = "".join(f'<option value="{esc(r.group)}">{esc(r.group)}</option>' for r in results)
     role_financial_section = f"""
     <section class="section">
-      <h2>Company Financial Weight vs Comovement</h2>
-      <p>여기서는 각 section 안에서 기업별 <strong>revenue</strong>와 <strong>operating income</strong> 비중을 직접 비교한다. 동조화가 강한 구간이 실제 매출/이익 비중이 큰 기업들 중심인지, 아니면 작은 기업들이 테마성으로 같이 움직이는지 확인하기 위한 뷰다.</p>
-      <p class="small">Revenue, operating income, net income은 DB의 최신 annual financials 기준이다. 이익 지표는 손실 기업이 섞이면 role share가 음수 또는 100% 초과로 보일 수 있으므로, 매출 비중보다 더 조심해서 읽어야 한다. Market cap 컬럼은 stock_prices에 있으나 현재 값이 없어 표에는 coverage 0 또는 빈 값으로 표시된다.</p>
-      <div class="chart">{company_financial_weight_svg(member_financial_detail, "Company Revenue and Op Income Share by Section")}</div>
+      <h2>Section Fundamental vs Comovement</h2>
+      <p>여기서는 고정된 한 분기가 아니라 모든 분기의 section 평균 fundamental growth를 계산하고, 그 분기가 속한 연도의 평균 상관계수와 비교한다. 매출과 영업이익은 서로 성격이 달라서 그래프를 분리했다.</p>
+      <p class="small">Revenue와 operating income은 DB의 quarterly financials를 사용한다. 각 기업별 YoY/QoQ growth를 먼저 계산한 뒤 section 평균을 만든다. 각 그래프는 해당 지표의 YoY/QoQ 중 안정적인 범위(-100%~+500%) 안에서 더 큰 값을 사용한다.</p>
+      <h3>Revenue Growth vs Comovement</h3>
+      <div class="chart">{section_fundamental_momentum_svg(fundamental_momentum, "Quarterly Section Revenue Growth vs Yearly Average Pair Correlation", metric_family="revenue")}</div>
+      <h3>Operating Income Growth vs Comovement</h3>
+      <div class="chart">{section_fundamental_momentum_svg(fundamental_momentum, "Quarterly Section Operating Income Growth vs Yearly Average Pair Correlation", metric_family="op_income")}</div>
       <h3>Interpretive read</h3>
-      {company_financial_weight_story(member_financial_detail)}
-      <h3>Company financial weight table</h3>
-      {table_html(member_financial_display, ["group", "company", "ticker", "mean_corr_to_group", "revenue_usd_m_share_of_group", "operating_income_usd_m_share_of_group", "net_income_usd_m_share_of_group"], max_rows=160) if not member_financial_display.empty else "<p>No company financial-weight table available.</p>"}
+      {momentum_story}
+      <h3>Section momentum table</h3>
+      {table_html(momentum_display, ["group", "fiscal_year", "fiscal_quarter", "period_key", "company_coverage", "revenue_yoy_growth", "revenue_qoq_growth", "op_income_yoy_growth", "op_income_qoq_growth", "best_growth_metric", "best_growth_rate", "avg_pair_corr", "pc1_share", "classification", "momentum_read"], max_rows=240) if not momentum_display.empty else "<p>No section momentum table available.</p>"}
+    </section>
+    <section class="section">
+      <h2>Annual Revenue / Profit Balance Hypothesis</h2>
+      <p>가정: 같은 section 안에서 연간 매출 또는 이익 비중이 특정 대형주 한두 개에 집중되지 않고 비슷하게 분포하면, 시장이 그 section을 더 하나의 공통 factor로 가격화해 주가 동조화가 강해질 수 있다.</p>
+      <p class="small">이 분석은 <strong>{FINANCIAL_WEIGHT_YEAR} annual financials</strong>를 사용한다. Revenue/profit balance는 HHI와 effective N으로 측정한다. evenness는 effective N / coverage이며, 1에 가까울수록 기업별 비중이 고르게 퍼져 있다는 뜻이다.</p>
+      {annual_balance_story}
+      {table_html(annual_balance_display, ["group", "financial_year", "annual_revenue_coverage", "annual_revenue_evenness", "annual_revenue_top1_share", "annual_op_income_coverage", "annual_op_income_evenness", "annual_op_income_top1_share", "avg_pair_corr", "pc1_share", "classification", "hypothesis_read"], max_rows=80) if not annual_balance_display.empty else "<p>No annual balance table available.</p>"}
     </section>
 """
 
@@ -1539,10 +2302,12 @@ def render_report(
     .kpis div {{ border: 1px solid #d9e0ea; border-radius: 8px; padding: 10px; background: #f8fafc; }}
     .kpis b {{ display: block; font-size: 22px; }}
     .kpis small {{ color: #5f6b7a; }}
-    table {{ width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }}
+    .table-scroll {{ max-height: 360px; overflow: auto; border: 1px solid #d9e0ea; border-radius: 8px; margin-top: 10px; background: #fff; }}
+    .table-scroll-compact {{ max-height: 420px; }}
+    table {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
     th, td {{ border-bottom: 1px solid #d9e0ea; padding: 7px 8px; text-align: right; vertical-align: top; }}
     th:first-child, td:first-child, th:nth-child(2), td:nth-child(2), th:nth-child(3), td:nth-child(3) {{ text-align: left; }}
-    th {{ background: #f4f7fb; color: #27364a; }}
+    th {{ position: sticky; top: 0; z-index: 1; background: #f4f7fb; color: #27364a; }}
     .chart {{ overflow-x: auto; border: 1px solid #d9e0ea; border-radius: 8px; padding: 8px; background: #fff; }}
     .heatmap-cell {{ cursor: pointer; transition: transform 120ms ease, outline-color 120ms ease; }}
     .heatmap-cell:hover, .heatmap-cell:focus {{ outline: 2px solid #111827; outline-offset: -2px; transform: translateY(-1px); }}
@@ -1560,6 +2325,7 @@ def render_report(
     .legend-swatch {{ width: 9px; height: 9px; border-radius: 50%; display: inline-block; }}
     .chart-title {{ font-weight: 700; font-size: 14px; fill: #172033; }}
     .bar-label {{ font-size: 12px; fill: #334155; }}
+    .financial-row-label {{ font-size: 11px; }}
     @media (max-width: 760px) {{ .kpis {{ grid-template-columns: repeat(2, 1fr); }} .wrap {{ padding: 0 14px; }} }}
   </style>
 </head>
@@ -1621,8 +2387,6 @@ def render_report(
       <div class="chart">{bar_svg(results, "avg_pair_corr", "Average Pairwise Correlation by Group")}</div>
       {table_html(display_group, ["group", "classification", "n_assets", "common_days", "avg_pair_corr", "median_pair_corr", "pc1_share", "strong_pair_share", "latest_rolling_corr", "tickers"])}
     </section>
-
-    {role_financial_section}
 
     <section class="section">
       <h2>Frequency Cross-Check</h2>
@@ -1814,6 +2578,9 @@ def output_paths(output_dir: str | Path) -> dict[str, Path]:
         "bottleneck": root / "bottleneck_interpretation_summary.csv",
         "role_deepdive": root / "member_role_financial_deepdive.csv",
         "company_weight": root / "member_company_financial_weights.csv",
+        "annual_balance": root / "annual_financial_balance_vs_coupling.csv",
+        "fundamental_momentum": root / "section_fundamental_momentum_vs_comovement.csv",
+        "company_yearly_growth": root / "company_yearly_growth_vs_comovement.csv",
         "coverage": root / "ticker_coverage_used.csv",
     }
 
@@ -1829,6 +2596,9 @@ def write_report_outputs(
     coverage: pd.DataFrame,
     role_deepdive: pd.DataFrame,
     member_financial_detail: pd.DataFrame,
+    annual_balance: pd.DataFrame,
+    fundamental_momentum: pd.DataFrame,
+    company_yearly_growth: pd.DataFrame,
     output_dir: str | Path = ROOT,
     analysis_start_date: str = ANALYSIS_START_DATE,
 ) -> dict[str, Path]:
@@ -1843,6 +2613,9 @@ def write_report_outputs(
     bottleneck_summary.to_csv(paths["bottleneck"], index=False)
     role_deepdive.to_csv(paths["role_deepdive"], index=False)
     member_financial_detail.to_csv(paths["company_weight"], index=False)
+    annual_balance.to_csv(paths["annual_balance"], index=False)
+    fundamental_momentum.to_csv(paths["fundamental_momentum"], index=False)
+    company_yearly_growth.to_csv(paths["company_yearly_growth"], index=False)
     coverage.to_csv(paths["coverage"], index=False)
     paths["html"].write_text(
         render_report(
@@ -1856,6 +2629,9 @@ def write_report_outputs(
             coverage,
             role_deepdive,
             member_financial_detail,
+            annual_balance,
+            fundamental_momentum,
+            company_yearly_growth,
             analysis_start_date=analysis_start_date,
         ),
         encoding="utf-8",
@@ -1883,14 +2659,15 @@ def generate_report_from_dataframe(
     """
     is_long_item = all(_optional_external_column(df, field) for field in ["ticker", "section", "item", "date", "value"])
     if is_long_item:
-        matched, prices, annual_financials = normalize_long_item_dataframe(df, analysis_start_date=analysis_start_date)
+        matched, prices, financials_source = normalize_long_item_dataframe(df, analysis_start_date=analysis_start_date)
     else:
         matched, prices = normalize_price_dataframe(df, analysis_start_date=analysis_start_date)
-        annual_financials = None
-    results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage, role_deepdive, member_financial_detail = analyze_dataset(
+        financials_source = None
+    results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage, role_deepdive, member_financial_detail, annual_balance, fundamental_momentum, company_yearly_growth = analyze_dataset(
         matched,
         prices,
-        annual_financials=annual_financials,
+        financials_source=financials_source,
+        annual_financials=financials_source,
     )
     if not results:
         raise ValueError("No analyzable sections found. Need at least two tickers per section with enough observations.")
@@ -1905,14 +2682,17 @@ def generate_report_from_dataframe(
         coverage,
         role_deepdive,
         member_financial_detail,
+        annual_balance,
+        fundamental_momentum,
+        company_yearly_growth,
         output_dir=output_dir,
         analysis_start_date=analysis_start_date or "",
     )
 
 
 def main() -> None:
-    results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage, role_deepdive, member_financial_detail = analyze()
-    paths = write_report_outputs(results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage, role_deepdive, member_financial_detail, output_dir=ROOT, analysis_start_date=ANALYSIS_START_DATE)
+    results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage, role_deepdive, member_financial_detail, annual_balance, fundamental_momentum, company_yearly_growth = analyze()
+    paths = write_report_outputs(results, pair_summary, member_summary, yearly_summary, yearly_scatter, frequency_summary, group_summary, coverage, role_deepdive, member_financial_detail, annual_balance, fundamental_momentum, company_yearly_growth, output_dir=ROOT, analysis_start_date=ANALYSIS_START_DATE)
     print(f"groups={len(results)} pairs={len(pair_summary)}")
     for path in paths.values():
         print(f"wrote {path}")
