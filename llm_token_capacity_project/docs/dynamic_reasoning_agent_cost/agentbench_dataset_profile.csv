@@ -1,0 +1,11 @@
+dataset,field,count,p50_approx_tokens,p90_approx_tokens,p95_approx_tokens,max_approx_tokens,mean_approx_tokens
+HotpotQA,question,7405,22.0,34.0,39.0,72,23.1
+HotpotQA,full_context,7405,1378.0,1928.0,2135.8,4218,1413.8
+HotpotQA,question_plus_context,7405,1403.0,1950.6,2160.0,4248,1437.2
+HumanEval,prompt,164,99.0,193.4,229.1,340,112.7
+HumanEval,canonical_solution,164,37.0,91.8,108.4,216,45.3
+HumanEval,tests,164,110.5,207.7,267.0,451,127.3
+MATH-500,problem,500,37.0,96.0,128.0,433,49.0
+MATH-500,solution,500,106.0,260.0,331.0,839,132.9
+MATH-500,problem_plus_solution,500,150.0,340.2,430.1,976,182.1
+WebShop session ids,session_id_count,400,,,,,

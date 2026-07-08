@@ -1,0 +1,5 @@
+scenario,paper_anchor,llm_call_multiplier_vs_static,serving_effect,project_use
+static_chat_or_cot,CoT/ShareGPT single-pass baseline,1.0,"decode-dominant, low tool idle, prefix caching less helpful",baseline non-agent assistant workload
+react_tool_agent,Agentic workflows average 9.2x more LLM invocations than CoT; ReAct peak QPS 2.6 HotpotQA / 1.2 WebShop vs ShareGPT 6.4,9.2,"multi-step calls, tool waits, lower sustained QPS, prefix caching highly valuable",OpenAI/Claude/Copilot/Grok general tool-agent mix
+lats_parallel_reasoning,LATS average 71.0 LLM calls/request; parallel child nodes can reduce latency but raise concurrent memory pressure,71.0,"high burst concurrency, KV pressure, parallel branches, expensive test-time scaling","high-end reasoning/agent search sensitivity, not base consumer mix"
+llmcompiler_structured_planning,DAG planning can improve HotpotQA cost-efficiency but may waste tool calls on interdependent WebShop tasks,,overlap planning and tool calls; workload-dependent benefit,enterprise workflow automation scenario

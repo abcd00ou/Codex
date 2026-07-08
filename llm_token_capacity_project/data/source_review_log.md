@@ -22,6 +22,7 @@
 | 2026-05-26 | SRC_AWS_RAINIER_ACTIVE | AWS Project Rainier/Trainium 기반 Anthropic capacity 방향 | Hosted platform/capacity direction source; Claude serving allocation share는 비공개 | Anthropic 귀속 규칙과 A11 purpose-built mix의 scenario 근거로 사용 |
 | 2026-05-26 | SRC_DEEPSEEK_H800_INFERENCE | DeepSeek V3/R1 inference system overview의 H800 serving infrastructure 기술 | Hardware reference direct source; 미래 fleet mix/GW는 비공개 | DeepSeek Base를 GPU reference로 두고 efficiency architecture layer와 분리 |
 | 2026-05-26 | SRC_ALIBABA_QWEN_GPU_DEPLOY; SRC_TENCENT_AI_INFRA_MOE | Qwen GPU inference deployment path 및 Tencent AI/MoE infrastructure 방향 공식 자료 | Platform/reference source; operated mix 수치 비공개 | Alibaba/Tencent는 공개 allocation 확보 전 Base GPU reference 유지 |
+| 2026-07-08 | SRC_DYNAMIC_REASONING_AGENT_COST; VIA_AGENTBENCH | HPCA 2026 동적 추론/AI agent 인프라 비용 논문과 연결 AgentBench GitHub benchmark dataset | Agent workload proxy only. 논문 보고 시스템 수치와 공개 benchmark dataset profile을 결합했으며, 특정 회사 production telemetry는 아님 | A08/A09/LLMServingSim power-model bridge에서 agentic workload fit, calls/request, prefix-cache, KV pressure, idle/standby sensitivity 근거로 사용 |
 
 ## 기록 규칙
 
