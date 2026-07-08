@@ -82,6 +82,10 @@ token 수는 정확한 tokenizer가 아니라 `max(word_count, chars/4)` 기반�
 아래 파일에 scenario별 계수를 저장했다.
 
 - `dynamic_reasoning_scenario_coefficients.csv`
+- `inferencex_dynamic_reasoning_tps_gpu.csv`
+- `inferencex_dynamic_reasoning_tps_gpu_summary.csv`
+- `inferencex_dynamic_reasoning_tps_gpu.md`
+- `inferencex_dynamic_reasoning_results_kr.md`
 
 | Scenario | 의미 | 모델 사용처 |
 |---|---|---|
@@ -89,6 +93,36 @@ token 수는 정확한 tokenizer가 아니라 `max(word_count, chars/4)` 기반�
 | `react_tool_agent` | multi-step tool-use agent | OpenAI/Claude/Copilot/Grok agent mix |
 | `lats_parallel_reasoning` | tree search/parallel reasoning | high-end reasoning sensitivity |
 | `llmcompiler_structured_planning` | DAG planning + tool overlap | enterprise workflow automation |
+
+## InferenceX benchmark에 call multiplier 적용
+
+InferenceX의 main model-config row를 그대로 두고 CoT/agentic call 수만 반영한 TPS/GPU overlay를 추가했다.
+
+핵심 수식:
+
+```text
+scenario_output_tok_s_gpu
+= InferenceX output_tok_s_gpu / scenario_call_multiplier
+
+users_per_gpu
+= scenario_output_tok_s_gpu / interactivity_tok_s_user
+```
+
+적용 기준:
+
+- CoT/단일 추론: `scenario_call_multiplier = 1.0`
+- Agentic/ReAct 도구 사용: `scenario_call_multiplier = 9.2`
+- Interactivity: `30`, `50`, `70` tok/s/user
+- GPU, GPU 수, concurrency, ISL/OSL, framework, precision은 InferenceX 원본 row 값을 유지
+- 모델별 `main_framework`, `main_precision`이 맞는 `is_main_model_config = yes` row만 사용
+
+해석:
+
+- CoT와 agentic은 workload 비중을 모르므로 섞지 않고 각각 계산한다.
+- CoT는 call multiplier가 1.0이므로 원본 InferenceX TPS/GPU와 동일하다.
+- Agentic은 call multiplier가 9.2이므로 scenario output TPS/GPU가 CoT 대비 10.9% 수준이다.
+- Interactivity 30/50/70은 비중이 아니라 tok/s/user 요구 수준이며, `users/GPU` 계산에 사용한다.
+- 이 값은 tool wait, prefix cache, KV cache pressure, SLO 실패율을 아직 simulation하지 않은 1차 보정치다.
 
 ## LLMServingSim power model과 연결
 
@@ -154,6 +188,10 @@ dynamic_reasoning_agent_cost/
   README.md
   agentbench_dataset_profile.csv
   dynamic_reasoning_scenario_coefficients.csv
+  inferencex_dynamic_reasoning_results_kr.md
+  inferencex_dynamic_reasoning_tps_gpu.md
+  inferencex_dynamic_reasoning_tps_gpu.csv
+  inferencex_dynamic_reasoning_tps_gpu_summary.csv
 ```
 
 ## 주의점

@@ -23,6 +23,7 @@
 | 2026-05-26 | SRC_DEEPSEEK_H800_INFERENCE | DeepSeek V3/R1 inference system overview의 H800 serving infrastructure 기술 | Hardware reference direct source; 미래 fleet mix/GW는 비공개 | DeepSeek Base를 GPU reference로 두고 efficiency architecture layer와 분리 |
 | 2026-05-26 | SRC_ALIBABA_QWEN_GPU_DEPLOY; SRC_TENCENT_AI_INFRA_MOE | Qwen GPU inference deployment path 및 Tencent AI/MoE infrastructure 방향 공식 자료 | Platform/reference source; operated mix 수치 비공개 | Alibaba/Tencent는 공개 allocation 확보 전 Base GPU reference 유지 |
 | 2026-07-08 | SRC_DYNAMIC_REASONING_AGENT_COST; VIA_AGENTBENCH | HPCA 2026 동적 추론/AI agent 인프라 비용 논문과 연결 AgentBench GitHub benchmark dataset | Agent workload proxy only. 논문 보고 시스템 수치와 공개 benchmark dataset profile을 결합했으며, 특정 회사 production telemetry는 아님 | A08/A09/LLMServingSim power-model bridge에서 agentic workload fit, calls/request, prefix-cache, KV pressure, idle/standby sensitivity 근거로 사용 |
+| 2026-07-08 | INFERENCEX_DYNAMIC_REASONING_OVERLAY | InferenceX 2026-06-08 main model-config benchmark rows에 CoT/agentic call multiplier와 tok/s/user overlay 적용 | Derived estimate. 원본 GPU/GPU count/concurrency/ISL/OSL/framework/precision은 유지하고, CoT 1.0x 및 agentic 9.2x call multiplier를 별도 workload로 계산. Interactivity 30/50/70은 workload mix가 아니라 tok/s/user 요구 수준으로 사용 | `docs/dynamic_reasoning_agent_cost/inferencex_dynamic_reasoning_tps_gpu*.csv`를 A08 TPS/GPU sensitivity 및 power-model bridge 입력 후보로 사용 |
 
 ## 기록 규칙
 
