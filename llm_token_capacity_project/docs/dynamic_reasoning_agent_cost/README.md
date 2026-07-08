@@ -101,11 +101,11 @@ InferenceX의 main model-config row를 그대로 두고 CoT/agentic call 수만 
 핵심 수식:
 
 ```text
-scenario_output_tok_s_gpu
-= InferenceX output_tok_s_gpu / scenario_call_multiplier
+scenario_total_tok_s_gpu
+= InferenceX tok_s_gpu / scenario_call_multiplier
 
 users_per_gpu
-= scenario_output_tok_s_gpu / interactivity_tok_s_user
+= scenario_total_tok_s_gpu / target_tok_s_user
 ```
 
 적용 기준:
@@ -120,7 +120,7 @@ users_per_gpu
 
 - CoT와 agentic은 workload 비중을 모르므로 섞지 않고 각각 계산한다.
 - CoT는 call multiplier가 1.0이므로 원본 InferenceX TPS/GPU와 동일하다.
-- Agentic은 call multiplier가 9.2이므로 scenario output TPS/GPU가 CoT 대비 10.9% 수준이다.
+- Agentic은 call multiplier가 9.2이므로 scenario total TPS/GPU가 CoT 대비 10.9% 수준이다.
 - Interactivity 30/50/70은 비중이 아니라 tok/s/user 요구 수준이며, `users/GPU` 계산에 사용한다.
 - 이 값은 tool wait, prefix cache, KV cache pressure, SLO 실패율을 아직 simulation하지 않은 1차 보정치다.
 
