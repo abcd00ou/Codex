@@ -1,11 +1,91 @@
 repo,tag_name,name,published_at,asset_name,asset_size_bytes,asset_digest,download_count,browser_download_url,html_url,body
-SemiAnalysisAI/InferenceX-app,db-dump/2026-06-08,DB Dump 2026-06-08,2026-06-08T01:53:20Z,inferencex-dump-2026-06-08.tar.xz.part00,630680472,sha256:3e4fd9329143c531728f68c6e7469813a79bc5f212f483f26e4f51f0b2057e49,2,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-06-08/inferencex-dump-2026-06-08.tar.xz.part00,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-06-08,"Weekly full database dump (xz-compressed, split into parts under 2 GiB). Reassemble: `cat *.tar.xz.part* | xz -d | tar -x`"
-SemiAnalysisAI/InferenceX-app,db-dump/2026-06-06,DB Dump 2026-06-06,2026-06-06T00:52:03Z,inferencex-dump-2026-06-06.tar.xz.part00,629420056,sha256:9eeffc038265cce166f40d55d9266a934116a86f820ace3439a6bc6da3a5bae9,5,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-06-06/inferencex-dump-2026-06-06.tar.xz.part00,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-06-06,"Weekly full database dump (xz-compressed, split into parts under 2 GiB). Reassemble: `cat *.tar.xz.part* | xz -d | tar -x`"
-SemiAnalysisAI/InferenceX-app,db-dump/2026-05-11,DB Dump 2026-05-11,2026-05-11T01:11:04Z,inferencex-dump-2026-05-11.zip,2072340792,sha256:3f59aa2b4db7a0449a7bb030d70cdc3780fc59cafddf6ff071beb36365b44e2d,166,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-05-11/inferencex-dump-2026-05-11.zip,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-05-11,Weekly database dump.
-SemiAnalysisAI/InferenceX-app,db-dump/2026-05-04,DB Dump 2026-05-04,2026-05-04T01:02:14Z,inferencex-dump-2026-05-04.zip,1696315703,sha256:855534ca7b6b4ef4281b60641f9f7089f8369b14c93024d3b7f1f73cb2050c94,64,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-05-04/inferencex-dump-2026-05-04.zip,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-05-04,Weekly database dump.
-SemiAnalysisAI/InferenceX-app,db-dump/2026-04-27,DB Dump 2026-04-27,2026-04-27T00:47:55Z,inferencex-dump-2026-04-27.zip,258632807,sha256:3f31c5c30e19e8e317329dea81e974b0dae563f25bc4be7f92dea11defa9100c,84,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-04-27/inferencex-dump-2026-04-27.zip,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-04-27,Weekly database dump.
+SemiAnalysisAI/InferenceX-app,db-dump/2026-07-20,DB Dump 2026-07-20,2026-07-20T03:12:26Z,inferencex-2026-07-20.dump.zst.part00,1992294400,sha256:0f1c5f4631cdc8d69de2b31ae1abeadb9ceba9c01408559cfa3eafcfabf0719e,0,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-07-20/inferencex-2026-07-20.dump.zst.part00,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-07-20,"Weekly InferenceX database dump.
+
+Verify (optional):
+`sha256sum -c SHA256SUMS`
+
+Reassemble and decompress:
+`cat *.dump.zst.part* | zstd -d --long=27 > inferencex.dump`
+
+Restore to PostgreSQL or Neon:
+`pg_restore --exit-on-error --clean --if-exists --no-owner --no-privileges --dbname=""YOUR_TARGET_DATABASE_URL"" inferencex.dump`
+"
+SemiAnalysisAI/InferenceX-app,db-dump/2026-07-20,DB Dump 2026-07-20,2026-07-20T03:12:26Z,inferencex-2026-07-20.dump.zst.part01,1882650124,sha256:672390222e46826cc66b90ea5603168196fb2da4f57d19af201117065ecdb935,0,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-07-20/inferencex-2026-07-20.dump.zst.part01,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-07-20,"Weekly InferenceX database dump.
+
+Verify (optional):
+`sha256sum -c SHA256SUMS`
+
+Reassemble and decompress:
+`cat *.dump.zst.part* | zstd -d --long=27 > inferencex.dump`
+
+Restore to PostgreSQL or Neon:
+`pg_restore --exit-on-error --clean --if-exists --no-owner --no-privileges --dbname=""YOUR_TARGET_DATABASE_URL"" inferencex.dump`
+"
+SemiAnalysisAI/InferenceX-app,db-dump/2026-07-20,DB Dump 2026-07-20,2026-07-20T03:12:26Z,SHA256SUMS,208,sha256:39792272da94662490c062dd0b306219ca0571bf5b2ff716d5a195325ec65425,0,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-07-20/SHA256SUMS,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-07-20,"Weekly InferenceX database dump.
+
+Verify (optional):
+`sha256sum -c SHA256SUMS`
+
+Reassemble and decompress:
+`cat *.dump.zst.part* | zstd -d --long=27 > inferencex.dump`
+
+Restore to PostgreSQL or Neon:
+`pg_restore --exit-on-error --clean --if-exists --no-owner --no-privileges --dbname=""YOUR_TARGET_DATABASE_URL"" inferencex.dump`
+"
+SemiAnalysisAI/InferenceX-app,db-dump/2026-07-13,DB Dump 2026-07-13,2026-07-13T02:57:04Z,inferencex-2026-07-13.dump.zst.part00,1517416171,sha256:9c85f666e9b0cbf3ba6eba02f80bf9ab292ee86e31120b3f0f1edeeb0f3198de,29,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-07-13/inferencex-2026-07-13.dump.zst.part00,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-07-13,"Weekly InferenceX database dump.
+
+Verify (optional):
+`sha256sum -c SHA256SUMS`
+
+Reassemble and decompress:
+`cat *.dump.zst.part* | zstd -d --long=27 > inferencex.dump`
+
+Restore to PostgreSQL or Neon:
+`pg_restore --exit-on-error --clean --if-exists --no-owner --no-privileges --dbname=""YOUR_TARGET_DATABASE_URL"" inferencex.dump`
+"
+SemiAnalysisAI/InferenceX-app,db-dump/2026-07-13,DB Dump 2026-07-13,2026-07-13T02:57:04Z,SHA256SUMS,104,sha256:edfa4b6f0f3e7e251df0b062206561625ea1f797192951c64513030205be3460,10,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-07-13/SHA256SUMS,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-07-13,"Weekly InferenceX database dump.
+
+Verify (optional):
+`sha256sum -c SHA256SUMS`
+
+Reassemble and decompress:
+`cat *.dump.zst.part* | zstd -d --long=27 > inferencex.dump`
+
+Restore to PostgreSQL or Neon:
+`pg_restore --exit-on-error --clean --if-exists --no-owner --no-privileges --dbname=""YOUR_TARGET_DATABASE_URL"" inferencex.dump`
+"
+SemiAnalysisAI/InferenceX-app,db-dump/2026-07-12,DB Dump 2026-07-12,2026-07-12T07:57:27Z,inferencex-2026-07-12.dump.zst.part00,1514278087,sha256:f46245e21f41716b3f264fedaee5867b066c491ce96029d6cb7b8c6fe450fba1,6,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-07-12/inferencex-2026-07-12.dump.zst.part00,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-07-12,"Weekly InferenceX database dump.
+
+Verify (optional):
+`sha256sum -c SHA256SUMS`
+
+Reassemble and decompress:
+`cat *.dump.zst.part* | zstd -d --long=27 > inferencex.dump`
+
+Restore to PostgreSQL or Neon:
+`pg_restore --exit-on-error --clean --if-exists --no-owner --no-privileges --dbname=""YOUR_TARGET_DATABASE_URL"" inferencex.dump`
+"
+SemiAnalysisAI/InferenceX-app,db-dump/2026-07-12,DB Dump 2026-07-12,2026-07-12T07:57:27Z,SHA256SUMS,104,sha256:e7ddb768863dd9c1a5d36231b54c8b1f255e765838870a64c2695f7e72a7dce0,6,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-07-12/SHA256SUMS,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-07-12,"Weekly InferenceX database dump.
+
+Verify (optional):
+`sha256sum -c SHA256SUMS`
+
+Reassemble and decompress:
+`cat *.dump.zst.part* | zstd -d --long=27 > inferencex.dump`
+
+Restore to PostgreSQL or Neon:
+`pg_restore --exit-on-error --clean --if-exists --no-owner --no-privileges --dbname=""YOUR_TARGET_DATABASE_URL"" inferencex.dump`
+"
+SemiAnalysisAI/InferenceX-app,db-dump/2026-06-29,DB Dump 2026-06-29,2026-06-29T01:59:20Z,inferencex-dump-2026-06-29.tar.xz.part00,753449032,sha256:ae249bca6032f23f4b8afd25c5f49db47b8d4a3cf8f8bfd2b682cc01b0f1dab8,86,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-06-29/inferencex-dump-2026-06-29.tar.xz.part00,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-06-29,"Weekly full database dump (xz-compressed, split into parts under 2 GiB). Reassemble: `cat *.tar.xz.part* | xz -d | tar -x`"
+SemiAnalysisAI/InferenceX-app,db-dump/2026-06-22,DB Dump 2026-06-22,2026-06-22T01:57:08Z,inferencex-dump-2026-06-22.tar.xz.part00,725293572,sha256:5473bc0df59ee8f95910093a466f23ded8b02cb54644078484e8f311ca5e4ea8,57,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-06-22/inferencex-dump-2026-06-22.tar.xz.part00,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-06-22,"Weekly full database dump (xz-compressed, split into parts under 2 GiB). Reassemble: `cat *.tar.xz.part* | xz -d | tar -x`"
+SemiAnalysisAI/InferenceX-app,db-dump/2026-06-15,DB Dump 2026-06-15,2026-06-15T02:01:41Z,inferencex-dump-2026-06-15.tar.xz.part00,688559880,sha256:49ae58ba4d2d7cbf6a9c890f957be95819e1295bd101a916022326381e3be457,50,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-06-15/inferencex-dump-2026-06-15.tar.xz.part00,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-06-15,"Weekly full database dump (xz-compressed, split into parts under 2 GiB). Reassemble: `cat *.tar.xz.part* | xz -d | tar -x`"
+SemiAnalysisAI/InferenceX-app,db-dump/2026-06-08,DB Dump 2026-06-08,2026-06-08T01:53:20Z,inferencex-dump-2026-06-08.tar.xz.part00,630680472,sha256:3e4fd9329143c531728f68c6e7469813a79bc5f212f483f26e4f51f0b2057e49,38,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-06-08/inferencex-dump-2026-06-08.tar.xz.part00,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-06-08,"Weekly full database dump (xz-compressed, split into parts under 2 GiB). Reassemble: `cat *.tar.xz.part* | xz -d | tar -x`"
+SemiAnalysisAI/InferenceX-app,db-dump/2026-06-06,DB Dump 2026-06-06,2026-06-06T00:52:03Z,inferencex-dump-2026-06-06.tar.xz.part00,629420056,sha256:9eeffc038265cce166f40d55d9266a934116a86f820ace3439a6bc6da3a5bae9,6,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-06-06/inferencex-dump-2026-06-06.tar.xz.part00,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-06-06,"Weekly full database dump (xz-compressed, split into parts under 2 GiB). Reassemble: `cat *.tar.xz.part* | xz -d | tar -x`"
+SemiAnalysisAI/InferenceX-app,db-dump/2026-05-11,DB Dump 2026-05-11,2026-05-11T01:11:04Z,inferencex-dump-2026-05-11.zip,2072340792,sha256:3f59aa2b4db7a0449a7bb030d70cdc3780fc59cafddf6ff071beb36365b44e2d,167,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-05-11/inferencex-dump-2026-05-11.zip,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-05-11,Weekly database dump.
+SemiAnalysisAI/InferenceX-app,db-dump/2026-05-04,DB Dump 2026-05-04,2026-05-04T01:02:14Z,inferencex-dump-2026-05-04.zip,1696315703,sha256:855534ca7b6b4ef4281b60641f9f7089f8369b14c93024d3b7f1f73cb2050c94,65,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-05-04/inferencex-dump-2026-05-04.zip,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-05-04,Weekly database dump.
+SemiAnalysisAI/InferenceX-app,db-dump/2026-04-27,DB Dump 2026-04-27,2026-04-27T00:47:55Z,inferencex-dump-2026-04-27.zip,258632807,sha256:3f31c5c30e19e8e317329dea81e974b0dae563f25bc4be7f92dea11defa9100c,85,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-04-27/inferencex-dump-2026-04-27.zip,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-04-27,Weekly database dump.
 SemiAnalysisAI/InferenceX-app,db-dump/2026-04-20,DB Dump 2026-04-20,2026-04-20T00:45:46Z,inferencex-dump-2026-04-20.zip,241981257,sha256:4d0dced5e75861d8fb4e66ac8c023270fb8f0eb2c321704f0aeff47de5d4499d,44,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-04-20/inferencex-dump-2026-04-20.zip,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-04-20,Weekly database dump.
-SemiAnalysisAI/InferenceX-app,db-dump/2026-04-13,DB Dump 2026-04-13,2026-04-13T00:46:55Z,inferencex-dump-2026-04-13.zip,209158762,sha256:bd64a9b291a65078556572907afe290e8cab150b69bd90e3e83d6c84bb07e472,34,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-04-13/inferencex-dump-2026-04-13.zip,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-04-13,Weekly database dump.
-SemiAnalysisAI/InferenceX-app,db-dump/2026-04-06,DB Dump 2026-04-06,2026-04-06T00:42:05Z,inferencex-dump-2026-04-06.zip,199263597,sha256:f95a724b6eeba403456fb8b87a2283e86e41a7f055f4e2dedbd81a3c8462c37c,32,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-04-06/inferencex-dump-2026-04-06.zip,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-04-06,Weekly database dump.
-SemiAnalysisAI/InferenceX-app,db-dump/2026-03-30,DB Dump 2026-03-30,2026-03-30T00:42:36Z,inferencex-dump-2026-03-30.zip,177537481,sha256:20a5d7ad79659afbe12af37074067cf8655f52bec68e034675612b5845033587,127,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-03-30/inferencex-dump-2026-03-30.zip,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-03-30,Weekly database dump.
-SemiAnalysisAI/InferenceX-app,db-dump/2026-03-28,DB Dump 2026-03-28,2026-03-28T06:04:13Z,inferencex-dump-2026-03-28.zip,187401353,sha256:d5697c68864346875548d7891ee77addf7559aba111d6710c28325352409e6f7,8,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-03-28/inferencex-dump-2026-03-28.zip,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-03-28,Weekly database dump.
+SemiAnalysisAI/InferenceX-app,db-dump/2026-04-13,DB Dump 2026-04-13,2026-04-13T00:46:55Z,inferencex-dump-2026-04-13.zip,209158762,sha256:bd64a9b291a65078556572907afe290e8cab150b69bd90e3e83d6c84bb07e472,36,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-04-13/inferencex-dump-2026-04-13.zip,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-04-13,Weekly database dump.
+SemiAnalysisAI/InferenceX-app,db-dump/2026-04-06,DB Dump 2026-04-06,2026-04-06T00:42:05Z,inferencex-dump-2026-04-06.zip,199263597,sha256:f95a724b6eeba403456fb8b87a2283e86e41a7f055f4e2dedbd81a3c8462c37c,33,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-04-06/inferencex-dump-2026-04-06.zip,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-04-06,Weekly database dump.
+SemiAnalysisAI/InferenceX-app,db-dump/2026-03-30,DB Dump 2026-03-30,2026-03-30T00:42:36Z,inferencex-dump-2026-03-30.zip,177537481,sha256:20a5d7ad79659afbe12af37074067cf8655f52bec68e034675612b5845033587,145,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-03-30/inferencex-dump-2026-03-30.zip,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-03-30,Weekly database dump.
+SemiAnalysisAI/InferenceX-app,db-dump/2026-03-28,DB Dump 2026-03-28,2026-03-28T06:04:13Z,inferencex-dump-2026-03-28.zip,187401353,sha256:d5697c68864346875548d7891ee77addf7559aba111d6710c28325352409e6f7,9,https://github.com/SemiAnalysisAI/InferenceX-app/releases/download/db-dump/2026-03-28/inferencex-dump-2026-03-28.zip,https://github.com/SemiAnalysisAI/InferenceX-app/releases/tag/db-dump/2026-03-28,Weekly database dump.

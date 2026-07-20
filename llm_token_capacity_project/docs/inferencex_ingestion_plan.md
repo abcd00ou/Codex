@@ -1,6 +1,6 @@
 # InferenceX 데이터 수집 및 정규화 계획
 
-- 기준일: 2026-06-08
+- 기준일: 2026-07-20
 - 목적: InferenceX의 공개 benchmark/app/dump 자료를 A08 tokens/sec/MW, A09 utilization, GPU spec, TCO sanity layer로 반복 수집합니다.
 - 핵심 원칙: dashboard DOM 크롤링보다 GitHub repo, API route, weekly DB dump release, raw CSV/export를 우선합니다.
 
@@ -9,11 +9,20 @@
 - Benchmark repo: https://github.com/SemiAnalysisAI/InferenceX
 - Dashboard app repo: https://github.com/SemiAnalysisAI/InferenceX-app
 - Dashboard: https://inferencex.semianalysis.com/
-- 최신 확인 DB dump: `db-dump/2026-06-08` / `inferencex-dump-2026-06-08.tar.xz.part00` / 630680472 bytes
+- 최신 확인 DB dump: `db-dump/2026-07-20` / `inferencex-2026-07-20.dump.zst.part00` / 1992294400 bytes
 - App README 기준: dashboard는 Neon PostgreSQL 또는 static JSON dump를 데이터 소스로 사용합니다.
-- Full dump parse status: `parsed`
-- Full dump benchmark rows: `76406` / total records `76406`
-- Full dump SHA-256: `3e4fd9329143c531728f68c6e7469813a79bc5f212f483f26e4f51f0b2057e49`
+- Full dump parse status: `skipped`
+- Full dump benchmark rows: `0` / total records `0`
+- Full dump SHA-256: ``
+
+## Agentic trace workload profile
+
+InferenceX now exposes public Claude Code proxy trace datasets on Hugging Face. These are not throughput measurements; they are workload-shape evidence for long-context, multi-turn, cache-heavy, subagent/fan-out serving assumptions.
+
+| Dataset | Cap rule | Requests | Input tokens | Output tokens | Avg input/request | Avg output/request | Use |
+|---|---|---:|---:|---:|---:|---:|---|
+| `semianalysisai/cc-traces-weka-062126-256k` | input_plus_output_lte_256k | 68,266 | 6,891,228,864 | 58,728,807 | 100,947 | 860 | agentic coding workload ISL/OSL shape; preferred capped profile for capacity modeling |
+| `semianalysisai/cc-traces-weka-062126` | input_lte_990016 | 98,827 | 21,635,381,376 | 106,474,498 | 218,922 | 1,077 | agentic coding workload tail reference; heavier context tail than 256k profile |
 
 ## Source 우선순위
 
@@ -70,3 +79,4 @@ source_file, source_kind, benchmark_id, dashboard_tab, model, model_family, gpu,
 - main simulation workbook의 `12_inferencex_source_index`, `12a_inferencex_schema`, `12b_inferencex_tab_rules`
 - full dump 처리 시 `inferencex_benchmark_results.csv`, `inferencex_metric_profile.csv`, `inferencex_accuracy_evals.csv`, `inferencex_dump_inventory.csv`
 - GPU 비교 전용: `inferencex_main_config_by_model.csv`, `inferencex_main_config_validation.csv`, `inferencex_gpu_comparable_metric_profile.csv`
+- agentic traces: `inferencex_agentic_trace_profile.csv`

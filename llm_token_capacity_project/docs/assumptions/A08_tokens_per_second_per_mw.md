@@ -38,9 +38,9 @@ tokens_per_second_per_mw는 active inference MW와 곱해져 token/day를 만든
 
 이 변수는 memory marketing에도 직접 연결된다. tokens/MW가 올라가면 같은 전력으로 더 많은 token을 만들 수 있어 HBM capacity pressure가 낮아질 수도 있지만, 실제로는 demand elasticity 때문에 더 많은 inference traffic이 생겨 전체 memory demand가 다시 증가할 수 있다.
 
-## 2026-05-27 Simple Core Benchmark Mapping
+## 2026-07-20 Workload-Split Benchmark Mapping
 
-최종 token 생성량 산식에서는 검증이 어려운 efficiency factor를 겹쳐 곱하지 않습니다. 다만 공개 benchmark를 폐쇄형 상용모델의 실제 처리량으로 오해하지 않도록, public InferenceX reference와 commercial workload fit scenario를 분리합니다.
+최종 token 생성량 산식에서는 검증이 어려운 efficiency factor를 겹쳐 곱하지 않습니다. 다만 공개 benchmark를 폐쇄형 상용모델의 실제 처리량으로 오해하지 않도록, public InferenceX reference, short/long/agentic workload mix, commercial workload fit scenario를 분리합니다.
 
 ```text
 fleet_reference_tps_per_mw =
@@ -50,13 +50,20 @@ fleet_reference_tps_per_mw =
   + purpose_built_share * purpose_built_reference_tps_per_mw
 
 tokens_per_second_per_mw =
-  fleet_reference_tps_per_mw * commercial_workload_fit_factor
+  (
+    short_chat_share * short_chat_reference_tps_per_mw
+    + long_chat_share * long_chat_reference_tps_per_mw
+    + agentic_share * agentic_reference_tps_per_mw
+  )
+  * commercial_workload_fit_factor
 ```
 
-- 공통 benchmark 조건은 `B200`, `single_turn`, `ISL=1024`, `OSL=1024`, generated output 기준 `output_tok_s_mw` p50입니다.
-- 보고용 Excel `01_Benchmark_Input`은 업체별 workload class, H200/B200/GB200 public reference, Bear/Base/Bull fit factor를 입력으로 보여줍니다.
+- `short_chat`은 `single_turn`, `ISL=1024`, `OSL=1024`, generated output 기준 `output_tok_s_mw` p50입니다.
+- `long_chat`은 가능한 경우 `ISL=8192`, `OSL=1024` InferenceX row를 사용하고, row가 부족하면 short-chat reference에 long-context haircut을 적용합니다.
+- `agentic`은 InferenceX agentic trace profile의 약 100k input / 860 output token request shape를 반영합니다. 아직 matched 100k-input throughput row가 없으므로 long-chat TPS/MW에 agentic context/tooling haircut을 적용합니다.
+- 보고용 Excel `01_Benchmark_Input`은 GPU별 public reference와 Bear/Base/Bull fit factor를, `02b_Workload_Mix_Input`은 업체별 short/long/agentic 비중을 보여줍니다.
 - `02_GPU_Mix_Input`에서 업체·연도·시나리오별 H200/B200/GB200/purpose-built share를 추후 직접 교체할 수 있습니다.
-- Meta/Llama, DeepSeek, Alibaba/Qwen처럼 공개 proxy family가 가까운 경우 Base fit은 상대적으로 높고, OpenAI/Anthropic/xAI처럼 closed 또는 reasoning/agent mix가 큰 경우에는 public reference를 크게 할인합니다.
+- Meta/Tencent처럼 high-volume chat surface가 큰 경우 short-chat 비중이 높고, Anthropic/OpenAI처럼 Claude Code/Codex 등 agentic 제품 근거가 강한 경우 agentic 비중이 높습니다.
 - TPU, Maia, MTIA, Trainium의 comparable output-token/MW row가 채택되기 전에는 purpose-built reference를 B200 placeholder로 두어 hardware uplift를 만들지 않습니다.
 - `architecture_workload_factor`, `software_efficiency_growth`, MoE uplift와 utilization은 headline 토큰 결과에 곱하지 않고 별도 연구/sensitivity로만 관리합니다.
 - 공격적 관점은 `06_Aggressive_View`에서 Bull commercial case와 public benchmark ceiling을 분리해 확인합니다. Ceiling은 전략적 상한이지 Base 추정이 아닙니다.

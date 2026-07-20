@@ -1,0 +1,7 @@
+traces:             393
+main_turns:          28,444
+subagent_groups:           1,697
+subagent_inner_requests:          39,822
+total_model_requests:          68,266
+total_input_tokens:   6,891,228,864
+total_output_tokens:      58,728,807

@@ -15,6 +15,7 @@ import json
 import os
 import re
 import shutil
+import ssl
 import tarfile
 import urllib.error
 import urllib.request
@@ -38,6 +39,8 @@ RUN_DATE = datetime.now(timezone.utc).date().isoformat()
 BENCHMARK_REPO = "SemiAnalysisAI/InferenceX"
 APP_REPO = "SemiAnalysisAI/InferenceX-app"
 GITHUB_API = "https://api.github.com"
+HF_API = "https://huggingface.co/api/datasets"
+HF_RAW = "https://huggingface.co/datasets"
 
 RAW_FILES = [
     {
@@ -349,6 +352,49 @@ TAB_RULES = [
     },
 ]
 
+AGENTIC_TRACE_DATASETS = [
+    {
+        "dataset_id": "semianalysisai/cc-traces-weka-062126-256k",
+        "cap_rule": "input_plus_output_lte_256k",
+        "forecast_use": "agentic coding workload ISL/OSL shape; preferred capped profile for capacity modeling",
+    },
+    {
+        "dataset_id": "semianalysisai/cc-traces-weka-062126",
+        "cap_rule": "input_lte_990016",
+        "forecast_use": "agentic coding workload tail reference; heavier context tail than 256k profile",
+    },
+]
+
+AGENTIC_TRACE_HEADERS = [
+    "dataset_id",
+    "pretty_name",
+    "last_modified",
+    "created_at",
+    "sha",
+    "used_storage_bytes",
+    "downloads",
+    "likes",
+    "license",
+    "cap_rule",
+    "traces",
+    "main_turns",
+    "subagent_groups",
+    "subagent_inner_requests",
+    "total_model_requests",
+    "total_input_tokens",
+    "total_output_tokens",
+    "avg_input_tokens_per_request",
+    "avg_output_tokens_per_request",
+    "input_output_token_ratio",
+    "avg_main_turns_per_trace",
+    "avg_subagent_groups_per_trace",
+    "avg_subagent_inner_requests_per_group",
+    "loader_plugin",
+    "source_url",
+    "forecast_use",
+    "caveat",
+]
+
 
 def request(url: str) -> urllib.request.Request:
     headers = {"User-Agent": USER_AGENT, "Accept": "application/vnd.github+json"}
@@ -359,7 +405,14 @@ def request(url: str) -> urllib.request.Request:
 
 
 def fetch_bytes(url: str) -> tuple[bytes, dict[str, str]]:
-    with urllib.request.urlopen(request(url), timeout=60) as resp:
+    context = None
+    try:
+        import certifi
+
+        context = ssl.create_default_context(cafile=certifi.where())
+    except ImportError:
+        context = ssl.create_default_context()
+    with urllib.request.urlopen(request(url), timeout=60, context=context) as resp:
         headers = {k.lower(): v for k, v in resp.headers.items()}
         return resp.read(), headers
 
@@ -367,6 +420,11 @@ def fetch_bytes(url: str) -> tuple[bytes, dict[str, str]]:
 def fetch_json(url: str) -> Any:
     body, _headers = fetch_bytes(url)
     return json.loads(body.decode("utf-8"))
+
+
+def fetch_text(url: str) -> tuple[str, dict[str, str]]:
+    body, headers = fetch_bytes(url)
+    return body.decode("utf-8"), headers
 
 
 def safe_name(text: str) -> str:
@@ -899,6 +957,95 @@ def collect_releases(repo: str) -> list[dict[str, Any]]:
     return rows
 
 
+def parse_agentic_stats(text: str) -> dict[str, int]:
+    stats: dict[str, int] = {}
+    for line in text.splitlines():
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        value = value.strip().replace(",", "")
+        if re.fullmatch(r"\d+", value):
+            stats[key.strip()] = int(value)
+    return stats
+
+
+def extract_loader_plugin(readme: str) -> str:
+    match = re.search(r"--public-dataset\s+([A-Za-z0-9_./-]+)", readme)
+    return match.group(1) if match else ""
+
+
+def normalize_agentic_trace_dataset(item: dict[str, str]) -> dict[str, Any]:
+    dataset_id = item["dataset_id"]
+    api = fetch_json(f"{HF_API}/{dataset_id}")
+    stats_text, _stats_headers = fetch_text(f"{HF_RAW}/{dataset_id}/raw/main/stats.txt")
+    readme_text, _readme_headers = fetch_text(f"{HF_RAW}/{dataset_id}/raw/main/README.md")
+
+    dataset_safe = safe_name(dataset_id)
+    stats_path = RAW_DIR / f"HF_{dataset_safe}_stats.txt"
+    readme_path = RAW_DIR / f"HF_{dataset_safe}_README.md"
+    stats_path.write_text(stats_text, encoding="utf-8")
+    readme_path.write_text(readme_text, encoding="utf-8")
+
+    stats = parse_agentic_stats(stats_text)
+    total_requests = stats.get("total_model_requests", 0)
+    total_input = stats.get("total_input_tokens", 0)
+    total_output = stats.get("total_output_tokens", 0)
+    traces = stats.get("traces", 0)
+    main_turns = stats.get("main_turns", 0)
+    subagent_groups = stats.get("subagent_groups", 0)
+    subagent_inner = stats.get("subagent_inner_requests", 0)
+    card_data = api.get("cardData") or {}
+    return {
+        "dataset_id": dataset_id,
+        "pretty_name": card_data.get("pretty_name", ""),
+        "last_modified": api.get("lastModified", ""),
+        "created_at": api.get("createdAt", ""),
+        "sha": api.get("sha", ""),
+        "used_storage_bytes": api.get("usedStorage", ""),
+        "downloads": api.get("downloads", ""),
+        "likes": api.get("likes", ""),
+        "license": card_data.get("license", ""),
+        "cap_rule": item["cap_rule"],
+        "traces": traces,
+        "main_turns": main_turns,
+        "subagent_groups": subagent_groups,
+        "subagent_inner_requests": subagent_inner,
+        "total_model_requests": total_requests,
+        "total_input_tokens": total_input,
+        "total_output_tokens": total_output,
+        "avg_input_tokens_per_request": total_input / total_requests if total_requests else "",
+        "avg_output_tokens_per_request": total_output / total_requests if total_requests else "",
+        "input_output_token_ratio": total_input / total_output if total_output else "",
+        "avg_main_turns_per_trace": main_turns / traces if traces else "",
+        "avg_subagent_groups_per_trace": subagent_groups / traces if traces else "",
+        "avg_subagent_inner_requests_per_group": subagent_inner / subagent_groups if subagent_groups else "",
+        "loader_plugin": extract_loader_plugin(readme_text),
+        "source_url": f"https://huggingface.co/datasets/{dataset_id}",
+        "forecast_use": item["forecast_use"],
+        "caveat": (
+            "Agentic trace workload profile, not throughput telemetry. Use for "
+            "ISL/OSL, multi-turn, cache, and subagent workload-shape calibration."
+        ),
+    }
+
+
+def collect_agentic_trace_profiles() -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for item in AGENTIC_TRACE_DATASETS:
+        try:
+            rows.append(normalize_agentic_trace_dataset(item))
+        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as exc:
+            rows.append(
+                {
+                    "dataset_id": item["dataset_id"],
+                    "cap_rule": item["cap_rule"],
+                    "forecast_use": item["forecast_use"],
+                    "caveat": f"fetch failed: {exc}",
+                }
+            )
+    return rows
+
+
 def download_raw_files() -> list[dict[str, Any]]:
     rows = []
     RAW_DIR.mkdir(parents=True, exist_ok=True)
@@ -1103,12 +1250,15 @@ def build_manifest(
     downloaded_asset: dict[str, Any],
     normalized_rows: list[dict[str, Any]],
     parsed_dump: dict[str, Any],
+    agentic_trace_profiles: list[dict[str, Any]],
 ) -> dict[str, Any]:
     latest_release = releases[0] if releases else {}
+    latest_tag = latest_release.get("tag_name")
+    latest_release_assets = [row for row in releases if row.get("tag_name") == latest_tag]
     return {
         "generated_at": RUN_DATE,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
-        "source": "InferenceX public GitHub repos and dashboard DB dump releases",
+        "source": "InferenceX public GitHub repos, dashboard DB dump releases, and public agentic trace datasets",
         "benchmark_repo": f"https://github.com/{BENCHMARK_REPO}",
         "app_repo": f"https://github.com/{APP_REPO}",
         "dashboard": "https://inferencex.semianalysis.com/",
@@ -1120,11 +1270,13 @@ def build_manifest(
             "asset_digest": latest_release.get("asset_digest"),
             "download_url": latest_release.get("browser_download_url"),
             "downloaded_in_this_run": downloaded_asset,
+            "release_assets": latest_release_assets,
         },
         "raw_file_count": len(raw_rows),
         "release_asset_count": len(releases),
         "normalized_index_rows": len(normalized_rows),
         "parsed_dump": parsed_dump,
+        "agentic_trace_profiles": agentic_trace_profiles,
         "dashboard_tabs": TAB_RULES,
         "evidence_rule": "InferenceX is benchmark/proxy data. It can calibrate tokens/sec/MW and utilization sensitivity, but not company-specific production telemetry.",
     }
@@ -1149,6 +1301,32 @@ def write_docs(manifest: dict[str, Any]) -> None:
         f"- Full dump parse status: `{manifest.get('parsed_dump', {}).get('status', 'not_run')}`",
         f"- Full dump benchmark rows: `{manifest.get('parsed_dump', {}).get('benchmark_rows', 0)}` / total records `{manifest.get('parsed_dump', {}).get('benchmark_records_total', 0)}`",
         f"- Full dump SHA-256: `{manifest.get('parsed_dump', {}).get('sha256', '')}`",
+        "",
+        "## Agentic trace workload profile",
+        "",
+        "InferenceX now exposes public Claude Code proxy trace datasets on Hugging Face. These are not throughput measurements; they are workload-shape evidence for long-context, multi-turn, cache-heavy, subagent/fan-out serving assumptions.",
+        "",
+        "| Dataset | Cap rule | Requests | Input tokens | Output tokens | Avg input/request | Avg output/request | Use |",
+        "|---|---|---:|---:|---:|---:|---:|---|",
+    ]
+    for row in manifest.get("agentic_trace_profiles", []):
+        lines.append(
+            "| "
+            + " | ".join(
+                [
+                    f"`{row.get('dataset_id', '')}`",
+                    str(row.get("cap_rule", "")),
+                    f"{int(row.get('total_model_requests') or 0):,}",
+                    f"{int(row.get('total_input_tokens') or 0):,}",
+                    f"{int(row.get('total_output_tokens') or 0):,}",
+                    f"{float(row.get('avg_input_tokens_per_request') or 0):,.0f}",
+                    f"{float(row.get('avg_output_tokens_per_request') or 0):,.0f}",
+                    str(row.get("forecast_use", "")),
+                ]
+            )
+            + " |"
+        )
+    lines += [
         "",
         "## Source 우선순위",
         "",
@@ -1204,6 +1382,7 @@ def write_docs(manifest: dict[str, Any]) -> None:
         "- main simulation workbook의 `12_inferencex_source_index`, `12a_inferencex_schema`, `12b_inferencex_tab_rules`",
         "- full dump 처리 시 `inferencex_benchmark_results.csv`, `inferencex_metric_profile.csv`, `inferencex_accuracy_evals.csv`, `inferencex_dump_inventory.csv`",
         "- GPU 비교 전용: `inferencex_main_config_by_model.csv`, `inferencex_main_config_validation.csv`, `inferencex_gpu_comparable_metric_profile.csv`",
+        "- agentic traces: `inferencex_agentic_trace_profile.csv`",
     ]
     DOC_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -1223,6 +1402,12 @@ def main() -> None:
     raw_rows = download_raw_files()
     releases = collect_releases(APP_REPO)
     write_csv(NORM_DIR / "inferencex_release_assets.csv", releases, list(releases[0].keys()) if releases else ["repo"])
+    agentic_trace_profiles = collect_agentic_trace_profiles()
+    write_csv(
+        NORM_DIR / "inferencex_agentic_trace_profile.csv",
+        agentic_trace_profiles,
+        AGENTIC_TRACE_HEADERS,
+    )
 
     downloaded_asset = {"status": "skipped", "reason": "use --download-latest-dump for large weekly DB dump assets"}
     if args.download_latest_dump:
@@ -1233,7 +1418,17 @@ def main() -> None:
     default_zip = RAW_DIR / safe_name(latest_asset) if latest_asset else Path()
     dump_zip = args.dump_zip or (default_zip if default_zip.exists() else None)
     parsed_dump = {"status": "skipped", "reason": "no local dump zip found; pass --dump-zip or --download-latest-dump"}
-    if dump_zip:
+    if latest_asset.endswith(".dump.zst.part00"):
+        parsed_dump = {
+            "status": "skipped",
+            "reason": (
+                "latest release is a split PostgreSQL .dump.zst asset; current "
+                "normalizer parses JSON zip/tar dumps, so benchmark result CSVs "
+                "remain at the last locally parsed dump until the PostgreSQL dump "
+                "is restored or exported"
+            ),
+        }
+    if dump_zip and not str(dump_zip).endswith(".dump.zst.part00"):
         parsed_dump = process_inferencex_dump_zip(dump_zip, releases[0].get("tag_name") if releases else None, args.max_dump_rows)
     write_csv(NORM_DIR / "inferencex_source_index.csv", normalized_rows, NORMALIZED_HEADERS)
     write_csv(NORM_DIR / "inferencex_normalized_schema.csv", [{h: "" for h in NORMALIZED_HEADERS}], NORMALIZED_HEADERS)
@@ -1244,7 +1439,7 @@ def main() -> None:
         list(raw_rows[0].keys()) if raw_rows else ["source_id"],
     )
 
-    manifest = build_manifest(raw_rows, releases, downloaded_asset, normalized_rows, parsed_dump)
+    manifest = build_manifest(raw_rows, releases, downloaded_asset, normalized_rows, parsed_dump, agentic_trace_profiles)
     (META_DIR / "inferencex_manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
     write_docs(manifest)
 
