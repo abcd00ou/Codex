@@ -1678,8 +1678,8 @@ def formula_assumptions() -> list[dict[str, Any]]:
         },
         {
             "category": "InferenceX TPS/MW selection",
-            "formula": "weighted_reference_tps_per_mw = short_share*short_tps_mw + long_share*long_tps_mw + agentic_share*agentic_tps_mw; reference_serving_tps_per_mw = weighted_reference_tps_per_mw * commercial_workload_fit_factor",
-            "meaning_kr": "InferenceX generated-output TPS/MW를 short chat, long chat, agentic workload로 분리한 뒤 업체별 traffic/product mix로 가중합니다. Agentic은 HF trace의 100k급 input load shape를 반영해 long-context row 위에 별도 haircut을 둡니다.",
+            "formula": "gpu_workload_avg_tps_mw = short_share*gpu_short_tps_mw + long_share*gpu_long_tps_mw + agentic_share*gpu_agentic_tps_mw; fleet_reference_tps_per_mw = sum(gpu_share*gpu_workload_avg_tps_mw); reference_serving_tps_per_mw = fleet_reference_tps_per_mw * commercial_workload_fit_factor",
+            "meaning_kr": "InferenceX generated-output TPS/MW를 GPU별 short chat, long chat, agentic workload로 분리한 뒤 업체별 traffic/product mix로 먼저 가중합니다. 이후 H200/B200/GB200/purpose-built fleet mix를 적용합니다. Agentic은 HF trace의 100k급 input load shape를 반영해 long-context row 위에 별도 haircut을 둡니다.",
             "evidence_type": "Benchmark proxy selection",
             "source_ids": "SRC_SEMIANALYSIS_INFERENCEX; SRC_INFERENCEX_AGENTIC_TRACES_256K; SRC_ANTHROPIC_CONSUMPTION_GUIDE; SRC_OPENAI_CODEX_RATE_CARD; SRC_GOOGLE_GEMINI_LONG_CONTEXT; SRC_META_BUSINESS_AGENT; ASSUMP_NUMERIC_ACCELERATOR_MIX; ASSUMP_WORKLOAD_CLASS_MIX; ASSUMP_AGENTIC_CONTEXT_PENALTY",
         },
@@ -2444,28 +2444,57 @@ def forecast_rows(scenario_case: str = "Base") -> list[dict[str, Any]]:
             b200_reference_tps_per_mw = hardware["b200_selected_tps_per_mw"]
             gb200_reference_tps_per_mw = hardware["gb200_selected_tps_per_mw"]
             purpose_built_reference_tps_per_mw = b200_reference_tps_per_mw
+            h200_short_chat_tps_per_mw = workload_hardware["h200_short_chat_tps_per_mw"]
+            h200_long_chat_tps_per_mw = workload_hardware["h200_long_chat_tps_per_mw"]
+            h200_agentic_tps_per_mw = workload_hardware["h200_agentic_tps_per_mw"]
+            b200_short_chat_tps_per_mw = workload_hardware["b200_short_chat_tps_per_mw"]
+            b200_long_chat_tps_per_mw = workload_hardware["b200_long_chat_tps_per_mw"]
+            b200_agentic_tps_per_mw = workload_hardware["b200_agentic_tps_per_mw"]
+            gb200_short_chat_tps_per_mw = workload_hardware["gb200_short_chat_tps_per_mw"]
+            gb200_long_chat_tps_per_mw = workload_hardware["gb200_long_chat_tps_per_mw"]
+            gb200_agentic_tps_per_mw = workload_hardware["gb200_agentic_tps_per_mw"]
+            purpose_short_chat_tps_per_mw = b200_short_chat_tps_per_mw
+            purpose_long_chat_tps_per_mw = b200_long_chat_tps_per_mw
+            purpose_agentic_tps_per_mw = b200_agentic_tps_per_mw
+            h200_workload_weighted_tps_per_mw = round(
+                workload_mix["short_chat_share"] * h200_short_chat_tps_per_mw
+                + workload_mix["long_chat_share"] * h200_long_chat_tps_per_mw
+                + workload_mix["agentic_share"] * h200_agentic_tps_per_mw
+            )
+            b200_workload_weighted_tps_per_mw = round(
+                workload_mix["short_chat_share"] * b200_short_chat_tps_per_mw
+                + workload_mix["long_chat_share"] * b200_long_chat_tps_per_mw
+                + workload_mix["agentic_share"] * b200_agentic_tps_per_mw
+            )
+            gb200_workload_weighted_tps_per_mw = round(
+                workload_mix["short_chat_share"] * gb200_short_chat_tps_per_mw
+                + workload_mix["long_chat_share"] * gb200_long_chat_tps_per_mw
+                + workload_mix["agentic_share"] * gb200_agentic_tps_per_mw
+            )
+            purpose_workload_weighted_tps_per_mw = b200_workload_weighted_tps_per_mw
             short_chat_tps_per_mw = round(
-                h200_share * h200_reference_tps_per_mw
-                + b200_share * b200_reference_tps_per_mw
-                + gb200_share * gb200_reference_tps_per_mw
-                + purpose_built_share * purpose_built_reference_tps_per_mw
+                h200_share * h200_short_chat_tps_per_mw
+                + b200_share * b200_short_chat_tps_per_mw
+                + gb200_share * gb200_short_chat_tps_per_mw
+                + purpose_built_share * purpose_short_chat_tps_per_mw
             )
             long_chat_tps_per_mw = round(
-                h200_share * workload_hardware["h200_long_chat_tps_per_mw"]
-                + b200_share * workload_hardware["b200_long_chat_tps_per_mw"]
-                + gb200_share * workload_hardware["gb200_long_chat_tps_per_mw"]
-                + purpose_built_share * workload_hardware["b200_long_chat_tps_per_mw"]
+                h200_share * h200_long_chat_tps_per_mw
+                + b200_share * b200_long_chat_tps_per_mw
+                + gb200_share * gb200_long_chat_tps_per_mw
+                + purpose_built_share * purpose_long_chat_tps_per_mw
             )
             agentic_tps_per_mw = round(
-                h200_share * workload_hardware["h200_agentic_tps_per_mw"]
-                + b200_share * workload_hardware["b200_agentic_tps_per_mw"]
-                + gb200_share * workload_hardware["gb200_agentic_tps_per_mw"]
-                + purpose_built_share * workload_hardware["b200_agentic_tps_per_mw"]
+                h200_share * h200_agentic_tps_per_mw
+                + b200_share * b200_agentic_tps_per_mw
+                + gb200_share * gb200_agentic_tps_per_mw
+                + purpose_built_share * purpose_agentic_tps_per_mw
             )
             inferencex_reference_tps_per_mw = round(
-                workload_mix["short_chat_share"] * short_chat_tps_per_mw
-                + workload_mix["long_chat_share"] * long_chat_tps_per_mw
-                + workload_mix["agentic_share"] * agentic_tps_per_mw
+                h200_share * h200_workload_weighted_tps_per_mw
+                + b200_share * b200_workload_weighted_tps_per_mw
+                + gb200_share * gb200_workload_weighted_tps_per_mw
+                + purpose_built_share * purpose_workload_weighted_tps_per_mw
             )
             fit_key = "bear_fit_factor" if scenario_case == "Bear" else "bull_fit_factor" if scenario_case == "Bull" else "base_fit_factor"
             commercial_workload_fit_factor = workload[fit_key]
@@ -2525,6 +2554,10 @@ def forecast_rows(scenario_case: str = "Base") -> list[dict[str, Any]]:
                     "short_chat_reference_tps_per_mw": short_chat_tps_per_mw,
                     "long_chat_reference_tps_per_mw": long_chat_tps_per_mw,
                     "agentic_reference_tps_per_mw": agentic_tps_per_mw,
+                    "h200_workload_weighted_tps_per_mw": h200_workload_weighted_tps_per_mw,
+                    "b200_workload_weighted_tps_per_mw": b200_workload_weighted_tps_per_mw,
+                    "gb200_workload_weighted_tps_per_mw": gb200_workload_weighted_tps_per_mw,
+                    "purpose_built_workload_weighted_tps_per_mw": purpose_workload_weighted_tps_per_mw,
                     "commercial_workload_fit_factor": commercial_workload_fit_factor,
                     "reference_serving_tps_per_mw": reference_serving_tps_per_mw,
                     "gpu_benchmark_tps_per_mw": reference_serving_tps_per_mw,
@@ -2671,22 +2704,22 @@ def number_trace_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         )
         add(
             row, "fleet_reference_tps_per_mw", row["fleet_reference_tps_per_mw"], "generated output tokens/sec/MW", "Fleet-weighted public benchmark reference",
-            "h200_share*h200_reference + b200_share*b200_reference + gb200_share*gb200_reference + purpose_built_share*purpose_built_reference",
-            f"Selected InferenceX proxy model: {row['gpu_benchmark_proxy_model']}. Each GPU-generation reference is public benchmark input or documented B200 placeholder, not measured company production throughput.",
-            "SRC_SEMIANALYSIS_INFERENCEX; ASSUMP_NUMERIC_ACCELERATOR_MIX",
+            "h200_share*h200_workload_avg + b200_share*b200_workload_avg + gb200_share*gb200_workload_avg + purpose_built_share*purpose_workload_avg",
+            f"Selected InferenceX proxy model: {row['gpu_benchmark_proxy_model']}. Each GPU-generation reference first averages short_chat, long_chat and agentic TPS/MW using company workload mix; purpose-built remains a documented B200 placeholder.",
+            "SRC_SEMIANALYSIS_INFERENCEX; ASSUMP_NUMERIC_ACCELERATOR_MIX; ASSUMP_WORKLOAD_CLASS_MIX; ASSUMP_AGENTIC_CONTEXT_PENALTY",
             "Comparable production output-token throughput or a more closely matched benchmark.",
         )
         add(
             row, "commercial_workload_fit_factor", row["commercial_workload_fit_factor"], "share of public reference throughput", "Scenario assumption",
-            "reference_serving_tps_per_mw = weighted(short_chat,long_chat,agentic TPS/MW) * commercial_workload_fit_factor",
+            "reference_serving_tps_per_mw = fleet_reference_tps_per_mw * commercial_workload_fit_factor",
             f"Commercial workload class: {row['commercial_workload_class']}. Company mix uses short_chat={row['short_chat_share']:.0%}, long_chat={row['long_chat_share']:.0%}, agentic={row['agentic_share']:.0%}; closed-model, reasoning, long-context and SLO mismatch stays explicit.",
             "SRC_SEMIANALYSIS_INFERENCEX; ASSUMP_NUMERIC_ACCELERATOR_MIX; ASSUMP_WORKLOAD_CLASS_MIX; ASSUMP_AGENTIC_CONTEXT_PENALTY",
             "Matched commercial serving benchmark by product surface, context shape and latency SLO.",
         )
         add(
             row, "reference_serving_tps_per_mw", row["reference_serving_tps_per_mw"], "generated output tokens/sec/MW", "Workload-adjusted benchmark proxy",
-            "weighted_reference_tps_per_mw * commercial_workload_fit_factor",
-            "This is the coefficient used for headline token generation; short chat, long chat and agentic traces are weighted before the commercial fit factor is applied.",
+            "fleet_reference_tps_per_mw * commercial_workload_fit_factor",
+            "This is the coefficient used for headline token generation; each GPU's short chat, long chat and agentic TPS/MW are weighted before fleet mix and commercial fit are applied.",
             "SRC_SEMIANALYSIS_INFERENCEX; ASSUMP_NUMERIC_ACCELERATOR_MIX; ASSUMP_WORKLOAD_CLASS_MIX; ASSUMP_AGENTIC_CONTEXT_PENALTY",
             "Provider production output-token throughput with comparable workload/SLO.",
         )
@@ -2726,8 +2759,8 @@ def number_trace_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         )
         add(
             row, "tokens_per_second_per_mw", row["tokens_per_second_per_mw"], "generated output tokens/sec/MW", "Derived estimate + benchmark calibration",
-            "weighted(short_chat,long_chat,agentic TPS/MW) * commercial_workload_fit_factor",
-            row["tokens_per_mw_basis"], company_sources + "; SRC_SEMIANALYSIS_INFERENCEX; ASSUMP_NUMERIC_ACCELERATOR_MIX",
+            "fleet_reference_tps_per_mw * commercial_workload_fit_factor",
+            row["tokens_per_mw_basis"], company_sources + "; SRC_SEMIANALYSIS_INFERENCEX; ASSUMP_NUMERIC_ACCELERATOR_MIX; ASSUMP_WORKLOAD_CLASS_MIX; ASSUMP_AGENTIC_CONTEXT_PENALTY",
             "Comparable production output-token throughput with model, hardware, precision, ISL/OSL and SLO matched.",
         )
         add(
@@ -3273,9 +3306,10 @@ def validate(rows: list[dict[str, Any]]) -> dict[str, Any]:
 
         reconstructed_tps = round(
             (
-                row["short_chat_share"] * row["short_chat_reference_tps_per_mw"]
-                + row["long_chat_share"] * row["long_chat_reference_tps_per_mw"]
-                + row["agentic_share"] * row["agentic_reference_tps_per_mw"]
+                row["h200_share"] * row["h200_workload_weighted_tps_per_mw"]
+                + row["b200_share"] * row["b200_workload_weighted_tps_per_mw"]
+                + row["gb200_share"] * row["gb200_workload_weighted_tps_per_mw"]
+                + row["purpose_built_accelerator_share"] * row["purpose_built_workload_weighted_tps_per_mw"]
             )
             * row["commercial_workload_fit_factor"]
         )
@@ -3304,7 +3338,7 @@ def validate(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "simple_headline_formula": "PASS - headline output tokens use operational inference GW and workload-adjusted serving reference TPS/MW only; no utilization/MoE/software/architecture multiplier is applied.",
         "utilization_slo_layer": "PASS - SLO/workload utilization remains supplemental sensitivity only and is not multiplied into headline output.",
         "numeric_accelerator_mix_bridge": "PASS - H200/B200/GB200/purpose-built shares sum to 100%; fleet-weighted reference is explicit and purpose-built TPS/MW receives no unsupported uplift.",
-        "workload_mix_bridge": "PASS - short conversation, long conversation and agentic workload shares sum to 100% and reconstruct headline TPS/MW.",
+        "workload_mix_bridge": "PASS - short conversation, long conversation and agentic workload shares sum to 100%; GPU-level workload-weighted TPS/MW reconstructs headline TPS/MW.",
         "complete_numeric_trace_inputs": "PASS - operational deployment, GPU-generation mix, workload mix, public TPS/MW reference, commercial workload fit and annual output tokens are formula-reconstructable.",
     }
     return {
@@ -3560,6 +3594,10 @@ def write_excel_full_archive(data: dict[str, Any], path: Path) -> None:
         "short_chat_reference_tps_per_mw",
         "long_chat_reference_tps_per_mw",
         "agentic_reference_tps_per_mw",
+        "h200_workload_weighted_tps_per_mw",
+        "b200_workload_weighted_tps_per_mw",
+        "gb200_workload_weighted_tps_per_mw",
+        "purpose_built_workload_weighted_tps_per_mw",
         "commercial_workload_fit_factor",
         "reference_serving_tps_per_mw",
         "purpose_built_tps_per_mw",
@@ -3729,11 +3767,12 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
     logic_rows = [
         ["AI LLM Token Capacity Simulation - Core Formula Model", ""],
         ["목적", "최종 generated output tokens/day를 설명 가능한 전력, GPU 세대 mix, commercial workload 가정으로 계산"],
-        ["입력 원칙", "노란색 셀만 직접 입력합니다. GPU mix는 `02_GPU_Mix_Input`에서 나중에 교체 가능합니다."],
+        ["입력 원칙", "노란색 셀만 직접 입력합니다. Chat workload 비율과 GPU별 chat-length TPS/MW는 `01_Benchmark_Input`, GPU mix는 `02_GPU_Mix_Input`에서 교체합니다."],
         ["Step 1", "operational_power_gw = contracted_power_gw * operational_deployment_share"],
         ["Step 2", "inference_gw = operational_power_gw / pue * ai_workload_share * inference_power_share"],
-        ["Step 3", "fleet_reference_tps_per_mw = H200_share*H200_ref + B200_share*B200_ref + GB200_share*GB200_ref + purpose_built_share*purpose_ref"],
-        ["Step 4", "weighted_reference_tps_per_mw = short_share*short_tps + long_share*long_tps + agentic_share*agentic_tps; serving_tps_per_mw = weighted_reference_tps_per_mw * commercial_workload_fit_factor"],
+        ["Step 3", "gpu_workload_avg_tps_per_mw = short_share*gpu_short_tps + long_share*gpu_long_tps + agentic_share*gpu_agentic_tps"],
+        ["Step 4", "fleet_reference_tps_per_mw = H200_share*H200_workload_avg + B200_share*B200_workload_avg + GB200_share*GB200_workload_avg + purpose_built_share*purpose_workload_avg"],
+        ["Step 4b", "serving_tps_per_mw = fleet_reference_tps_per_mw * commercial_workload_fit_factor"],
         ["Step 5", "generated_output_tokens_per_day = inference_gw * 1,000 * serving_tps_per_mw * 86,400"],
         ["GPU mix rule", "H200/B200/GB200/purpose-built share의 합은 100%이며, 같은 inference MW 내 구성 차이가 token capacity를 바꿉니다."],
         ["Benchmark rule", "Short chat은 ISL/OSL 1024/1024, long chat은 8192/1024, agentic은 HF trace 기반 100k급 input shape를 long-context TPS/MW haircut으로 반영합니다."],
@@ -3758,36 +3797,54 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
     benchmark_ws = wb.create_sheet("01_Benchmark_Input")
     benchmark_ws.append([
         "company", "commercial_workload_class", "proxy_model",
-        "h200_reference_tps_per_mw", "h200_status",
-        "b200_reference_tps_per_mw", "b200_status",
-        "gb200_reference_tps_per_mw", "gb200_status",
-        "purpose_built_reference_tps_per_mw",
-        "bear_fit_factor", "base_fit_factor", "bull_fit_factor",
+        "short_chat_share", "long_chat_share", "agentic_share", "chat_share_sum_check",
+        "h200_short_chat_tps_per_mw", "h200_long_chat_tps_per_mw", "h200_agentic_tps_per_mw", "h200_workload_avg_tps_per_mw", "h200_status",
+        "b200_short_chat_tps_per_mw", "b200_long_chat_tps_per_mw", "b200_agentic_tps_per_mw", "b200_workload_avg_tps_per_mw", "b200_status",
+        "gb200_short_chat_tps_per_mw", "gb200_long_chat_tps_per_mw", "gb200_agentic_tps_per_mw", "gb200_workload_avg_tps_per_mw", "gb200_status",
+        "purpose_short_chat_tps_per_mw", "purpose_long_chat_tps_per_mw", "purpose_agentic_tps_per_mw", "purpose_workload_avg_tps_per_mw", "purpose_status",
+        "bear_fit_factor", "base_fit_factor", "bull_fit_factor", "rationale", "source_ids",
     ])
     hardware = hardware_reference_profiles()
     workloads = commercial_workload_profiles()
     proxy_map = company_core_benchmark_map()
-    for company in [scenario.company for scenario in scenarios()]:
+    workload_refs = workload_reference_profiles()
+    workload_mixes = company_workload_mix_profiles()
+    for excel_row, company in enumerate([scenario.company for scenario in scenarios()], start=2):
         workload = workloads[company]
         proxy = proxy_map[company]["proxy_model"]
         hw = hardware[proxy]
+        refs = workload_refs[proxy]
+        mix = workload_mixes[company]
         benchmark_ws.append([
             company, workload["workload_class"], proxy,
-            hw["h200_selected_tps_per_mw"], hw["h200_selection_status"],
-            hw["b200_selected_tps_per_mw"], hw["b200_selection_status"],
-            hw["gb200_selected_tps_per_mw"], hw["gb200_selection_status"],
-            hw["b200_selected_tps_per_mw"],
-            workload["bear_fit_factor"], workload["base_fit_factor"], workload["bull_fit_factor"],
+            mix["short_chat_share"], mix["long_chat_share"], mix["agentic_share"], f"=SUM(D{excel_row}:F{excel_row})",
+            refs["h200_short_chat_tps_per_mw"], refs["h200_long_chat_tps_per_mw"], refs["h200_agentic_tps_per_mw"], f"=D{excel_row}*H{excel_row}+E{excel_row}*I{excel_row}+F{excel_row}*J{excel_row}", hw["h200_selection_status"],
+            refs["b200_short_chat_tps_per_mw"], refs["b200_long_chat_tps_per_mw"], refs["b200_agentic_tps_per_mw"], f"=D{excel_row}*M{excel_row}+E{excel_row}*N{excel_row}+F{excel_row}*O{excel_row}", hw["b200_selection_status"],
+            refs["gb200_short_chat_tps_per_mw"], refs["gb200_long_chat_tps_per_mw"], refs["gb200_agentic_tps_per_mw"], f"=D{excel_row}*R{excel_row}+E{excel_row}*S{excel_row}+F{excel_row}*T{excel_row}", hw["gb200_selection_status"],
+            refs["b200_short_chat_tps_per_mw"], refs["b200_long_chat_tps_per_mw"], refs["b200_agentic_tps_per_mw"], f"=D{excel_row}*W{excel_row}+E{excel_row}*X{excel_row}+F{excel_row}*Y{excel_row}", "B200 placeholder until comparable purpose-built output-token/MW benchmark is adopted.",
+            workload["bear_fit_factor"], workload["base_fit_factor"], workload["bull_fit_factor"], mix["rationale"], mix["source_ids"],
         ])
     style_sheet(benchmark_ws)
     for row in benchmark_ws.iter_rows(min_row=2):
-        for col in (4, 6, 8, 10, 11, 12, 13):
+        for col in (4, 5, 6, 8, 9, 10, 13, 14, 15, 18, 19, 20, 23, 24, 25, 28, 29, 30):
             row[col - 1].fill = input_fill
             row[col - 1].font = Font(color="0000FF")
-    for col in ("K", "L", "M"):
+        for col in (7, 11, 16, 21, 26):
+            row[col - 1].fill = formula_fill
+    for col in ("D", "E", "F", "G", "AB", "AC", "AD"):
         for cell in benchmark_ws[col][1:]:
             cell.number_format = "0.0%"
-    for col, width in {"B": 43, "D": 24, "E": 52, "F": 24, "G": 42, "H": 25, "I": 58, "J": 30}.items():
+    for col in ("H", "I", "J", "K", "M", "N", "O", "P", "R", "S", "T", "U", "W", "X", "Y", "Z"):
+        for cell in benchmark_ws[col][1:]:
+            cell.number_format = "#,##0"
+    for col, width in {
+        "A": 18, "B": 38, "C": 18, "D": 17, "E": 17, "F": 17, "G": 18,
+        "H": 22, "I": 22, "J": 22, "K": 24, "L": 45,
+        "M": 22, "N": 22, "O": 22, "P": 24, "Q": 45,
+        "R": 22, "S": 22, "T": 22, "U": 24, "V": 58,
+        "W": 24, "X": 24, "Y": 24, "Z": 26, "AA": 58,
+        "AE": 80, "AF": 50,
+    }.items():
         benchmark_ws.column_dimensions[col].width = width
 
     inputs = wb.create_sheet("02_Inputs")
@@ -3804,7 +3861,7 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
             row["inference_power_share"],
             f"=INDEX('01_Benchmark_Input'!$B$2:$B$10,MATCH(B{excel_row},'01_Benchmark_Input'!$A$2:$A$10,0))",
             f"=INDEX('01_Benchmark_Input'!$C$2:$C$10,MATCH(B{excel_row},'01_Benchmark_Input'!$A$2:$A$10,0))",
-            f'=IF(A{excel_row}="Bear",INDEX(\'01_Benchmark_Input\'!$K$2:$K$10,MATCH(B{excel_row},\'01_Benchmark_Input\'!$A$2:$A$10,0)),IF(A{excel_row}="Bull",INDEX(\'01_Benchmark_Input\'!$M$2:$M$10,MATCH(B{excel_row},\'01_Benchmark_Input\'!$A$2:$A$10,0)),INDEX(\'01_Benchmark_Input\'!$L$2:$L$10,MATCH(B{excel_row},\'01_Benchmark_Input\'!$A$2:$A$10,0))))',
+            f'=IF(A{excel_row}="Bear",INDEX(\'01_Benchmark_Input\'!$AB$2:$AB$10,MATCH(B{excel_row},\'01_Benchmark_Input\'!$A$2:$A$10,0)),IF(A{excel_row}="Bull",INDEX(\'01_Benchmark_Input\'!$AD$2:$AD$10,MATCH(B{excel_row},\'01_Benchmark_Input\'!$A$2:$A$10,0)),INDEX(\'01_Benchmark_Input\'!$AC$2:$AC$10,MATCH(B{excel_row},\'01_Benchmark_Input\'!$A$2:$A$10,0))))',
         ])
     style_sheet(inputs)
     for row in inputs.iter_rows(min_row=2):
@@ -3840,41 +3897,16 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
     for col in ("D", "E", "F", "G", "H"):
         gpu_mix.column_dimensions[col].width = 22
 
-    workload_mix_ws = wb.create_sheet("02b_Workload_Mix_Input")
-    workload_mix_ws.append([
-        "company", "short_chat_share", "long_chat_share", "agentic_share",
-        "share_sum_check", "rationale", "source_ids",
-    ])
-    for excel_row, row in enumerate(workload_mix_rows(), start=2):
-        workload_mix_ws.append([
-            row["company"], row["short_chat_share"], row["long_chat_share"], row["agentic_share"],
-            f"=SUM(B{excel_row}:D{excel_row})", row["rationale"], row["source_ids"],
-        ])
-    style_sheet(workload_mix_ws)
-    for row in workload_mix_ws.iter_rows(min_row=2):
-        for col in (2, 3, 4):
-            row[col - 1].fill = input_fill
-            row[col - 1].font = Font(color="0000FF")
-        row[4].fill = formula_fill
-        row[5].alignment = Alignment(wrap_text=True, vertical="top")
-    for col in ("B", "C", "D", "E"):
-        for cell in workload_mix_ws[col][1:]:
-            cell.number_format = "0.0%"
-    workload_mix_ws.column_dimensions["A"].width = 18
-    workload_mix_ws.column_dimensions["F"].width = 90
-    workload_mix_ws.column_dimensions["G"].width = 46
-
     calc = wb.create_sheet("03_Calculation")
     calc.append([
         "scenario", "company", "year", "contracted_power_gw", "operational_deployment_share",
         "operational_power_gw", "pue", "it_load_gw", "ai_workload_share", "ai_it_load_gw",
         "inference_power_share", "inference_gw", "training_gw",
         "h200_share", "b200_share", "gb200_share", "purpose_built_share",
-        "h200_reference_tps_per_mw", "b200_reference_tps_per_mw", "gb200_reference_tps_per_mw",
-        "purpose_built_reference_tps_per_mw",
+        "h200_workload_avg_tps_per_mw", "b200_workload_avg_tps_per_mw",
+        "gb200_workload_avg_tps_per_mw", "purpose_workload_avg_tps_per_mw",
         "short_chat_share", "long_chat_share", "agentic_share",
-        "short_chat_reference_tps_per_mw", "long_chat_reference_tps_per_mw", "agentic_reference_tps_per_mw",
-        "weighted_reference_tps_per_mw", "commercial_workload_fit_factor",
+        "fleet_reference_tps_per_mw", "commercial_workload_fit_factor",
         "serving_tps_per_mw", "inference_tokens_per_day", "inference_tokens_per_year",
     ])
     for row_idx, row_data in enumerate(data["scenario_forecast"], start=2):
@@ -3886,31 +3918,28 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
             f"=J{row_idx}*(1-K{row_idx})", f"='02_GPU_Mix_Input'!D{row_idx}",
             f"='02_GPU_Mix_Input'!E{row_idx}", f"='02_GPU_Mix_Input'!F{row_idx}",
             f"='02_GPU_Mix_Input'!G{row_idx}",
+            f"=INDEX('01_Benchmark_Input'!$K$2:$K$10,MATCH(B{row_idx},'01_Benchmark_Input'!$A$2:$A$10,0))",
+            f"=INDEX('01_Benchmark_Input'!$P$2:$P$10,MATCH(B{row_idx},'01_Benchmark_Input'!$A$2:$A$10,0))",
+            f"=INDEX('01_Benchmark_Input'!$U$2:$U$10,MATCH(B{row_idx},'01_Benchmark_Input'!$A$2:$A$10,0))",
+            f"=INDEX('01_Benchmark_Input'!$Z$2:$Z$10,MATCH(B{row_idx},'01_Benchmark_Input'!$A$2:$A$10,0))",
             f"=INDEX('01_Benchmark_Input'!$D$2:$D$10,MATCH(B{row_idx},'01_Benchmark_Input'!$A$2:$A$10,0))",
+            f"=INDEX('01_Benchmark_Input'!$E$2:$E$10,MATCH(B{row_idx},'01_Benchmark_Input'!$A$2:$A$10,0))",
             f"=INDEX('01_Benchmark_Input'!$F$2:$F$10,MATCH(B{row_idx},'01_Benchmark_Input'!$A$2:$A$10,0))",
-            f"=INDEX('01_Benchmark_Input'!$H$2:$H$10,MATCH(B{row_idx},'01_Benchmark_Input'!$A$2:$A$10,0))",
-            f"=INDEX('01_Benchmark_Input'!$J$2:$J$10,MATCH(B{row_idx},'01_Benchmark_Input'!$A$2:$A$10,0))",
-            f"=INDEX('02b_Workload_Mix_Input'!$B$2:$B$10,MATCH(B{row_idx},'02b_Workload_Mix_Input'!$A$2:$A$10,0))",
-            f"=INDEX('02b_Workload_Mix_Input'!$C$2:$C$10,MATCH(B{row_idx},'02b_Workload_Mix_Input'!$A$2:$A$10,0))",
-            f"=INDEX('02b_Workload_Mix_Input'!$D$2:$D$10,MATCH(B{row_idx},'02b_Workload_Mix_Input'!$A$2:$A$10,0))",
-            row_data["short_chat_reference_tps_per_mw"],
-            row_data["long_chat_reference_tps_per_mw"],
-            row_data["agentic_reference_tps_per_mw"],
-            f"=V{row_idx}*Y{row_idx}+W{row_idx}*Z{row_idx}+X{row_idx}*AA{row_idx}",
+            f"=N{row_idx}*R{row_idx}+O{row_idx}*S{row_idx}+P{row_idx}*T{row_idx}+Q{row_idx}*U{row_idx}",
             f"='02_Inputs'!K{row_idx}",
-            f"=AB{row_idx}*AC{row_idx}", f"=L{row_idx}*1000*AD{row_idx}*86400", f"=AE{row_idx}*365",
+            f"=Y{row_idx}*Z{row_idx}", f"=L{row_idx}*1000*AA{row_idx}*86400", f"=AB{row_idx}*365",
         ])
     style_sheet(calc)
     for row in calc.iter_rows(min_row=2):
         for cell in row:
             cell.fill = formula_fill
-    for col in ("E", "I", "K", "N", "O", "P", "Q", "V"):
+    for col in ("E", "I", "K", "N", "O", "P", "Q", "V", "W", "X", "Z"):
         for cell in calc[col][1:]:
             cell.number_format = "0.0%"
     for col in ("D", "F", "H", "J", "L", "M"):
         for cell in calc[col][1:]:
             cell.number_format = "0.000"
-    for col in ("R", "S", "T", "U", "W", "X", "Y", "Z"):
+    for col in ("R", "S", "T", "U", "Y", "AA"):
         for cell in calc[col][1:]:
             cell.number_format = "#,##0"
 
@@ -3943,7 +3972,7 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
         output.append(
             [company]
             + [
-                f'=SUMIFS(\'03_Calculation\'!$Y$2:$Y$181,\'03_Calculation\'!$A$2:$A$181,"Base",\'03_Calculation\'!$B$2:$B$181,$A{out_row},\'03_Calculation\'!$C$2:$C$181,{get_column_letter(col)}${day_header_row})/1000000000000000'
+                f'=SUMIFS(\'03_Calculation\'!$AB$2:$AB$181,\'03_Calculation\'!$A$2:$A$181,"Base",\'03_Calculation\'!$B$2:$B$181,$A{out_row},\'03_Calculation\'!$C$2:$C$181,{get_column_letter(col)}${day_header_row})/1000000000000000'
                 for col, _year in enumerate(YEARS, start=2)
             ]
         )
@@ -3972,7 +4001,7 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
         output.append(
             [company]
             + [
-                f'=SUMIFS(\'03_Calculation\'!$Z$2:$Z$181,\'03_Calculation\'!$A$2:$A$181,"Base",\'03_Calculation\'!$B$2:$B$181,$A{out_row},\'03_Calculation\'!$C$2:$C$181,{get_column_letter(col)}${year_header_row})/1000000000000000'
+                f'=SUMIFS(\'03_Calculation\'!$AC$2:$AC$181,\'03_Calculation\'!$A$2:$A$181,"Base",\'03_Calculation\'!$B$2:$B$181,$A{out_row},\'03_Calculation\'!$C$2:$C$181,{get_column_letter(col)}${year_header_row})/1000000000000000'
                 for col, _year in enumerate(YEARS, start=2)
             ]
         )
@@ -4001,7 +4030,7 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
         output.append(
             [scenario_name]
             + [
-                f'=SUMIFS(\'03_Calculation\'!$Y$2:$Y$181,\'03_Calculation\'!$A$2:$A$181,$A{out_row},\'03_Calculation\'!$C$2:$C$181,{get_column_letter(col)}${scenario_day_header_row})/1000000000000000'
+                f'=SUMIFS(\'03_Calculation\'!$AB$2:$AB$181,\'03_Calculation\'!$A$2:$A$181,$A{out_row},\'03_Calculation\'!$C$2:$C$181,{get_column_letter(col)}${scenario_day_header_row})/1000000000000000'
                 for col, _year in enumerate(YEARS, start=2)
             ]
         )
@@ -4023,7 +4052,7 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
         output.append(
             [scenario_name]
             + [
-                f'=SUMIFS(\'03_Calculation\'!$Z$2:$Z$181,\'03_Calculation\'!$A$2:$A$181,$A{out_row},\'03_Calculation\'!$C$2:$C$181,{get_column_letter(col)}${scenario_year_header_row})/1000000000000000'
+                f'=SUMIFS(\'03_Calculation\'!$AC$2:$AC$181,\'03_Calculation\'!$A$2:$A$181,$A{out_row},\'03_Calculation\'!$C$2:$C$181,{get_column_letter(col)}${scenario_year_header_row})/1000000000000000'
                 for col, _year in enumerate(YEARS, start=2)
             ]
         )
@@ -4092,12 +4121,16 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
             '=IF(AND(MIN(\'02_Inputs\'!$K$2:$K$181)>0,MAX(\'02_Inputs\'!$K$2:$K$181)<=1),"PASS","FAIL")',
         ),
         (
+            "Chat workload shares sum to 100%",
+            '=IF(SUMPRODUCT(--(ABS(1-(\'03_Calculation\'!$V$2:$V$181+\'03_Calculation\'!$W$2:$W$181+\'03_Calculation\'!$X$2:$X$181))>0.002))=0,"PASS","FAIL")',
+        ),
+        (
             "Serving reference equals fleet reference x workload fit",
-            '=IF(SUMPRODUCT(--(ABS(\'03_Calculation\'!$X$2:$X$181-(\'03_Calculation\'!$W$2:$W$181*\'03_Calculation\'!$V$2:$V$181))>0.01))=0,"PASS","FAIL")',
+            '=IF(SUMPRODUCT(--(ABS(\'03_Calculation\'!$AA$2:$AA$181-(\'03_Calculation\'!$Y$2:$Y$181*\'03_Calculation\'!$Z$2:$Z$181))>0.01))=0,"PASS","FAIL")',
         ),
         (
             "Purpose-built reference defaults to B200 without unsupported uplift",
-            '=IF(SUMPRODUCT(--(\'01_Benchmark_Input\'!$J$2:$J$10<>\'01_Benchmark_Input\'!$F$2:$F$10))=0,"PASS","FAIL")',
+            '=IF(SUMPRODUCT(--(\'01_Benchmark_Input\'!$W$2:$Y$10<>\'01_Benchmark_Input\'!$M$2:$O$10))=0,"PASS","FAIL")',
         ),
         (
             "Headline excludes utilization/MoE/software multipliers",
@@ -4136,11 +4169,11 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
         aggressive.append(
             [
                 f"='03_Calculation'!B{bull_row}",
-                f"='03_Calculation'!Y{base_row}/1000000000000000",
-                f"='03_Calculation'!Y{bull_row}/1000000000000000",
+                f"='03_Calculation'!AB{base_row}/1000000000000000",
+                f"='03_Calculation'!AB{bull_row}/1000000000000000",
                 f"=C{out_row}/B{out_row}-1",
-                f"='03_Calculation'!V{bull_row}",
-                f"='03_Calculation'!X{bull_row}",
+                f"='03_Calculation'!Z{bull_row}",
+                f"='03_Calculation'!AA{bull_row}",
                 f"=C{out_row}/E{out_row}",
                 "Public-reference conditions become commercially repeatable",
             ]
@@ -4158,9 +4191,9 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
         aggressive.append(
             [
                 year,
-                f'=SUMIFS(\'03_Calculation\'!$Y:$Y,\'03_Calculation\'!$A:$A,"Base",\'03_Calculation\'!$C:$C,$A{out_row})/1000000000000000',
-                f'=SUMIFS(\'03_Calculation\'!$Y:$Y,\'03_Calculation\'!$A:$A,"Bull",\'03_Calculation\'!$C:$C,$A{out_row})/1000000000000000',
-                f'=SUMPRODUCT((\'03_Calculation\'!$A$2:$A$181="Bull")*(\'03_Calculation\'!$C$2:$C$181=$A{out_row})*(\'03_Calculation\'!$Y$2:$Y$181/\'03_Calculation\'!$V$2:$V$181))/1000000000000000',
+                f'=SUMIFS(\'03_Calculation\'!$AB:$AB,\'03_Calculation\'!$A:$A,"Base",\'03_Calculation\'!$C:$C,$A{out_row})/1000000000000000',
+                f'=SUMIFS(\'03_Calculation\'!$AB:$AB,\'03_Calculation\'!$A:$A,"Bull",\'03_Calculation\'!$C:$C,$A{out_row})/1000000000000000',
+                f'=SUMPRODUCT((\'03_Calculation\'!$A$2:$A$181="Bull")*(\'03_Calculation\'!$C$2:$C$181=$A{out_row})*(\'03_Calculation\'!$AB$2:$AB$181/\'03_Calculation\'!$Z$2:$Z$181))/1000000000000000',
             ]
         )
         for cell in aggressive[out_row][1:]:
@@ -4827,8 +4860,9 @@ def write_markdown(data: dict[str, Any], path: Path) -> None:
         "it_load_gw = operational_power_gw / pue",
         "ai_it_load_gw = it_load_gw * ai_workload_share",
         "inference_gw = ai_it_load_gw * inference_power_share",
-        "weighted_reference_tps_per_mw = short_share*short_chat_tps_mw + long_share*long_chat_tps_mw + agentic_share*agentic_tps_mw",
-        "tokens_per_second_per_mw = weighted_reference_tps_per_mw * commercial_workload_fit_factor",
+        "gpu_workload_avg_tps_per_mw = short_share*gpu_short_tps_mw + long_share*gpu_long_tps_mw + agentic_share*gpu_agentic_tps_mw",
+        "fleet_reference_tps_per_mw = h200_share*h200_workload_avg + b200_share*b200_workload_avg + gb200_share*gb200_workload_avg + purpose_built_share*purpose_workload_avg",
+        "tokens_per_second_per_mw = fleet_reference_tps_per_mw * commercial_workload_fit_factor",
         "inference_tokens_per_day = inference_mw * tokens_per_second_per_mw * 86,400",
         "joules_per_token = 1,000,000 / tokens_per_second_per_mw",
         "```",
@@ -6864,9 +6898,9 @@ def write_core_markdown(data: dict[str, Any], path: Path) -> None:
         "```text",
         "operational_power_gw = contracted_power_gw * operational_deployment_share",
         "inference_gw = operational_power_gw / pue * ai_workload_share * inference_power_share",
-        "fleet_reference_tps_per_mw = h200_share*h200_ref + b200_share*b200_ref + gb200_share*gb200_ref + purpose_built_share*purpose_ref",
-        "weighted_reference_tps_per_mw = short_share*short_chat_tps_mw + long_share*long_chat_tps_mw + agentic_share*agentic_tps_mw",
-        "serving_tps_per_mw = weighted_reference_tps_per_mw * commercial_workload_fit_factor",
+        "gpu_workload_avg_tps_per_mw = short_share*gpu_short_tps_mw + long_share*gpu_long_tps_mw + agentic_share*gpu_agentic_tps_mw",
+        "fleet_reference_tps_per_mw = h200_share*h200_workload_avg + b200_share*b200_workload_avg + gb200_share*gb200_workload_avg + purpose_built_share*purpose_workload_avg",
+        "serving_tps_per_mw = fleet_reference_tps_per_mw * commercial_workload_fit_factor",
         "generated_output_tokens_per_day = inference_gw * 1,000 * serving_tps_per_mw * 86,400",
         "```",
         "",
@@ -6921,7 +6955,7 @@ def write_core_markdown(data: dict[str, Any], path: Path) -> None:
         "## Workbook",
         "",
         "- `00_Logic`: calculation steps only.",
-        "- `01_Benchmark_Input`: GPU 세대별 public reference TPS/MW와 commercial workload fit 입력.",
+        "- `01_Benchmark_Input`: 업체별 short/long/agentic 비율, GPU별 chat-length TPS/MW, GPU별 workload 평균 TPS/MW, commercial workload fit 입력.",
         "- `02_Inputs`: 전력 및 workload allocation 입력.",
         "- `02_GPU_Mix_Input`: H200/B200/GB200/purpose-built share를 나중에 직접 교체하는 입력 시트.",
         "- `03_Calculation`: formula-only calculation chain.",
@@ -6965,9 +6999,9 @@ select {{ padding:7px; }}
 <main>
 <section><h2>Core Formula</h2><pre>operational_power_gw = contracted_power_gw * operational_deployment_share
 inference_gw = operational_power_gw / pue * ai_workload_share * inference_power_share
-fleet_reference_tps_per_mw = H200_share*H200_ref + B200_share*B200_ref + GB200_share*GB200_ref + purpose_built_share*purpose_ref
-weighted_reference_tps_per_mw = short_share*short_chat_tps_mw + long_share*long_chat_tps_mw + agentic_share*agentic_tps_mw
-serving_tps_per_mw = weighted_reference_tps_per_mw * commercial_workload_fit_factor
+gpu_workload_avg_tps_per_mw = short_share*gpu_short_tps_mw + long_share*gpu_long_tps_mw + agentic_share*gpu_agentic_tps_mw
+fleet_reference_tps_per_mw = H200_share*H200_workload_avg + B200_share*B200_workload_avg + GB200_share*GB200_workload_avg + purpose_built_share*purpose_workload_avg
+serving_tps_per_mw = fleet_reference_tps_per_mw * commercial_workload_fit_factor
 generated_output_tokens_per_day = inference_gw * 1,000 * serving_tps_per_mw * 86,400</pre>
 <div class="note">GPU generation mix는 동일 inference MW 내 hardware composition 차이를 반영합니다. InferenceX/MLPerf/vendor serving stack은 public reference이며, headline은 short conversation, long conversation, agentic mix와 commercial workload fit을 적용합니다.</div></section>
 <section><h2>Output View</h2><div class="controls"><label>Scenario <select id="scenario"></select></label><label>Year <select id="year"></select></label></div><div id="bars"></div></section>
@@ -7107,6 +7141,10 @@ def lightweight_payload(data: dict[str, Any]) -> dict[str, Any]:
         "short_chat_reference_tps_per_mw",
         "long_chat_reference_tps_per_mw",
         "agentic_reference_tps_per_mw",
+        "h200_workload_weighted_tps_per_mw",
+        "b200_workload_weighted_tps_per_mw",
+        "gb200_workload_weighted_tps_per_mw",
+        "purpose_built_workload_weighted_tps_per_mw",
         "commercial_workload_fit_factor",
         "reference_serving_tps_per_mw",
         "purpose_built_tps_per_mw",

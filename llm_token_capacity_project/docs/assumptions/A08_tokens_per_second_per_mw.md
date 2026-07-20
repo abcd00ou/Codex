@@ -43,25 +43,25 @@ tokens_per_second_per_mw는 active inference MW와 곱해져 token/day를 만든
 최종 token 생성량 산식에서는 검증이 어려운 efficiency factor를 겹쳐 곱하지 않습니다. 다만 공개 benchmark를 폐쇄형 상용모델의 실제 처리량으로 오해하지 않도록, public InferenceX reference, short/long/agentic workload mix, commercial workload fit scenario를 분리합니다.
 
 ```text
+gpu_workload_avg_tps_per_mw =
+  short_chat_share * gpu_short_chat_tps_per_mw
+  + long_chat_share * gpu_long_chat_tps_per_mw
+  + agentic_share * gpu_agentic_tps_per_mw
+
 fleet_reference_tps_per_mw =
-  h200_share * h200_reference_tps_per_mw
-  + b200_share * b200_reference_tps_per_mw
-  + gb200_share * gb200_reference_tps_per_mw
-  + purpose_built_share * purpose_built_reference_tps_per_mw
+  h200_share * h200_workload_avg_tps_per_mw
+  + b200_share * b200_workload_avg_tps_per_mw
+  + gb200_share * gb200_workload_avg_tps_per_mw
+  + purpose_built_share * purpose_workload_avg_tps_per_mw
 
 tokens_per_second_per_mw =
-  (
-    short_chat_share * short_chat_reference_tps_per_mw
-    + long_chat_share * long_chat_reference_tps_per_mw
-    + agentic_share * agentic_reference_tps_per_mw
-  )
-  * commercial_workload_fit_factor
+  fleet_reference_tps_per_mw * commercial_workload_fit_factor
 ```
 
 - `short_chat`은 `single_turn`, `ISL=1024`, `OSL=1024`, generated output 기준 `output_tok_s_mw` p50입니다.
 - `long_chat`은 가능한 경우 `ISL=8192`, `OSL=1024` InferenceX row를 사용하고, row가 부족하면 short-chat reference에 long-context haircut을 적용합니다.
 - `agentic`은 InferenceX agentic trace profile의 약 100k input / 860 output token request shape를 반영합니다. 아직 matched 100k-input throughput row가 없으므로 long-chat TPS/MW에 agentic context/tooling haircut을 적용합니다.
-- 보고용 Excel `01_Benchmark_Input`은 GPU별 public reference와 Bear/Base/Bull fit factor를, `02b_Workload_Mix_Input`은 업체별 short/long/agentic 비중을 보여줍니다.
+- 보고용 Excel `01_Benchmark_Input`은 업체별 short/long/agentic 비중, 각 GPU별 chat-length TPS/MW, GPU별 workload 평균 TPS/MW, Bear/Base/Bull fit factor를 한 시트에서 보여줍니다.
 - `02_GPU_Mix_Input`에서 업체·연도·시나리오별 H200/B200/GB200/purpose-built share를 추후 직접 교체할 수 있습니다.
 - Meta/Tencent처럼 high-volume chat surface가 큰 경우 short-chat 비중이 높고, Anthropic/OpenAI처럼 Claude Code/Codex 등 agentic 제품 근거가 강한 경우 agentic 비중이 높습니다.
 - TPU, Maia, MTIA, Trainium의 comparable output-token/MW row가 채택되기 전에는 purpose-built reference를 B200 placeholder로 두어 hardware uplift를 만들지 않습니다.

@@ -141,13 +141,19 @@ fleet_reference_tps_per_mw =
   + gb200_share * gb200_reference_tps_per_mw
   + purpose_built_share * purpose_built_reference_tps_per_mw
 
+gpu_workload_avg_tps_per_mw =
+  short_chat_share * gpu_short_chat_tps_per_mw
+  + long_chat_share * gpu_long_chat_tps_per_mw
+  + agentic_share * gpu_agentic_tps_per_mw
+
+fleet_reference_tps_per_mw =
+  h200_share * h200_workload_avg_tps_per_mw
+  + b200_share * b200_workload_avg_tps_per_mw
+  + gb200_share * gb200_workload_avg_tps_per_mw
+  + purpose_built_share * purpose_workload_avg_tps_per_mw
+
 serving_tps_per_mw =
-  (
-    short_chat_share * short_chat_reference_tps_per_mw
-    + long_chat_share * long_chat_reference_tps_per_mw
-    + agentic_share * agentic_reference_tps_per_mw
-  )
-  * commercial_workload_fit_factor
+  fleet_reference_tps_per_mw * commercial_workload_fit_factor
 ```
 
 중요한 구분:
@@ -162,7 +168,7 @@ serving_tps_per_mw =
 
 ## 4. GPU/ASIC Mix에서 `tokens_per_second_per_mw`로 가는 식
 
-Excel `01_Benchmark_Input`은 GPU 세대별 public reference와 commercial workload fit을 분리합니다. `02b_Workload_Mix_Input`은 업체별 short conversation, long conversation, agentic workload 비중을 별도 입력으로 둡니다. Short 기준은 `single_turn`, `ISL=1024`, `OSL=1024`, generated-output `output_tok_s_mw` 중앙값입니다. Long 기준은 가능한 경우 `ISL=8192`, `OSL=1024` row를 사용합니다. Agentic 기준은 InferenceX agentic trace의 약 100k input / 860 output token request shape를 반영하되, matched 100k-input throughput row가 없으므로 long-context TPS/MW에 별도 haircut을 둡니다. 같은 proxy model에서 H200/B200/GB200의 비교 행이 충분하면 해당 public reference를 기본 입력으로 사용하고, 그렇지 않으면 B200 placeholder로 시작하여 사용자가 교체하도록 둡니다. 그 위에 업체별 commercial workload class의 Bear/Base/Bull fit factor를 적용합니다.
+Excel `01_Benchmark_Input`은 업체별 short conversation, long conversation, agentic workload 비중과 GPU별 chat-length TPS/MW를 한곳에 둡니다. 이 시트에서 먼저 H200/B200/GB200/purpose-built 각각의 workload 평균 TPS/MW를 계산합니다. `03_Calculation`은 그 GPU별 평균 TPS/MW에 `02_GPU_Mix_Input`의 H200/B200/GB200/purpose-built share를 적용한 뒤, 업체별 commercial workload class의 Bear/Base/Bull fit factor를 곱합니다. Short 기준은 `single_turn`, `ISL=1024`, `OSL=1024`, generated-output `output_tok_s_mw` 중앙값입니다. Long 기준은 가능한 경우 `ISL=8192`, `OSL=1024` row를 사용합니다. Agentic 기준은 InferenceX agentic trace의 약 100k input / 860 output token request shape를 반영하되, matched 100k-input throughput row가 없으므로 long-context TPS/MW에 별도 haircut을 둡니다. 같은 proxy model에서 H200/B200/GB200의 비교 행이 충분하면 해당 public reference를 기본 입력으로 사용하고, 그렇지 않으면 B200 placeholder로 시작하여 사용자가 교체하도록 둡니다.
 
 현재 기본 GPU generation migration 가정은 GPU portion 내에서 2026년 `H200 55% / B200 40% / GB200 5%`에서 2030년 `H200 10% / B200 35% / GB200 55%`로 이동합니다. 목적은 fleet 세대교체 효과를 보이기 위한 starting scenario이며 업체별 사실로 주장하지 않습니다.
 

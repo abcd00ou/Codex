@@ -9,9 +9,9 @@
 ```text
 operational_power_gw = contracted_power_gw * operational_deployment_share
 inference_gw = operational_power_gw / pue * ai_workload_share * inference_power_share
-fleet_reference_tps_per_mw = h200_share*h200_ref + b200_share*b200_ref + gb200_share*gb200_ref + purpose_built_share*purpose_ref
-weighted_reference_tps_per_mw = short_share*short_chat_tps_mw + long_share*long_chat_tps_mw + agentic_share*agentic_tps_mw
-serving_tps_per_mw = weighted_reference_tps_per_mw * commercial_workload_fit_factor
+gpu_workload_avg_tps_per_mw = short_share*gpu_short_tps_mw + long_share*gpu_long_tps_mw + agentic_share*gpu_agentic_tps_mw
+fleet_reference_tps_per_mw = h200_share*h200_workload_avg + b200_share*b200_workload_avg + gb200_share*gb200_workload_avg + purpose_built_share*purpose_workload_avg
+serving_tps_per_mw = fleet_reference_tps_per_mw * commercial_workload_fit_factor
 generated_output_tokens_per_day = inference_gw * 1,000 * serving_tps_per_mw * 86,400
 ```
 
@@ -24,14 +24,14 @@ generated_output_tokens_per_day = inference_gw * 1,000 * serving_tps_per_mw * 86
 
 | Provider | Proxy | 2030 H/B/GB/PB | Short/Long/Agentic | Weighted ref TPS/MW | Fit | Serving TPS/MW |
 |---|---|---:|---:|---:|---:|---:|
-| Microsoft | gptoss120b | 6%/19%/30%/45% | 45%/30%/25% | 578,239 | 60% | 346,943 |
-| Google | gptoss120b | 1%/4%/6%/90% | 40%/40%/20% | 589,957 | 60% | 353,974 |
-| Meta | llama70b | 6%/19%/30%/45% | 70%/20%/10% | 180,858 | 90% | 162,772 |
-| xAI | gptoss120b | 10%/35%/55%/0% | 45%/35%/20% | 587,060 | 55% | 322,883 |
-| OpenAI | gptoss120b | 10%/35%/55%/0% | 45%/25%/30% | 559,920 | 50% | 279,960 |
+| Microsoft | gptoss120b | 6%/19%/30%/45% | 45%/30%/25% | 578,240 | 60% | 346,944 |
+| Google | gptoss120b | 1%/4%/6%/90% | 40%/40%/20% | 589,956 | 60% | 353,974 |
+| Meta | llama70b | 6%/19%/30%/45% | 70%/20%/10% | 180,857 | 90% | 162,771 |
+| xAI | gptoss120b | 10%/35%/55%/0% | 45%/35%/20% | 587,059 | 55% | 322,882 |
+| OpenAI | gptoss120b | 10%/35%/55%/0% | 45%/25%/30% | 559,919 | 50% | 279,960 |
 | Anthropic | gptoss120b | 2%/5%/8%/85% | 30%/30%/40% | 523,692 | 50% | 261,846 |
 | DeepSeek | dsr1 | 10%/35%/55%/0% | 35%/40%/25% | 51,301 | 85% | 43,606 |
-| Alibaba | qwen3.5 | 10%/35%/55%/0% | 45%/35%/20% | 142,879 | 90% | 128,591 |
+| Alibaba | qwen3.5 | 10%/35%/55%/0% | 45%/35%/20% | 142,878 | 90% | 128,590 |
 | Tencent | gptoss120b | 10%/35%/55%/0% | 65%/25%/10% | 631,190 | 60% | 378,714 |
 
 ## Base 2030 Output
@@ -40,12 +40,12 @@ generated_output_tokens_per_day = inference_gw * 1,000 * serving_tps_per_mw * 86
 |---|---:|---:|---:|---:|
 | OpenAI | 8.500 | 4.862 | 279,960 | 0.118 |
 | Google | 6.800 | 3.651 | 353,974 | 0.112 |
-| Microsoft | 6.200 | 3.333 | 346,943 | 0.100 |
+| Microsoft | 6.200 | 3.333 | 346,944 | 0.100 |
 | Anthropic | 5.500 | 2.966 | 261,846 | 0.067 |
-| Meta | 5.800 | 3.280 | 162,772 | 0.046 |
+| Meta | 5.800 | 3.280 | 162,771 | 0.046 |
 | Tencent | 2.400 | 1.311 | 378,714 | 0.043 |
-| xAI | 2.500 | 1.219 | 322,883 | 0.034 |
-| Alibaba | 3.200 | 1.748 | 128,591 | 0.019 |
+| xAI | 2.500 | 1.219 | 322,882 | 0.034 |
+| Alibaba | 3.200 | 1.748 | 128,590 | 0.019 |
 | DeepSeek | 1.200 | 0.651 | 43,606 | 0.002 |
 
 ## Scenario Output
@@ -60,7 +60,7 @@ generated_output_tokens_per_day = inference_gw * 1,000 * serving_tps_per_mw * 86
 ## Workbook
 
 - `00_Logic`: calculation steps only.
-- `01_Benchmark_Input`: GPU 세대별 public reference TPS/MW와 commercial workload fit 입력.
+- `01_Benchmark_Input`: 업체별 short/long/agentic 비율, GPU별 chat-length TPS/MW, GPU별 workload 평균 TPS/MW, commercial workload fit 입력.
 - `02_Inputs`: 전력 및 workload allocation 입력.
 - `02_GPU_Mix_Input`: H200/B200/GB200/purpose-built share를 나중에 직접 교체하는 입력 시트.
 - `03_Calculation`: formula-only calculation chain.
