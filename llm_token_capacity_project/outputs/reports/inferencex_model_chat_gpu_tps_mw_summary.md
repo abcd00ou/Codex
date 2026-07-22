@@ -24,7 +24,7 @@
 | Report proxy model | InferenceX source model | 현재 적용 대상 |
 |---|---|---|
 | `gptoss120b` | `gptoss120b` | Microsoft, xAI, Tencent |
-| `deepseekv4pro` | `dsv4` | OpenAI, Anthropic, Google |
+| `frontier_composite` | `dsv4 + kimik2.5` | OpenAI, Anthropic, Google |
 | `llama70b` | `llama70b` | Meta |
 | `dsr1` | `dsr1` | DeepSeek |
 | `qwen3.5` | `qwen3.5` | Alibaba |
@@ -36,9 +36,9 @@
 | `gptoss120b` | H200 | 798,842 | 533,670 | 293,518 | direct / direct / long_chat x 55% |
 | `gptoss120b` | B200 | 1,699,560 | 1,189,057 | 653,981 | direct / direct / long_chat x 55% |
 | `gptoss120b` | GB200 | 1,699,560 | 1,189,057 | 653,981 | fallback:B200 / fallback:B200 / long_chat x 55% |
-| `deepseekv4pro` | H200 | 88,597 | 81,509 | 44,830 | fallback:GB200 / fallback:B200 plus long<=short x 92% cap / long_chat x 55% |
-| `deepseekv4pro` | B200 | 88,597 | 81,509 | 44,830 | fallback:GB200 / fallback:B200 plus long<=short x 92% cap / long_chat x 55% |
-| `deepseekv4pro` | GB200 | 88,597 | 81,509 | 44,830 | direct / direct plus long<=short x 92% cap / long_chat x 55% |
+| `frontier_composite` | H200 | 123,401 | 68,876 | 37,882 | direct / direct / long_chat x 55% |
+| `frontier_composite` | B200 | 95,664 | 72,484 | 39,866 | direct / direct / long_chat x 55% |
+| `frontier_composite` | GB200 | 88,597 | 81,509 | 44,830 | direct / direct plus long<=short x 92% cap / long_chat x 55% |
 | `llama70b` | H200 | 486,775 | 189,727 | 104,350 | direct / direct / long_chat x 55% |
 | `llama70b` | B200 | 528,285 | 269,299 | 148,114 | direct / direct / long_chat x 55% |
 | `llama70b` | GB200 | 528,285 | 269,299 | 148,114 | fallback:B200 / fallback:B200 / long_chat x 55% |
@@ -56,9 +56,9 @@
 | `gptoss120b` | `gptoss120b` | H200 | 782,278 | 382 / direct | 555,348 | 437 / direct | 305,441 | long_chat x 55% |
 | `gptoss120b` | `gptoss120b` | B200 | 1,780,482 | 450 / direct | 1,176,458 | 450 / direct | 647,052 | long_chat x 55% |
 | `gptoss120b` | `gptoss120b` | GB200 | 1,780,482 | 450 / fallback:B200 | 1,176,458 | 450 / fallback:B200 | 647,052 | long_chat x 55% |
-| `deepseekv4pro` | `dsv4` | H200 | 86,132 | 9 / fallback:GB200 | 151,336 | 4 / fallback:B200 | 83,235 | long_chat x 55% |
-| `deepseekv4pro` | `dsv4` | B200 | 86,132 | 9 / fallback:GB200 | 151,336 | 4 / direct | 83,235 | long_chat x 55% |
-| `deepseekv4pro` | `dsv4` | GB200 | 86,132 | 9 / direct | 153,415 | 18 / direct | 84,378 | long_chat x 55% |
+| `frontier_composite` | `dsv4+kimik2.5` | H200 | 122,936 | 20 / direct | 68,566 | 20 / direct | 37,711 | long_chat x 55% |
+| `frontier_composite` | `dsv4+kimik2.5` | B200 | 105,993 | 10 / direct | 96,796 | 14 / direct | 53,238 | long_chat x 55% |
+| `frontier_composite` | `dsv4+kimik2.5` | GB200 | 86,132 | 9 / direct | 153,415 | 18 / direct | 84,378 | long_chat x 55% |
 | `llama70b` | `llama70b` | H200 | 512,342 | 94 / direct | 188,633 | 88 / direct | 103,748 | long_chat x 55% |
 | `llama70b` | `llama70b` | B200 | 579,686 | 107 / direct | 254,884 | 79 / direct | 140,186 | long_chat x 55% |
 | `llama70b` | `llama70b` | GB200 | 579,686 | 107 / fallback:B200 | 254,884 | 79 / fallback:B200 | 140,186 | long_chat x 55% |
@@ -78,9 +78,9 @@
 | `gptoss120b` | H200 | 798,842 | 533,670 | 293,518 |
 | `gptoss120b` | B200 | 1,699,560 | 1,189,057 | 653,981 |
 | `gptoss120b` | GB200 | 1,699,560 | 1,189,057 | 653,981 |
-| `deepseekv4pro` | H200 | 88,597 | 136,273 | 74,950 |
-| `deepseekv4pro` | B200 | 88,597 | 136,273 | 74,950 |
-| `deepseekv4pro` | GB200 | 88,597 | 101,438 | 55,791 |
+| `frontier_composite` | H200 | 123,401 | 68,876 | 37,882 |
+| `frontier_composite` | B200 | 95,664 | 72,484 | 39,866 |
+| `frontier_composite` | GB200 | 88,597 | 101,438 | 55,791 |
 | `llama70b` | H200 | 486,775 | 189,727 | 104,350 |
 | `llama70b` | B200 | 528,285 | 269,299 | 148,114 |
 | `llama70b` | GB200 | 528,285 | 269,299 | 148,114 |
@@ -95,7 +95,8 @@
 
 - `direct`는 해당 model/GPU/chat 조건에 맞는 InferenceX row가 존재한다는 뜻이다.
 - `fallback`은 해당 GPU에 matched row가 없어서 가장 가까운 B200 또는 GB200 row를 임시 proxy로 사용했다는 뜻이다.
-- DeepSeek V4 Pro는 현재 InferenceX source model `dsv4`로 매핑되며, H200 direct row가 부족하다.
-- DeepSeek V4 Pro raw 평균에서는 long이 short보다 높게 보일 수 있다. 이는 long row의 일부 높은 concurrency/output-only TPS row와 부족한 direct short row 때문이며, 산식용 selected 값에는 `long <= short x 92%` guardrail을 적용했다.
+- `frontier_composite`는 DeepSeek V4 Pro(`dsv4`)와 Kimi K2.5(`kimik2.5`)를 함께 쓰는 proxy다.
+- Kimi K2.5는 H200/B200 direct row를 보강하고, DeepSeek V4 Pro는 GB200 direct row를 보강한다.
+- GB200 raw 평균에서는 long이 short보다 높게 보일 수 있어 산식용 selected 값에는 `long <= short x 92%` guardrail을 적용했다.
 - Agentic 값은 아직 100k input급 matched benchmark가 아니라 trace-derived estimate다.
 - 이 표는 public benchmark/proxy이며 OpenAI, Anthropic, Google 등 closed production serving telemetry가 아니다.

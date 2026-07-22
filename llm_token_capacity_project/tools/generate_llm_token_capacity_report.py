@@ -37,12 +37,20 @@ YEARS = list(range(2026, 2031))
 
 
 PROXY_MODEL_SOURCES = {
-    "gptoss120b": "gptoss120b",
-    "llama70b": "llama70b",
-    "dsr1": "dsr1",
-    "qwen3.5": "qwen3.5",
-    "deepseekv4pro": "dsv4",
+    "gptoss120b": ("gptoss120b",),
+    "frontier_composite": ("dsv4", "kimik2.5"),
+    "llama70b": ("llama70b",),
+    "dsr1": ("dsr1",),
+    "qwen3.5": ("qwen3.5",),
 }
+
+
+def proxy_source_models(proxy_model: str) -> tuple[str, ...]:
+    return PROXY_MODEL_SOURCES[proxy_model]
+
+
+def proxy_source_label(proxy_model: str) -> str:
+    return "+".join(proxy_source_models(proxy_model))
 
 
 SCENARIO_CASES = {
@@ -277,6 +285,17 @@ def sources() -> list[Source]:
             "DeepSeek V4 Pro proxy model identity, MoE total/active parameter anchor and long-context capability",
             0.90,
             "DeepSeek V4 Pro는 1.6T total / 49B activated MoE 및 1M context를 공개한 frontier-class proxy로 사용.",
+        ),
+        Source(
+            "SRC_KIMI_K25",
+            "Kimi K2.5 model page and repository",
+            "Moonshot AI",
+            "2026-02-22",
+            "https://www.kimi.com/ai-models/kimi-k2-5 ; https://github.com/MoonshotAI/Kimi-K2.5",
+            "Tier 1",
+            "Kimi K2.5 proxy model identity, multimodal/agentic capability and deployment support",
+            0.88,
+            "Kimi K2.5는 공개 agentic/multimodal frontier proxy로 DeepSeek V4 Pro와 함께 composite TPS/MW 산정에 사용.",
         ),
         Source(
             "SRC_QWEN3_GITHUB",
@@ -1192,9 +1211,9 @@ def accelerator_mix_profiles() -> dict[str, dict[str, Any]]:
             "gpu_share_2030": 0.10,
             "asic_efficiency_factor": 1.00,
             "architecture_workload_factor": 1.00,
-            "source_ids": "SRC_GOOGLE_IRONWOOD; SRC_GOOGLE_TPU_V6E; SRC_GOOGLE_GEMINI_TOKENS; SRC_DEEPSEEK_V4_PRO",
+            "source_ids": "SRC_GOOGLE_IRONWOOD; SRC_GOOGLE_TPU_V6E; SRC_GOOGLE_GEMINI_TOKENS; SRC_DEEPSEEK_V4_PRO; SRC_KIMI_K25",
             "mix_rationale": "Google officially positions Ironwood as an inference TPU and publicly documents TPU generations; TPU-heavy serving is modeled, not measured fleet share.",
-            "tps_rationale": "DeepSeek V4 Pro InferenceX output-token benchmark proxy. TPU/Ironwood presence is shown, but no unmatched efficiency premium is applied.",
+            "tps_rationale": "Frontier composite InferenceX proxy using DeepSeek V4 Pro and Kimi K2.5 output-token rows. TPU/Ironwood presence is shown, but no unmatched efficiency premium is applied.",
             "replacement_path": "Gemini production serving throughput/power or TPU-versus-GPU serving allocation disclosure.",
         },
         "Meta": {
@@ -1228,9 +1247,9 @@ def accelerator_mix_profiles() -> dict[str, dict[str, Any]]:
             "gpu_share_2030": 1.00,
             "asic_efficiency_factor": 1.00,
             "architecture_workload_factor": 1.00,
-            "source_ids": "SRC_OPENAI_STARGATE_PROGRESS; SRC_OPENAI_GPT41_DOCS; SRC_DEEPSEEK_V4_PRO",
+            "source_ids": "SRC_OPENAI_STARGATE_PROGRESS; SRC_OPENAI_GPT41_DOCS; SRC_DEEPSEEK_V4_PRO; SRC_KIMI_K25",
             "mix_rationale": "OpenAI states Oracle began delivering NVIDIA GB200 racks for Stargate. No operated custom-ASIC mix is publicly quantified in the model.",
-            "tps_rationale": "DeepSeek V4 Pro InferenceX output-token benchmark proxy; not direct ChatGPT/API telemetry.",
+            "tps_rationale": "Frontier composite InferenceX proxy using DeepSeek V4 Pro and Kimi K2.5 output-token rows; not direct ChatGPT/API telemetry.",
             "replacement_path": "OpenAI hardware allocation and output-token throughput by model/product surface.",
         },
         "Anthropic": {
@@ -1240,9 +1259,9 @@ def accelerator_mix_profiles() -> dict[str, dict[str, Any]]:
             "gpu_share_2030": 0.15,
             "asic_efficiency_factor": 1.00,
             "architecture_workload_factor": 1.00,
-            "source_ids": "SRC_AWS_RAINIER_ACTIVE; SRC_ANTHROPIC_AMAZON_COMPUTE; SRC_ANTHROPIC_CLAUDE_DOCS; SRC_DEEPSEEK_V4_PRO",
+            "source_ids": "SRC_AWS_RAINIER_ACTIVE; SRC_ANTHROPIC_AMAZON_COMPUTE; SRC_ANTHROPIC_CLAUDE_DOCS; SRC_DEEPSEEK_V4_PRO; SRC_KIMI_K25",
             "mix_rationale": "Project Rainier establishes large Anthropic-directed Trainium capacity. Exact Claude inference allocation across Trainium, TPU and GPU is undisclosed.",
-            "tps_rationale": "DeepSeek V4 Pro InferenceX output-token benchmark proxy. Trainium presence is shown, but no unmatched efficiency premium is applied.",
+            "tps_rationale": "Frontier composite InferenceX proxy using DeepSeek V4 Pro and Kimi K2.5 output-token rows. Trainium presence is shown, but no unmatched efficiency premium is applied.",
             "replacement_path": "Anthropic/AWS production inference hardware allocation and Claude tokens/MW measurement.",
         },
         "DeepSeek": {
@@ -1978,7 +1997,7 @@ def core_inferencex_benchmark_profiles() -> list[dict[str, Any]]:
     source_path = ROOT / "data" / "inferencex" / "normalized" / "inferencex_benchmark_results.csv"
     mapped = {
         "gptoss120b": "Microsoft; xAI; Tencent",
-        "deepseekv4pro": "Google; OpenAI; Anthropic",
+        "frontier_composite": "Google; OpenAI; Anthropic",
         "llama70b": "Meta",
         "dsr1": "DeepSeek",
         "qwen3.5": "Alibaba",
@@ -2000,7 +2019,7 @@ def core_inferencex_benchmark_profiles() -> list[dict[str, Any]]:
                 if not 32 <= concurrency <= 256:
                     continue
                 for model in mapped:
-                    if source_model == PROXY_MODEL_SOURCES[model]:
+                    if source_model in proxy_source_models(model):
                         key = (model, row.get("gpu", ""), row.get("isl", ""), row.get("osl", ""))
                         values.setdefault(key, []).append(float(row["output_tok_s_mw"]))
                         main_configs.setdefault(model, (row.get("main_framework", ""), row.get("main_precision", "")))
@@ -2023,7 +2042,7 @@ def core_inferencex_benchmark_profiles() -> list[dict[str, Any]]:
         rows.append(
             {
                 "proxy_model": model,
-                "inferencex_source_model": PROXY_MODEL_SOURCES[model],
+                "inferencex_source_model": proxy_source_label(model),
                 "mapped_companies": companies,
                 "gpu": selected_gpu,
                 "benchmark_type": "single_turn",
@@ -2038,7 +2057,7 @@ def core_inferencex_benchmark_profiles() -> list[dict[str, Any]]:
                 "output_tok_s_mw_min": round(min(samples)),
                 "output_tok_s_mw_max": round(max(samples)),
                 "headline_use": "Public output-token TPS/MW reference ceiling; commercial workload fit is applied before headline use.",
-                "source_ids": "SRC_SEMIANALYSIS_INFERENCEX" + ("; SRC_DEEPSEEK_V4_PRO" if model == "deepseekv4pro" else ""),
+                "source_ids": "SRC_SEMIANALYSIS_INFERENCEX" + ("; SRC_DEEPSEEK_V4_PRO; SRC_KIMI_K25" if model == "frontier_composite" else ""),
                 "caveat": "Benchmark proxy only; filtered to model-level main_framework/main_precision before GPU comparison. Read gpu/ISL/OSL/condition_status before comparing.",
             }
         )
@@ -2075,7 +2094,7 @@ def commercial_workload_profiles() -> dict[str, dict[str, Any]]:
             "bear_fit_factor": 0.40,
             "base_fit_factor": 0.60,
             "bull_fit_factor": 0.80,
-            "rationale": "Gemini serving is closed and TPU-heavy with product and multimodal routing; DeepSeek V4 Pro is used only as a public frontier-class proxy, not production telemetry.",
+            "rationale": "Gemini serving is closed and TPU-heavy with product and multimodal routing; the DeepSeek V4 Pro + Kimi K2.5 frontier composite is used only as a public proxy, not production telemetry.",
         },
         "Meta": {
             "workload_class": "Llama / Meta AI general assistant",
@@ -2096,14 +2115,14 @@ def commercial_workload_profiles() -> dict[str, dict[str, Any]]:
             "bear_fit_factor": 0.30,
             "base_fit_factor": 0.50,
             "bull_fit_factor": 0.70,
-            "rationale": "ChatGPT/API demand includes reasoning and latency-sensitive surfaces; DeepSeek V4 Pro throughput is not GPT production telemetry.",
+            "rationale": "ChatGPT/API demand includes reasoning and latency-sensitive surfaces; the DeepSeek V4 Pro + Kimi K2.5 frontier composite is not GPT production telemetry.",
         },
         "Anthropic": {
             "workload_class": "Claude coding, agent and long-context enterprise",
             "bear_fit_factor": 0.30,
             "base_fit_factor": 0.50,
             "bull_fit_factor": 0.70,
-            "rationale": "Claude usage is materially coding/agent/long-context oriented; DeepSeek V4 Pro is a public benchmark proxy because comparable Claude production serving rows are not public.",
+            "rationale": "Claude usage is materially coding/agent/long-context oriented; the DeepSeek V4 Pro + Kimi K2.5 frontier composite is used because comparable Claude production serving rows are not public.",
         },
         "DeepSeek": {
             "workload_class": "DeepSeek R1/V3 MoE with reasoning mix",
@@ -2265,7 +2284,7 @@ def company_workload_mix_profiles() -> dict[str, dict[str, Any]]:
 def workload_reference_profiles() -> dict[str, dict[str, Any]]:
     """Build short/long/agentic output TPS/MW profiles by proxy model and GPU."""
     source_path = ROOT / "data" / "inferencex" / "normalized" / "inferencex_benchmark_results.csv"
-    models = ["gptoss120b", "deepseekv4pro", "llama70b", "dsr1", "qwen3.5"]
+    models = ["gptoss120b", "frontier_composite", "llama70b", "dsr1", "qwen3.5"]
     hardware = ["h200", "b200", "gb200"]
     classes = workload_class_assumptions()
     samples: dict[tuple[str, str, str], list[float]] = {
@@ -2278,7 +2297,7 @@ def workload_reference_profiles() -> dict[str, dict[str, Any]]:
         for row in csv.DictReader(handle):
             source_model = row.get("model", "")
             gpu = row.get("gpu", "")
-            proxy_model = next((model for model in models if source_model == PROXY_MODEL_SOURCES[model]), "")
+            proxy_model = next((model for model in models if source_model in proxy_source_models(model)), "")
             if not proxy_model or gpu not in hardware:
                 continue
             if row.get("benchmark_type") != "single_turn" or row.get("is_main_model_config", "yes") != "yes":
@@ -2443,13 +2462,13 @@ def hardware_reference_profiles() -> dict[str, dict[str, Any]]:
     explicit conservative placeholder until the user supplies a replacement.
     """
     source_path = ROOT / "data" / "inferencex" / "normalized" / "inferencex_benchmark_results.csv"
-    models = ["gptoss120b", "deepseekv4pro", "llama70b", "dsr1", "qwen3.5"]
+    models = ["gptoss120b", "frontier_composite", "llama70b", "dsr1", "qwen3.5"]
     hardware = ["h200", "b200", "gb200"]
     samples: dict[tuple[str, str], list[float]] = {(model, gpu): [] for model in models for gpu in hardware}
     with source_path.open(newline="", encoding="utf-8") as handle:
         for row in csv.DictReader(handle):
             source_model = row.get("model", "")
-            proxy_model = next((model for model in models if source_model == PROXY_MODEL_SOURCES[model]), "")
+            proxy_model = next((model for model in models if source_model in proxy_source_models(model)), "")
             key = (proxy_model, row.get("gpu", ""))
             if (
                 key in samples
@@ -2930,9 +2949,9 @@ def scenario_summary_rows(scenario_rows: list[dict[str, Any]]) -> list[dict[str,
 def benchmark_assumptions() -> list[dict[str, Any]]:
     """GPU/effective-parameter benchmark layer adapted from the comparison workbook."""
     return [
-        {"company": "OpenAI", "proxy_model": "DeepSeek V4 Pro public proxy", "effective_active_params_b": 49.0, "benchmark_tps_per_gpu": 60000, "benchmark_effective_active_b": 49.0, "accelerator_kw": 7.0, "serving_efficiency": 0.72, "benchmark_source": "SRC_SEMIANALYSIS_INFERENCEX; SRC_ARXIV_INFERENCE_ENERGY", "calc_use": "Proxy", "caveat_kr": "closed GPT 실제 serving benchmark가 아니며 DeepSeek V4 Pro 공개 proxy로만 사용"},
-        {"company": "Anthropic", "proxy_model": "DeepSeek V4 Pro public proxy", "effective_active_params_b": 49.0, "benchmark_tps_per_gpu": 60000, "benchmark_effective_active_b": 49.0, "accelerator_kw": 7.5, "serving_efficiency": 0.74, "benchmark_source": "SRC_ANTHROPIC_CLAUDE_DOCS; SRC_SEMIANALYSIS_INFERENCEX", "calc_use": "Proxy", "caveat_kr": "Claude 파라미터/serving benchmark는 비공개라 DeepSeek V4 Pro 공개 proxy 사용"},
-        {"company": "Google", "proxy_model": "DeepSeek V4 Pro public proxy", "effective_active_params_b": 49.0, "benchmark_tps_per_gpu": 60000, "benchmark_effective_active_b": 49.0, "accelerator_kw": 7.0, "serving_efficiency": 0.70, "benchmark_source": "SRC_GOOGLE_IRONWOOD; SRC_GOOGLE_TPU_V6E; SRC_SEMIANALYSIS_INFERENCEX", "calc_use": "Proxy", "caveat_kr": "Gemini/TPU production serving이 아니라 DeepSeek V4 Pro 공개 proxy 사용"},
+        {"company": "OpenAI", "proxy_model": "DeepSeek V4 Pro + Kimi K2.5 frontier composite", "effective_active_params_b": 49.0, "benchmark_tps_per_gpu": 60000, "benchmark_effective_active_b": 49.0, "accelerator_kw": 7.0, "serving_efficiency": 0.72, "benchmark_source": "SRC_SEMIANALYSIS_INFERENCEX; SRC_DEEPSEEK_V4_PRO; SRC_KIMI_K25", "calc_use": "Proxy", "caveat_kr": "closed GPT 실제 serving benchmark가 아니며 DeepSeek V4 Pro와 Kimi K2.5 공개 proxy를 함께 사용"},
+        {"company": "Anthropic", "proxy_model": "DeepSeek V4 Pro + Kimi K2.5 frontier composite", "effective_active_params_b": 49.0, "benchmark_tps_per_gpu": 60000, "benchmark_effective_active_b": 49.0, "accelerator_kw": 7.5, "serving_efficiency": 0.74, "benchmark_source": "SRC_ANTHROPIC_CLAUDE_DOCS; SRC_SEMIANALYSIS_INFERENCEX; SRC_DEEPSEEK_V4_PRO; SRC_KIMI_K25", "calc_use": "Proxy", "caveat_kr": "Claude 파라미터/serving benchmark는 비공개라 DeepSeek V4 Pro와 Kimi K2.5 공개 proxy를 함께 사용"},
+        {"company": "Google", "proxy_model": "DeepSeek V4 Pro + Kimi K2.5 frontier composite", "effective_active_params_b": 49.0, "benchmark_tps_per_gpu": 60000, "benchmark_effective_active_b": 49.0, "accelerator_kw": 7.0, "serving_efficiency": 0.70, "benchmark_source": "SRC_GOOGLE_IRONWOOD; SRC_GOOGLE_TPU_V6E; SRC_SEMIANALYSIS_INFERENCEX; SRC_DEEPSEEK_V4_PRO; SRC_KIMI_K25", "calc_use": "Proxy", "caveat_kr": "Gemini/TPU production serving이 아니라 DeepSeek V4 Pro와 Kimi K2.5 공개 proxy를 함께 사용"},
         {"company": "Meta", "proxy_model": "Llama 4 Maverick", "effective_active_params_b": 52.1, "benchmark_tps_per_gpu": 40000, "benchmark_effective_active_b": 17.0, "accelerator_kw": 7.0, "serving_efficiency": 0.60, "benchmark_source": "SRC_META_LLAMA4_NVIDIA", "calc_use": "Open model proxy", "caveat_kr": "Meta AI production routing과 다를 수 있음"},
         {"company": "Microsoft", "proxy_model": "Copilot/GPT-class proxy + Phi anchor", "effective_active_params_b": 80.5, "benchmark_tps_per_gpu": 60000, "benchmark_effective_active_b": 5.1, "accelerator_kw": 7.0, "serving_efficiency": 0.70, "benchmark_source": "SRC_MS_PHI4_TECHREPORT; SRC_OPENAI_GPT41_DOCS", "calc_use": "Proxy", "caveat_kr": "Microsoft-owned/Phi와 OpenAI dependency mix가 섞인 proxy"},
         {"company": "xAI", "proxy_model": "Grok closed frontier proxy", "effective_active_params_b": 92.0, "benchmark_tps_per_gpu": 55000, "benchmark_effective_active_b": 5.1, "accelerator_kw": 7.0, "serving_efficiency": 0.68, "benchmark_source": "SRC_XAI_MODELS; SRC_XAI_NVIDIA_COLOSSUS", "calc_use": "Proxy", "caveat_kr": "Grok closed model benchmark가 없어 cluster scale 기반 proxy"},
