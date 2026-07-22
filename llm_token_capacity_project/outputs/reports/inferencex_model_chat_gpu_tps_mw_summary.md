@@ -15,7 +15,8 @@
 - Short chat: `ISL/OSL 1024/1024`
 - Long chat: `ISL/OSL 8192/1024`
 - Agentic: agentic trace 평균 `ISL/OSL 100947/860`을 직접 matched benchmark로 쓰지 않고, `long_chat TPS/MW x 55%`로 산출
-- 평균값: 위 필터를 통과한 row의 arithmetic mean
+- 평균값: 위 필터를 통과한 row의 arithmetic mean. outlier와 row-count 부족의 영향을 받으므로 감사용으로 본다.
+- 산식용 selected 값: p50 기반이며, long-context 값이 short-chat보다 높게 나오는 경우 `short_chat x 92%` guardrail을 적용한다.
 - P50: 같은 필터에서 median. 엑셀 산식의 selected reference와 대조하기 위한 보조값
 
 ## 모델 매핑
@@ -28,7 +29,27 @@
 | `dsr1` | `dsr1` | DeepSeek |
 | `qwen3.5` | `qwen3.5` | Alibaba |
 
-## 평균 TPS/MW
+## 산식용 Selected TPS/MW
+
+| Model | GPU | Short selected TPS/MW | Long selected TPS/MW | Agentic selected TPS/MW | Status |
+|---|---:|---:|---:|---:|---|
+| `gptoss120b` | H200 | 798,842 | 533,670 | 293,518 | direct / direct / long_chat x 55% |
+| `gptoss120b` | B200 | 1,699,560 | 1,189,057 | 653,981 | direct / direct / long_chat x 55% |
+| `gptoss120b` | GB200 | 1,699,560 | 1,189,057 | 653,981 | fallback:B200 / fallback:B200 / long_chat x 55% |
+| `deepseekv4pro` | H200 | 88,597 | 81,509 | 44,830 | fallback:GB200 / fallback:B200 plus long<=short x 92% cap / long_chat x 55% |
+| `deepseekv4pro` | B200 | 88,597 | 81,509 | 44,830 | fallback:GB200 / fallback:B200 plus long<=short x 92% cap / long_chat x 55% |
+| `deepseekv4pro` | GB200 | 88,597 | 81,509 | 44,830 | direct / direct plus long<=short x 92% cap / long_chat x 55% |
+| `llama70b` | H200 | 486,775 | 189,727 | 104,350 | direct / direct / long_chat x 55% |
+| `llama70b` | B200 | 528,285 | 269,299 | 148,114 | direct / direct / long_chat x 55% |
+| `llama70b` | GB200 | 528,285 | 269,299 | 148,114 | fallback:B200 / fallback:B200 / long_chat x 55% |
+| `dsr1` | H200 | 103,277 | 74,906 | 41,198 | direct / direct / long_chat x 55% |
+| `dsr1` | B200 | 127,759 | 74,797 | 41,138 | direct / direct / long_chat x 55% |
+| `dsr1` | GB200 | 127,759 | 74,797 | 41,138 | fallback:B200 / fallback:B200 / long_chat x 55% |
+| `qwen3.5` | H200 | 161,817 | 116,014 | 63,808 | direct / direct / long_chat x 55% |
+| `qwen3.5` | B200 | 544,655 | 268,718 | 147,795 | direct / direct / long_chat x 55% |
+| `qwen3.5` | GB200 | 544,655 | 268,718 | 147,795 | fallback:B200 / fallback:B200 / long_chat x 55% |
+
+## Raw 평균 TPS/MW
 
 | Model | InferenceX source | GPU | Short mean TPS/MW | Short n/status | Long mean TPS/MW | Long n/status | Agentic mean TPS/MW | Agentic basis |
 |---|---|---:|---:|---|---:|---|---:|---|
@@ -48,9 +69,11 @@
 | `qwen3.5` | `qwen3.5` | B200 | 542,922 | 30 / direct | 290,266 | 27 / direct | 159,646 | long_chat x 55% |
 | `qwen3.5` | `qwen3.5` | GB200 | 542,922 | 30 / fallback:B200 | 290,266 | 27 / fallback:B200 | 159,646 | long_chat x 55% |
 
-## P50 TPS/MW
+## Raw P50 TPS/MW
 
-| Model | GPU | Short p50 TPS/MW | Long p50 TPS/MW | Agentic p50 TPS/MW |
+아래 표는 원천 row의 median이며, 산식용 long-context guardrail을 적용하지 않은 감사용 값이다.
+
+| Model | GPU | Short raw p50 TPS/MW | Long raw p50 TPS/MW | Agentic raw p50 TPS/MW |
 |---|---:|---:|---:|---:|
 | `gptoss120b` | H200 | 798,842 | 533,670 | 293,518 |
 | `gptoss120b` | B200 | 1,699,560 | 1,189,057 | 653,981 |
@@ -73,5 +96,6 @@
 - `direct`는 해당 model/GPU/chat 조건에 맞는 InferenceX row가 존재한다는 뜻이다.
 - `fallback`은 해당 GPU에 matched row가 없어서 가장 가까운 B200 또는 GB200 row를 임시 proxy로 사용했다는 뜻이다.
 - DeepSeek V4 Pro는 현재 InferenceX source model `dsv4`로 매핑되며, H200 direct row가 부족하다.
+- DeepSeek V4 Pro raw 평균에서는 long이 short보다 높게 보일 수 있다. 이는 long row의 일부 높은 concurrency/output-only TPS row와 부족한 direct short row 때문이며, 산식용 selected 값에는 `long <= short x 92%` guardrail을 적용했다.
 - Agentic 값은 아직 100k input급 matched benchmark가 아니라 trace-derived estimate다.
 - 이 표는 public benchmark/proxy이며 OpenAI, Anthropic, Google 등 closed production serving telemetry가 아니다.

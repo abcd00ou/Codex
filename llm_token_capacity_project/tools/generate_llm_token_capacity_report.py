@@ -2333,6 +2333,10 @@ def workload_reference_profiles() -> dict[str, dict[str, Any]]:
                 else:
                     long_selected = round(short_selected * classes["long_chat"]["fit_factor"])
                     long_status = "Derived fallback - insufficient 8192/1024 rows"
+            long_cap = round(short_selected * classes["long_chat"]["fit_factor"])
+            if long_selected > long_cap:
+                long_selected = long_cap
+                long_status += "; capped at short_chat x long-context factor"
 
             agentic_selected = round(long_selected * classes["agentic"]["fit_factor"])
             profile[f"{gpu}_short_chat_tps_per_mw"] = short_selected
