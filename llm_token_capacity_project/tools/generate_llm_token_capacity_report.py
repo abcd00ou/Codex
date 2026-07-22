@@ -36,6 +36,15 @@ RUN_DATE = date.today().isoformat()
 YEARS = list(range(2026, 2031))
 
 
+PROXY_MODEL_SOURCES = {
+    "gptoss120b": "gptoss120b",
+    "llama70b": "llama70b",
+    "dsr1": "dsr1",
+    "qwen3.5": "qwen3.5",
+    "deepseekv4pro": "dsv4",
+}
+
+
 SCENARIO_CASES = {
     "Bear": {
         "description_kr": "전력 인허가/장비 조달 지연, 낮은 inference 배정, 보수적인 commercial workload fit을 적용하는 경우.",
@@ -257,6 +266,17 @@ def sources() -> list[Source]:
             "Reasoning model family and distillation ecosystem anchor",
             0.88,
             "R1 상용/오픈 생태계 확인. serving power는 별도 scenario.",
+        ),
+        Source(
+            "SRC_DEEPSEEK_V4_PRO",
+            "DeepSeek-V4-Pro model card",
+            "DeepSeek / Hugging Face",
+            "2026-06-26",
+            "https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro",
+            "Tier 1",
+            "DeepSeek V4 Pro proxy model identity, MoE total/active parameter anchor and long-context capability",
+            0.90,
+            "DeepSeek V4 Pro는 1.6T total / 49B activated MoE 및 1M context를 공개한 frontier-class proxy로 사용.",
         ),
         Source(
             "SRC_QWEN3_GITHUB",
@@ -1172,9 +1192,9 @@ def accelerator_mix_profiles() -> dict[str, dict[str, Any]]:
             "gpu_share_2030": 0.10,
             "asic_efficiency_factor": 1.00,
             "architecture_workload_factor": 1.00,
-            "source_ids": "SRC_GOOGLE_IRONWOOD; SRC_GOOGLE_TPU_V6E; SRC_GOOGLE_GEMINI_TOKENS",
+            "source_ids": "SRC_GOOGLE_IRONWOOD; SRC_GOOGLE_TPU_V6E; SRC_GOOGLE_GEMINI_TOKENS; SRC_DEEPSEEK_V4_PRO",
             "mix_rationale": "Google officially positions Ironwood as an inference TPU and publicly documents TPU generations; TPU-heavy serving is modeled, not measured fleet share.",
-            "tps_rationale": "GPT-OSS 120B B200 output-token benchmark proxy. TPU/Ironwood presence is shown, but no unmatched efficiency premium is applied.",
+            "tps_rationale": "DeepSeek V4 Pro InferenceX output-token benchmark proxy. TPU/Ironwood presence is shown, but no unmatched efficiency premium is applied.",
             "replacement_path": "Gemini production serving throughput/power or TPU-versus-GPU serving allocation disclosure.",
         },
         "Meta": {
@@ -1208,9 +1228,9 @@ def accelerator_mix_profiles() -> dict[str, dict[str, Any]]:
             "gpu_share_2030": 1.00,
             "asic_efficiency_factor": 1.00,
             "architecture_workload_factor": 1.00,
-            "source_ids": "SRC_OPENAI_STARGATE_PROGRESS; SRC_OPENAI_GPT41_DOCS",
+            "source_ids": "SRC_OPENAI_STARGATE_PROGRESS; SRC_OPENAI_GPT41_DOCS; SRC_DEEPSEEK_V4_PRO",
             "mix_rationale": "OpenAI states Oracle began delivering NVIDIA GB200 racks for Stargate. No operated custom-ASIC mix is publicly quantified in the model.",
-            "tps_rationale": "GPT-OSS 120B B200 output-token benchmark proxy; not direct ChatGPT/API telemetry.",
+            "tps_rationale": "DeepSeek V4 Pro InferenceX output-token benchmark proxy; not direct ChatGPT/API telemetry.",
             "replacement_path": "OpenAI hardware allocation and output-token throughput by model/product surface.",
         },
         "Anthropic": {
@@ -1220,9 +1240,9 @@ def accelerator_mix_profiles() -> dict[str, dict[str, Any]]:
             "gpu_share_2030": 0.15,
             "asic_efficiency_factor": 1.00,
             "architecture_workload_factor": 1.00,
-            "source_ids": "SRC_AWS_RAINIER_ACTIVE; SRC_ANTHROPIC_AMAZON_COMPUTE; SRC_ANTHROPIC_CLAUDE_DOCS",
+            "source_ids": "SRC_AWS_RAINIER_ACTIVE; SRC_ANTHROPIC_AMAZON_COMPUTE; SRC_ANTHROPIC_CLAUDE_DOCS; SRC_DEEPSEEK_V4_PRO",
             "mix_rationale": "Project Rainier establishes large Anthropic-directed Trainium capacity. Exact Claude inference allocation across Trainium, TPU and GPU is undisclosed.",
-            "tps_rationale": "GPT-OSS 120B B200 output-token benchmark proxy. Trainium presence is shown, but no unmatched efficiency premium is applied.",
+            "tps_rationale": "DeepSeek V4 Pro InferenceX output-token benchmark proxy. Trainium presence is shown, but no unmatched efficiency premium is applied.",
             "replacement_path": "Anthropic/AWS production inference hardware allocation and Claude tokens/MW measurement.",
         },
         "DeepSeek": {
@@ -1949,48 +1969,67 @@ def is_moe_company(company: str) -> bool:
 def core_inferencex_benchmark_profiles() -> list[dict[str, Any]]:
     """Select a small, readable output-token benchmark table for headline TPS/MW.
 
-    The common comparison condition is intentionally fixed: B200,
-    single_turn, ISL=1024 and OSL=1024. Values are medians across the
-    remaining published configuration rows. They are benchmark proxies, not
+    The preferred comparison condition is fixed at B200, single_turn,
+    ISL=1024 and OSL=1024. If that row is unavailable for a proxy model,
+    the nearest published model-level row is used with the selected
+    condition exposed in the output. These are benchmark proxies, not
     company production telemetry.
     """
     source_path = ROOT / "data" / "inferencex" / "normalized" / "inferencex_benchmark_results.csv"
     mapped = {
-        "gptoss120b": "Microsoft; Google; xAI; OpenAI; Anthropic; Tencent",
+        "gptoss120b": "Microsoft; xAI; Tencent",
+        "deepseekv4pro": "Google; OpenAI; Anthropic",
         "llama70b": "Meta",
         "dsr1": "DeepSeek",
         "qwen3.5": "Alibaba",
     }
-    values: dict[str, list[float]] = {model: [] for model in mapped}
+    values: dict[tuple[str, str, str, str], list[float]] = {}
     main_configs: dict[str, tuple[str, str]] = {}
     if source_path.exists():
         with source_path.open(newline="", encoding="utf-8") as handle:
             for row in csv.DictReader(handle):
-                model = row.get("model", "")
-                if (
-                    model in values
-                    and row.get("gpu") == "b200"
-                    and row.get("benchmark_type") == "single_turn"
-                    and row.get("is_main_model_config", "yes") == "yes"
-                    and row.get("isl") == "1024"
-                    and row.get("osl") == "1024"
-                    and row.get("output_tok_s_mw")
-                ):
-                    values[model].append(float(row["output_tok_s_mw"]))
-                    main_configs.setdefault(model, (row.get("main_framework", ""), row.get("main_precision", "")))
+                source_model = row.get("model", "")
+                if row.get("benchmark_type") != "single_turn" or row.get("is_main_model_config", "yes") != "yes":
+                    continue
+                if not row.get("output_tok_s_mw"):
+                    continue
+                try:
+                    concurrency = int(float(row.get("concurrency") or 0))
+                except ValueError:
+                    concurrency = 0
+                if not 32 <= concurrency <= 256:
+                    continue
+                for model in mapped:
+                    if source_model == PROXY_MODEL_SOURCES[model]:
+                        key = (model, row.get("gpu", ""), row.get("isl", ""), row.get("osl", ""))
+                        values.setdefault(key, []).append(float(row["output_tok_s_mw"]))
+                        main_configs.setdefault(model, (row.get("main_framework", ""), row.get("main_precision", "")))
     rows: list[dict[str, Any]] = []
     for model, companies in mapped.items():
-        samples = values[model]
+        candidates = [
+            ("b200", "1024", "1024", "Preferred B200 1024/1024 row selected"),
+            ("gb200", "1024", "1024", "GB200 1024/1024 fallback - missing B200 1024/1024 row"),
+            ("b200", "8192", "1024", "B200 8192/1024 fallback - missing 1024/1024 rows"),
+            ("gb200", "8192", "1024", "GB200 8192/1024 fallback - missing preferred rows"),
+        ]
+        selected_gpu, selected_isl, selected_osl, selected_status, samples = "", "", "", "", []
+        for gpu, isl, osl, status in candidates:
+            vals = values.get((model, gpu, isl, osl), [])
+            if vals:
+                selected_gpu, selected_isl, selected_osl, selected_status, samples = gpu, isl, osl, status, vals
+                break
         if not samples:
             raise ValueError(f"Missing core InferenceX benchmark rows for {model}")
         rows.append(
             {
                 "proxy_model": model,
+                "inferencex_source_model": PROXY_MODEL_SOURCES[model],
                 "mapped_companies": companies,
-                "gpu": "b200",
+                "gpu": selected_gpu,
                 "benchmark_type": "single_turn",
-                "isl": 1024,
-                "osl": 1024,
+                "isl": int(selected_isl),
+                "osl": int(selected_osl),
+                "condition_status": selected_status,
                 "metric_used": "output_tok_s_mw p50",
                 "main_framework": main_configs.get(model, ("", ""))[0],
                 "main_precision": main_configs.get(model, ("", ""))[1],
@@ -1999,8 +2038,8 @@ def core_inferencex_benchmark_profiles() -> list[dict[str, Any]]:
                 "output_tok_s_mw_min": round(min(samples)),
                 "output_tok_s_mw_max": round(max(samples)),
                 "headline_use": "Public output-token TPS/MW reference ceiling; commercial workload fit is applied before headline use.",
-                "source_ids": "SRC_SEMIANALYSIS_INFERENCEX",
-                "caveat": "Benchmark proxy only; filtered to model-level main_framework/main_precision before GPU comparison.",
+                "source_ids": "SRC_SEMIANALYSIS_INFERENCEX" + ("; SRC_DEEPSEEK_V4_PRO" if model == "deepseekv4pro" else ""),
+                "caveat": "Benchmark proxy only; filtered to model-level main_framework/main_precision before GPU comparison. Read gpu/ISL/OSL/condition_status before comparing.",
             }
         )
     return rows
@@ -2036,7 +2075,7 @@ def commercial_workload_profiles() -> dict[str, dict[str, Any]]:
             "bear_fit_factor": 0.40,
             "base_fit_factor": 0.60,
             "bull_fit_factor": 0.80,
-            "rationale": "Gemini serving is closed and TPU-heavy with product and multimodal routing; no matched production TPS/MW is adopted.",
+            "rationale": "Gemini serving is closed and TPU-heavy with product and multimodal routing; DeepSeek V4 Pro is used only as a public frontier-class proxy, not production telemetry.",
         },
         "Meta": {
             "workload_class": "Llama / Meta AI general assistant",
@@ -2057,14 +2096,14 @@ def commercial_workload_profiles() -> dict[str, dict[str, Any]]:
             "bear_fit_factor": 0.30,
             "base_fit_factor": 0.50,
             "bull_fit_factor": 0.70,
-            "rationale": "ChatGPT/API demand includes reasoning and latency-sensitive surfaces; GPT-OSS throughput is not GPT production telemetry.",
+            "rationale": "ChatGPT/API demand includes reasoning and latency-sensitive surfaces; DeepSeek V4 Pro throughput is not GPT production telemetry.",
         },
         "Anthropic": {
             "workload_class": "Claude coding, agent and long-context enterprise",
             "bear_fit_factor": 0.30,
             "base_fit_factor": 0.50,
             "bull_fit_factor": 0.70,
-            "rationale": "Claude usage is materially coding/agent/long-context oriented and no comparable production serving row is public.",
+            "rationale": "Claude usage is materially coding/agent/long-context oriented; DeepSeek V4 Pro is a public benchmark proxy because comparable Claude production serving rows are not public.",
         },
         "DeepSeek": {
             "workload_class": "DeepSeek R1/V3 MoE with reasoning mix",
@@ -2117,22 +2156,31 @@ def workload_class_assumptions() -> dict[str, dict[str, Any]]:
             "label": "Short chat / routine assistant",
             "isl": 1024,
             "osl": 1024,
+            "concurrency_min": 32,
+            "concurrency_max": 256,
+            "interactivity_profile": "interactive balanced serving",
             "fit_factor": 1.00,
             "source_ids": "SRC_SEMIANALYSIS_INFERENCEX",
-            "rationale": "Matches the current InferenceX headline benchmark condition and represents short interactive chat/API output.",
+            "rationale": "Uses ISL/OSL 1024/1024 and concurrency 32-256 to avoid singleton and saturation extremes while representing short interactive chat/API output.",
         },
         "long_chat": {
             "label": "Long chat / research / RAG",
             "isl": 8192,
             "osl": 1024,
+            "concurrency_min": 32,
+            "concurrency_max": 256,
+            "interactivity_profile": "interactive long-context serving",
             "fit_factor": 0.92,
             "source_ids": "SRC_SEMIANALYSIS_INFERENCEX; SRC_GOOGLE_GEMINI_LONG_CONTEXT",
-            "rationale": "Uses matched InferenceX 8192/1024 rows where available; otherwise applies a long-context haircut. Google long-context docs support treating this as a distinct workload class.",
+            "rationale": "Uses ISL/OSL 8192/1024 and concurrency 32-256 where available; otherwise applies an explicit placeholder or long-context haircut. Google long-context docs support treating this as a distinct workload class.",
         },
         "agentic": {
             "label": "Agentic coding / tool workflow",
             "isl": round(trace["avg_input_tokens_per_request"]),
             "osl": round(trace["avg_output_tokens_per_request"]),
+            "concurrency_min": 32,
+            "concurrency_max": 256,
+            "interactivity_profile": "agentic/tool workflow derived from long-context serving",
             "fit_factor": 0.55,
             "source_ids": "SRC_INFERENCEX_AGENTIC_TRACES_256K; SRC_ANTHROPIC_CONSUMPTION_GUIDE; SRC_OPENAI_CODEX_RATE_CARD",
             "rationale": (
@@ -2217,7 +2265,7 @@ def company_workload_mix_profiles() -> dict[str, dict[str, Any]]:
 def workload_reference_profiles() -> dict[str, dict[str, Any]]:
     """Build short/long/agentic output TPS/MW profiles by proxy model and GPU."""
     source_path = ROOT / "data" / "inferencex" / "normalized" / "inferencex_benchmark_results.csv"
-    models = ["gptoss120b", "llama70b", "dsr1", "qwen3.5"]
+    models = ["gptoss120b", "deepseekv4pro", "llama70b", "dsr1", "qwen3.5"]
     hardware = ["h200", "b200", "gb200"]
     classes = workload_class_assumptions()
     samples: dict[tuple[str, str, str], list[float]] = {
@@ -2228,17 +2276,26 @@ def workload_reference_profiles() -> dict[str, dict[str, Any]]:
     }
     with source_path.open(newline="", encoding="utf-8") as handle:
         for row in csv.DictReader(handle):
-            model = row.get("model", "")
+            source_model = row.get("model", "")
             gpu = row.get("gpu", "")
-            if model not in models or gpu not in hardware:
+            proxy_model = next((model for model in models if source_model == PROXY_MODEL_SOURCES[model]), "")
+            if not proxy_model or gpu not in hardware:
                 continue
             if row.get("benchmark_type") != "single_turn" or row.get("is_main_model_config", "yes") != "yes":
                 continue
             if not row.get("output_tok_s_mw"):
                 continue
             for workload in ("short_chat", "long_chat"):
-                if row.get("isl") == str(classes[workload]["isl"]) and row.get("osl") == str(classes[workload]["osl"]):
-                    samples[(model, gpu, workload)].append(float(row["output_tok_s_mw"]))
+                try:
+                    concurrency = int(float(row.get("concurrency") or 0))
+                except ValueError:
+                    concurrency = 0
+                if (
+                    row.get("isl") == str(classes[workload]["isl"])
+                    and row.get("osl") == str(classes[workload]["osl"])
+                    and classes[workload]["concurrency_min"] <= concurrency <= classes[workload]["concurrency_max"]
+                ):
+                    samples[(proxy_model, gpu, workload)].append(float(row["output_tok_s_mw"]))
 
     profiles: dict[str, dict[str, Any]] = {}
     for model in models:
@@ -2247,10 +2304,15 @@ def workload_reference_profiles() -> dict[str, dict[str, Any]]:
             short_vals = samples[(model, gpu, "short_chat")]
             if not short_vals:
                 b200_short_vals = samples[(model, "b200", "short_chat")]
-                if not b200_short_vals:
+                gb200_short_vals = samples[(model, "gb200", "short_chat")]
+                if b200_short_vals:
+                    short_selected = round(statistics.median(b200_short_vals))
+                    short_status = "B200 placeholder - missing matched short-chat rows"
+                elif gb200_short_vals:
+                    short_selected = round(statistics.median(gb200_short_vals))
+                    short_status = "GB200 placeholder - missing matched short-chat rows"
+                else:
                     raise ValueError(f"Missing short_chat reference for {model}")
-                short_selected = round(statistics.median(b200_short_vals))
-                short_status = "B200 placeholder - missing matched short-chat rows"
             else:
                 short_selected = round(statistics.median(short_vals))
                 short_status = "Public 1024/1024 reference selected"
@@ -2260,8 +2322,17 @@ def workload_reference_profiles() -> dict[str, dict[str, Any]]:
                 long_selected = round(statistics.median(long_vals))
                 long_status = "Public 8192/1024 reference selected"
             else:
-                long_selected = round(short_selected * classes["long_chat"]["fit_factor"])
-                long_status = "Derived fallback - insufficient 8192/1024 rows"
+                b200_long_vals = samples[(model, "b200", "long_chat")]
+                gb200_long_vals = samples[(model, "gb200", "long_chat")]
+                if b200_long_vals:
+                    long_selected = round(statistics.median(b200_long_vals))
+                    long_status = "B200 placeholder - insufficient/missing matched 8192/1024 rows"
+                elif gb200_long_vals:
+                    long_selected = round(statistics.median(gb200_long_vals))
+                    long_status = "GB200 placeholder - insufficient/missing matched 8192/1024 rows"
+                else:
+                    long_selected = round(short_selected * classes["long_chat"]["fit_factor"])
+                    long_status = "Derived fallback - insufficient 8192/1024 rows"
 
             agentic_selected = round(long_selected * classes["agentic"]["fit_factor"])
             profile[f"{gpu}_short_chat_tps_per_mw"] = short_selected
@@ -2368,12 +2439,14 @@ def hardware_reference_profiles() -> dict[str, dict[str, Any]]:
     explicit conservative placeholder until the user supplies a replacement.
     """
     source_path = ROOT / "data" / "inferencex" / "normalized" / "inferencex_benchmark_results.csv"
-    models = ["gptoss120b", "llama70b", "dsr1", "qwen3.5"]
+    models = ["gptoss120b", "deepseekv4pro", "llama70b", "dsr1", "qwen3.5"]
     hardware = ["h200", "b200", "gb200"]
     samples: dict[tuple[str, str], list[float]] = {(model, gpu): [] for model in models for gpu in hardware}
     with source_path.open(newline="", encoding="utf-8") as handle:
         for row in csv.DictReader(handle):
-            key = (row.get("model", ""), row.get("gpu", ""))
+            source_model = row.get("model", "")
+            proxy_model = next((model for model in models if source_model == PROXY_MODEL_SOURCES[model]), "")
+            key = (proxy_model, row.get("gpu", ""))
             if (
                 key in samples
                 and row.get("benchmark_type") == "single_turn"
@@ -2382,25 +2455,36 @@ def hardware_reference_profiles() -> dict[str, dict[str, Any]]:
                 and row.get("osl") == "1024"
                 and row.get("output_tok_s_mw")
             ):
-                samples[key].append(float(row["output_tok_s_mw"]))
+                try:
+                    concurrency = int(float(row.get("concurrency") or 0))
+                except ValueError:
+                    concurrency = 0
+                if 32 <= concurrency <= 256:
+                    samples[key].append(float(row["output_tok_s_mw"]))
     profiles: dict[str, dict[str, Any]] = {}
     for model in models:
         b200_vals = samples[(model, "b200")]
-        if not b200_vals:
-            raise ValueError(f"Missing B200 reference for {model}")
-        b200_value = round(statistics.median(b200_vals))
+        gb200_vals = samples[(model, "gb200")]
+        if b200_vals:
+            fallback_value = round(statistics.median(b200_vals))
+            fallback_label = "B200"
+        elif gb200_vals:
+            fallback_value = round(statistics.median(gb200_vals))
+            fallback_label = "GB200"
+        else:
+            raise ValueError(f"Missing B200/GB200 reference for {model}")
         profile: dict[str, Any] = {"proxy_model": model}
         for gpu in hardware:
             vals = samples[(model, gpu)]
             observed = round(statistics.median(vals)) if vals else None
-            selected = observed if len(vals) >= 50 else b200_value
+            selected = observed if len(vals) >= 50 else fallback_value
             profile[f"{gpu}_row_count"] = len(vals)
             profile[f"{gpu}_observed_tps_per_mw"] = observed
             profile[f"{gpu}_selected_tps_per_mw"] = selected
             profile[f"{gpu}_selection_status"] = (
                 "Public reference selected"
                 if len(vals) >= 50
-                else "B200 placeholder - insufficient/missing matched rows; editable input"
+                else f"{fallback_label} placeholder - insufficient/missing matched rows; editable input"
             )
         profiles[model] = profile
     return profiles
@@ -2842,9 +2926,9 @@ def scenario_summary_rows(scenario_rows: list[dict[str, Any]]) -> list[dict[str,
 def benchmark_assumptions() -> list[dict[str, Any]]:
     """GPU/effective-parameter benchmark layer adapted from the comparison workbook."""
     return [
-        {"company": "OpenAI", "proxy_model": "gpt-oss/frontier mix proxy", "effective_active_params_b": 92.0, "benchmark_tps_per_gpu": 60000, "benchmark_effective_active_b": 5.1, "accelerator_kw": 7.0, "serving_efficiency": 0.72, "benchmark_source": "SRC_SEMIANALYSIS_INFERENCEX; SRC_ARXIV_INFERENCE_ENERGY", "calc_use": "Proxy", "caveat_kr": "closed GPT 실제 serving benchmark가 아니므로 sanity check로만 사용"},
-        {"company": "Anthropic", "proxy_model": "Claude closed frontier proxy", "effective_active_params_b": 110.0, "benchmark_tps_per_gpu": 60000, "benchmark_effective_active_b": 5.1, "accelerator_kw": 7.5, "serving_efficiency": 0.74, "benchmark_source": "SRC_ANTHROPIC_CLAUDE_DOCS; SRC_SEMIANALYSIS_INFERENCEX", "calc_use": "Proxy", "caveat_kr": "Claude 파라미터/serving benchmark는 비공개라 proxy"},
-        {"company": "Google", "proxy_model": "Gemini closed frontier proxy", "effective_active_params_b": 80.5, "benchmark_tps_per_gpu": 60000, "benchmark_effective_active_b": 5.1, "accelerator_kw": 7.0, "serving_efficiency": 0.70, "benchmark_source": "SRC_GOOGLE_IRONWOOD; SRC_GOOGLE_TPU_V6E", "calc_use": "Proxy", "caveat_kr": "TPU serving을 GPU-equivalent proxy로 환산"},
+        {"company": "OpenAI", "proxy_model": "DeepSeek V4 Pro public proxy", "effective_active_params_b": 49.0, "benchmark_tps_per_gpu": 60000, "benchmark_effective_active_b": 49.0, "accelerator_kw": 7.0, "serving_efficiency": 0.72, "benchmark_source": "SRC_SEMIANALYSIS_INFERENCEX; SRC_ARXIV_INFERENCE_ENERGY", "calc_use": "Proxy", "caveat_kr": "closed GPT 실제 serving benchmark가 아니며 DeepSeek V4 Pro 공개 proxy로만 사용"},
+        {"company": "Anthropic", "proxy_model": "DeepSeek V4 Pro public proxy", "effective_active_params_b": 49.0, "benchmark_tps_per_gpu": 60000, "benchmark_effective_active_b": 49.0, "accelerator_kw": 7.5, "serving_efficiency": 0.74, "benchmark_source": "SRC_ANTHROPIC_CLAUDE_DOCS; SRC_SEMIANALYSIS_INFERENCEX", "calc_use": "Proxy", "caveat_kr": "Claude 파라미터/serving benchmark는 비공개라 DeepSeek V4 Pro 공개 proxy 사용"},
+        {"company": "Google", "proxy_model": "DeepSeek V4 Pro public proxy", "effective_active_params_b": 49.0, "benchmark_tps_per_gpu": 60000, "benchmark_effective_active_b": 49.0, "accelerator_kw": 7.0, "serving_efficiency": 0.70, "benchmark_source": "SRC_GOOGLE_IRONWOOD; SRC_GOOGLE_TPU_V6E; SRC_SEMIANALYSIS_INFERENCEX", "calc_use": "Proxy", "caveat_kr": "Gemini/TPU production serving이 아니라 DeepSeek V4 Pro 공개 proxy 사용"},
         {"company": "Meta", "proxy_model": "Llama 4 Maverick", "effective_active_params_b": 52.1, "benchmark_tps_per_gpu": 40000, "benchmark_effective_active_b": 17.0, "accelerator_kw": 7.0, "serving_efficiency": 0.60, "benchmark_source": "SRC_META_LLAMA4_NVIDIA", "calc_use": "Open model proxy", "caveat_kr": "Meta AI production routing과 다를 수 있음"},
         {"company": "Microsoft", "proxy_model": "Copilot/GPT-class proxy + Phi anchor", "effective_active_params_b": 80.5, "benchmark_tps_per_gpu": 60000, "benchmark_effective_active_b": 5.1, "accelerator_kw": 7.0, "serving_efficiency": 0.70, "benchmark_source": "SRC_MS_PHI4_TECHREPORT; SRC_OPENAI_GPT41_DOCS", "calc_use": "Proxy", "caveat_kr": "Microsoft-owned/Phi와 OpenAI dependency mix가 섞인 proxy"},
         {"company": "xAI", "proxy_model": "Grok closed frontier proxy", "effective_active_params_b": 92.0, "benchmark_tps_per_gpu": 55000, "benchmark_effective_active_b": 5.1, "accelerator_kw": 7.0, "serving_efficiency": 0.68, "benchmark_source": "SRC_XAI_MODELS; SRC_XAI_NVIDIA_COLOSSUS", "calc_use": "Proxy", "caveat_kr": "Grok closed model benchmark가 없어 cluster scale 기반 proxy"},
@@ -3803,12 +3887,29 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
         "gb200_short_chat_tps_per_mw", "gb200_long_chat_tps_per_mw", "gb200_agentic_tps_per_mw", "gb200_workload_avg_tps_per_mw", "gb200_status",
         "purpose_short_chat_tps_per_mw", "purpose_long_chat_tps_per_mw", "purpose_agentic_tps_per_mw", "purpose_workload_avg_tps_per_mw", "purpose_status",
         "bear_fit_factor", "base_fit_factor", "bull_fit_factor", "rationale", "source_ids",
+        "short_chat_condition", "long_chat_condition", "agentic_condition", "concurrency_interactivity_rule",
     ])
     hardware = hardware_reference_profiles()
     workloads = commercial_workload_profiles()
     proxy_map = company_core_benchmark_map()
     workload_refs = workload_reference_profiles()
     workload_mixes = company_workload_mix_profiles()
+    workload_classes = workload_class_assumptions()
+    short_condition = (
+        f"ISL/OSL {workload_classes['short_chat']['isl']}/{workload_classes['short_chat']['osl']}; "
+        f"concurrency {workload_classes['short_chat']['concurrency_min']}-{workload_classes['short_chat']['concurrency_max']}; "
+        f"{workload_classes['short_chat']['interactivity_profile']}"
+    )
+    long_condition = (
+        f"ISL/OSL {workload_classes['long_chat']['isl']}/{workload_classes['long_chat']['osl']}; "
+        f"concurrency {workload_classes['long_chat']['concurrency_min']}-{workload_classes['long_chat']['concurrency_max']}; "
+        f"{workload_classes['long_chat']['interactivity_profile']}"
+    )
+    agentic_condition = (
+        f"Trace avg ISL/OSL {workload_classes['agentic']['isl']}/{workload_classes['agentic']['osl']}; "
+        f"derived from long_chat TPS/MW x {workload_classes['agentic']['fit_factor']:.0%}; "
+        f"{workload_classes['agentic']['interactivity_profile']}"
+    )
     for excel_row, company in enumerate([scenario.company for scenario in scenarios()], start=2):
         workload = workloads[company]
         proxy = proxy_map[company]["proxy_model"]
@@ -3823,6 +3924,7 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
             refs["gb200_short_chat_tps_per_mw"], refs["gb200_long_chat_tps_per_mw"], refs["gb200_agentic_tps_per_mw"], f"=D{excel_row}*R{excel_row}+E{excel_row}*S{excel_row}+F{excel_row}*T{excel_row}", hw["gb200_selection_status"],
             refs["b200_short_chat_tps_per_mw"], refs["b200_long_chat_tps_per_mw"], refs["b200_agentic_tps_per_mw"], f"=D{excel_row}*W{excel_row}+E{excel_row}*X{excel_row}+F{excel_row}*Y{excel_row}", "B200 placeholder until comparable purpose-built output-token/MW benchmark is adopted.",
             workload["bear_fit_factor"], workload["base_fit_factor"], workload["bull_fit_factor"], mix["rationale"], mix["source_ids"],
+            short_condition, long_condition, agentic_condition, "TPS/MW rows are filtered to model-level main config, single_turn, matched ISL/OSL and concurrency 32-256; agentic is trace-derived until matched 100k-input rows exist.",
         ])
     style_sheet(benchmark_ws)
     for row in benchmark_ws.iter_rows(min_row=2):
@@ -3843,7 +3945,7 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
         "M": 22, "N": 22, "O": 22, "P": 24, "Q": 45,
         "R": 22, "S": 22, "T": 22, "U": 24, "V": 58,
         "W": 24, "X": 24, "Y": 24, "Z": 26, "AA": 58,
-        "AE": 80, "AF": 50,
+        "AE": 80, "AF": 50, "AG": 42, "AH": 42, "AI": 58, "AJ": 72,
     }.items():
         benchmark_ws.column_dimensions[col].width = width
 
