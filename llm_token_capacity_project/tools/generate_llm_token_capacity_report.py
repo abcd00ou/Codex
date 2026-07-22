@@ -1158,9 +1158,9 @@ def assumptions() -> list[dict[str, Any]]:
         },
         {
             "assumption_id": "ASSUMP_AGENTIC_CONTEXT_PENALTY",
-            "description_kr": "Agentic trace는 평균 100k+ input/request인 load-shape 근거이지만 matched InferenceX 100k benchmark가 없으므로, long_chat TPS/MW에 보수적인 context/tooling haircut을 적용한다.",
+            "description_kr": "Agentic trace는 평균 100k+ input/request인 load-shape 근거이지만 matched InferenceX 100k benchmark가 없으므로, Kimi K2.5 dynamic reasoning row에서 산출한 agentic/long TPS/MW ratio를 long_chat TPS/MW에 적용한다.",
             "replacement_path": "InferenceX 또는 production benchmark의 64k/128k/256k ISL, tool-use, cache-aware output_tok_s_mw row.",
-            "confidence": 0.40,
+            "confidence": 0.46,
         },
         {
             "assumption_id": "ASSUMP_CLUSTER_RAMP",
@@ -1718,7 +1718,7 @@ def formula_assumptions() -> list[dict[str, Any]]:
         {
             "category": "InferenceX TPS/MW selection",
             "formula": "gpu_workload_avg_tps_mw = short_share*gpu_short_tps_mw + long_share*gpu_long_tps_mw + agentic_share*gpu_agentic_tps_mw; fleet_reference_tps_per_mw = sum(gpu_share*gpu_workload_avg_tps_mw); reference_serving_tps_per_mw = fleet_reference_tps_per_mw * commercial_workload_fit_factor",
-            "meaning_kr": "InferenceX generated-output TPS/MW를 GPU별 short chat, long chat, agentic workload로 분리한 뒤 업체별 traffic/product mix로 먼저 가중합니다. 이후 H200/B200/GB200/purpose-built fleet mix를 적용합니다. Agentic은 HF trace의 100k급 input load shape를 반영해 long-context row 위에 별도 haircut을 둡니다.",
+            "meaning_kr": "InferenceX generated-output TPS/MW를 GPU별 short chat, long chat, agentic workload로 분리한 뒤 업체별 traffic/product mix로 먼저 가중합니다. 이후 H200/B200/GB200/purpose-built fleet mix를 적용합니다. Agentic은 Kimi K2.5 dynamic reasoning rows에서 산출한 agentic/long ratio를 long-context row에 적용합니다.",
             "evidence_type": "Benchmark proxy selection",
             "source_ids": "SRC_SEMIANALYSIS_INFERENCEX; SRC_INFERENCEX_AGENTIC_TRACES_256K; SRC_ANTHROPIC_CONSUMPTION_GUIDE; SRC_OPENAI_CODEX_RATE_CARD; SRC_GOOGLE_GEMINI_LONG_CONTEXT; SRC_META_BUSINESS_AGENT; ASSUMP_NUMERIC_ACCELERATOR_MIX; ASSUMP_WORKLOAD_CLASS_MIX; ASSUMP_AGENTIC_CONTEXT_PENALTY",
         },
@@ -2168,8 +2168,38 @@ def agentic_trace_profile() -> dict[str, float]:
     return fallback
 
 
+def kimi_agentic_long_ratio() -> float:
+    """Derive agentic TPS/MW as a Kimi K2.5 long-context ratio."""
+    fallback = 1.0 / 9.2
+    source_path = ROOT / "docs" / "dynamic_reasoning_agent_cost" / "inferencex_dynamic_reasoning_tps_gpu.csv"
+    if not source_path.exists():
+        return fallback
+
+    ratios: list[float] = []
+    with source_path.open(newline="", encoding="utf-8") as handle:
+        for row in csv.DictReader(handle):
+            if row.get("model") != "kimik2.5":
+                continue
+            if row.get("workload_type") != "agentic":
+                continue
+            if row.get("is_main_model_config", "yes") != "yes":
+                continue
+            if row.get("isl") != "8192" or row.get("osl") != "1024":
+                continue
+            try:
+                agentic_tps_mw = float(row.get("scenario_output_tok_s_mw") or 0)
+                long_tps_mw = float(row.get("base_output_tok_s_mw") or 0)
+            except ValueError:
+                continue
+            if agentic_tps_mw > 0 and long_tps_mw > 0:
+                ratios.append(agentic_tps_mw / long_tps_mw)
+
+    return statistics.median(ratios) if ratios else fallback
+
+
 def workload_class_assumptions() -> dict[str, dict[str, Any]]:
     trace = agentic_trace_profile()
+    agentic_long_ratio = kimi_agentic_long_ratio()
     return {
         "short_chat": {
             "label": "Short chat / routine assistant",
@@ -2199,15 +2229,16 @@ def workload_class_assumptions() -> dict[str, dict[str, Any]]:
             "osl": round(trace["avg_output_tokens_per_request"]),
             "concurrency_min": 32,
             "concurrency_max": 256,
-            "interactivity_profile": "agentic/tool workflow derived from long-context serving",
-            "fit_factor": 0.55,
-            "source_ids": "SRC_INFERENCEX_AGENTIC_TRACES_256K; SRC_ANTHROPIC_CONSUMPTION_GUIDE; SRC_OPENAI_CODEX_RATE_CARD",
+            "interactivity_profile": "agentic/tool workflow derived from Kimi K2.5 dynamic reasoning",
+            "fit_factor": agentic_long_ratio,
+            "source_ids": "SRC_INFERENCEX_AGENTIC_TRACES_256K; SRC_SEMIANALYSIS_INFERENCEX; SRC_ANTHROPIC_CONSUMPTION_GUIDE; SRC_OPENAI_CODEX_RATE_CARD",
             "rationale": (
                 "Agentic trace profile averages about "
                 f"{trace['avg_input_tokens_per_request']:,.0f} input and "
                 f"{trace['avg_output_tokens_per_request']:,.0f} output tokens/request. "
                 "Because InferenceX does not yet provide matched 100k-input benchmark rows, "
-                "agentic TPS/MW is modeled as long-context TPS/MW with an additional context/tooling haircut."
+                "agentic TPS/MW is modeled as long_chat TPS/MW multiplied by the Kimi K2.5 "
+                f"dynamic-reasoning agentic/long ratio ({agentic_long_ratio:.1%})."
             ),
         },
     }
@@ -2365,7 +2396,9 @@ def workload_reference_profiles() -> dict[str, dict[str, Any]]:
             profile[f"{gpu}_long_chat_row_count"] = len(long_vals)
             profile[f"{gpu}_long_chat_status"] = long_status
             profile[f"{gpu}_agentic_tps_per_mw"] = agentic_selected
-            profile[f"{gpu}_agentic_status"] = "Derived from long_chat with HF agentic trace context/tooling haircut"
+            profile[f"{gpu}_agentic_status"] = (
+                f"Derived from long_chat x Kimi K2.5 agentic/long ratio ({classes['agentic']['fit_factor']:.1%})"
+            )
         profiles[model] = profile
     return profiles
 
@@ -3882,7 +3915,7 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
         ["Step 4b", "serving_tps_per_mw = fleet_reference_tps_per_mw * commercial_workload_fit_factor"],
         ["Step 5", "generated_output_tokens_per_day = inference_gw * 1,000 * serving_tps_per_mw * 86,400"],
         ["GPU mix rule", "H200/B200/GB200/purpose-built share의 합은 100%이며, 같은 inference MW 내 구성 차이가 token capacity를 바꿉니다."],
-        ["Benchmark rule", "Short chat은 ISL/OSL 1024/1024, long chat은 8192/1024, agentic은 HF trace 기반 100k급 input shape를 long-context TPS/MW haircut으로 반영합니다."],
+        ["Benchmark rule", "Short chat은 ISL/OSL 1024/1024, long chat은 8192/1024, agentic은 Kimi K2.5 dynamic reasoning에서 산출한 agentic/long TPS/MW ratio를 long-context TPS/MW에 적용합니다."],
         ["Purpose-built rule", "Comparable TPS/MW가 없으면 B200 placeholder를 사용하며 사용자 입력으로 교체합니다."],
         ["Excluded", "utilization, MoE uplift, software CAGR는 headline 계산에서 제외합니다."],
     ]
