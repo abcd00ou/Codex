@@ -34,6 +34,12 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "outputs" / "reports"
 RUN_DATE = date.today().isoformat()
 YEARS = list(range(2026, 2031))
+PROXY_TPS_MW_REFERENCE_CSV = (
+    ROOT
+    / "docs"
+    / "dynamic_reasoning_agent_cost"
+    / "model_gpu_workload_interactivity_tps_mw_reference.csv"
+)
 
 
 PROXY_MODEL_SOURCES = {
@@ -3691,6 +3697,59 @@ def append_rows(ws, rows: list[dict[str, Any]], headers: list[str]) -> None:
     style_sheet(ws)
 
 
+def append_proxy_tps_mw_reference_sheet(wb: Workbook) -> None:
+    """Append Excel-friendly proxy TPS/MW reference if the generated CSV exists."""
+    rows = read_csv_rows(PROXY_TPS_MW_REFERENCE_CSV)
+    if not rows:
+        return
+
+    headers = list(rows[0].keys())
+    ws = wb.create_sheet("00a_Proxy_TPS_MW")
+    append_rows(ws, rows, headers)
+    for row in ws.iter_rows(min_row=2):
+        source_type = row[15].value
+        target_met = str(row[5].value).lower() == "true"
+        if source_type == "dynamic_reasoning_proxy":
+            fill = PatternFill("solid", fgColor="EAF2FF")
+        elif not target_met:
+            fill = PatternFill("solid", fgColor="FCE4D6")
+        else:
+            fill = PatternFill("solid", fgColor="E2F0D9")
+        for cell in row:
+            cell.fill = fill
+    for col in ("G",):
+        for cell in ws[col][1:]:
+            cell.number_format = "0.0%"
+    for col in ("H",):
+        for cell in ws[col][1:]:
+            cell.number_format = "#,##0"
+    for col in ("I",):
+        for cell in ws[col][1:]:
+            cell.number_format = "0.00"
+    for col, width in {
+        "A": 18,
+        "B": 24,
+        "C": 10,
+        "D": 12,
+        "E": 18,
+        "F": 12,
+        "G": 12,
+        "H": 24,
+        "I": 18,
+        "J": 14,
+        "K": 18,
+        "L": 14,
+        "M": 10,
+        "N": 10,
+        "O": 24,
+        "P": 26,
+        "Q": 16,
+        "R": 18,
+        "S": 92,
+    }.items():
+        ws.column_dimensions[col].width = width
+
+
 def read_csv_rows(path: Path) -> list[dict[str, Any]]:
     if not path.exists():
         return []
@@ -4077,7 +4136,7 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
     logic_rows = [
         ["AI LLM Token Capacity Simulation - Core Formula Model", ""],
         ["목적", "최종 generated output tokens/day를 설명 가능한 전력, GPU 세대 mix, commercial workload 가정으로 계산"],
-        ["입력 원칙", "노란색 셀만 직접 입력합니다. Chat workload 비율과 GPU별 chat-length TPS/MW는 `01_Benchmark_Input`, GPU mix는 `02_GPU_Mix_Input`에서 교체합니다."],
+        ["입력 원칙", "노란색 셀만 직접 입력합니다. 모델/GPU/workload/interactivity별 proxy TPS/MW는 `00a_Proxy_TPS_MW`에서 확인하고, Chat workload 비율과 GPU별 chat-length TPS/MW는 `01_Benchmark_Input`, GPU mix는 `02_GPU_Mix_Input`에서 교체합니다."],
         ["Step 1", "operational_power_gw = contracted_power_gw * operational_deployment_share"],
         ["Step 2", "inference_gw = operational_power_gw / pue * ai_workload_share * inference_power_share"],
         ["Step 3", "gpu_workload_avg_tps_per_mw = short_share*gpu_short_tps + long_share*gpu_long_tps + agentic_share*gpu_agentic_tps"],
@@ -4103,6 +4162,8 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
         logic[f"B{row}"].alignment = Alignment(wrap_text=True, vertical="top")
         logic.row_dimensions[row].height = 30
     logic.freeze_panes = "A2"
+
+    append_proxy_tps_mw_reference_sheet(wb)
 
     benchmark_ws = wb.create_sheet("01_Benchmark_Input")
     benchmark_ws.append([
