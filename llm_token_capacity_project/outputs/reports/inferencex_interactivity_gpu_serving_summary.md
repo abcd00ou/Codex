@@ -1,6 +1,6 @@
 # InferenceX Interactivity x GPU Serving Summary
 
-작성일: 2026-07-23
+작성일: 2026-07-30
 
 ## 기준
 
