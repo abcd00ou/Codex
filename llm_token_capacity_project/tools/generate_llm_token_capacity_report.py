@@ -65,6 +65,79 @@ ACCELERATOR_DETAIL_BUCKETS = (
     "mtia",
     "other",
 )
+BENCHMARK_BUCKETS = ("h200_reference", "b200_reference", "gb200_reference", "purpose_or_unbenchmarked")
+ACCELERATOR_CATALOG = (
+    {
+        "accelerator_type": "H100/H200/A100 class",
+        "benchmark_bucket": "h200_reference",
+        "all_in_kw_per_unit": 1.73,
+        "source_type": "user_supplied_power_seed",
+        "note": "Hopper/legacy NVIDIA class mapped to H200 InferenceX reference until generation-specific TPS/MW is available.",
+    },
+    {
+        "accelerator_type": "B200/B300 class",
+        "benchmark_bucket": "b200_reference",
+        "all_in_kw_per_unit": 2.17,
+        "source_type": "user_supplied_power_seed",
+        "note": "Blackwell discrete GPU class mapped to B200 InferenceX reference.",
+    },
+    {
+        "accelerator_type": "GB200/GB300 class",
+        "benchmark_bucket": "gb200_reference",
+        "all_in_kw_per_unit": 2.10,
+        "source_type": "user_supplied_power_seed",
+        "note": "Rack-scale Grace Blackwell class mapped to GB200 InferenceX reference.",
+    },
+    {
+        "accelerator_type": "R200/R300 future",
+        "benchmark_bucket": "purpose_or_unbenchmarked",
+        "all_in_kw_per_unit": "",
+        "source_type": "editable_future_accelerator",
+        "note": "Future NVIDIA/Rubin family placeholder. Add all-in kW/unit and benchmark bucket when comparable serving TPS/MW exists.",
+    },
+    {
+        "accelerator_type": "TPU",
+        "benchmark_bucket": "purpose_or_unbenchmarked",
+        "all_in_kw_per_unit": "",
+        "source_type": "editable_purpose_built",
+        "note": "Google TPU/Ironwood class. Kept separate for power/count analysis; TPS/MW uses no-uplift placeholder until a comparable output-token benchmark is adopted.",
+    },
+    {
+        "accelerator_type": "Trainium",
+        "benchmark_bucket": "purpose_or_unbenchmarked",
+        "all_in_kw_per_unit": "",
+        "source_type": "editable_purpose_built",
+        "note": "AWS Trainium class. Kept separate for power/count analysis; TPS/MW uses no-uplift placeholder until a comparable output-token benchmark is adopted.",
+    },
+    {
+        "accelerator_type": "Maia",
+        "benchmark_bucket": "purpose_or_unbenchmarked",
+        "all_in_kw_per_unit": "",
+        "source_type": "editable_purpose_built",
+        "note": "Microsoft Maia class. Kept separate for power/count analysis; TPS/MW uses no-uplift placeholder until a comparable output-token benchmark is adopted.",
+    },
+    {
+        "accelerator_type": "MTIA",
+        "benchmark_bucket": "purpose_or_unbenchmarked",
+        "all_in_kw_per_unit": "",
+        "source_type": "editable_purpose_built",
+        "note": "Meta MTIA class. Kept separate for power/count analysis; TPS/MW uses no-uplift placeholder until a comparable output-token benchmark is adopted.",
+    },
+    {
+        "accelerator_type": "Ascend",
+        "benchmark_bucket": "purpose_or_unbenchmarked",
+        "all_in_kw_per_unit": "",
+        "source_type": "editable_purpose_built",
+        "note": "Huawei Ascend class, used for China-cloud seed rows when present.",
+    },
+    {
+        "accelerator_type": "Other / unknown accelerator",
+        "benchmark_bucket": "purpose_or_unbenchmarked",
+        "all_in_kw_per_unit": "",
+        "source_type": "editable_fallback",
+        "note": "Fallback bucket for unmapped accelerators. Add a catalog row and mapping rule when the accelerator becomes material.",
+    },
+)
 
 
 PROXY_MODEL_SOURCES = {
@@ -290,25 +363,64 @@ def workbook_company_from_epoch_user(user: str) -> str | None:
     return mapping.get((user or "").strip())
 
 
-def accelerator_bucket(chip_type: str) -> str:
+def accelerator_catalog_map() -> dict[str, dict[str, Any]]:
+    return {row["accelerator_type"]: dict(row) for row in ACCELERATOR_CATALOG}
+
+
+def accelerator_catalog_rows() -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for idx, row in enumerate(ACCELERATOR_CATALOG, start=1):
+        item = dict(row)
+        item["sort_order"] = idx
+        item["source_ids"] = "SRC_EPOCH_AI_DATA_CENTERS; ASSUMP_NUMERIC_ACCELERATOR_MIX"
+        rows.append(item)
+    return rows
+
+
+def canonical_accelerator_type(chip_type: str) -> str:
     text = chip_type.lower()
     if any(token in text for token in ("tpu", "ironwood")):
-        return "tpu"
+        return "TPU"
     if "trainium" in text:
-        return "trainium"
+        return "Trainium"
     if "maia" in text:
-        return "maia"
+        return "Maia"
     if "mtia" in text:
-        return "mtia"
+        return "MTIA"
+    if "ascend" in text:
+        return "Ascend"
     if text.startswith(("r200", "r300")) or "rubin" in text or "vr200" in text:
-        return "r200_future"
+        return "R200/R300 future"
     if text.startswith(("gb200", "gb300")):
-        return "gb200_reference"
+        return "GB200/GB300 class"
     if text.startswith(("b200", "b300")):
-        return "b200_reference"
+        return "B200/B300 class"
     if text.startswith(("h100", "h200", "h20", "h800", "a100")):
-        return "h200_reference"
-    return "other"
+        return "H100/H200/A100 class"
+    return "Other / unknown accelerator"
+
+
+def benchmark_bucket_for_accelerator(accelerator_type: str) -> str:
+    return accelerator_catalog_map().get(
+        accelerator_type,
+        accelerator_catalog_map()["Other / unknown accelerator"],
+    )["benchmark_bucket"]
+
+
+def accelerator_bucket(chip_type: str) -> str:
+    accelerator_type = canonical_accelerator_type(chip_type)
+    bucket = benchmark_bucket_for_accelerator(accelerator_type)
+    detail_map = {
+        "H100/H200/A100 class": "h200_reference",
+        "B200/B300 class": "b200_reference",
+        "GB200/GB300 class": "gb200_reference",
+        "R200/R300 future": "r200_future",
+        "TPU": "tpu",
+        "Trainium": "trainium",
+        "Maia": "maia",
+        "MTIA": "mtia",
+    }
+    return detail_map.get(accelerator_type, "other" if bucket == "purpose_or_unbenchmarked" else bucket)
 
 
 def normalize_bucket_counts(counts: dict[str, float]) -> dict[str, float]:
@@ -1889,8 +2001,8 @@ def formula_assumptions() -> list[dict[str, Any]]:
         },
         {
             "category": "Benchmark-selected accelerator mix",
-            "formula": "fleet_reference_tps_per_mw = h200_share*h200_ref + b200_share*b200_ref + gb200_share*gb200_ref + purpose_built_share*purpose_built_ref",
-            "meaning_kr": "H200/B200/GB200/purpose-built 구성비를 직접 입력하여 같은 inference MW라도 fleet 구성에 따라 public reference TPS/MW가 달라지게 합니다. Purpose-built는 comparable benchmark가 없으면 B200 placeholder를 사용하며 editable input으로 남깁니다.",
+            "formula": "csp_contract_inference_weight = csp_total_power_mw * ai_contract_share_of_csp * inference_share; accelerator_power_mw = normalized_csp_inference_power_mw * csp_accelerator_share; fleet_reference_tps_per_mw = h200_share*h200_ref + b200_share*b200_ref + gb200_share*gb200_ref + purpose_built_share*purpose_built_ref",
+            "meaning_kr": "회사별 accelerator mix는 CSP 총 전력, AI업체 계약 비중, inference share로 CSP별 회사 inference power를 정규화한 뒤 CSP accelerator mix를 곱해 산출합니다. Purpose-built 또는 아직 benchmark bucket이 없는 accelerator는 comparable benchmark가 없으면 B200 placeholder를 사용합니다.",
             "evidence_type": "Platform fact + Conservative benchmark mapping",
             "source_ids": "SRC_MS_MAIA200; SRC_GOOGLE_IRONWOOD; SRC_GOOGLE_TPU_V6E; SRC_META_MTIA_GENAI_2026; SRC_AWS_RAINIER_ACTIVE; SRC_MLPERF_INFERENCE; SRC_MLPERF_POWER; SRC_TENSORRT_LLM; ASSUMP_NUMERIC_ACCELERATOR_MIX",
         },
@@ -3049,6 +3161,31 @@ def epoch_site_capacity_weight_mw(row: dict[str, Any], year: int) -> float:
     return 0.0
 
 
+def epoch_site_total_power_mw(row: dict[str, Any], year: int) -> float:
+    """Return total site power for CSP pool sizing, avoiding equal-split user attribution."""
+    year_end = date(year, 12, 31)
+    completion = parse_iso_date(row.get("completion_date_for_max_it_power"))
+    first_operational = parse_iso_date(row.get("first_operational_date"))
+    planned = numeric_value(row.get("contracted_or_planned_it_power_mw_full_exposure"))
+    current = numeric_value(row.get("current_it_power_mw_full_exposure"))
+    if completion and completion <= year_end:
+        return planned
+    if first_operational and first_operational <= year_end:
+        return current
+    if not completion and current > 0:
+        return current
+    return 0.0
+
+
+def clean_epoch_owner_list(value: str | None) -> list[str]:
+    owners: list[str] = []
+    for part in (value or "").split(","):
+        owner = clean_epoch_name(part)
+        if owner and owner not in owners:
+            owners.append(owner)
+    return owners
+
+
 def legacy_mix_from_forecast(row: dict[str, Any]) -> dict[str, float]:
     return {
         "h200_reference": row["h200_share"],
@@ -3060,6 +3197,15 @@ def legacy_mix_from_forecast(row: dict[str, Any]) -> dict[str, float]:
         "maia": 0.0,
         "mtia": 0.0,
         "other": row["purpose_built_accelerator_share"],
+    }
+
+
+def legacy_accelerator_type_mix_from_forecast(row: dict[str, Any]) -> dict[str, float]:
+    return {
+        "H100/H200/A100 class": row["h200_share"],
+        "B200/B300 class": row["b200_share"],
+        "GB200/GB300 class": row["gb200_share"],
+        "Other / unknown accelerator": row["purpose_built_accelerator_share"],
     }
 
 
@@ -3102,86 +3248,143 @@ def epoch_chip_quantity_mix_by_site_year() -> dict[tuple[str, int], dict[str, An
     return output
 
 
-def datacenter_capacity_allocation_rows(scenario_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def epoch_csp_power_and_user_attribution() -> tuple[
+    dict[tuple[str, int], float],
+    dict[tuple[str, str, int], float],
+]:
+    csp_site_power: dict[tuple[str, str, int], float] = {}
+    company_csp_power: dict[tuple[str, str, int], float] = {}
+    if not EPOCH_USER_SITES_CSV.exists():
+        return {}, {}
+    with EPOCH_USER_SITES_CSV.open(encoding="utf-8-sig", newline="") as f:
+        for raw in csv.DictReader(f):
+            owner = clean_epoch_name(raw.get("owner"))
+            data_center = raw.get("data_center", "").strip()
+            company = workbook_company_from_epoch_user(raw.get("user", ""))
+            if not owner or not data_center:
+                continue
+            for year in YEARS:
+                total_power = epoch_site_total_power_mw(raw, year)
+                if total_power > 0:
+                    site_key = (owner, data_center, year)
+                    csp_site_power[site_key] = max(csp_site_power.get(site_key, 0.0), total_power)
+                if company:
+                    attributed_power = epoch_site_capacity_weight_mw(raw, year)
+                    if attributed_power > 0:
+                        company_key = (company, owner, year)
+                        company_csp_power[company_key] = company_csp_power.get(company_key, 0.0) + attributed_power
+    csp_total_power: dict[tuple[str, int], float] = {}
+    for (owner, _, year), power in csp_site_power.items():
+        csp_total_power[(owner, year)] = csp_total_power.get((owner, year), 0.0) + power
+    return csp_total_power, company_csp_power
+
+
+def csp_contract_allocation_rows(scenario_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     forecast_lookup = {
         (row["scenario"], row["company"], row["year"]): row
         for row in scenario_rows
     }
+    csp_total_power, company_csp_power = epoch_csp_power_and_user_attribution()
     rows: list[dict[str, Any]] = []
     seen_company_year: set[tuple[str, str, int]] = set()
-    if EPOCH_USER_SITES_CSV.exists():
-        with EPOCH_USER_SITES_CSV.open(encoding="utf-8-sig", newline="") as f:
-            for raw in csv.DictReader(f):
-                company = workbook_company_from_epoch_user(raw.get("user", ""))
-                if not company:
-                    continue
-                data_center = raw.get("data_center", "").strip()
-                owner = clean_epoch_name(raw.get("owner"))
-                for scenario in SCENARIO_CASES:
-                    for year in YEARS:
-                        forecast = forecast_lookup.get((scenario, company, year))
-                        if not forecast:
-                            continue
-                        capacity_weight = epoch_site_capacity_weight_mw(raw, year)
-                        if capacity_weight <= 0:
-                            continue
-                        rows.append(
-                            {
-                                "allocation_key": f"{scenario}|{company}|{year}|{data_center}",
-                                "scenario": scenario,
-                                "company": company,
-                                "year": year,
-                                "data_center": data_center,
-                                "owner": owner,
-                                "country": raw.get("country", ""),
-                                "capacity_weight_mw": round(capacity_weight, 3),
-                                "ai_capacity_share": 1.0,
-                                "inference_share": forecast["inference_power_share"],
-                                "training_share": round(1 - forecast["inference_power_share"], 6),
-                                "completion_date": raw.get("completion_date_for_max_it_power", ""),
-                                "current_it_power_mw": numeric_value(raw.get("current_it_power_mw_equal_split")),
-                                "contracted_it_power_mw": numeric_value(raw.get("contracted_or_planned_it_power_mw_equal_split")),
-                                "user_confidence": raw.get("user_confidence", ""),
-                                "all_chip_types": raw.get("all_chip_types", ""),
-                                "source_type": "epoch_user_site_equal_split_seed",
-                                "source_ids": "SRC_EPOCH_AI_DATA_CENTERS; EPOCH_NORMALIZED_USER_SITES",
-                                "note": "Capacity weight is used only to weight accelerator mix, not to overwrite company total power in 02_Inputs.",
-                            }
-                        )
-                        seen_company_year.add((scenario, company, year))
+    for (company, csp, year), attributed_power_mw in sorted(company_csp_power.items()):
+        csp_power_mw = csp_total_power.get((csp, year), 0.0)
+        if csp_power_mw <= 0:
+            continue
+        contract_share = min(max(attributed_power_mw / csp_power_mw, 0.0), 1.0)
+        for scenario in SCENARIO_CASES:
+            forecast = forecast_lookup.get((scenario, company, year))
+            if not forecast:
+                continue
+            rows.append(
+                {
+                    "allocation_key": f"{scenario}|{company}|{year}|{csp}",
+                    "scenario": scenario,
+                    "company": company,
+                    "year": year,
+                    "csp": csp,
+                    "csp_total_power_mw": round(csp_power_mw, 3),
+                    "ai_contract_share_of_csp": round(contract_share, 8),
+                    "ai_contract_power_mw": round(csp_power_mw * contract_share, 3),
+                    "inference_share": forecast["inference_power_share"],
+                    "training_share": round(1 - forecast["inference_power_share"], 6),
+                    "contract_inference_weight_mw": round(csp_power_mw * contract_share * forecast["inference_power_share"], 3),
+                    "source_type": "epoch_csp_total_power_x_user_contract_share_seed",
+                    "source_ids": "SRC_EPOCH_AI_DATA_CENTERS; EPOCH_NORMALIZED_USER_SITES",
+                    "note": "Seeded as CSP total power times AI-company attributed contract share. Replace csp_total_power_mw and ai_contract_share_of_csp with your long-term contract dataset.",
+                }
+            )
+            seen_company_year.add((scenario, company, year))
 
     for row in scenario_rows:
         key = (row["scenario"], row["company"], row["year"])
         if key in seen_company_year:
             continue
-        data_center = f"Legacy company envelope - {row['company']}"
+        csp = f"Legacy company envelope - {row['company']}"
+        fallback_power_mw = round(row["ai_it_load_gw"] * 1000, 3)
         rows.append(
             {
-                "allocation_key": f"{row['scenario']}|{row['company']}|{row['year']}|{data_center}",
+                "allocation_key": f"{row['scenario']}|{row['company']}|{row['year']}|{csp}",
                 "scenario": row["scenario"],
                 "company": row["company"],
                 "year": row["year"],
-                "data_center": data_center,
-                "owner": row["company"],
-                "country": "",
-                "capacity_weight_mw": round(row["ai_it_load_gw"] * 1000, 3),
-                "ai_capacity_share": 1.0,
+                "csp": csp,
+                "csp_total_power_mw": fallback_power_mw,
+                "ai_contract_share_of_csp": 1.0,
+                "ai_contract_power_mw": fallback_power_mw,
                 "inference_share": row["inference_power_share"],
                 "training_share": row["training_power_share"],
-                "completion_date": "",
-                "current_it_power_mw": "",
-                "contracted_it_power_mw": "",
-                "user_confidence": row["confidence"],
-                "all_chip_types": "",
+                "contract_inference_weight_mw": round(fallback_power_mw * row["inference_power_share"], 3),
                 "source_type": "legacy_company_envelope_fallback",
                 "source_ids": row["source_ids"],
-                "note": "No mapped Epoch user-site rows were available, so the prior company-level accelerator mix remains as an editable fallback.",
+                "note": "No mapped CSP contract rows were available, so the prior company-level accelerator mix remains as fallback.",
             }
         )
     return rows
 
 
-def datacenter_accelerator_mix_rows(
+def epoch_csp_accelerator_share_seed() -> dict[tuple[str, int], dict[str, float]]:
+    if not EPOCH_CHIP_QUANTITIES_CSV.exists():
+        return {}
+    with EPOCH_CHIP_QUANTITIES_CSV.open(encoding="utf-8-sig", newline="") as f:
+        raw_rows = list(csv.DictReader(f))
+    output: dict[tuple[str, int], dict[str, float]] = {}
+    for year in YEARS:
+        year_end = date(year, 12, 31)
+        latest: dict[tuple[str, str, str], tuple[date, float]] = {}
+        for raw in raw_rows:
+            chip_date = parse_iso_date(raw.get("Date"))
+            if not chip_date or chip_date > year_end:
+                continue
+            accelerator_type = canonical_accelerator_type(raw.get("Chip type", ""))
+            units = numeric_value(raw.get("Number of Units"))
+            if units <= 0:
+                continue
+            owners = clean_epoch_owner_list(raw.get("Owner"))
+            if not owners:
+                continue
+            unit_split = units / len(owners)
+            data_center = raw.get("Data center", "").strip()
+            for owner in owners:
+                key = (owner, data_center, accelerator_type)
+                prior = latest.get(key)
+                if prior is None or chip_date >= prior[0]:
+                    latest[key] = (chip_date, unit_split)
+        counts: dict[tuple[str, int], dict[str, float]] = {}
+        for (owner, _, accelerator_type), (_, units) in latest.items():
+            owner_counts = counts.setdefault((owner, year), {})
+            owner_counts[accelerator_type] = owner_counts.get(accelerator_type, 0.0) + units
+        for key, owner_counts in counts.items():
+            total = sum(owner_counts.values())
+            if total > 0:
+                output[key] = {
+                    accelerator_type: round(units / total, 8)
+                    for accelerator_type, units in owner_counts.items()
+                }
+    return output
+
+
+def csp_accelerator_mix_rows(
     scenario_rows: list[dict[str, Any]],
     capacity_rows: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
@@ -3189,92 +3392,77 @@ def datacenter_accelerator_mix_rows(
         (row["scenario"], row["company"], row["year"]): row
         for row in scenario_rows
     }
-    chip_quantity_mix = epoch_chip_quantity_mix_by_site_year()
+    csp_mix_seed = epoch_csp_accelerator_share_seed()
     rows: list[dict[str, Any]] = []
     emitted: set[tuple[str, str, int]] = set()
+    catalog = accelerator_catalog_map()
     for capacity in capacity_rows:
-        key = (capacity["scenario"], capacity["data_center"], capacity["year"])
+        key = (capacity["scenario"], capacity["csp"], capacity["year"])
         if key in emitted:
             continue
         emitted.add(key)
-        detail = chip_quantity_mix.get((capacity["data_center"], capacity["year"]))
-        if detail:
-            mix = detail["mix"]
-            source_type = detail["source_type"]
-            source_ids = detail["source_ids"]
-            note = detail["note"]
+        mix = csp_mix_seed.get((capacity["csp"], capacity["year"]))
+        if mix:
+            source_type = "epoch_csp_chip_quantity_latest"
+            source_ids = "SRC_EPOCH_AI_DATA_CENTERS; EPOCH_RAW_CHIP_QUANTITIES"
+            note = "Latest chip quantity per CSP/data-center/accelerator through year-end; normalized by unit count. Shares are editable."
         else:
-            mix = split_chip_type_mix(capacity.get("all_chip_types", ""))
-            if sum(mix.values()) > 0:
-                source_type = "epoch_site_chip_type_equal_weight"
-                source_ids = "SRC_EPOCH_AI_DATA_CENTERS; EPOCH_NORMALIZED_USER_SITES"
-                note = "No chip quantity row matched this site/year, so listed chip types are equal-weighted as an editable seed."
-            else:
-                forecast = forecast_lookup[(capacity["scenario"], capacity["company"], capacity["year"])]
-                mix = legacy_mix_from_forecast(forecast)
-                source_type = "legacy_company_gpu_mix_fallback"
-                source_ids = forecast["source_ids"]
-                note = "No site-level chip type was available; prior company-level GPU/ASIC mix is retained as fallback."
-        rows.append(
-            {
-                "mix_key": f"{capacity['scenario']}|{capacity['data_center']}|{capacity['year']}",
-                "scenario": capacity["scenario"],
-                "data_center": capacity["data_center"],
-                "year": capacity["year"],
-                "owner": capacity["owner"],
-                "h200_reference_share": mix["h200_reference"],
-                "b200_reference_share": mix["b200_reference"],
-                "gb200_reference_share": mix["gb200_reference"],
-                "r200_future_share": mix["r200_future"],
-                "tpu_share": mix["tpu"],
-                "trainium_share": mix["trainium"],
-                "maia_share": mix["maia"],
-                "mtia_share": mix["mtia"],
-                "other_share": mix["other"],
-                "share_sum_check": round(sum(mix.values()), 6),
-                "source_type": source_type,
-                "source_ids": source_ids,
-                "note": note,
-            }
-        )
+            forecast = forecast_lookup[(capacity["scenario"], capacity["company"], capacity["year"])]
+            mix = legacy_accelerator_type_mix_from_forecast(forecast)
+            source_type = "legacy_company_gpu_mix_fallback"
+            source_ids = forecast["source_ids"]
+            note = "No CSP-level chip quantity seed was available; prior company-level GPU/ASIC mix is retained as fallback."
+        share_sum = sum(max(v, 0.0) for v in mix.values())
+        for accelerator_type, share in sorted(mix.items()):
+            if share <= 0:
+                continue
+            catalog_row = catalog.get(accelerator_type, catalog["Other / unknown accelerator"])
+            rows.append(
+                {
+                    "mix_key": f"{capacity['scenario']}|{capacity['csp']}|{capacity['year']}|{accelerator_type}",
+                    "scenario": capacity["scenario"],
+                    "csp": capacity["csp"],
+                    "year": capacity["year"],
+                    "accelerator_type": accelerator_type,
+                    "benchmark_bucket": catalog_row["benchmark_bucket"],
+                    "all_in_kw_per_unit": catalog_row["all_in_kw_per_unit"],
+                    "accelerator_share": round(share / share_sum, 8) if share_sum > 0 else 0.0,
+                    "share_sum_check": round(share_sum, 6),
+                    "source_type": source_type,
+                    "source_ids": source_ids,
+                    "note": note,
+                }
+            )
     return rows
 
 
-def apply_datacenter_mix_to_forecast_rows(
+def apply_csp_mix_to_forecast_rows(
     scenario_rows: list[dict[str, Any]],
     capacity_rows: list[dict[str, Any]],
     mix_rows: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     workload_reference_lookup = workload_reference_profiles()
-    mix_lookup = {row["mix_key"]: row for row in mix_rows}
+    mixes_by_csp_year: dict[tuple[str, str, int], list[dict[str, Any]]] = {}
+    for mix in mix_rows:
+        mixes_by_csp_year.setdefault((mix["scenario"], mix["csp"], mix["year"]), []).append(mix)
     aggregate: dict[tuple[str, str, int], dict[str, float]] = {}
     for capacity in capacity_rows:
         row_key = (capacity["scenario"], capacity["company"], capacity["year"])
         bucket = aggregate.setdefault(
-            row_key,
-            {name: 0.0 for name in ("weight", *ACCELERATOR_DETAIL_BUCKETS)},
+            row_key, {name: 0.0 for name in ("weight", *BENCHMARK_BUCKETS, *ACCELERATOR_DETAIL_BUCKETS)}
         )
-        weight = (
-            numeric_value(capacity["capacity_weight_mw"])
-            * numeric_value(capacity["ai_capacity_share"], 1.0)
-            * numeric_value(capacity["inference_share"])
-        )
+        weight = numeric_value(capacity["contract_inference_weight_mw"])
         if weight <= 0:
             continue
-        mix_key = f"{capacity['scenario']}|{capacity['data_center']}|{capacity['year']}"
-        mix = mix_lookup.get(mix_key)
-        if not mix:
-            continue
         bucket["weight"] += weight
-        bucket["h200_reference"] += weight * numeric_value(mix["h200_reference_share"])
-        bucket["b200_reference"] += weight * numeric_value(mix["b200_reference_share"])
-        bucket["gb200_reference"] += weight * numeric_value(mix["gb200_reference_share"])
-        bucket["r200_future"] += weight * numeric_value(mix["r200_future_share"])
-        bucket["tpu"] += weight * numeric_value(mix["tpu_share"])
-        bucket["trainium"] += weight * numeric_value(mix["trainium_share"])
-        bucket["maia"] += weight * numeric_value(mix["maia_share"])
-        bucket["mtia"] += weight * numeric_value(mix["mtia_share"])
-        bucket["other"] += weight * numeric_value(mix["other_share"])
+        for mix in mixes_by_csp_year.get((capacity["scenario"], capacity["csp"], capacity["year"]), []):
+            share = numeric_value(mix["accelerator_share"])
+            accelerator_type = mix["accelerator_type"]
+            benchmark_bucket = mix["benchmark_bucket"]
+            detail_bucket = accelerator_bucket(accelerator_type)
+            bucket[benchmark_bucket] += weight * share
+            if detail_bucket != benchmark_bucket:
+                bucket[detail_bucket] += weight * share
 
     updated: list[dict[str, Any]] = []
     for row in scenario_rows:
@@ -3293,7 +3481,7 @@ def apply_datacenter_mix_to_forecast_rows(
                 "mtia_share": agg["mtia"] / agg["weight"],
                 "other_share": agg["other"] / agg["weight"],
             }
-            purpose_built_share = sum(detailed.values())
+            purpose_built_share = agg["purpose_or_unbenchmarked"] / agg["weight"]
             item["h200_share"] = round(h200_share, 6)
             item["b200_share"] = round(b200_share, 6)
             item["gb200_share"] = round(gb200_share, 6)
@@ -3302,14 +3490,14 @@ def apply_datacenter_mix_to_forecast_rows(
             item.update({key: round(value, 6) for key, value in detailed.items()})
             item["datacenter_mix_weight_mw"] = round(agg["weight"], 3)
             item["gpu_asic_mix_basis"] = (
-                "Derived by capacity-weighting 02a_DC_Capacity_Alloc rows against "
-                "02b_DC_Accelerator_Mix rows, using inference-weighted capacity only. "
+                "Derived by normalizing each AI company's modeled inference power across CSPs using "
+                "CSP total power * AI contract share * inference share, then applying long-format CSP accelerator mix rows. "
                 + row["gpu_asic_mix_basis"]
             )
             if "SRC_EPOCH_AI_DATA_CENTERS" not in item["source_ids"]:
                 item["source_ids"] = item["source_ids"] + "; SRC_EPOCH_AI_DATA_CENTERS"
             item["replacement_path"] = (
-                "Replace 02a datacenter capacity allocations and 02b datacenter accelerator mix with contract/procurement telemetry. "
+                "Replace 02a CSP contract allocations and 02b CSP accelerator mix with contract/procurement telemetry. "
                 + item["replacement_path"]
             )
 
@@ -3361,6 +3549,84 @@ def apply_datacenter_mix_to_forecast_rows(
             item.setdefault("datacenter_mix_weight_mw", 0.0)
         updated.append(item)
     return updated
+
+
+def ai_csp_normalized_power_rows(
+    scenario_rows: list[dict[str, Any]],
+    capacity_rows: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    forecast_lookup = {
+        (row["scenario"], row["company"], row["year"]): row
+        for row in scenario_rows
+    }
+    total_weight: dict[tuple[str, str, int], float] = {}
+    for capacity in capacity_rows:
+        key = (capacity["scenario"], capacity["company"], capacity["year"])
+        total_weight[key] = total_weight.get(key, 0.0) + numeric_value(capacity["contract_inference_weight_mw"])
+
+    rows: list[dict[str, Any]] = []
+    for capacity in capacity_rows:
+        key = (capacity["scenario"], capacity["company"], capacity["year"])
+        forecast = forecast_lookup[key]
+        company_inference_power_mw = forecast["inference_gw"] * 1000
+        weight = numeric_value(capacity["contract_inference_weight_mw"])
+        denominator = total_weight.get(key, 0.0)
+        normalized_share = weight / denominator if denominator > 0 else 0.0
+        rows.append(
+            {
+                "normalized_key": capacity["allocation_key"],
+                "scenario": capacity["scenario"],
+                "company": capacity["company"],
+                "year": capacity["year"],
+                "csp": capacity["csp"],
+                "company_inference_power_mw": round(company_inference_power_mw, 3),
+                "csp_total_power_mw": capacity["csp_total_power_mw"],
+                "ai_contract_share_of_csp": capacity["ai_contract_share_of_csp"],
+                "ai_contract_power_mw": capacity["ai_contract_power_mw"],
+                "inference_share": capacity["inference_share"],
+                "contract_inference_weight_mw": capacity["contract_inference_weight_mw"],
+                "company_contract_inference_weight_mw": round(denominator, 3),
+                "normalized_csp_share": round(normalized_share, 8),
+                "normalized_csp_inference_power_mw": round(company_inference_power_mw * normalized_share, 3),
+                "source_type": capacity["source_type"],
+                "note": "Company inference power is redistributed across CSPs by normalized contract inference weight.",
+            }
+        )
+    return rows
+
+
+def ai_accelerator_power_rows(
+    normalized_rows: list[dict[str, Any]],
+    mix_rows: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    mixes_by_csp_year: dict[tuple[str, str, int], list[dict[str, Any]]] = {}
+    for mix in mix_rows:
+        mixes_by_csp_year.setdefault((mix["scenario"], mix["csp"], mix["year"]), []).append(mix)
+    rows: list[dict[str, Any]] = []
+    for normalized in normalized_rows:
+        key = (normalized["scenario"], normalized["csp"], normalized["year"])
+        for mix in mixes_by_csp_year.get(key, []):
+            accelerator_power_mw = numeric_value(normalized["normalized_csp_inference_power_mw"]) * numeric_value(mix["accelerator_share"])
+            all_in_kw = numeric_value(mix["all_in_kw_per_unit"], 0.0)
+            rows.append(
+                {
+                    "power_key": f"{normalized['normalized_key']}|{mix['accelerator_type']}",
+                    "scenario": normalized["scenario"],
+                    "company": normalized["company"],
+                    "year": normalized["year"],
+                    "csp": normalized["csp"],
+                    "accelerator_type": mix["accelerator_type"],
+                    "benchmark_bucket": mix["benchmark_bucket"],
+                    "normalized_csp_inference_power_mw": normalized["normalized_csp_inference_power_mw"],
+                    "accelerator_share": mix["accelerator_share"],
+                    "accelerator_power_mw": round(accelerator_power_mw, 3),
+                    "all_in_kw_per_unit": mix["all_in_kw_per_unit"],
+                    "accelerator_count": round(accelerator_power_mw * 1000 / all_in_kw) if all_in_kw > 0 else "",
+                    "source_type": mix["source_type"],
+                    "note": "Extensible long-format output: add a new accelerator row in 02b and map it in 02x_Accelerator_Catalog to extend this table.",
+                }
+            )
+    return rows
 
 
 def number_trace_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -4589,10 +4855,10 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
         ["Step 1", "operational_power_gw = contracted_power_gw * operational_deployment_share"],
         ["Step 2", "inference_gw = operational_power_gw / pue * ai_workload_share * inference_power_share"],
         ["Step 3", "gpu_workload_avg_tps_per_mw = short_share*gpu_short_tps + long_share*gpu_long_tps + agentic_share*gpu_agentic_tps"],
-        ["Step 4", "company accelerator mix = sum(datacenter inference_weight * datacenter accelerator share) / sum(datacenter inference_weight), then fleet_reference_tps_per_mw = sum(company accelerator share * workload_avg_tps_per_mw)"],
+        ["Step 4", "AI company inference MW is normalized across CSPs by CSP total power * AI contract share * inference share; accelerator power = normalized CSP inference MW * CSP accelerator share."],
         ["Step 4b", "serving_tps_per_mw = fleet_reference_tps_per_mw * commercial_workload_fit_factor"],
         ["Step 5", "generated_output_tokens_per_day = inference_gw * 1,000 * serving_tps_per_mw * 86,400"],
-        ["GPU mix rule", "`02_GPU_Mix_Input`은 `02a_DC_Capacity_Alloc`과 `02b_DC_Accelerator_Mix`에서 자동 산출됩니다. H200/B200/GB200/purpose-or-unbenchmarked share의 합은 100%입니다."],
+        ["GPU mix rule", "`02_GPU_Mix_Input`은 `02a_CSP_Contract_Alloc`, `02b_CSP_Accelerator_Mix`, `02x_Accelerator_Catalog`에서 자동 산출됩니다. H200/B200/GB200/purpose-or-unbenchmarked share의 합은 100%입니다."],
         ["Benchmark rule", "Short chat은 ISL/OSL 1024/1024, long chat은 8192/1024입니다. TPS/MW는 concurrency 32-256 안에서 Dynamo/TRT-LLM/MTP 계열 stack을 우선하고, 없으면 같은 조건의 public max row를 씁니다. Agentic은 Kimi K2.5 dynamic reasoning에서 산출한 agentic/long TPS/MW ratio를 long-context TPS/MW에 적용합니다."],
         ["Purpose-built rule", "Comparable TPS/MW가 없으면 B200 placeholder를 사용하며 사용자 입력으로 교체합니다."],
         ["Excluded", "utilization, MoE uplift, software CAGR는 headline 계산에서 제외합니다."],
@@ -4742,103 +5008,171 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
     inputs.column_dimensions["J"].width = 24
     inputs.column_dimensions["K"].width = 29
 
-    dc_capacity = wb.create_sheet("02a_DC_Capacity_Alloc")
-    capacity_headers = [
-        "allocation_key", "scenario", "company", "year", "data_center", "owner", "country",
-        "capacity_weight_mw", "ai_capacity_share", "inference_share", "training_share",
-        "completion_date", "current_it_power_mw", "contracted_it_power_mw", "user_confidence",
-        "all_chip_types", "source_type", "source_ids", "note",
+    catalog_ws = wb.create_sheet("02x_Accelerator_Catalog")
+    catalog_headers = [
+        "sort_order", "accelerator_type", "benchmark_bucket", "all_in_kw_per_unit",
+        "source_type", "source_ids", "note",
     ]
-    append_rows(dc_capacity, data["datacenter_capacity_allocations"], capacity_headers)
-    for row in dc_capacity.iter_rows(min_row=2):
-        for col in (8, 9, 10):
+    append_rows(catalog_ws, data["accelerator_catalog"], catalog_headers)
+    for row in catalog_ws.iter_rows(min_row=2):
+        for col in (2, 3, 4):
             row[col - 1].fill = input_fill
             row[col - 1].font = Font(color="0000FF")
-    for col in ("I", "J", "K"):
-        for cell in dc_capacity[col][1:]:
-            cell.number_format = "0.0%"
-    for col in ("H", "M", "N"):
+    for cell in catalog_ws["D"][1:]:
+        cell.number_format = "0.00"
+    catalog_ws.column_dimensions["B"].width = 28
+    catalog_ws.column_dimensions["G"].width = 88
+
+    dc_capacity = wb.create_sheet("02a_CSP_Contract_Alloc")
+    capacity_headers = [
+        "allocation_key", "scenario", "company", "year", "csp", "csp_total_power_mw",
+        "ai_contract_share_of_csp", "ai_contract_power_mw", "inference_share",
+        "training_share", "contract_inference_weight_mw", "source_type", "source_ids", "note",
+    ]
+    dc_capacity.append(capacity_headers)
+    capacity_last = len(data["csp_contract_allocations"]) + 1
+    for excel_row, row in enumerate(data["csp_contract_allocations"], start=2):
+        dc_capacity.append([
+            row["allocation_key"], row["scenario"], row["company"], row["year"], row["csp"],
+            row["csp_total_power_mw"], row["ai_contract_share_of_csp"],
+            f"=F{excel_row}*G{excel_row}", row["inference_share"],
+            f"=1-I{excel_row}", f"=H{excel_row}*I{excel_row}",
+            row["source_type"], row["source_ids"], row["note"],
+        ])
+    style_sheet(dc_capacity)
+    for row in dc_capacity.iter_rows(min_row=2):
+        for col in (6, 7, 9):
+            row[col - 1].fill = input_fill
+            row[col - 1].font = Font(color="0000FF")
+        for col in (8, 10, 11):
+            row[col - 1].fill = formula_fill
+    for col in ("F", "H", "K"):
         for cell in dc_capacity[col][1:]:
             cell.number_format = "#,##0.0"
+    for col in ("G", "I", "J"):
+        for cell in dc_capacity[col][1:]:
+            cell.number_format = "0.0%"
     dc_capacity.column_dimensions["A"].width = 58
-    dc_capacity.column_dimensions["E"].width = 34
-    dc_capacity.column_dimensions["S"].width = 72
+    dc_capacity.column_dimensions["E"].width = 30
+    dc_capacity.column_dimensions["N"].width = 76
 
-    dc_mix = wb.create_sheet("02b_DC_Accelerator_Mix")
+    dc_mix = wb.create_sheet("02b_CSP_Accelerator_Mix")
     mix_headers = [
-        "mix_key", "scenario", "data_center", "year", "owner",
-        "h200_reference_share", "b200_reference_share", "gb200_reference_share",
-        "r200_future_share", "tpu_share", "trainium_share", "maia_share", "mtia_share",
-        "other_share", "share_sum_check", "source_type", "source_ids", "note",
+        "mix_key", "scenario", "csp", "year", "accelerator_type", "benchmark_bucket",
+        "all_in_kw_per_unit", "accelerator_share", "share_sum_check", "source_type",
+        "source_ids", "note",
     ]
-    append_rows(dc_mix, data["datacenter_accelerator_mix"], mix_headers)
+    dc_mix.append(mix_headers)
+    mix_last = len(data["csp_accelerator_mix"]) + 1
+    catalog_last = len(data["accelerator_catalog"]) + 1
+    for excel_row, row in enumerate(data["csp_accelerator_mix"], start=2):
+        dc_mix.append([
+            f"=B{excel_row}&\"|\"&C{excel_row}&\"|\"&D{excel_row}&\"|\"&E{excel_row}",
+            row["scenario"], row["csp"], row["year"], row["accelerator_type"],
+            f"=IFERROR(INDEX('02x_Accelerator_Catalog'!$C$2:$C${catalog_last},MATCH(E{excel_row},'02x_Accelerator_Catalog'!$B$2:$B${catalog_last},0)),\"purpose_or_unbenchmarked\")",
+            f"=IFERROR(INDEX('02x_Accelerator_Catalog'!$D$2:$D${catalog_last},MATCH(E{excel_row},'02x_Accelerator_Catalog'!$B$2:$B${catalog_last},0)),\"\")",
+            row["accelerator_share"],
+            f"=SUMIFS($H$2:$H${mix_last},$B$2:$B${mix_last},B{excel_row},$C$2:$C${mix_last},C{excel_row},$D$2:$D${mix_last},D{excel_row})",
+            row["source_type"], row["source_ids"], row["note"],
+        ])
+    style_sheet(dc_mix)
     for row in dc_mix.iter_rows(min_row=2):
-        for col in range(6, 15):
+        for col in (5, 8):
             row[col - 1].fill = input_fill
             row[col - 1].font = Font(color="0000FF")
-    for col in ("F", "G", "H", "I", "J", "K", "L", "M", "N", "O"):
+        for col in (1, 6, 7, 9):
+            row[col - 1].fill = formula_fill
+    for col in ("H", "I"):
         for cell in dc_mix[col][1:]:
             cell.number_format = "0.0%"
+    for cell in dc_mix["G"][1:]:
+        cell.number_format = "0.00"
     dc_mix.column_dimensions["A"].width = 58
-    dc_mix.column_dimensions["C"].width = 34
-    dc_mix.column_dimensions["R"].width = 72
+    dc_mix.column_dimensions["C"].width = 30
+    dc_mix.column_dimensions["E"].width = 28
+    dc_mix.column_dimensions["L"].width = 76
 
-    bridge = wb.create_sheet("02c_DC_Accel_Bridge")
+    bridge = wb.create_sheet("02c_AI_CSP_Normalized")
     bridge_headers = [
-        "bridge_key", "scenario", "company", "year", "data_center", "owner", "mix_key",
-        "inference_weight_mw", "h200_reference_share", "b200_reference_share",
-        "gb200_reference_share", "r200_future_share", "tpu_share", "trainium_share",
-        "maia_share", "mtia_share", "other_share", "weighted_h200_reference",
-        "weighted_b200_reference", "weighted_gb200_reference", "weighted_r200_future",
-        "weighted_tpu", "weighted_trainium", "weighted_maia", "weighted_mtia",
-        "weighted_other", "weighted_purpose_or_unbenchmarked", "mix_lookup_status",
+        "normalized_key", "scenario", "company", "year", "csp",
+        "company_inference_power_mw", "csp_total_power_mw", "ai_contract_share_of_csp",
+        "ai_contract_power_mw", "inference_share", "contract_inference_weight_mw",
+        "company_contract_inference_weight_mw", "normalized_csp_share",
+        "normalized_csp_inference_power_mw", "source_type", "note",
     ]
     bridge.append(bridge_headers)
-    capacity_last = len(data["datacenter_capacity_allocations"]) + 1
-    mix_last = len(data["datacenter_accelerator_mix"]) + 1
-    for excel_row, _ in enumerate(data["datacenter_capacity_allocations"], start=2):
+    input_last = len(data["scenario_forecast"]) + 1
+    for excel_row, row in enumerate(data["csp_contract_allocations"], start=2):
         bridge.append([
-            f"='02a_DC_Capacity_Alloc'!A{excel_row}",
-            f"='02a_DC_Capacity_Alloc'!B{excel_row}",
-            f"='02a_DC_Capacity_Alloc'!C{excel_row}",
-            f"='02a_DC_Capacity_Alloc'!D{excel_row}",
-            f"='02a_DC_Capacity_Alloc'!E{excel_row}",
-            f"='02a_DC_Capacity_Alloc'!F{excel_row}",
-            f"=B{excel_row}&\"|\"&E{excel_row}&\"|\"&D{excel_row}",
-            f"='02a_DC_Capacity_Alloc'!H{excel_row}*'02a_DC_Capacity_Alloc'!I{excel_row}*'02a_DC_Capacity_Alloc'!J{excel_row}",
-            f"=IFERROR(INDEX('02b_DC_Accelerator_Mix'!$F$2:$F${mix_last},MATCH(G{excel_row},'02b_DC_Accelerator_Mix'!$A$2:$A${mix_last},0)),0)",
-            f"=IFERROR(INDEX('02b_DC_Accelerator_Mix'!$G$2:$G${mix_last},MATCH(G{excel_row},'02b_DC_Accelerator_Mix'!$A$2:$A${mix_last},0)),0)",
-            f"=IFERROR(INDEX('02b_DC_Accelerator_Mix'!$H$2:$H${mix_last},MATCH(G{excel_row},'02b_DC_Accelerator_Mix'!$A$2:$A${mix_last},0)),0)",
-            f"=IFERROR(INDEX('02b_DC_Accelerator_Mix'!$I$2:$I${mix_last},MATCH(G{excel_row},'02b_DC_Accelerator_Mix'!$A$2:$A${mix_last},0)),0)",
-            f"=IFERROR(INDEX('02b_DC_Accelerator_Mix'!$J$2:$J${mix_last},MATCH(G{excel_row},'02b_DC_Accelerator_Mix'!$A$2:$A${mix_last},0)),0)",
-            f"=IFERROR(INDEX('02b_DC_Accelerator_Mix'!$K$2:$K${mix_last},MATCH(G{excel_row},'02b_DC_Accelerator_Mix'!$A$2:$A${mix_last},0)),0)",
-            f"=IFERROR(INDEX('02b_DC_Accelerator_Mix'!$L$2:$L${mix_last},MATCH(G{excel_row},'02b_DC_Accelerator_Mix'!$A$2:$A${mix_last},0)),0)",
-            f"=IFERROR(INDEX('02b_DC_Accelerator_Mix'!$M$2:$M${mix_last},MATCH(G{excel_row},'02b_DC_Accelerator_Mix'!$A$2:$A${mix_last},0)),0)",
-            f"=IFERROR(INDEX('02b_DC_Accelerator_Mix'!$N$2:$N${mix_last},MATCH(G{excel_row},'02b_DC_Accelerator_Mix'!$A$2:$A${mix_last},0)),0)",
-            f"=H{excel_row}*I{excel_row}",
-            f"=H{excel_row}*J{excel_row}",
-            f"=H{excel_row}*K{excel_row}",
-            f"=H{excel_row}*L{excel_row}",
-            f"=H{excel_row}*M{excel_row}",
-            f"=H{excel_row}*N{excel_row}",
-            f"=H{excel_row}*O{excel_row}",
-            f"=H{excel_row}*P{excel_row}",
-            f"=H{excel_row}*Q{excel_row}",
-            f"=SUM(U{excel_row}:Z{excel_row})",
-            f"=IF(COUNTIF('02b_DC_Accelerator_Mix'!$A$2:$A${mix_last},G{excel_row})>0,\"matched\",\"missing_mix\")",
+            f"='02a_CSP_Contract_Alloc'!A{excel_row}",
+            f"='02a_CSP_Contract_Alloc'!B{excel_row}",
+            f"='02a_CSP_Contract_Alloc'!C{excel_row}",
+            f"='02a_CSP_Contract_Alloc'!D{excel_row}",
+            f"='02a_CSP_Contract_Alloc'!E{excel_row}",
+            f"=SUMPRODUCT(('02_Inputs'!$A$2:$A${input_last}=B{excel_row})*('02_Inputs'!$B$2:$B${input_last}=C{excel_row})*('02_Inputs'!$C$2:$C${input_last}=D{excel_row})*'02_Inputs'!$D$2:$D${input_last}*'02_Inputs'!$E$2:$E${input_last}/'02_Inputs'!$F$2:$F${input_last}*'02_Inputs'!$G$2:$G${input_last}*'02_Inputs'!$H$2:$H${input_last}*1000)",
+            f"='02a_CSP_Contract_Alloc'!F{excel_row}",
+            f"='02a_CSP_Contract_Alloc'!G{excel_row}",
+            f"='02a_CSP_Contract_Alloc'!H{excel_row}",
+            f"='02a_CSP_Contract_Alloc'!I{excel_row}",
+            f"='02a_CSP_Contract_Alloc'!K{excel_row}",
+            f"=SUMIFS('02a_CSP_Contract_Alloc'!$K$2:$K${capacity_last},'02a_CSP_Contract_Alloc'!$B$2:$B${capacity_last},B{excel_row},'02a_CSP_Contract_Alloc'!$C$2:$C${capacity_last},C{excel_row},'02a_CSP_Contract_Alloc'!$D$2:$D${capacity_last},D{excel_row})",
+            f"=IF(L{excel_row}>0,K{excel_row}/L{excel_row},0)",
+            f"=F{excel_row}*M{excel_row}",
+            f"='02a_CSP_Contract_Alloc'!L{excel_row}",
+            "AI company inference power is normalized across CSPs by CSP total power * AI contract share * inference share.",
         ])
     style_sheet(bridge)
     for row in bridge.iter_rows(min_row=2):
         for cell in row:
             cell.fill = formula_fill
-    for col in ("H", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "AA"):
+    for col in ("F", "G", "I", "K", "L", "N"):
         for cell in bridge[col][1:]:
             cell.number_format = "#,##0.0"
-    for col in ("I", "J", "K", "L", "M", "N", "O", "P", "Q"):
+    for col in ("H", "J", "M"):
         for cell in bridge[col][1:]:
             cell.number_format = "0.0%"
     bridge.column_dimensions["A"].width = 58
-    bridge.column_dimensions["E"].width = 34
+    bridge.column_dimensions["E"].width = 30
+    bridge.column_dimensions["P"].width = 76
+
+    accel_power = wb.create_sheet("02d_AI_Accelerator_Power")
+    power_headers = [
+        "power_key", "scenario", "company", "year", "csp", "accelerator_type",
+        "benchmark_bucket", "normalized_csp_inference_power_mw", "accelerator_share",
+        "accelerator_power_mw", "all_in_kw_per_unit", "accelerator_count",
+        "source_type", "note",
+    ]
+    accel_power.append(power_headers)
+    power_rows = data["ai_accelerator_power"]
+    power_last = len(power_rows) + 1
+    for excel_row, row in enumerate(power_rows, start=2):
+        accel_power.append([
+            f"=B{excel_row}&\"|\"&C{excel_row}&\"|\"&D{excel_row}&\"|\"&E{excel_row}&\"|\"&F{excel_row}",
+            row["scenario"], row["company"], row["year"], row["csp"], row["accelerator_type"],
+            f"=IFERROR(INDEX('02x_Accelerator_Catalog'!$C$2:$C${catalog_last},MATCH(F{excel_row},'02x_Accelerator_Catalog'!$B$2:$B${catalog_last},0)),\"purpose_or_unbenchmarked\")",
+            f"=SUMIFS('02c_AI_CSP_Normalized'!$N$2:$N${capacity_last},'02c_AI_CSP_Normalized'!$B$2:$B${capacity_last},B{excel_row},'02c_AI_CSP_Normalized'!$C$2:$C${capacity_last},C{excel_row},'02c_AI_CSP_Normalized'!$D$2:$D${capacity_last},D{excel_row},'02c_AI_CSP_Normalized'!$E$2:$E${capacity_last},E{excel_row})",
+            f"=SUMIFS('02b_CSP_Accelerator_Mix'!$H$2:$H${mix_last},'02b_CSP_Accelerator_Mix'!$B$2:$B${mix_last},B{excel_row},'02b_CSP_Accelerator_Mix'!$C$2:$C${mix_last},E{excel_row},'02b_CSP_Accelerator_Mix'!$D$2:$D${mix_last},D{excel_row},'02b_CSP_Accelerator_Mix'!$E$2:$E${mix_last},F{excel_row})",
+            f"=H{excel_row}*I{excel_row}",
+            f"=IFERROR(INDEX('02x_Accelerator_Catalog'!$D$2:$D${catalog_last},MATCH(F{excel_row},'02x_Accelerator_Catalog'!$B$2:$B${catalog_last},0)),\"\")",
+            f"=IF(K{excel_row}>0,J{excel_row}*1000/K{excel_row},\"\")",
+            row["source_type"], row["note"],
+        ])
+    style_sheet(accel_power)
+    for row in accel_power.iter_rows(min_row=2):
+        for cell in row:
+            cell.fill = formula_fill
+    for col in ("H", "J"):
+        for cell in accel_power[col][1:]:
+            cell.number_format = "#,##0.0"
+    for cell in accel_power["I"][1:]:
+        cell.number_format = "0.0%"
+    for cell in accel_power["K"][1:]:
+        cell.number_format = "0.00"
+    for cell in accel_power["L"][1:]:
+        cell.number_format = "#,##0"
+    accel_power.column_dimensions["A"].width = 72
+    accel_power.column_dimensions["F"].width = 28
+    accel_power.column_dimensions["N"].width = 76
 
     gpu_mix = wb.create_sheet("02_GPU_Mix_Input")
     gpu_mix.append([
@@ -4848,31 +5182,31 @@ def write_excel(data: dict[str, Any], path: Path) -> None:
         "maia_share", "mtia_share", "other_share", "mix_derivation_formula",
         "source_type", "note",
     ])
-    bridge_last = len(data["datacenter_capacity_allocations"]) + 1
+    bridge_last = len(power_rows) + 1
     for excel_row, row in enumerate(data["scenario_forecast"], start=2):
         criteria = (
-            f"'02c_DC_Accel_Bridge'!$B$2:$B${bridge_last},A{excel_row},"
-            f"'02c_DC_Accel_Bridge'!$C$2:$C${bridge_last},B{excel_row},"
-            f"'02c_DC_Accel_Bridge'!$D$2:$D${bridge_last},C{excel_row}"
+            f"'02d_AI_Accelerator_Power'!$B$2:$B${bridge_last},A{excel_row},"
+            f"'02d_AI_Accelerator_Power'!$C$2:$C${bridge_last},B{excel_row},"
+            f"'02d_AI_Accelerator_Power'!$D$2:$D${bridge_last},C{excel_row}"
         )
-        weight_formula = f"=SUMIFS('02c_DC_Accel_Bridge'!$H$2:$H${bridge_last},{criteria})"
+        weight_formula = f"=SUMIFS('02d_AI_Accelerator_Power'!$J$2:$J${bridge_last},{criteria})"
         gpu_mix.append([
             row["scenario"], row["company"], row["year"],
-            f"=IF(I{excel_row}>0,SUMIFS('02c_DC_Accel_Bridge'!$R$2:$R${bridge_last},{criteria})/I{excel_row},{row['h200_share']})",
-            f"=IF(I{excel_row}>0,SUMIFS('02c_DC_Accel_Bridge'!$S$2:$S${bridge_last},{criteria})/I{excel_row},{row['b200_share']})",
-            f"=IF(I{excel_row}>0,SUMIFS('02c_DC_Accel_Bridge'!$T$2:$T${bridge_last},{criteria})/I{excel_row},{row['gb200_share']})",
-            f"=IF(I{excel_row}>0,SUMIFS('02c_DC_Accel_Bridge'!$AA$2:$AA${bridge_last},{criteria})/I{excel_row},{row['purpose_built_accelerator_share']})",
+            f"=IF(I{excel_row}>0,SUMIFS('02d_AI_Accelerator_Power'!$J$2:$J${bridge_last},{criteria},'02d_AI_Accelerator_Power'!$G$2:$G${bridge_last},\"h200_reference\")/I{excel_row},{row['h200_share']})",
+            f"=IF(I{excel_row}>0,SUMIFS('02d_AI_Accelerator_Power'!$J$2:$J${bridge_last},{criteria},'02d_AI_Accelerator_Power'!$G$2:$G${bridge_last},\"b200_reference\")/I{excel_row},{row['b200_share']})",
+            f"=IF(I{excel_row}>0,SUMIFS('02d_AI_Accelerator_Power'!$J$2:$J${bridge_last},{criteria},'02d_AI_Accelerator_Power'!$G$2:$G${bridge_last},\"gb200_reference\")/I{excel_row},{row['gb200_share']})",
+            f"=IF(I{excel_row}>0,SUMIFS('02d_AI_Accelerator_Power'!$J$2:$J${bridge_last},{criteria},'02d_AI_Accelerator_Power'!$G$2:$G${bridge_last},\"purpose_or_unbenchmarked\")/I{excel_row},{row['purpose_built_accelerator_share']})",
             f"=SUM(D{excel_row}:G{excel_row})",
             weight_formula,
-            f"=IF(I{excel_row}>0,SUMIFS('02c_DC_Accel_Bridge'!$U$2:$U${bridge_last},{criteria})/I{excel_row},0)",
-            f"=IF(I{excel_row}>0,SUMIFS('02c_DC_Accel_Bridge'!$V$2:$V${bridge_last},{criteria})/I{excel_row},0)",
-            f"=IF(I{excel_row}>0,SUMIFS('02c_DC_Accel_Bridge'!$W$2:$W${bridge_last},{criteria})/I{excel_row},0)",
-            f"=IF(I{excel_row}>0,SUMIFS('02c_DC_Accel_Bridge'!$X$2:$X${bridge_last},{criteria})/I{excel_row},0)",
-            f"=IF(I{excel_row}>0,SUMIFS('02c_DC_Accel_Bridge'!$Y$2:$Y${bridge_last},{criteria})/I{excel_row},0)",
-            f"=IF(I{excel_row}>0,SUMIFS('02c_DC_Accel_Bridge'!$Z$2:$Z${bridge_last},{criteria})/I{excel_row},0)",
-            "weighted average: sum(site inference_weight_mw * accelerator_share) / sum(site inference_weight_mw)",
-            "dc_capacity_x_dc_accelerator_mix",
-            "Edit 02a capacity allocation and 02b site accelerator mix; 03_Calculation reads D:G from this sheet.",
+            f"=IF(I{excel_row}>0,SUMIFS('02d_AI_Accelerator_Power'!$J$2:$J${bridge_last},{criteria},'02d_AI_Accelerator_Power'!$F$2:$F${bridge_last},\"R200/R300 future\")/I{excel_row},0)",
+            f"=IF(I{excel_row}>0,SUMIFS('02d_AI_Accelerator_Power'!$J$2:$J${bridge_last},{criteria},'02d_AI_Accelerator_Power'!$F$2:$F${bridge_last},\"TPU\")/I{excel_row},0)",
+            f"=IF(I{excel_row}>0,SUMIFS('02d_AI_Accelerator_Power'!$J$2:$J${bridge_last},{criteria},'02d_AI_Accelerator_Power'!$F$2:$F${bridge_last},\"Trainium\")/I{excel_row},0)",
+            f"=IF(I{excel_row}>0,SUMIFS('02d_AI_Accelerator_Power'!$J$2:$J${bridge_last},{criteria},'02d_AI_Accelerator_Power'!$F$2:$F${bridge_last},\"Maia\")/I{excel_row},0)",
+            f"=IF(I{excel_row}>0,SUMIFS('02d_AI_Accelerator_Power'!$J$2:$J${bridge_last},{criteria},'02d_AI_Accelerator_Power'!$F$2:$F${bridge_last},\"MTIA\")/I{excel_row},0)",
+            f"=IF(I{excel_row}>0,SUMIFS('02d_AI_Accelerator_Power'!$J$2:$J${bridge_last},{criteria},'02d_AI_Accelerator_Power'!$F$2:$F${bridge_last},\"Other / unknown accelerator\")/I{excel_row},0)",
+            "CSP contract normalized: company inference MW * (CSP total MW * AI contract share * inference share) / company contract inference weight, then multiplied by CSP accelerator rows.",
+            "csp_contract_share_x_csp_accelerator_mix",
+            "Edit 02a CSP contract allocation, 02b CSP accelerator mix, or 02x accelerator catalog; 03_Calculation reads D:G from this sheet.",
         ])
     style_sheet(gpu_mix)
     for row in gpu_mix.iter_rows(min_row=2):
@@ -7977,16 +8311,19 @@ def write_core_markdown(data: dict[str, Any], path: Path) -> None:
         "operational_power_gw = contracted_power_gw * operational_deployment_share",
         "inference_gw = operational_power_gw / pue * ai_workload_share * inference_power_share",
         "gpu_workload_avg_tps_per_mw = short_share*gpu_short_tps_mw + long_share*gpu_long_tps_mw + agentic_share*gpu_agentic_tps_mw",
-        "company_accelerator_share = sum(datacenter_capacity_weight * ai_capacity_share * inference_share * datacenter_accelerator_share) / sum(datacenter_capacity_weight * ai_capacity_share * inference_share)",
+        "csp_contract_inference_weight = csp_total_power_mw * ai_contract_share_of_csp * inference_share",
+        "normalized_csp_inference_power_mw = company_inference_power_mw * csp_contract_inference_weight / sum(company csp_contract_inference_weight)",
+        "accelerator_power_mw = normalized_csp_inference_power_mw * csp_accelerator_share",
         "fleet_reference_tps_per_mw = h200_share*h200_workload_avg + b200_share*b200_workload_avg + gb200_share*gb200_workload_avg + purpose_built_share*purpose_workload_avg",
         "serving_tps_per_mw = fleet_reference_tps_per_mw * commercial_workload_fit_factor",
         "generated_output_tokens_per_day = inference_gw * 1,000 * serving_tps_per_mw * 86,400",
         "```",
         "",
         "- Headline 계산에는 `utilization`, MoE uplift, architecture multiplier, software CAGR를 적용하지 않습니다.",
-        "- GPU/accelerator mix는 `02a_DC_Capacity_Alloc`의 데이터센터별 AI업체 capacity 배분과 `02b_DC_Accelerator_Mix`의 데이터센터별 장비 mix를 inference-weighted average로 결합합니다.",
+        "- GPU/accelerator mix는 `02a_CSP_Contract_Alloc`의 CSP 총 전력과 AI업체 계약 비중을 먼저 곱한 뒤, 그 weight로 회사 inference power를 CSP별로 정규화하고 `02b_CSP_Accelerator_Mix`를 곱합니다.",
         "- InferenceX GPU별 값은 public reference이며, 상용 서비스 TPS/MW는 short conversation, long conversation, agentic workload mix와 workload fit factor를 반영합니다.",
-        "- R200/R300/TPU/Trainium/Maia/MTIA/other는 세부 mix로 보이지만, comparable output-token/MW benchmark가 없으면 산출용 `purpose-or-unbenchmarked` 버킷에서 B200 placeholder를 사용합니다.",
+        "- Accelerator는 long-format catalog 구조입니다. `02x_Accelerator_Catalog`에 새 accelerator, benchmark bucket, all-in kW/unit을 추가하고 `02b`에 share row를 추가하면 확장됩니다.",
+        "- R200/R300/TPU/Trainium/Maia/MTIA/other는 세부 power/count로 보이지만, comparable output-token/MW benchmark가 없으면 산출용 `purpose-or-unbenchmarked` 버킷에서 B200 placeholder를 사용합니다.",
         "",
         "## GPU Generation Mix, Workload Mix And Commercial Fit",
         "",
@@ -8036,9 +8373,11 @@ def write_core_markdown(data: dict[str, Any], path: Path) -> None:
         "- `00_Logic`: calculation steps only.",
         "- `01_Benchmark_Input`: 업체별 short/long/agentic 비율, GPU별 chat-length TPS/MW, GPU별 workload 평균 TPS/MW, commercial workload fit 입력.",
         "- `02_Inputs`: 전력 및 workload allocation 입력.",
-        "- `02a_DC_Capacity_Alloc`: 데이터센터가 계약/할당한 AI업체 capacity weight, inference/training split 입력.",
-        "- `02b_DC_Accelerator_Mix`: 데이터센터별 H200/B200/GB200/R200/TPU/Trainium/Maia/MTIA/other accelerator mix 입력.",
-        "- `02c_DC_Accel_Bridge`: capacity allocation과 accelerator mix를 연결하는 formula bridge.",
+        "- `02x_Accelerator_Catalog`: accelerator type, benchmark bucket, all-in kW/unit catalog.",
+        "- `02a_CSP_Contract_Alloc`: CSP별 총 전력, AI업체 계약 비중, inference/training split 입력.",
+        "- `02b_CSP_Accelerator_Mix`: CSP별 accelerator share long-format 입력.",
+        "- `02c_AI_CSP_Normalized`: 회사 inference MW를 CSP 계약 weight로 정규화하는 formula bridge.",
+        "- `02d_AI_Accelerator_Power`: 회사/CSP/accelerator별 power와 unit count 산출.",
         "- `02_GPU_Mix_Input`: 회사별 GPU/accelerator mix 자동 산출 시트. `03_Calculation`은 이 시트의 D:G를 읽습니다.",
         "- `03_Calculation`: formula-only calculation chain.",
         "- `04_Output`: formula-driven 2026-2030 provider/scenario tables for tokens/day and tokens/year with charts.",
@@ -8082,10 +8421,13 @@ select {{ padding:7px; }}
 <section><h2>Core Formula</h2><pre>operational_power_gw = contracted_power_gw * operational_deployment_share
 inference_gw = operational_power_gw / pue * ai_workload_share * inference_power_share
 gpu_workload_avg_tps_per_mw = short_share*gpu_short_tps_mw + long_share*gpu_long_tps_mw + agentic_share*gpu_agentic_tps_mw
+csp_contract_inference_weight = csp_total_power_mw * ai_contract_share_of_csp * inference_share
+normalized_csp_inference_power_mw = company_inference_power_mw * csp_contract_inference_weight / sum(company csp_contract_inference_weight)
+accelerator_power_mw = normalized_csp_inference_power_mw * csp_accelerator_share
 fleet_reference_tps_per_mw = H200_share*H200_workload_avg + B200_share*B200_workload_avg + GB200_share*GB200_workload_avg + purpose_built_share*purpose_workload_avg
 serving_tps_per_mw = fleet_reference_tps_per_mw * commercial_workload_fit_factor
 generated_output_tokens_per_day = inference_gw * 1,000 * serving_tps_per_mw * 86,400</pre>
-<div class="note">GPU generation mix는 동일 inference MW 내 hardware composition 차이를 반영합니다. InferenceX/MLPerf/vendor serving stack은 public reference이며, headline은 short conversation, long conversation, agentic mix와 commercial workload fit을 적용합니다.</div></section>
+<div class="note">GPU/accelerator mix는 CSP 총 전력과 AI업체 계약 비중으로 회사 inference power를 CSP별 정규화한 뒤, CSP accelerator long-format mix를 곱합니다. InferenceX/MLPerf/vendor serving stack은 public reference이며, headline은 short conversation, long conversation, agentic mix와 commercial workload fit을 적용합니다.</div></section>
 <section><h2>Output View</h2><div class="controls"><label>Scenario <select id="scenario"></select></label><label>Year <select id="year"></select></label></div><div id="bars"></div></section>
 <section><h2>Default 2030 Workload Mix And Serving Reference</h2><table id="bench"></table></section>
 </main>
@@ -8114,12 +8456,14 @@ init();
 
 def build_payload() -> dict[str, Any]:
     scenario_rows = [row for name in SCENARIO_CASES for row in forecast_rows(name)]
-    datacenter_capacity_rows = datacenter_capacity_allocation_rows(scenario_rows)
-    datacenter_mix_rows = datacenter_accelerator_mix_rows(scenario_rows, datacenter_capacity_rows)
-    scenario_rows = apply_datacenter_mix_to_forecast_rows(
-        scenario_rows, datacenter_capacity_rows, datacenter_mix_rows
+    csp_contract_rows = csp_contract_allocation_rows(scenario_rows)
+    csp_mix_rows = csp_accelerator_mix_rows(scenario_rows, csp_contract_rows)
+    scenario_rows = apply_csp_mix_to_forecast_rows(
+        scenario_rows, csp_contract_rows, csp_mix_rows
     )
     rows = [row for row in scenario_rows if row["scenario"] == "Base"]
+    ai_csp_rows = ai_csp_normalized_power_rows(scenario_rows, csp_contract_rows)
+    ai_accelerator_rows = ai_accelerator_power_rows(ai_csp_rows, csp_mix_rows)
     data = {
         "metadata": {
             "title": "상용 LLM 업체별 전력·GPU·토큰 생성량 시뮬레이션",
@@ -8146,8 +8490,13 @@ def build_payload() -> dict[str, Any]:
         "number_trace": number_trace_rows(scenario_rows),
         "company_input_audit": company_input_audit(rows),
         "scenario_forecast": scenario_rows,
-        "datacenter_capacity_allocations": datacenter_capacity_rows,
-        "datacenter_accelerator_mix": datacenter_mix_rows,
+        "accelerator_catalog": accelerator_catalog_rows(),
+        "csp_contract_allocations": csp_contract_rows,
+        "csp_accelerator_mix": csp_mix_rows,
+        "ai_csp_normalized_power": ai_csp_rows,
+        "ai_accelerator_power": ai_accelerator_rows,
+        "datacenter_capacity_allocations": csp_contract_rows,
+        "datacenter_accelerator_mix": csp_mix_rows,
         "scenario_summary": scenario_summary_rows(scenario_rows),
         "benchmark_reference": benchmark_reference_rows(rows),
         "energy_sanity_reference": energy_sanity_reference_rows(rows),
@@ -8169,8 +8518,10 @@ def build_payload() -> dict[str, Any]:
         "number_trace",
         "company_input_audit",
         "scenario_forecast",
-        "datacenter_capacity_allocations",
-        "datacenter_accelerator_mix",
+        "accelerator_catalog",
+        "csp_contract_allocations",
+        "csp_accelerator_mix",
+        "ai_accelerator_power",
     ):
         for item in data[collection]:
             for field in ("source_ids", "assumption_ids"):
