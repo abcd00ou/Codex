@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="520" viewBox="0 0 980 520">
+<rect width="100%" height="100%" fill="#f8fafc"/>
+<text x="28" y="38" font-family="Arial" font-size="22" font-weight="700" fill="#0f172a">Generated output token supply by company</text>
+<text x="28" y="60" font-family="Arial" font-size="13" fill="#475569">Base scenario, 2026-2030. Unit: Q tokens/day.</text>
+<line x1="74" y1="450" x2="952" y2="450" stroke="#94a3b8"/>
+<line x1="74" y1="74" x2="74" y2="450" stroke="#94a3b8"/>
+<text x="74.0" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2026</text>
+<line x1="74.0" y1="74" x2="74.0" y2="450" stroke="#e2e8f0"/>
+<text x="293.5" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2027</text>
+<line x1="293.5" y1="74" x2="293.5" y2="450" stroke="#e2e8f0"/>
+<text x="513.0" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2028</text>
+<line x1="513.0" y1="74" x2="513.0" y2="450" stroke="#e2e8f0"/>
+<text x="732.5" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2029</text>
+<line x1="732.5" y1="74" x2="732.5" y2="450" stroke="#e2e8f0"/>
+<text x="952.0" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2030</text>
+<line x1="952.0" y1="74" x2="952.0" y2="450" stroke="#e2e8f0"/>
+<line x1="74" y1="450.0" x2="952" y2="450.0" stroke="#e2e8f0"/>
+<text x="62" y="454.0" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">0.00</text>
+<line x1="74" y1="356.0" x2="952" y2="356.0" stroke="#e2e8f0"/>
+<text x="62" y="360.0" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">0.12</text>
+<line x1="74" y1="262.0" x2="952" y2="262.0" stroke="#e2e8f0"/>
+<text x="62" y="266.0" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">0.24</text>
+<line x1="74" y1="167.99999999999994" x2="952" y2="167.99999999999994" stroke="#e2e8f0"/>
+<text x="62" y="171.99999999999994" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">0.36</text>
+<line x1="74" y1="74.0" x2="952" y2="74.0" stroke="#e2e8f0"/>
+<text x="62" y="78.0" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">0.48</text>
+<path d="M74.0,445.6 L293.5,440.1 L513.0,434.3 L732.5,428.2 L952.0,421.9" fill="none" stroke="#2563eb" stroke-width="3"/>
+<circle cx="74.0" cy="445.6" r="4" fill="#2563eb"/>
+<circle cx="293.5" cy="440.1" r="4" fill="#2563eb"/>
+<circle cx="513.0" cy="434.3" r="4" fill="#2563eb"/>
+<circle cx="732.5" cy="428.2" r="4" fill="#2563eb"/>
+<circle cx="952.0" cy="421.9" r="4" fill="#2563eb"/>
+<rect x="760" y="84" width="12" height="12" fill="#2563eb"/>
+<text x="778" y="94" font-family="Arial" font-size="13" fill="#0f172a">OpenAI</text>
+<path d="M74.0,447.1 L293.5,443.1 L513.0,440.2 L732.5,435.6 L952.0,430.4" fill="none" stroke="#dc2626" stroke-width="3"/>
+<circle cx="74.0" cy="447.1" r="4" fill="#dc2626"/>
+<circle cx="293.5" cy="443.1" r="4" fill="#dc2626"/>
+<circle cx="513.0" cy="440.2" r="4" fill="#dc2626"/>
+<circle cx="732.5" cy="435.6" r="4" fill="#dc2626"/>
+<circle cx="952.0" cy="430.4" r="4" fill="#dc2626"/>
+<rect x="760" y="108" width="12" height="12" fill="#dc2626"/>
+<text x="778" y="118" font-family="Arial" font-size="13" fill="#0f172a">Anthropic</text>
+<path d="M74.0,443.9 L293.5,440.0 L513.0,435.6 L732.5,430.7 L952.0,425.3" fill="none" stroke="#16a34a" stroke-width="3"/>
+<circle cx="74.0" cy="443.9" r="4" fill="#16a34a"/>
+<circle cx="293.5" cy="440.0" r="4" fill="#16a34a"/>
+<circle cx="513.0" cy="435.6" r="4" fill="#16a34a"/>
+<circle cx="732.5" cy="430.7" r="4" fill="#16a34a"/>
+<circle cx="952.0" cy="425.3" r="4" fill="#16a34a"/>
+<rect x="760" y="132" width="12" height="12" fill="#16a34a"/>
+<text x="778" y="142" font-family="Arial" font-size="13" fill="#0f172a">Google</text>
+<path d="M74.0,376.0 L293.5,315.8 L513.0,239.8 L732.5,161.3 L952.0,74.0" fill="none" stroke="#7c3aed" stroke-width="3"/>
+<circle cx="74.0" cy="376.0" r="4" fill="#7c3aed"/>
+<circle cx="293.5" cy="315.8" r="4" fill="#7c3aed"/>
+<circle cx="513.0" cy="239.8" r="4" fill="#7c3aed"/>
+<circle cx="732.5" cy="161.3" r="4" fill="#7c3aed"/>
+<circle cx="952.0" cy="74.0" r="4" fill="#7c3aed"/>
+<rect x="760" y="156" width="12" height="12" fill="#7c3aed"/>
+<text x="778" y="166" font-family="Arial" font-size="13" fill="#0f172a">Microsoft</text>
+<path d="M74.0,439.9 L293.5,421.0 L513.0,397.8 L732.5,370.3 L952.0,338.5" fill="none" stroke="#ea580c" stroke-width="3"/>
+<circle cx="74.0" cy="439.9" r="4" fill="#ea580c"/>
+<circle cx="293.5" cy="421.0" r="4" fill="#ea580c"/>
+<circle cx="513.0" cy="397.8" r="4" fill="#ea580c"/>
+<circle cx="732.5" cy="370.3" r="4" fill="#ea580c"/>
+<circle cx="952.0" cy="338.5" r="4" fill="#ea580c"/>
+<rect x="760" y="180" width="12" height="12" fill="#ea580c"/>
+<text x="778" y="190" font-family="Arial" font-size="13" fill="#0f172a">xAI</text>
+</svg>

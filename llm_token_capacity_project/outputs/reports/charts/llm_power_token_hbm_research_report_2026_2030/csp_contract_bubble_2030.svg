@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1760" height="696" viewBox="0 0 1760 696">
+<rect width="100%" height="100%" fill="#f8fafc"/>
+<text x="28" y="38" font-family="Arial" font-size="22" font-weight="700" fill="#0f172a">CSP-to-LLM contract power normalization, Base 2030</text>
+<text x="28" y="62" font-family="Arial" font-size="13" fill="#475569">Bubble size = normalized CSP inference MW after applying CSP total power, AI contract share, and inference share.</text>
+<text x="200.0" y="74" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle" transform="rotate(-35 200.0 74)">Alibaba</text>
+<line x1="200.0" y1="87" x2="200.0" y2="636" stroke="#e2e8f0"/>
+<text x="310.0" y="74" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle" transform="rotate(-35 310.0 74)">Amazon</text>
+<line x1="310.0" y1="87" x2="310.0" y2="636" stroke="#e2e8f0"/>
+<text x="420.0" y="74" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle" transform="rotate(-35 420.0 74)">CoreWeave</text>
+<line x1="420.0" y1="87" x2="420.0" y2="636" stroke="#e2e8f0"/>
+<text x="530.0" y="74" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle" transform="rotate(-35 530.0 74)">Fluidstack</text>
+<line x1="530.0" y1="87" x2="530.0" y2="636" stroke="#e2e8f0"/>
+<text x="640.0" y="74" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle" transform="rotate(-35 640.0 74)">G42</text>
+<line x1="640.0" y1="87" x2="640.0" y2="636" stroke="#e2e8f0"/>
+<text x="750.0" y="74" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle" transform="rotate(-35 750.0 74)">Google</text>
+<line x1="750.0" y1="87" x2="750.0" y2="636" stroke="#e2e8f0"/>
+<text x="860.0" y="74" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle" transform="rotate(-35 860.0 74)">Legacy company envelope - DeepSeek</text>
+<line x1="860.0" y1="87" x2="860.0" y2="636" stroke="#e2e8f0"/>
+<text x="970.0" y="74" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle" transform="rotate(-35 970.0 74)">Legacy company envelope - Tencent</text>
+<line x1="970.0" y1="87" x2="970.0" y2="636" stroke="#e2e8f0"/>
+<text x="1080.0" y="74" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle" transform="rotate(-35 1080.0 74)">Meta</text>
+<line x1="1080.0" y1="87" x2="1080.0" y2="636" stroke="#e2e8f0"/>
+<text x="1190.0" y="74" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle" transform="rotate(-35 1190.0 74)">Microsoft</text>
+<line x1="1190.0" y1="87" x2="1190.0" y2="636" stroke="#e2e8f0"/>
+<text x="1300.0" y="74" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle" transform="rotate(-35 1300.0 74)">Nscale</text>
+<line x1="1300.0" y1="87" x2="1300.0" y2="636" stroke="#e2e8f0"/>
+<text x="1410.0" y="74" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle" transform="rotate(-35 1410.0 74)">Oracle</text>
+<line x1="1410.0" y1="87" x2="1410.0" y2="636" stroke="#e2e8f0"/>
+<text x="1520.0" y="74" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle" transform="rotate(-35 1520.0 74)">Softbank</text>
+<line x1="1520.0" y1="87" x2="1520.0" y2="636" stroke="#e2e8f0"/>
+<text x="1630.0" y="74" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle" transform="rotate(-35 1630.0 74)">SpaceXAI</text>
+<line x1="1630.0" y1="87" x2="1630.0" y2="636" stroke="#e2e8f0"/>
+<text x="28" y="128.0" font-family="Arial" font-size="14" font-weight="700" fill="#0f172a">Alibaba</text>
+<line x1="130" y1="123.0" x2="1715" y2="123.0" stroke="#e2e8f0"/>
+<text x="28" y="190.0" font-family="Arial" font-size="14" font-weight="700" fill="#0f172a">Anthropic</text>
+<line x1="130" y1="185.0" x2="1715" y2="185.0" stroke="#e2e8f0"/>
+<text x="28" y="252.0" font-family="Arial" font-size="14" font-weight="700" fill="#0f172a">DeepSeek</text>
+<line x1="130" y1="247.0" x2="1715" y2="247.0" stroke="#e2e8f0"/>
+<text x="28" y="314.0" font-family="Arial" font-size="14" font-weight="700" fill="#0f172a">Google</text>
+<line x1="130" y1="309.0" x2="1715" y2="309.0" stroke="#e2e8f0"/>
+<text x="28" y="376.0" font-family="Arial" font-size="14" font-weight="700" fill="#0f172a">Meta</text>
+<line x1="130" y1="371.0" x2="1715" y2="371.0" stroke="#e2e8f0"/>
+<text x="28" y="438.0" font-family="Arial" font-size="14" font-weight="700" fill="#0f172a">Microsoft</text>
+<line x1="130" y1="433.0" x2="1715" y2="433.0" stroke="#e2e8f0"/>
+<text x="28" y="500.0" font-family="Arial" font-size="14" font-weight="700" fill="#0f172a">OpenAI</text>
+<line x1="130" y1="495.0" x2="1715" y2="495.0" stroke="#e2e8f0"/>
+<text x="28" y="562.0" font-family="Arial" font-size="14" font-weight="700" fill="#0f172a">Tencent</text>
+<line x1="130" y1="557.0" x2="1715" y2="557.0" stroke="#e2e8f0"/>
+<text x="28" y="624.0" font-family="Arial" font-size="14" font-weight="700" fill="#0f172a">xAI</text>
+<line x1="130" y1="619.0" x2="1715" y2="619.0" stroke="#e2e8f0"/>
+<circle cx="750.0" cy="309.0" r="33.0" fill="#16a34a" fill-opacity="0.72" stroke="#0f172a" stroke-opacity="0.16"/>
+<text x="750.0" y="313.0" font-family="Arial" font-size="10" fill="#ffffff" text-anchor="middle">3,651MW</text>
+<circle cx="1080.0" cy="371.0" r="31.5" fill="#0891b2" fill-opacity="0.72" stroke="#0f172a" stroke-opacity="0.16"/>
+<text x="1080.0" y="375.0" font-family="Arial" font-size="10" fill="#ffffff" text-anchor="middle">3,280MW</text>
+<circle cx="1190.0" cy="433.0" r="30.5" fill="#7c3aed" fill-opacity="0.72" stroke="#0f172a" stroke-opacity="0.16"/>
+<text x="1190.0" y="437.0" font-family="Arial" font-size="10" fill="#ffffff" text-anchor="middle">3,017MW</text>
+<circle cx="1410.0" cy="495.0" r="28.4" fill="#2563eb" fill-opacity="0.72" stroke="#0f172a" stroke-opacity="0.16"/>
+<text x="1410.0" y="499.0" font-family="Arial" font-size="10" fill="#ffffff" text-anchor="middle">2,557MW</text>
+<circle cx="310.0" cy="185.0" r="27.5" fill="#dc2626" fill-opacity="0.72" stroke="#0f172a" stroke-opacity="0.16"/>
+<text x="310.0" y="189.0" font-family="Arial" font-size="10" fill="#ffffff" text-anchor="middle">2,367MW</text>
+<circle cx="200.0" cy="123.0" r="24.4" fill="#64748b" fill-opacity="0.72" stroke="#0f172a" stroke-opacity="0.16"/>
+<text x="200.0" y="127.0" font-family="Arial" font-size="10" fill="#ffffff" text-anchor="middle">1,748MW</text>
+<circle cx="970.0" cy="557.0" r="21.8" fill="#64748b" fill-opacity="0.72" stroke="#0f172a" stroke-opacity="0.16"/>
+<text x="970.0" y="561.0" font-family="Arial" font-size="10" fill="#ffffff" text-anchor="middle">1,311MW</text>
+<circle cx="1630.0" cy="619.0" r="21.2" fill="#ea580c" fill-opacity="0.72" stroke="#0f172a" stroke-opacity="0.16"/>
+<text x="1630.0" y="623.0" font-family="Arial" font-size="10" fill="#ffffff" text-anchor="middle">1,219MW</text>
+<circle cx="1190.0" cy="495.0" r="17.9" fill="#2563eb" fill-opacity="0.72" stroke="#0f172a" stroke-opacity="0.16"/>
+<text x="1190.0" y="499.0" font-family="Arial" font-size="10" fill="#ffffff" text-anchor="middle">779MW</text>
+<circle cx="420.0" cy="495.0" r="17.2" fill="#2563eb" fill-opacity="0.72" stroke="#0f172a" stroke-opacity="0.16"/>
+<text x="420.0" y="499.0" font-family="Arial" font-size="10" fill="#ffffff" text-anchor="middle">694MW</text>
+<circle cx="860.0" cy="247.0" r="16.8" fill="#64748b" fill-opacity="0.72" stroke="#0f172a" stroke-opacity="0.16"/>
+<text x="860.0" y="251.0" font-family="Arial" font-size="10" fill="#ffffff" text-anchor="middle">651MW</text>
+<circle cx="1630.0" cy="185.0" r="14.8" fill="#dc2626" fill-opacity="0.72" stroke="#0f172a" stroke-opacity="0.16"/>
+<circle cx="640.0" cy="495.0" r="14.8" fill="#2563eb" fill-opacity="0.72" stroke="#0f172a" stroke-opacity="0.16"/>
+<circle cx="1520.0" cy="495.0" r="14.1" fill="#2563eb" fill-opacity="0.72" stroke="#0f172a" stroke-opacity="0.16"/>
+<circle cx="1300.0" cy="433.0" r="13.2" fill="#7c3aed" fill-opacity="0.72" stroke="#0f172a" stroke-opacity="0.16"/>
+<circle cx="530.0" cy="185.0" r="10.7" fill="#dc2626" fill-opacity="0.72" stroke="#0f172a" stroke-opacity="0.16"/>
+</svg>

@@ -1,9 +1,9 @@
-"""Fetch and summarize Epoch AI data center data by AI user.
+"""Fetch and summarize Epoch AI data center data by AI user and supplier.
 
 Outputs:
 - raw ZIP and extracted CSVs
 - normalized user-site rows
-- user-year summary for 2026-2030
+- user-year, supplier-year, and supplier-user-year power summaries for 2026-2030
 - Markdown and XLSX summary reports
 """
 
@@ -144,13 +144,165 @@ def confidence_rank(confidence: str) -> int:
     return {"confident": 3, "likely": 2, "speculative": 1, "unlabeled": 0}.get(confidence, 0)
 
 
-def summarize(data_centers: list[dict[str, str]], timelines: list[dict[str, str]]) -> tuple[list[dict[str, object]], list[dict[str, object]], list[dict[str, object]]]:
+def blank_year_summary(entity_key: str, entity_name: str, year: int, confidence_key: str, confidence: str) -> dict[str, object]:
+    return {
+        entity_key: entity_name,
+        "year": year,
+        "site_count": 0,
+        confidence_key: confidence,
+        "it_power_mw_full_exposure": 0.0,
+        "it_power_mw_equal_split": 0.0,
+        "facility_power_mw_full_exposure": 0.0,
+        "facility_power_mw_equal_split": 0.0,
+        "h100_equiv_full_exposure": 0.0,
+        "h100_equiv_equal_split": 0.0,
+        "performance_8bit_ops_full_exposure": 0.0,
+        "performance_8bit_ops_equal_split": 0.0,
+        "total_cost_2025_usd_bn_full_exposure": 0.0,
+        "total_cost_2025_usd_bn_equal_split": 0.0,
+        "current_it_power_mw_full_exposure": 0.0,
+        "current_it_power_mw_equal_split": 0.0,
+        "current_h100_equiv_full_exposure": 0.0,
+        "current_h100_equiv_equal_split": 0.0,
+        "current_total_cost_2025_usd_bn_full_exposure": 0.0,
+        "current_total_cost_2025_usd_bn_equal_split": 0.0,
+        "contracted_or_planned_it_power_mw_full_exposure": 0.0,
+        "contracted_or_planned_it_power_mw_equal_split": 0.0,
+        "contracted_or_planned_facility_power_mw_full_exposure": 0.0,
+        "contracted_or_planned_facility_power_mw_equal_split": 0.0,
+        "contracted_or_planned_h100_equiv_full_exposure": 0.0,
+        "contracted_or_planned_h100_equiv_equal_split": 0.0,
+        "contracted_or_planned_8bit_ops_full_exposure": 0.0,
+        "contracted_or_planned_8bit_ops_equal_split": 0.0,
+        "earliest_first_operational_date": "",
+        "latest_completion_date_for_max_it_power": "",
+        "latest_timeline_date_used": "",
+        "data_centers": [],
+        "notes": [],
+    }
+
+
+def year_values_for_site(site_timelines: list[dict[str, str]], year: int) -> tuple[dict[str, float], str, str]:
+    cutoff = date(year, 12, 31)
+    year_row = latest_at_or_before(site_timelines, cutoff)
+    if year_row is None:
+        return (
+            {
+                "it_power_mw": 0.0,
+                "facility_power_mw": 0.0,
+                "h100_equivalents": 0.0,
+                "performance_8bit_ops": 0.0,
+                "total_cost_2025_usd_bn": 0.0,
+            },
+            "",
+            "",
+        )
+    return (
+        {
+            "it_power_mw": parse_float(year_row.get("IT power (MW)")),
+            "facility_power_mw": parse_float(year_row.get("Power (MW)")),
+            "h100_equivalents": parse_float(year_row.get("H100 equivalents")),
+            "performance_8bit_ops": parse_float(year_row.get("Performance (8-bit OP/s)")),
+            "total_cost_2025_usd_bn": parse_float(year_row.get("Total capital cost (2025 USD billions)")),
+        },
+        year_row.get("Date", ""),
+        year_row.get("Construction status", ""),
+    )
+
+
+def apply_site_year_to_summary(
+    summary: dict[str, object],
+    confidence_key: str,
+    confidence: str,
+    values: dict[str, float],
+    split_count: int,
+    max_it_power: float,
+    max_power: float,
+    max_h100: float,
+    max_perf: float,
+    current_it_power: float,
+    current_h100: float,
+    current_cost: float,
+    first_operational: date | None,
+    completion: date | None,
+    timeline_date: str,
+    status: str,
+    site_name: str,
+) -> None:
+    summary["site_count"] = int(summary["site_count"]) + 1
+    if confidence_rank(confidence) > confidence_rank(str(summary[confidence_key])):
+        summary[confidence_key] = confidence
+    for metric, value in values.items():
+        exposure_key = {
+            "it_power_mw": "it_power_mw_full_exposure",
+            "facility_power_mw": "facility_power_mw_full_exposure",
+            "h100_equivalents": "h100_equiv_full_exposure",
+            "performance_8bit_ops": "performance_8bit_ops_full_exposure",
+            "total_cost_2025_usd_bn": "total_cost_2025_usd_bn_full_exposure",
+        }[metric]
+        split_key = exposure_key.replace("_full_exposure", "_equal_split")
+        summary[exposure_key] = float(summary[exposure_key]) + value
+        summary[split_key] = float(summary[split_key]) + value / split_count
+    summary["contracted_or_planned_it_power_mw_full_exposure"] = float(summary["contracted_or_planned_it_power_mw_full_exposure"]) + max_it_power
+    summary["contracted_or_planned_it_power_mw_equal_split"] = float(summary["contracted_or_planned_it_power_mw_equal_split"]) + max_it_power / split_count
+    summary["contracted_or_planned_facility_power_mw_full_exposure"] = float(summary["contracted_or_planned_facility_power_mw_full_exposure"]) + max_power
+    summary["contracted_or_planned_facility_power_mw_equal_split"] = float(summary["contracted_or_planned_facility_power_mw_equal_split"]) + max_power / split_count
+    summary["contracted_or_planned_h100_equiv_full_exposure"] = float(summary["contracted_or_planned_h100_equiv_full_exposure"]) + max_h100
+    summary["contracted_or_planned_h100_equiv_equal_split"] = float(summary["contracted_or_planned_h100_equiv_equal_split"]) + max_h100 / split_count
+    summary["contracted_or_planned_8bit_ops_full_exposure"] = float(summary["contracted_or_planned_8bit_ops_full_exposure"]) + max_perf
+    summary["contracted_or_planned_8bit_ops_equal_split"] = float(summary["contracted_or_planned_8bit_ops_equal_split"]) + max_perf / split_count
+    summary["current_it_power_mw_full_exposure"] = float(summary["current_it_power_mw_full_exposure"]) + current_it_power
+    summary["current_it_power_mw_equal_split"] = float(summary["current_it_power_mw_equal_split"]) + current_it_power / split_count
+    summary["current_h100_equiv_full_exposure"] = float(summary["current_h100_equiv_full_exposure"]) + current_h100
+    summary["current_h100_equiv_equal_split"] = float(summary["current_h100_equiv_equal_split"]) + current_h100 / split_count
+    summary["current_total_cost_2025_usd_bn_full_exposure"] = float(summary["current_total_cost_2025_usd_bn_full_exposure"]) + current_cost
+    summary["current_total_cost_2025_usd_bn_equal_split"] = float(summary["current_total_cost_2025_usd_bn_equal_split"]) + current_cost / split_count
+    if first_operational:
+        current = str(summary["earliest_first_operational_date"])
+        if not current or first_operational.isoformat() < current:
+            summary["earliest_first_operational_date"] = first_operational.isoformat()
+    if completion:
+        current = str(summary["latest_completion_date_for_max_it_power"])
+        if not current or completion.isoformat() > current:
+            summary["latest_completion_date_for_max_it_power"] = completion.isoformat()
+    if timeline_date and timeline_date > str(summary["latest_timeline_date_used"]):
+        summary["latest_timeline_date_used"] = timeline_date
+    summary["data_centers"].append(site_name)
+    if status:
+        summary["notes"].append(f"{site_name} @ {timeline_date}: {status}")
+
+
+def finalize_year_rows(rows: list[dict[str, object]], sort_keys: tuple[str, ...]) -> list[dict[str, object]]:
+    final_rows: list[dict[str, object]] = []
+    for row in rows:
+        out = row.copy()
+        out["data_centers"] = "; ".join(sorted(set(out["data_centers"])))
+        out["notes"] = " | ".join(out["notes"][:5])
+        for key, value in list(out.items()):
+            if isinstance(value, float):
+                out[key] = round(value, 6)
+        final_rows.append(out)
+    final_rows.sort(key=lambda row: tuple(row[key] if key != "year" else int(row[key]) for key in sort_keys))
+    return final_rows
+
+
+def summarize(data_centers: list[dict[str, str]], timelines: list[dict[str, str]]) -> tuple[
+    list[dict[str, object]],
+    list[dict[str, object]],
+    list[dict[str, object]],
+    list[dict[str, object]],
+    list[dict[str, object]],
+    list[dict[str, object]],
+]:
     timeline_by_site: dict[str, list[dict[str, str]]] = {}
     for row in timelines:
         timeline_by_site.setdefault(row["Data center"], []).append(row)
 
     user_site_rows: list[dict[str, object]] = []
+    supplier_site_rows: list[dict[str, object]] = []
     user_year: dict[tuple[str, int], dict[str, object]] = {}
+    supplier_year: dict[tuple[str, int], dict[str, object]] = {}
+    supplier_user_year: dict[tuple[str, str, int], dict[str, object]] = {}
     site_summary: list[dict[str, object]] = []
 
     for site in data_centers:
@@ -200,13 +352,17 @@ def summarize(data_centers: list[dict[str, str]], timelines: list[dict[str, str]
 
         if not users:
             users = [UserTag("Unknown user", "unlabeled")]
+        user_site_owner_names = owner_names
+        if not owners:
+            owners = [UserTag("Unknown supplier", "unlabeled")]
+        owner_count = max(len(owners), 1)
         for user in users:
             user_site_rows.append(
                 {
                     "user": user.name,
                     "user_confidence": user.confidence,
                     "data_center": site_name,
-                    "owner": owner_names,
+                    "owner": user_site_owner_names,
                     "country": site.get("Country", ""),
                     "project": site.get("Project", ""),
                     "current_it_power_mw_full_exposure": current_it_power,
@@ -234,137 +390,155 @@ def summarize(data_centers: list[dict[str, str]], timelines: list[dict[str, str]
             )
 
             for year in YEARS:
-                cutoff = date(year, 12, 31)
-                year_row = latest_at_or_before(site_timelines, cutoff)
-                if year_row is None:
-                    values = {
-                        "it_power_mw": 0.0,
-                        "facility_power_mw": 0.0,
-                        "h100_equivalents": 0.0,
-                        "performance_8bit_ops": 0.0,
-                        "total_cost_2025_usd_bn": 0.0,
-                    }
-                    timeline_date = ""
-                    status = ""
-                else:
-                    values = {
-                        "it_power_mw": parse_float(year_row.get("IT power (MW)")),
-                        "facility_power_mw": parse_float(year_row.get("Power (MW)")),
-                        "h100_equivalents": parse_float(year_row.get("H100 equivalents")),
-                        "performance_8bit_ops": parse_float(year_row.get("Performance (8-bit OP/s)")),
-                        "total_cost_2025_usd_bn": parse_float(year_row.get("Total capital cost (2025 USD billions)")),
-                    }
-                    timeline_date = year_row.get("Date", "")
-                    status = year_row.get("Construction status", "")
-
+                values, timeline_date, status = year_values_for_site(site_timelines, year)
                 key = (user.name, year)
                 summary = user_year.setdefault(
                     key,
-                    {
-                        "user": user.name,
-                        "year": year,
-                        "site_count": 0,
-                        "highest_user_confidence": user.confidence,
-                        "it_power_mw_full_exposure": 0.0,
-                        "it_power_mw_equal_split": 0.0,
-                        "facility_power_mw_full_exposure": 0.0,
-                        "facility_power_mw_equal_split": 0.0,
-                        "h100_equiv_full_exposure": 0.0,
-                        "h100_equiv_equal_split": 0.0,
-                        "performance_8bit_ops_full_exposure": 0.0,
-                        "performance_8bit_ops_equal_split": 0.0,
-                        "total_cost_2025_usd_bn_full_exposure": 0.0,
-                        "total_cost_2025_usd_bn_equal_split": 0.0,
-                        "current_it_power_mw_full_exposure": 0.0,
-                        "current_it_power_mw_equal_split": 0.0,
-                        "current_h100_equiv_full_exposure": 0.0,
-                        "current_h100_equiv_equal_split": 0.0,
-                        "current_total_cost_2025_usd_bn_full_exposure": 0.0,
-                        "current_total_cost_2025_usd_bn_equal_split": 0.0,
-                        "contracted_or_planned_it_power_mw_full_exposure": 0.0,
-                        "contracted_or_planned_it_power_mw_equal_split": 0.0,
-                        "contracted_or_planned_facility_power_mw_full_exposure": 0.0,
-                        "contracted_or_planned_facility_power_mw_equal_split": 0.0,
-                        "contracted_or_planned_h100_equiv_full_exposure": 0.0,
-                        "contracted_or_planned_h100_equiv_equal_split": 0.0,
-                        "contracted_or_planned_8bit_ops_full_exposure": 0.0,
-                        "contracted_or_planned_8bit_ops_equal_split": 0.0,
-                        "earliest_first_operational_date": "",
-                        "latest_completion_date_for_max_it_power": "",
-                        "latest_timeline_date_used": "",
-                        "data_centers": [],
-                        "notes": [],
-                    },
+                    blank_year_summary("user", user.name, year, "highest_user_confidence", user.confidence),
                 )
-                summary["site_count"] = int(summary["site_count"]) + 1
-                if confidence_rank(user.confidence) > confidence_rank(str(summary["highest_user_confidence"])):
-                    summary["highest_user_confidence"] = user.confidence
-                for metric, value in values.items():
-                    exposure_key = {
-                        "it_power_mw": "it_power_mw_full_exposure",
-                        "facility_power_mw": "facility_power_mw_full_exposure",
-                        "h100_equivalents": "h100_equiv_full_exposure",
-                        "performance_8bit_ops": "performance_8bit_ops_full_exposure",
-                        "total_cost_2025_usd_bn": "total_cost_2025_usd_bn_full_exposure",
-                    }[metric]
-                    split_key = exposure_key.replace("_full_exposure", "_equal_split")
-                    summary[exposure_key] = float(summary[exposure_key]) + value
-                    summary[split_key] = float(summary[split_key]) + value / user_count
-                summary["contracted_or_planned_it_power_mw_full_exposure"] = float(summary["contracted_or_planned_it_power_mw_full_exposure"]) + max_it_power
-                summary["contracted_or_planned_it_power_mw_equal_split"] = float(summary["contracted_or_planned_it_power_mw_equal_split"]) + max_it_power / user_count
-                summary["contracted_or_planned_facility_power_mw_full_exposure"] = float(summary["contracted_or_planned_facility_power_mw_full_exposure"]) + max_power
-                summary["contracted_or_planned_facility_power_mw_equal_split"] = float(summary["contracted_or_planned_facility_power_mw_equal_split"]) + max_power / user_count
-                summary["contracted_or_planned_h100_equiv_full_exposure"] = float(summary["contracted_or_planned_h100_equiv_full_exposure"]) + max_h100
-                summary["contracted_or_planned_h100_equiv_equal_split"] = float(summary["contracted_or_planned_h100_equiv_equal_split"]) + max_h100 / user_count
-                summary["contracted_or_planned_8bit_ops_full_exposure"] = float(summary["contracted_or_planned_8bit_ops_full_exposure"]) + max_perf
-                summary["contracted_or_planned_8bit_ops_equal_split"] = float(summary["contracted_or_planned_8bit_ops_equal_split"]) + max_perf / user_count
-                summary["current_it_power_mw_full_exposure"] = float(summary["current_it_power_mw_full_exposure"]) + current_it_power
-                summary["current_it_power_mw_equal_split"] = float(summary["current_it_power_mw_equal_split"]) + current_it_power / user_count
-                summary["current_h100_equiv_full_exposure"] = float(summary["current_h100_equiv_full_exposure"]) + current_h100
-                summary["current_h100_equiv_equal_split"] = float(summary["current_h100_equiv_equal_split"]) + current_h100 / user_count
-                summary["current_total_cost_2025_usd_bn_full_exposure"] = float(summary["current_total_cost_2025_usd_bn_full_exposure"]) + current_cost
-                summary["current_total_cost_2025_usd_bn_equal_split"] = float(summary["current_total_cost_2025_usd_bn_equal_split"]) + current_cost / user_count
-                if first_operational:
-                    current = str(summary["earliest_first_operational_date"])
-                    if not current or first_operational.isoformat() < current:
-                        summary["earliest_first_operational_date"] = first_operational.isoformat()
-                if completion:
-                    current = str(summary["latest_completion_date_for_max_it_power"])
-                    if not current or completion.isoformat() > current:
-                        summary["latest_completion_date_for_max_it_power"] = completion.isoformat()
-                if timeline_date and timeline_date > str(summary["latest_timeline_date_used"]):
-                    summary["latest_timeline_date_used"] = timeline_date
-                summary["data_centers"].append(site_name)
-                if status:
-                    summary["notes"].append(f"{site_name} @ {timeline_date}: {status}")
+                apply_site_year_to_summary(
+                    summary,
+                    "highest_user_confidence",
+                    user.confidence,
+                    values,
+                    user_count,
+                    max_it_power,
+                    max_power,
+                    max_h100,
+                    max_perf,
+                    current_it_power,
+                    current_h100,
+                    current_cost,
+                    first_operational,
+                    completion,
+                    timeline_date,
+                    status,
+                    site_name,
+                )
 
-    year_rows: list[dict[str, object]] = []
-    for row in user_year.values():
-        out = row.copy()
-        out["data_centers"] = "; ".join(sorted(set(out["data_centers"])))
-        out["notes"] = " | ".join(out["notes"][:5])
-        for key, value in list(out.items()):
-            if isinstance(value, float):
-                out[key] = round(value, 6)
-        year_rows.append(out)
-    year_rows.sort(key=lambda row: (str(row["user"]), int(row["year"])))
+        for owner in owners:
+            supplier_site_rows.append(
+                {
+                    "supplier": owner.name,
+                    "supplier_confidence": owner.confidence,
+                    "data_center": site_name,
+                    "users": site.get("Users", ""),
+                    "country": site.get("Country", ""),
+                    "project": site.get("Project", ""),
+                    "current_it_power_mw_full_exposure": current_it_power,
+                    "current_it_power_mw_equal_split": current_it_power / owner_count,
+                    "current_h100_equiv_full_exposure": current_h100,
+                    "current_h100_equiv_equal_split": current_h100 / owner_count,
+                    "current_total_cost_2025_usd_bn_full_exposure": current_cost,
+                    "current_total_cost_2025_usd_bn_equal_split": current_cost / owner_count,
+                    "contracted_or_planned_it_power_mw_full_exposure": round(max_it_power, 3),
+                    "contracted_or_planned_it_power_mw_equal_split": round(max_it_power / owner_count, 3),
+                    "contracted_or_planned_facility_power_mw_full_exposure": round(max_power, 3),
+                    "contracted_or_planned_facility_power_mw_equal_split": round(max_power / owner_count, 3),
+                    "contracted_or_planned_h100_equiv_full_exposure": round(max_h100, 3),
+                    "contracted_or_planned_h100_equiv_equal_split": round(max_h100 / owner_count, 3),
+                    "contracted_or_planned_8bit_ops_full_exposure": round(max_perf, 3),
+                    "contracted_or_planned_8bit_ops_equal_split": round(max_perf / owner_count, 3),
+                    "completion_date_for_max_it_power": completion.isoformat() if completion else "",
+                    "first_operational_date": first_operational.isoformat() if first_operational else "",
+                    "latest_timeline_date": latest_timeline_date.isoformat() if latest_timeline_date else "",
+                    "current_chip_types": site.get("Current chip types", ""),
+                    "all_chip_types": site.get("All chip types", ""),
+                    "selected_sources": site.get("Selected Sources", ""),
+                    "calculations_sheet": site.get("Calculations sheet", ""),
+                }
+            )
+            for year in YEARS:
+                values, timeline_date, status = year_values_for_site(site_timelines, year)
+                supplier_summary = supplier_year.setdefault(
+                    (owner.name, year),
+                    blank_year_summary("supplier", owner.name, year, "highest_supplier_confidence", owner.confidence),
+                )
+                apply_site_year_to_summary(
+                    supplier_summary,
+                    "highest_supplier_confidence",
+                    owner.confidence,
+                    values,
+                    owner_count,
+                    max_it_power,
+                    max_power,
+                    max_h100,
+                    max_perf,
+                    current_it_power,
+                    current_h100,
+                    current_cost,
+                    first_operational,
+                    completion,
+                    timeline_date,
+                    status,
+                    site_name,
+                )
+                for user in users:
+                    bridge_summary = supplier_user_year.setdefault(
+                        (owner.name, user.name, year),
+                        {
+                            **blank_year_summary("supplier", owner.name, year, "highest_supplier_confidence", owner.confidence),
+                            "user": user.name,
+                            "highest_user_confidence": user.confidence,
+                        },
+                    )
+                    if confidence_rank(user.confidence) > confidence_rank(str(bridge_summary["highest_user_confidence"])):
+                        bridge_summary["highest_user_confidence"] = user.confidence
+                    apply_site_year_to_summary(
+                        bridge_summary,
+                        "highest_supplier_confidence",
+                        owner.confidence,
+                        values,
+                        owner_count * user_count,
+                        max_it_power,
+                        max_power,
+                        max_h100,
+                        max_perf,
+                        current_it_power,
+                        current_h100,
+                        current_cost,
+                        first_operational,
+                        completion,
+                        timeline_date,
+                        status,
+                        site_name,
+                    )
+
+    year_rows = finalize_year_rows(list(user_year.values()), ("user", "year"))
+    supplier_year_rows = finalize_year_rows(list(supplier_year.values()), ("supplier", "year"))
+    supplier_user_year_rows = finalize_year_rows(list(supplier_user_year.values()), ("supplier", "user", "year"))
+    bridge_front = ["supplier", "user", "year", "site_count", "highest_supplier_confidence", "highest_user_confidence"]
+    supplier_user_year_rows = [
+        {**{key: row[key] for key in bridge_front}, **{key: value for key, value in row.items() if key not in bridge_front}}
+        for row in supplier_user_year_rows
+    ]
     user_site_rows.sort(key=lambda row: (str(row["user"]), str(row["data_center"])))
+    supplier_site_rows.sort(key=lambda row: (str(row["supplier"]), str(row["data_center"])))
     site_summary.sort(key=lambda row: str(row["data_center"]))
-    return site_summary, user_site_rows, year_rows
+    return site_summary, user_site_rows, year_rows, supplier_site_rows, supplier_year_rows, supplier_user_year_rows
 
 
-def write_markdown(site_rows: list[dict[str, object]], user_site_rows: list[dict[str, object]], user_year_rows: list[dict[str, object]]) -> Path:
+def write_markdown(
+    site_rows: list[dict[str, object]],
+    user_site_rows: list[dict[str, object]],
+    user_year_rows: list[dict[str, object]],
+    supplier_site_rows: list[dict[str, object]],
+    supplier_year_rows: list[dict[str, object]],
+    supplier_user_year_rows: list[dict[str, object]],
+) -> Path:
     path = OUT_DIR / "epoch_ai_data_centers_user_summary_2026_2030.md"
     rows_2030 = [row for row in user_year_rows if row["year"] == 2030]
+    supplier_rows_2030 = [row for row in supplier_year_rows if row["year"] == 2030]
     top_power = sorted(rows_2030, key=lambda row: float(row["it_power_mw_equal_split"]), reverse=True)[:15]
     top_contract = sorted(rows_2030, key=lambda row: float(row["contracted_or_planned_it_power_mw_equal_split"]), reverse=True)[:15]
+    top_suppliers = sorted(supplier_rows_2030, key=lambda row: float(row["it_power_mw_equal_split"]), reverse=True)[:15]
     lines = [
-        "# Epoch AI Data Centers User Summary, 2026-2030",
+        "# Epoch AI Data Centers User And Supplier Power Summary, 2026-2030",
         "",
         f"- Generated: {RUN_DATE}",
         f"- Source: {ZIP_URL}",
-        "- Basis: Epoch AI AI Data Centers ZIP. Site-level users are expanded into user-site rows.",
-        "- Counting modes: `full_exposure` assigns every listed user the full site capacity; `equal_split` divides site capacity equally across listed users to avoid double-counting in user totals.",
+        "- Basis: Epoch AI AI Data Centers ZIP. Site-level users and owners are expanded into user-site, supplier-site, and supplier-user-year bridge rows.",
+        "- Counting modes: `full_exposure` assigns every listed user/supplier the full site capacity; `equal_split` divides site capacity across listed users, suppliers, or supplier-user pairs to avoid double-counting in totals.",
         "- Contracted/planned capacity: maximum site timeline capacity observed through the downloaded dataset, not necessarily a legally contracted power-purchase amount.",
         "- Current capacity: Epoch site-level `Current power (MW)` and `Current H100 equivalents`, aggregated by listed user.",
         "",
@@ -397,11 +571,30 @@ def write_markdown(site_rows: list[dict[str, object]], user_site_rows: list[dict
         )
     lines += [
         "",
+        "## 2030 Top Suppliers By Equal-Split IT Power",
+        "",
+        "| Rank | Supplier | Sites | Current IT MW | 2030 IT Power MW | Contracted/Planned IT MW | 2030 H100-eq | Latest completion date |",
+        "|---:|---|---:|---:|---:|---:|---:|---|",
+    ]
+    for idx, row in enumerate(top_suppliers, 1):
+        lines.append(
+            f"| {idx} | {row['supplier']} | {row['site_count']} | {float(row['current_it_power_mw_equal_split']):,.0f} | "
+            f"{float(row['it_power_mw_equal_split']):,.0f} | {float(row['contracted_or_planned_it_power_mw_equal_split']):,.0f} | "
+            f"{float(row['h100_equiv_equal_split']):,.0f} | {row['latest_completion_date_for_max_it_power']} |"
+        )
+    lines += [
+        "",
         "## Output Files",
         "",
         "- `normalized/epoch_ai_data_center_sites.csv`: one row per data center.",
         "- `normalized/epoch_ai_data_center_user_sites.csv`: one row per user-data-center relationship.",
         "- `normalized/epoch_ai_data_center_user_year_summary_2026_2030.csv`: user-year summary table.",
+        "- `normalized/epoch_ai_data_center_supplier_sites.csv`: one row per supplier-data-center relationship.",
+        "- `normalized/epoch_ai_data_center_supplier_year_summary_2026_2030.csv`: supplier-year summary table.",
+        "- `normalized/epoch_ai_data_center_supplier_user_year_bridge_2026_2030.csv`: supplier-user-year bridge table.",
+        "- `outputs/epoch_ai_data_centers_user_year_power_2026_2030.csv`: dashboard-ready user-year power table.",
+        "- `outputs/epoch_ai_data_centers_supplier_year_power_2026_2030.csv`: dashboard-ready supplier-year power table.",
+        "- `outputs/epoch_ai_data_centers_supplier_user_year_power_2026_2030.csv`: dashboard-ready supplier-user-year power bridge.",
         "- `outputs/epoch_ai_data_centers_user_summary_2026_2030.xlsx`: workbook with the same tables.",
         "",
         "## Method Notes",
@@ -415,7 +608,14 @@ def write_markdown(site_rows: list[dict[str, object]], user_site_rows: list[dict
     return path
 
 
-def write_xlsx(site_rows: list[dict[str, object]], user_site_rows: list[dict[str, object]], user_year_rows: list[dict[str, object]]) -> Path:
+def write_xlsx(
+    site_rows: list[dict[str, object]],
+    user_site_rows: list[dict[str, object]],
+    user_year_rows: list[dict[str, object]],
+    supplier_site_rows: list[dict[str, object]],
+    supplier_year_rows: list[dict[str, object]],
+    supplier_user_year_rows: list[dict[str, object]],
+) -> Path:
     path = OUT_DIR / "epoch_ai_data_centers_user_summary_2026_2030.xlsx"
     try:
         from openpyxl import Workbook
@@ -428,7 +628,10 @@ def write_xlsx(site_rows: list[dict[str, object]], user_site_rows: list[dict[str
     wb.remove(wb.active)
     tables = [
         ("user_year_2026_2030", user_year_rows),
+        ("supplier_year_2026_2030", supplier_year_rows),
+        ("supplier_user_bridge", supplier_user_year_rows),
         ("user_site_map", user_site_rows),
+        ("supplier_site_map", supplier_site_rows),
         ("site_summary", site_rows),
     ]
     for sheet_name, rows in tables:
@@ -464,17 +667,43 @@ def main() -> None:
     extracted = extract_zip(zip_path)
     data_centers = read_csv(extracted["data_centers.csv"])
     timelines = read_csv(extracted["data_center_timelines.csv"])
-    site_rows, user_site_rows, user_year_rows = summarize(data_centers, timelines)
+    site_rows, user_site_rows, user_year_rows, supplier_site_rows, supplier_year_rows, supplier_user_year_rows = summarize(data_centers, timelines)
 
     site_headers = list(site_rows[0].keys()) if site_rows else []
     user_site_headers = list(user_site_rows[0].keys()) if user_site_rows else []
     user_year_headers = list(user_year_rows[0].keys()) if user_year_rows else []
+    supplier_site_headers = list(supplier_site_rows[0].keys()) if supplier_site_rows else []
+    supplier_year_headers = list(supplier_year_rows[0].keys()) if supplier_year_rows else []
+    supplier_user_year_headers = list(supplier_user_year_rows[0].keys()) if supplier_user_year_rows else []
 
     write_csv(NORM_DIR / "epoch_ai_data_center_sites.csv", site_rows, site_headers)
     write_csv(NORM_DIR / "epoch_ai_data_center_user_sites.csv", user_site_rows, user_site_headers)
     write_csv(NORM_DIR / "epoch_ai_data_center_user_year_summary_2026_2030.csv", user_year_rows, user_year_headers)
-    md_path = write_markdown(site_rows, user_site_rows, user_year_rows)
-    xlsx_path = write_xlsx(site_rows, user_site_rows, user_year_rows)
+    write_csv(NORM_DIR / "epoch_ai_data_center_supplier_sites.csv", supplier_site_rows, supplier_site_headers)
+    write_csv(NORM_DIR / "epoch_ai_data_center_supplier_year_summary_2026_2030.csv", supplier_year_rows, supplier_year_headers)
+    write_csv(NORM_DIR / "epoch_ai_data_center_supplier_user_year_bridge_2026_2030.csv", supplier_user_year_rows, supplier_user_year_headers)
+    output_user_year = OUT_DIR / "epoch_ai_data_centers_user_year_power_2026_2030.csv"
+    output_supplier_year = OUT_DIR / "epoch_ai_data_centers_supplier_year_power_2026_2030.csv"
+    output_supplier_user_year = OUT_DIR / "epoch_ai_data_centers_supplier_user_year_power_2026_2030.csv"
+    write_csv(output_user_year, user_year_rows, user_year_headers)
+    write_csv(output_supplier_year, supplier_year_rows, supplier_year_headers)
+    write_csv(output_supplier_user_year, supplier_user_year_rows, supplier_user_year_headers)
+    md_path = write_markdown(
+        site_rows,
+        user_site_rows,
+        user_year_rows,
+        supplier_site_rows,
+        supplier_year_rows,
+        supplier_user_year_rows,
+    )
+    xlsx_path = write_xlsx(
+        site_rows,
+        user_site_rows,
+        user_year_rows,
+        supplier_site_rows,
+        supplier_year_rows,
+        supplier_user_year_rows,
+    )
 
     print(
         {
@@ -483,10 +712,19 @@ def main() -> None:
             "sites": len(site_rows),
             "user_site_rows": len(user_site_rows),
             "user_year_rows": len(user_year_rows),
+            "supplier_site_rows": len(supplier_site_rows),
+            "supplier_year_rows": len(supplier_year_rows),
+            "supplier_user_year_rows": len(supplier_user_year_rows),
             "outputs": [
                 str(NORM_DIR / "epoch_ai_data_center_sites.csv"),
                 str(NORM_DIR / "epoch_ai_data_center_user_sites.csv"),
                 str(NORM_DIR / "epoch_ai_data_center_user_year_summary_2026_2030.csv"),
+                str(NORM_DIR / "epoch_ai_data_center_supplier_sites.csv"),
+                str(NORM_DIR / "epoch_ai_data_center_supplier_year_summary_2026_2030.csv"),
+                str(NORM_DIR / "epoch_ai_data_center_supplier_user_year_bridge_2026_2030.csv"),
+                str(output_user_year),
+                str(output_supplier_year),
+                str(output_supplier_user_year),
                 str(md_path),
                 str(xlsx_path),
             ],

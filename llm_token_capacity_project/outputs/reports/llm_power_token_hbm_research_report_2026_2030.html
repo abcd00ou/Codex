@@ -1,0 +1,379 @@
+<!doctype html><html><head><meta charset='utf-8'>
+<title>전력 기반 LLM 토큰 처리량 및 HBM 공급량 분석 리포트</title>
+<style>body{font-family:Arial,sans-serif;margin:0;background:#f7f8fb;color:#111827}main{max-width:980px;margin:auto;padding:44px 32px}h1{font-size:38px;line-height:1.16;letter-spacing:0;margin:0 0 10px}h2{font-size:24px;line-height:1.25;letter-spacing:0;margin:42px 0 12px}p,li{font-size:16px;line-height:1.72}.meta{color:#4b5563}.lede{font-size:18px;line-height:1.7}.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0 34px}.kpi div{background:#fff;border:1px solid #d8dee8;padding:16px}.kpi span{display:block;color:#4b5563;font-size:13px}.kpi b{display:block;font-size:24px;margin-top:6px}.chart{background:#fff;border:1px solid #d8dee8;margin:18px 0 26px;overflow:auto}pre{background:#111827;color:#e5e7eb;padding:18px;overflow:auto;font-size:13px;line-height:1.55}.sources li{font-size:14px}@media(max-width:760px){main{padding:24px 18px}h1{font-size:30px}.kpi{grid-template-columns:1fr}}</style>
+</head><body><main>
+<h1>전력 기반 LLM 토큰 처리량 및 HBM 공급량 분석 리포트</h1>
+<p class='meta'>작성일 2026-08-04. 주요 상용 LLM 사업자, 2026-2030년 Base/Bear/Bull 시나리오. 상세 테이블은 대시보드/CSV 산출물로 분리.</p>
+<div class='kpi'>
+<div><span>2030 tokens/day</span><b>1.22Q</b></div>
+<div><span>2030 inference power</span><b>23.0GW</b></div>
+<div><span>2030 weighted DCiE</span><b>83.3%</b></div>
+<div><span>2030 HBM-equivalent</span><b>2,035.0PB</b></div>
+</div>
+<section><h2>Executive Summary</h2>
+<p class='lede'>Base case에서 covered LLM owner들의 active AI power는 2026년 <b>9.6 GW</b>에서 2030년 <b>42.1 GW</b>로 확대된다. 그러나 토큰 공급량을 결정하는 것은 gross GW가 아니라 DCiE, training/inference split, CSP별 계약 비중, accelerator mix, workload별 TPS/MW가 결합된 결과다.</p>
+<p>2030년 Base case generated-output token supply는 <b>1.22Q tokens/day</b>다. Inference power는 <b>23.0 GW</b>, training/reserve power는 <b>7.3 GW</b>로 계산된다. HBM-equivalent demand는 <b>2,035.0 PB</b>로, 24GB stack-equivalent 기준 <b>84.79 million개</b> 수준이다.</p>
+</section>
+<section><h2>분석 프레임워크</h2>
+<p>모델은 datacenter와 CSP 계약 전력을 AI company별 inference power로 정규화하고, CSP별 accelerator mix를 적용한 뒤, InferenceX benchmark proxy를 short, long, agentic workload로 나누어 TPS/MW를 부여한다.</p>
+<pre>Output tokens/day = inference GW * 1,000 * serving TPS/MW * 86,400
+HBM-equivalent PB = accelerator MW * 1,000 / all-in kW per unit * HBM GB per unit / 1,000,000</pre>
+</section>
+<section><h2>2026-2030년 전력과 토큰 공급량의 변화</h2>
+<p>Contracted power envelope는 2026년 <b>25.0 GW</b>에서 2030년 <b>54.8 GW</b>로 확대된다. Active power는 <b>9.6 GW</b>에서 <b>42.1 GW</b>로 증가하고, weighted inference share는 <b>55.9%</b>에서 <b>75.9%</b>로 상승한다.</p>
+<div class='chart'><svg xmlns="http://www.w3.org/2000/svg" width="980" height="520" viewBox="0 0 980 520">
+<rect width="100%" height="100%" fill="#f8fafc"/>
+<text x="28" y="38" font-family="Arial" font-size="22" font-weight="700" fill="#0f172a">Generated output token supply by company</text>
+<text x="28" y="60" font-family="Arial" font-size="13" fill="#475569">Base scenario, 2026-2030. Unit: Q tokens/day.</text>
+<line x1="74" y1="450" x2="952" y2="450" stroke="#94a3b8"/>
+<line x1="74" y1="74" x2="74" y2="450" stroke="#94a3b8"/>
+<text x="74.0" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2026</text>
+<line x1="74.0" y1="74" x2="74.0" y2="450" stroke="#e2e8f0"/>
+<text x="293.5" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2027</text>
+<line x1="293.5" y1="74" x2="293.5" y2="450" stroke="#e2e8f0"/>
+<text x="513.0" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2028</text>
+<line x1="513.0" y1="74" x2="513.0" y2="450" stroke="#e2e8f0"/>
+<text x="732.5" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2029</text>
+<line x1="732.5" y1="74" x2="732.5" y2="450" stroke="#e2e8f0"/>
+<text x="952.0" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2030</text>
+<line x1="952.0" y1="74" x2="952.0" y2="450" stroke="#e2e8f0"/>
+<line x1="74" y1="450.0" x2="952" y2="450.0" stroke="#e2e8f0"/>
+<text x="62" y="454.0" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">0.00</text>
+<line x1="74" y1="356.0" x2="952" y2="356.0" stroke="#e2e8f0"/>
+<text x="62" y="360.0" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">0.12</text>
+<line x1="74" y1="262.0" x2="952" y2="262.0" stroke="#e2e8f0"/>
+<text x="62" y="266.0" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">0.24</text>
+<line x1="74" y1="167.99999999999994" x2="952" y2="167.99999999999994" stroke="#e2e8f0"/>
+<text x="62" y="171.99999999999994" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">0.36</text>
+<line x1="74" y1="74.0" x2="952" y2="74.0" stroke="#e2e8f0"/>
+<text x="62" y="78.0" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">0.48</text>
+<path d="M74.0,445.6 L293.5,440.1 L513.0,434.3 L732.5,428.2 L952.0,421.9" fill="none" stroke="#2563eb" stroke-width="3"/>
+<circle cx="74.0" cy="445.6" r="4" fill="#2563eb"/>
+<circle cx="293.5" cy="440.1" r="4" fill="#2563eb"/>
+<circle cx="513.0" cy="434.3" r="4" fill="#2563eb"/>
+<circle cx="732.5" cy="428.2" r="4" fill="#2563eb"/>
+<circle cx="952.0" cy="421.9" r="4" fill="#2563eb"/>
+<rect x="760" y="84" width="12" height="12" fill="#2563eb"/>
+<text x="778" y="94" font-family="Arial" font-size="13" fill="#0f172a">OpenAI</text>
+<path d="M74.0,447.1 L293.5,443.1 L513.0,440.2 L732.5,435.6 L952.0,430.4" fill="none" stroke="#dc2626" stroke-width="3"/>
+<circle cx="74.0" cy="447.1" r="4" fill="#dc2626"/>
+<circle cx="293.5" cy="443.1" r="4" fill="#dc2626"/>
+<circle cx="513.0" cy="440.2" r="4" fill="#dc2626"/>
+<circle cx="732.5" cy="435.6" r="4" fill="#dc2626"/>
+<circle cx="952.0" cy="430.4" r="4" fill="#dc2626"/>
+<rect x="760" y="108" width="12" height="12" fill="#dc2626"/>
+<text x="778" y="118" font-family="Arial" font-size="13" fill="#0f172a">Anthropic</text>
+<path d="M74.0,443.9 L293.5,440.0 L513.0,435.6 L732.5,430.7 L952.0,425.3" fill="none" stroke="#16a34a" stroke-width="3"/>
+<circle cx="74.0" cy="443.9" r="4" fill="#16a34a"/>
+<circle cx="293.5" cy="440.0" r="4" fill="#16a34a"/>
+<circle cx="513.0" cy="435.6" r="4" fill="#16a34a"/>
+<circle cx="732.5" cy="430.7" r="4" fill="#16a34a"/>
+<circle cx="952.0" cy="425.3" r="4" fill="#16a34a"/>
+<rect x="760" y="132" width="12" height="12" fill="#16a34a"/>
+<text x="778" y="142" font-family="Arial" font-size="13" fill="#0f172a">Google</text>
+<path d="M74.0,376.0 L293.5,315.8 L513.0,239.8 L732.5,161.3 L952.0,74.0" fill="none" stroke="#7c3aed" stroke-width="3"/>
+<circle cx="74.0" cy="376.0" r="4" fill="#7c3aed"/>
+<circle cx="293.5" cy="315.8" r="4" fill="#7c3aed"/>
+<circle cx="513.0" cy="239.8" r="4" fill="#7c3aed"/>
+<circle cx="732.5" cy="161.3" r="4" fill="#7c3aed"/>
+<circle cx="952.0" cy="74.0" r="4" fill="#7c3aed"/>
+<rect x="760" y="156" width="12" height="12" fill="#7c3aed"/>
+<text x="778" y="166" font-family="Arial" font-size="13" fill="#0f172a">Microsoft</text>
+<path d="M74.0,439.9 L293.5,421.0 L513.0,397.8 L732.5,370.3 L952.0,338.5" fill="none" stroke="#ea580c" stroke-width="3"/>
+<circle cx="74.0" cy="439.9" r="4" fill="#ea580c"/>
+<circle cx="293.5" cy="421.0" r="4" fill="#ea580c"/>
+<circle cx="513.0" cy="397.8" r="4" fill="#ea580c"/>
+<circle cx="732.5" cy="370.3" r="4" fill="#ea580c"/>
+<circle cx="952.0" cy="338.5" r="4" fill="#ea580c"/>
+<rect x="760" y="180" width="12" height="12" fill="#ea580c"/>
+<text x="778" y="190" font-family="Arial" font-size="13" fill="#0f172a">xAI</text>
+</svg></div>
+<div class='chart'><svg xmlns="http://www.w3.org/2000/svg" width="980" height="520" viewBox="0 0 980 520">
+<rect width="100%" height="100%" fill="#f8fafc"/>
+<text x="28" y="38" font-family="Arial" font-size="22" font-weight="700" fill="#0f172a">Operational inference power by company</text>
+<text x="28" y="60" font-family="Arial" font-size="13" fill="#475569">Base scenario, 2026-2030. Unit: GW.</text>
+<line x1="74" y1="450" x2="952" y2="450" stroke="#94a3b8"/>
+<line x1="74" y1="74" x2="74" y2="450" stroke="#94a3b8"/>
+<text x="74.0" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2026</text>
+<line x1="74.0" y1="74" x2="74.0" y2="450" stroke="#e2e8f0"/>
+<text x="293.5" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2027</text>
+<line x1="293.5" y1="74" x2="293.5" y2="450" stroke="#e2e8f0"/>
+<text x="513.0" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2028</text>
+<line x1="513.0" y1="74" x2="513.0" y2="450" stroke="#e2e8f0"/>
+<text x="732.5" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2029</text>
+<line x1="732.5" y1="74" x2="732.5" y2="450" stroke="#e2e8f0"/>
+<text x="952.0" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2030</text>
+<line x1="952.0" y1="74" x2="952.0" y2="450" stroke="#e2e8f0"/>
+<line x1="74" y1="450.0" x2="952" y2="450.0" stroke="#e2e8f0"/>
+<text x="62" y="454.0" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">0.00</text>
+<line x1="74" y1="356.0" x2="952" y2="356.0" stroke="#e2e8f0"/>
+<text x="62" y="360.0" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">1.22</text>
+<line x1="74" y1="262.0" x2="952" y2="262.0" stroke="#e2e8f0"/>
+<text x="62" y="266.0" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">2.43</text>
+<line x1="74" y1="168.0" x2="952" y2="168.0" stroke="#e2e8f0"/>
+<text x="62" y="172.0" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">3.65</text>
+<line x1="74" y1="74.0" x2="952" y2="74.0" stroke="#e2e8f0"/>
+<text x="62" y="78.0" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">4.86</text>
+<path d="M74.0,404.0 L293.5,336.6 L513.0,259.1 L732.5,171.6 L952.0,74.0" fill="none" stroke="#2563eb" stroke-width="3"/>
+<circle cx="74.0" cy="404.0" r="4" fill="#2563eb"/>
+<circle cx="293.5" cy="336.6" r="4" fill="#2563eb"/>
+<circle cx="513.0" cy="259.1" r="4" fill="#2563eb"/>
+<circle cx="732.5" cy="171.6" r="4" fill="#2563eb"/>
+<circle cx="952.0" cy="74.0" r="4" fill="#2563eb"/>
+<rect x="760" y="84" width="12" height="12" fill="#2563eb"/>
+<text x="778" y="94" font-family="Arial" font-size="13" fill="#0f172a">OpenAI</text>
+<path d="M74.0,420.7 L293.5,381.1 L513.0,334.6 L732.5,281.1 L952.0,220.6" fill="none" stroke="#dc2626" stroke-width="3"/>
+<circle cx="74.0" cy="420.7" r="4" fill="#dc2626"/>
+<circle cx="293.5" cy="381.1" r="4" fill="#dc2626"/>
+<circle cx="513.0" cy="334.6" r="4" fill="#dc2626"/>
+<circle cx="732.5" cy="281.1" r="4" fill="#dc2626"/>
+<circle cx="952.0" cy="220.6" r="4" fill="#dc2626"/>
+<rect x="760" y="108" width="12" height="12" fill="#dc2626"/>
+<text x="778" y="118" font-family="Arial" font-size="13" fill="#0f172a">Anthropic</text>
+<path d="M74.0,380.2 L293.5,335.5 L513.0,285.2 L732.5,229.2 L952.0,167.7" fill="none" stroke="#16a34a" stroke-width="3"/>
+<circle cx="74.0" cy="380.2" r="4" fill="#16a34a"/>
+<circle cx="293.5" cy="335.5" r="4" fill="#16a34a"/>
+<circle cx="513.0" cy="285.2" r="4" fill="#16a34a"/>
+<circle cx="732.5" cy="229.2" r="4" fill="#16a34a"/>
+<circle cx="952.0" cy="167.7" r="4" fill="#16a34a"/>
+<rect x="760" y="132" width="12" height="12" fill="#16a34a"/>
+<text x="778" y="142" font-family="Arial" font-size="13" fill="#0f172a">Google</text>
+<path d="M74.0,395.1 L293.5,353.6 L513.0,305.9 L732.5,252.1 L952.0,192.2" fill="none" stroke="#7c3aed" stroke-width="3"/>
+<circle cx="74.0" cy="395.1" r="4" fill="#7c3aed"/>
+<circle cx="293.5" cy="353.6" r="4" fill="#7c3aed"/>
+<circle cx="513.0" cy="305.9" r="4" fill="#7c3aed"/>
+<circle cx="732.5" cy="252.1" r="4" fill="#7c3aed"/>
+<circle cx="952.0" cy="192.2" r="4" fill="#7c3aed"/>
+<rect x="760" y="156" width="12" height="12" fill="#7c3aed"/>
+<text x="778" y="166" font-family="Arial" font-size="13" fill="#0f172a">Microsoft</text>
+<path d="M74.0,441.5 L293.5,425.5 L513.0,405.8 L732.5,382.6 L952.0,355.7" fill="none" stroke="#ea580c" stroke-width="3"/>
+<circle cx="74.0" cy="441.5" r="4" fill="#ea580c"/>
+<circle cx="293.5" cy="425.5" r="4" fill="#ea580c"/>
+<circle cx="513.0" cy="405.8" r="4" fill="#ea580c"/>
+<circle cx="732.5" cy="382.6" r="4" fill="#ea580c"/>
+<circle cx="952.0" cy="355.7" r="4" fill="#ea580c"/>
+<rect x="760" y="180" width="12" height="12" fill="#ea580c"/>
+<text x="778" y="190" font-family="Arial" font-size="13" fill="#0f172a">xAI</text>
+</svg></div>
+</section>
+<section><h2>공급자 관점: Epoch AI capacity를 CSP side로 다시 읽기</h2>
+<p>기존 user 관점은 LLM owner가 확보한 전력과 token supply를 보여준다. 공급자 관점은 같은 전력을 CSP/datacenter provider가 어떤 AI user에게 공급하는지 보여준다. 이 관점은 HBM과 accelerator procurement를 추정할 때 중요하다.</p>
+<p>Epoch 기반 supplier scope의 normalized supplier inference power는 2026년 <b>3.63 GW</b>에서 2030년 <b>21.06 GW</b>로 증가한다. 2030년 supplier-side total AI power seed는 <b>28.96 GW</b>, AI-company contract power 합계는 <b>27.04 GW</b>다. Legacy company envelope row는 이 supplier scope에서 제외했다.</p>
+<div class='chart'><svg xmlns="http://www.w3.org/2000/svg" width="980" height="520" viewBox="0 0 980 520">
+<rect width="100%" height="100%" fill="#f8fafc"/>
+<text x="28" y="38" font-family="Arial" font-size="22" font-weight="700" fill="#0f172a">Supplier-side normalized inference power</text>
+<text x="28" y="60" font-family="Arial" font-size="13" fill="#475569">Base scenario, 2026-2030. Unit: GW.</text>
+<line x1="74" y1="450" x2="952" y2="450" stroke="#94a3b8"/>
+<line x1="74" y1="74" x2="74" y2="450" stroke="#94a3b8"/>
+<text x="74.0" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2026</text>
+<line x1="74.0" y1="74" x2="74.0" y2="450" stroke="#e2e8f0"/>
+<text x="293.5" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2027</text>
+<line x1="293.5" y1="74" x2="293.5" y2="450" stroke="#e2e8f0"/>
+<text x="513.0" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2028</text>
+<line x1="513.0" y1="74" x2="513.0" y2="450" stroke="#e2e8f0"/>
+<text x="732.5" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2029</text>
+<line x1="732.5" y1="74" x2="732.5" y2="450" stroke="#e2e8f0"/>
+<text x="952.0" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2030</text>
+<line x1="952.0" y1="74" x2="952.0" y2="450" stroke="#e2e8f0"/>
+<line x1="74" y1="450.0" x2="952" y2="450.0" stroke="#e2e8f0"/>
+<text x="62" y="454.0" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">0.00</text>
+<line x1="74" y1="356.0" x2="952" y2="356.0" stroke="#e2e8f0"/>
+<text x="62" y="360.0" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">0.95</text>
+<line x1="74" y1="262.0" x2="952" y2="262.0" stroke="#e2e8f0"/>
+<text x="62" y="266.0" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">1.90</text>
+<line x1="74" y1="168.00000000000006" x2="952" y2="168.00000000000006" stroke="#e2e8f0"/>
+<text x="62" y="172.00000000000006" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">2.85</text>
+<line x1="74" y1="74.0" x2="952" y2="74.0" stroke="#e2e8f0"/>
+<text x="62" y="78.0" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">3.80</text>
+<path d="M74.0,362.8 L293.5,304.2 L513.0,242.3 L732.5,163.4 L952.0,74.0" fill="none" stroke="#2563eb" stroke-width="3"/>
+<circle cx="74.0" cy="362.8" r="4" fill="#2563eb"/>
+<circle cx="293.5" cy="304.2" r="4" fill="#2563eb"/>
+<circle cx="513.0" cy="242.3" r="4" fill="#2563eb"/>
+<circle cx="732.5" cy="163.4" r="4" fill="#2563eb"/>
+<circle cx="952.0" cy="74.0" r="4" fill="#2563eb"/>
+<rect x="760" y="84" width="12" height="12" fill="#2563eb"/>
+<text x="778" y="94" font-family="Arial" font-size="13" fill="#0f172a">Microsoft</text>
+<path d="M74.0,360.7 L293.5,303.4 L513.0,238.9 L732.5,167.2 L952.0,88.4" fill="none" stroke="#dc2626" stroke-width="3"/>
+<circle cx="74.0" cy="360.7" r="4" fill="#dc2626"/>
+<circle cx="293.5" cy="303.4" r="4" fill="#dc2626"/>
+<circle cx="513.0" cy="238.9" r="4" fill="#dc2626"/>
+<circle cx="732.5" cy="167.2" r="4" fill="#dc2626"/>
+<circle cx="952.0" cy="88.4" r="4" fill="#dc2626"/>
+<rect x="760" y="108" width="12" height="12" fill="#dc2626"/>
+<text x="778" y="118" font-family="Arial" font-size="13" fill="#0f172a">Google</text>
+<path d="M74.0,383.3 L293.5,330.2 L513.0,269.3 L732.5,201.0 L952.0,125.1" fill="none" stroke="#16a34a" stroke-width="3"/>
+<circle cx="74.0" cy="383.3" r="4" fill="#16a34a"/>
+<circle cx="293.5" cy="330.2" r="4" fill="#16a34a"/>
+<circle cx="513.0" cy="269.3" r="4" fill="#16a34a"/>
+<circle cx="732.5" cy="201.0" r="4" fill="#16a34a"/>
+<circle cx="952.0" cy="125.1" r="4" fill="#16a34a"/>
+<rect x="760" y="132" width="12" height="12" fill="#16a34a"/>
+<text x="778" y="142" font-family="Arial" font-size="13" fill="#0f172a">Meta</text>
+<path d="M74.0,428.1 L293.5,406.1 L513.0,316.6 L732.5,262.4 L952.0,196.7" fill="none" stroke="#7c3aed" stroke-width="3"/>
+<circle cx="74.0" cy="428.1" r="4" fill="#7c3aed"/>
+<circle cx="293.5" cy="406.1" r="4" fill="#7c3aed"/>
+<circle cx="513.0" cy="316.6" r="4" fill="#7c3aed"/>
+<circle cx="732.5" cy="262.4" r="4" fill="#7c3aed"/>
+<circle cx="952.0" cy="196.7" r="4" fill="#7c3aed"/>
+<rect x="760" y="156" width="12" height="12" fill="#7c3aed"/>
+<text x="778" y="166" font-family="Arial" font-size="13" fill="#0f172a">Oracle</text>
+<path d="M74.0,424.9 L293.5,395.3 L513.0,332.1 L732.5,277.4 L952.0,215.6" fill="none" stroke="#ea580c" stroke-width="3"/>
+<circle cx="74.0" cy="424.9" r="4" fill="#ea580c"/>
+<circle cx="293.5" cy="395.3" r="4" fill="#ea580c"/>
+<circle cx="513.0" cy="332.1" r="4" fill="#ea580c"/>
+<circle cx="732.5" cy="277.4" r="4" fill="#ea580c"/>
+<circle cx="952.0" cy="215.6" r="4" fill="#ea580c"/>
+<rect x="760" y="180" width="12" height="12" fill="#ea580c"/>
+<text x="778" y="190" font-family="Arial" font-size="13" fill="#0f172a">Amazon</text>
+<path d="M74.0,423.7 L293.5,393.3 L513.0,358.9 L732.5,320.0 L952.0,276.9" fill="none" stroke="#0891b2" stroke-width="3"/>
+<circle cx="74.0" cy="423.7" r="4" fill="#0891b2"/>
+<circle cx="293.5" cy="393.3" r="4" fill="#0891b2"/>
+<circle cx="513.0" cy="358.9" r="4" fill="#0891b2"/>
+<circle cx="732.5" cy="320.0" r="4" fill="#0891b2"/>
+<circle cx="952.0" cy="276.9" r="4" fill="#0891b2"/>
+<rect x="760" y="204" width="12" height="12" fill="#0891b2"/>
+<text x="778" y="214" font-family="Arial" font-size="13" fill="#0f172a">Alibaba</text>
+</svg></div>
+</section>
+<section><h2>Microsoft</h2>
+<p>Microsoft의 공급자 관점 power는 user별 LLM owner power를 CSP side로 다시 집계한 값이다. 2026년 normalized supplier inference power는 <b>0.88 GW</b>, 2030년은 <b>3.80 GW</b>다. 2030년 CSP total AI power seed는 <b>4.08 GW</b>, AI-company contract power 합계는 <b>3.96 GW</b>다.</p>
+<p>2030년 normalized inference exposure는 Microsoft 79.5% / OpenAI 20.5% 순이다. Accelerator mix는 H200/A100/H100 5.8%, B200/B300 94.2%, GB200/GB300 0.0%, purpose-built/custom/future 0.0%로 계산된다. HBM-equivalent demand는 2030년 <b>314.57 PB</b>로 추정된다.</p>
+</section>
+<section><h2>Google</h2>
+<p>Google의 공급자 관점 power는 user별 LLM owner power를 CSP side로 다시 집계한 값이다. 2026년 normalized supplier inference power는 <b>0.90 GW</b>, 2030년은 <b>3.65 GW</b>다. 2030년 CSP total AI power seed는 <b>5.79 GW</b>, AI-company contract power 합계는 <b>4.59 GW</b>다.</p>
+<p>2030년 normalized inference exposure는 Google 100.0% 순이다. Accelerator mix는 H200/A100/H100 0.0%, B200/B300 8.9%, GB200/GB300 0.0%, purpose-built/custom/future 91.1%로 계산된다. HBM-equivalent demand는 2030년 <b>350.25 PB</b>로 추정된다.</p>
+</section>
+<section><h2>Meta</h2>
+<p>Meta의 공급자 관점 power는 user별 LLM owner power를 CSP side로 다시 집계한 값이다. 2026년 normalized supplier inference power는 <b>0.67 GW</b>, 2030년은 <b>3.28 GW</b>다. 2030년 CSP total AI power seed는 <b>4.32 GW</b>, AI-company contract power 합계는 <b>4.32 GW</b>다.</p>
+<p>2030년 normalized inference exposure는 Meta 100.0% 순이다. Accelerator mix는 H200/A100/H100 7.5%, B200/B300 73.8%, GB200/GB300 0.0%, purpose-built/custom/future 18.7%로 계산된다. HBM-equivalent demand는 2030년 <b>302.26 PB</b>로 추정된다.</p>
+</section>
+<section><h2>Oracle</h2>
+<p>Oracle의 공급자 관점 power는 user별 LLM owner power를 CSP side로 다시 집계한 값이다. 2026년 normalized supplier inference power는 <b>0.22 GW</b>, 2030년은 <b>2.56 GW</b>다. 2030년 CSP total AI power seed는 <b>5.78 GW</b>, AI-company contract power 합계는 <b>5.71 GW</b>다.</p>
+<p>2030년 normalized inference exposure는 OpenAI 100.0% 순이다. Accelerator mix는 H200/A100/H100 2.9%, B200/B300 72.3%, GB200/GB300 0.0%, purpose-built/custom/future 24.8%로 계산된다. HBM-equivalent demand는 2030년 <b>243.65 PB</b>로 추정된다.</p>
+</section>
+<section><h2>Amazon</h2>
+<p>Amazon의 공급자 관점 power는 user별 LLM owner power를 CSP side로 다시 집계한 값이다. 2026년 normalized supplier inference power는 <b>0.25 GW</b>, 2030년은 <b>2.37 GW</b>다. 2030년 CSP total AI power seed는 <b>3.45 GW</b>, AI-company contract power 합계는 <b>3.45 GW</b>다.</p>
+<p>2030년 normalized inference exposure는 Anthropic 100.0% 순이다. Accelerator mix는 H200/A100/H100 4.3%, B200/B300 1.7%, GB200/GB300 0.0%, purpose-built/custom/future 94.0%로 계산된다. HBM-equivalent demand는 2030년 <b>208.46 PB</b>로 추정된다.</p>
+</section>
+<section><h2>기업별 분석</h2><p>아래 섹션은 표 대신 각 기업의 capacity path, CSP 의존도, accelerator mix, benchmark uncertainty를 중심으로 해석한다.</p></section>
+<section><h2>OpenAI: 멀티 CSP 기반의 frontier serving capacity</h2>
+<p>OpenAI는 본 모델에서 가장 넓은 외부 계약 전력 구조를 가진 사업자로 처리한다. Microsoft, Oracle, CoreWeave, G42, SoftBank 계열의 capacity path가 OpenAI의 inference pool로 정규화되어 들어오며, 핵심은 OpenAI의 토큰 공급량이 특정 CSP 한 곳의 전력이나 GPU mix로 설명되지 않는다는 점이다. 따라서 OpenAI의 결과값은 각 CSP의 계약 전력 비중과 해당 CSP의 accelerator mix가 결합된 가중 평균으로 읽어야 한다.</p>
+<p>Capacity ramp는 2026년 active power <b>1.40 GW</b>에서 2028년 <b>4.95 GW</b>, 2030년 <b>8.50 GW</b>로 이어진다. Inference power는 <b>0.59 GW</b>에서 <b>4.86 GW</b>로 확대된다.</p>
+<p>Token supply는 2026년 <b>0.0057Q/day</b>에서 2030년 <b>0.0362Q/day</b>로 증가한다. HBM-equivalent demand는 <b>49.28 PB</b>에서 <b>435.85 PB</b>로 늘어난다. 2030년 inference power 기준 accelerator mix는 H200/A100/H100 3.7%, B200/B300 78.9%, GB200/GB300 4.3%, purpose-built/custom/future 13.1%로 모델링된다. 2030년 CSP-normalized inference power는 Oracle 52.6% / Microsoft 16.0% / CoreWeave 14.3% 순으로 크다.</p>
+<p>TPS/MW는 의도적으로 보수적으로 잡았다. 작은 open model의 최대 benchmark가 아니라 frontier급 모델 라우팅을 proxy로 사용하기 때문이다. 따라서 OpenAI의 토큰 공급량은 proxy model 교체, B200/GB200 전환 속도, 그리고 실제 production traffic 중 더 작은 routed model이 차지하는 비중에 매우 민감하다.</p>
+</section>
+<section><h2>Anthropic: Amazon/custom accelerator 노출과 agentic-heavy mix</h2>
+<p>Anthropic은 일반 짧은 대화보다 long-context 및 agentic workload 비중이 높은 사업자로 모델링했다. Claude 사용처가 코딩, 리서치, 도구 사용 세션에 구조적으로 많이 노출되어 있기 때문이다. 따라서 단순 GW보다 capacity attribution이 중요하다. 특히 Trainium 비중이 높은 CSP mix에서는 NVIDIA GPU만으로 읽는 경우와 HBM 및 TPS/MW 결과가 크게 달라질 수 있다.</p>
+<p>Capacity ramp는 2026년 active power <b>1.00 GW</b>에서 2028년 <b>3.25 GW</b>, 2030년 <b>5.50 GW</b>로 이어진다. Inference power는 <b>0.38 GW</b>에서 <b>2.97 GW</b>로 확대된다.</p>
+<p>Token supply는 2026년 <b>0.0037Q/day</b>에서 2030년 <b>0.0252Q/day</b>로 증가한다. HBM-equivalent demand는 <b>32.75 PB</b>에서 <b>258.82 PB</b>로 늘어난다. 2030년 inference power 기준 accelerator mix는 H200/A100/H100 7.9%, B200/B300 12.1%, GB200/GB300 0.0%, purpose-built/custom/future 80.1%로 모델링된다. 2030년 CSP-normalized inference power는 Amazon 79.8% / SpaceXAI 15.2% / Fluidstack 5.0% 순으로 크다.</p>
+<p>Trainium과 같은 custom accelerator의 HBM 및 TPS/MW는 현재 낮은 신뢰도의 placeholder다. 비교 가능한 Trainium serving telemetry 또는 Claude production throughput이 확보되면 가장 먼저 교체해야 한다.</p>
+</section>
+<section><h2>Google: TPU-first internal fleet economics</h2>
+<p>Google은 TPU-first 내부 fleet으로 읽는 것이 적절하다. Gemini와 Google Cloud serving은 내부 최적화된 TPU infrastructure를 활용할 수 있으므로, 순수 NVIDIA benchmark와 동일하게 취급하지 않았다. 이 때문에 본 보고서에서는 Google의 purpose-built accelerator 노출이 높고, public GPU-only benchmark와의 비교 가능성은 상대적으로 낮다.</p>
+<p>Capacity ramp는 2026년 active power <b>2.20 GW</b>에서 2028년 <b>4.50 GW</b>, 2030년 <b>6.80 GW</b>로 이어진다. Inference power는 <b>0.90 GW</b>에서 <b>3.65 GW</b>로 확대된다.</p>
+<p>Token supply는 2026년 <b>0.0078Q/day</b>에서 2030년 <b>0.0318Q/day</b>로 증가한다. HBM-equivalent demand는 <b>79.52 PB</b>에서 <b>350.25 PB</b>로 늘어난다. 2030년 inference power 기준 accelerator mix는 H200/A100/H100 0.0%, B200/B300 8.9%, GB200/GB300 0.0%, purpose-built/custom/future 91.1%로 모델링된다. 2030년 CSP-normalized inference power는 Google 100.0% 순으로 크다.</p>
+<p>핵심 대체 데이터는 TPU 세대별 HBM, all-in power, Gemini serving TPS/MW다. 이 값이 들어오기 전까지 Google의 토큰 추정치는 방향성 판단에는 유용하지만 NVIDIA 기반 row보다 감사 가능성은 낮다.</p>
+</section>
+<section><h2>Microsoft: OpenAI attribution 이후의 Copilot/Azure AI serving burden</h2>
+<p>Microsoft는 OpenAI 모델 소유자 capacity를 분리한 뒤, 자체 Copilot 및 Azure AI serving surface로 모델링했다. 현재 dataset에서는 routed assistant workload에 가까운 proxy와 B200-heavy accelerator mix가 결합되어 높은 token-supply contribution이 나온다.</p>
+<p>Capacity ramp는 2026년 active power <b>1.80 GW</b>에서 2028년 <b>4.00 GW</b>, 2030년 <b>6.20 GW</b>로 이어진다. Inference power는 <b>0.71 GW</b>에서 <b>3.33 GW</b>로 확대된다.</p>
+<p>Token supply는 2026년 <b>0.0952Q/day</b>에서 2030년 <b>0.4840Q/day</b>로 증가한다. HBM-equivalent demand는 <b>58.72 PB</b>에서 <b>276.22 PB</b>로 늘어난다. 2030년 inference power 기준 accelerator mix는 H200/A100/H100 5.2%, B200/B300 94.8%, GB200/GB300 0.0%, purpose-built/custom/future 0.0%로 모델링된다. 2030년 CSP-normalized inference power는 Microsoft 90.5% / Nscale 9.5% 순으로 크다.</p>
+<p>가장 큰 모델링 리스크는 Microsoft platform power와 OpenAI model-owner power의 중복 계산이다. 따라서 CSP contract allocation sheet가 Microsoft와 OpenAI를 분리하는 핵심 control point다.</p>
+</section>
+<section><h2>xAI: 집중형 GPU buildout과 높은 serving leverage</h2>
+<p>xAI는 상대적으로 집중된 NVIDIA GPU fleet으로 모델링했다. TPU/Trainium처럼 custom accelerator 가정이 많이 개입되는 경우보다 계약 전력에서 accelerator unit과 HBM으로 이어지는 계산 경로가 더 투명하다. 현재 파일에서는 광범위한 CSP diversification보다는 active power ramp와 inference share 상승이 xAI의 token supply를 주로 움직인다.</p>
+<p>Capacity ramp는 2026년 active power <b>0.35 GW</b>에서 2028년 <b>1.43 GW</b>, 2030년 <b>2.50 GW</b>로 이어진다. Inference power는 <b>0.11 GW</b>에서 <b>1.22 GW</b>로 확대된다.</p>
+<p>Token supply는 2026년 <b>0.0129Q/day</b>에서 2030년 <b>0.1435Q/day</b>로 증가한다. HBM-equivalent demand는 <b>9.08 PB</b>에서 <b>100.60 PB</b>로 늘어난다. 2030년 inference power 기준 accelerator mix는 H200/A100/H100 29.4%, B200/B300 70.6%, GB200/GB300 0.0%, purpose-built/custom/future 0.0%로 모델링된다. 2030년 CSP-normalized inference power는 SpaceXAI 100.0% 순으로 크다.</p>
+<p>초기 ramp 구간에서는 training demand가 inference capacity를 밀어낼 수 있다. Grok traffic 또는 enterprise/API demand가 training cluster 재배치보다 빠르게 증가한다면, inference share가 가장 먼저 재검토해야 할 sensitivity다.</p>
+</section>
+<section><h2>Benchmark Proxy와 해석상 주의점</h2>
+<p>InferenceX는 production telemetry가 아니라 public serving benchmark proxy다. Short conversation, long conversation, agentic workload를 분리하고 company별 traffic 성격에 따라 workload share와 commercial fit factor를 적용했다.</p>
+<p>Agentic workload는 공개 benchmark data가 부족하기 때문에 낮은 confidence 영역으로 남겨야 한다. 향후 agentic traces가 더 축적되면 short/long/agentic 간 TPS/MW 비율이 가장 먼저 업데이트되어야 한다.</p>
+</section>
+<section><h2>HBM 공급량 관점의 시사점</h2>
+<p>HBM-equivalent demand는 2026년 <b>327.0 PB</b>에서 2030년 <b>2,035.0 PB</b>로 증가한다. 이 값은 token volume보다 accelerator unit 수에 직접 연결되므로, HBM 공급량을 추정할 때는 CSP별 accelerator mix와 세대별 all-in power, HBM GB/unit을 함께 봐야 한다.</p>
+<div class='chart'><svg xmlns="http://www.w3.org/2000/svg" width="980" height="520" viewBox="0 0 980 520">
+<rect width="100%" height="100%" fill="#f8fafc"/>
+<text x="28" y="38" font-family="Arial" font-size="22" font-weight="700" fill="#0f172a">Power-derived HBM-equivalent supply by company</text>
+<text x="28" y="60" font-family="Arial" font-size="13" fill="#475569">Base scenario, 2026-2030. Unit: PB.</text>
+<line x1="74" y1="450" x2="952" y2="450" stroke="#94a3b8"/>
+<line x1="74" y1="74" x2="74" y2="450" stroke="#94a3b8"/>
+<text x="74.0" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2026</text>
+<line x1="74.0" y1="74" x2="74.0" y2="450" stroke="#e2e8f0"/>
+<text x="293.5" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2027</text>
+<line x1="293.5" y1="74" x2="293.5" y2="450" stroke="#e2e8f0"/>
+<text x="513.0" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2028</text>
+<line x1="513.0" y1="74" x2="513.0" y2="450" stroke="#e2e8f0"/>
+<text x="732.5" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2029</text>
+<line x1="732.5" y1="74" x2="732.5" y2="450" stroke="#e2e8f0"/>
+<text x="952.0" y="484" font-family="Arial" font-size="12" fill="#334155" text-anchor="middle">2030</text>
+<line x1="952.0" y1="74" x2="952.0" y2="450" stroke="#e2e8f0"/>
+<line x1="74" y1="450.0" x2="952" y2="450.0" stroke="#e2e8f0"/>
+<text x="62" y="454.0" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">0.00</text>
+<line x1="74" y1="356.0" x2="952" y2="356.0" stroke="#e2e8f0"/>
+<text x="62" y="360.0" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">108.96</text>
+<line x1="74" y1="262.0" x2="952" y2="262.0" stroke="#e2e8f0"/>
+<text x="62" y="266.0" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">217.93</text>
+<line x1="74" y1="168.0" x2="952" y2="168.0" stroke="#e2e8f0"/>
+<text x="62" y="172.0" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">326.89</text>
+<line x1="74" y1="74.0" x2="952" y2="74.0" stroke="#e2e8f0"/>
+<text x="62" y="78.0" font-family="Arial" font-size="11" fill="#475569" text-anchor="end">435.85</text>
+<path d="M74.0,407.5 L293.5,343.8 L513.0,258.9 L732.5,171.8 L952.0,74.0" fill="none" stroke="#2563eb" stroke-width="3"/>
+<circle cx="74.0" cy="407.5" r="4" fill="#2563eb"/>
+<circle cx="293.5" cy="343.8" r="4" fill="#2563eb"/>
+<circle cx="513.0" cy="258.9" r="4" fill="#2563eb"/>
+<circle cx="732.5" cy="171.8" r="4" fill="#2563eb"/>
+<circle cx="952.0" cy="74.0" r="4" fill="#2563eb"/>
+<rect x="760" y="84" width="12" height="12" fill="#2563eb"/>
+<text x="778" y="94" font-family="Arial" font-size="13" fill="#0f172a">OpenAI</text>
+<path d="M74.0,421.7 L293.5,383.6 L513.0,337.7 L732.5,285.6 L952.0,226.7" fill="none" stroke="#dc2626" stroke-width="3"/>
+<circle cx="74.0" cy="421.7" r="4" fill="#dc2626"/>
+<circle cx="293.5" cy="383.6" r="4" fill="#dc2626"/>
+<circle cx="513.0" cy="337.7" r="4" fill="#dc2626"/>
+<circle cx="732.5" cy="285.6" r="4" fill="#dc2626"/>
+<circle cx="952.0" cy="226.7" r="4" fill="#dc2626"/>
+<rect x="760" y="108" width="12" height="12" fill="#dc2626"/>
+<text x="778" y="118" font-family="Arial" font-size="13" fill="#0f172a">Anthropic</text>
+<path d="M74.0,381.4 L293.5,327.5 L513.0,273.6 L732.5,213.7 L952.0,147.8" fill="none" stroke="#16a34a" stroke-width="3"/>
+<circle cx="74.0" cy="381.4" r="4" fill="#16a34a"/>
+<circle cx="293.5" cy="327.5" r="4" fill="#16a34a"/>
+<circle cx="513.0" cy="273.6" r="4" fill="#16a34a"/>
+<circle cx="732.5" cy="213.7" r="4" fill="#16a34a"/>
+<circle cx="952.0" cy="147.8" r="4" fill="#16a34a"/>
+<rect x="760" y="132" width="12" height="12" fill="#16a34a"/>
+<text x="778" y="142" font-family="Arial" font-size="13" fill="#0f172a">Google</text>
+<path d="M74.0,399.3 L293.5,361.0 L513.0,316.8 L732.5,267.0 L952.0,211.7" fill="none" stroke="#7c3aed" stroke-width="3"/>
+<circle cx="74.0" cy="399.3" r="4" fill="#7c3aed"/>
+<circle cx="293.5" cy="361.0" r="4" fill="#7c3aed"/>
+<circle cx="513.0" cy="316.8" r="4" fill="#7c3aed"/>
+<circle cx="732.5" cy="267.0" r="4" fill="#7c3aed"/>
+<circle cx="952.0" cy="211.7" r="4" fill="#7c3aed"/>
+<rect x="760" y="156" width="12" height="12" fill="#7c3aed"/>
+<text x="778" y="166" font-family="Arial" font-size="13" fill="#0f172a">Microsoft</text>
+<path d="M74.0,442.2 L293.5,427.4 L513.0,409.3 L732.5,387.9 L952.0,363.2" fill="none" stroke="#ea580c" stroke-width="3"/>
+<circle cx="74.0" cy="442.2" r="4" fill="#ea580c"/>
+<circle cx="293.5" cy="427.4" r="4" fill="#ea580c"/>
+<circle cx="513.0" cy="409.3" r="4" fill="#ea580c"/>
+<circle cx="732.5" cy="387.9" r="4" fill="#ea580c"/>
+<circle cx="952.0" cy="363.2" r="4" fill="#ea580c"/>
+<rect x="760" y="180" width="12" height="12" fill="#ea580c"/>
+<text x="778" y="190" font-family="Arial" font-size="13" fill="#0f172a">xAI</text>
+</svg></div>
+</section>
+<section><h2>데이터 산출물</h2><ul>
+<li>llm_power_token_hbm_research_report_2026_2030_base_market_timeseries.csv</li>
+<li>llm_power_token_hbm_research_report_2026_2030_focus_company_timeseries.csv</li>
+<li>llm_power_token_hbm_research_report_2026_2030_supplier_power_timeseries.csv</li>
+<li>llm_power_token_hbm_research_report_2026_2030_supplier_customer_exposure_2030.csv</li>
+<li>llm_power_token_hbm_research_report_2026_2030_focus_csp_contract_timeseries.csv</li>
+<li>llm_power_token_hbm_research_report_2026_2030_hbm_company_year.csv</li>
+<li>llm_power_token_hbm_research_report_2026_2030_hbm_detail.csv</li>
+</ul></section>
+<section><h2>Sources And Caveats</h2><ul class='sources'>
+<li><b>Epoch AI data centers</b>: CSP/user capacity attribution, current/contracted IT power and completion timing seed. <a href='https://epoch.ai/data/ai-data-centers'>https://epoch.ai/data/ai-data-centers</a></li>
+<li><b>InferenceX benchmark dump</b>: Public output-token TPS/MW benchmark proxy by model, GPU, ISL/OSL, concurrency and serving stack. <a href='https://inferencex.com/'>https://inferencex.com/</a></li>
+<li><b>NVIDIA H200</b>: H200 141GB HBM3e memory and hardware generation reference. <a href='https://www.nvidia.com/en-gb/data-center/h200/'>https://www.nvidia.com/en-gb/data-center/h200/</a></li>
+<li><b>NVIDIA DGX B200</b>: B200 system memory reference used for B200-class HBM proxy. <a href='https://docs.nvidia.com/dgx/dgxb200-user-guide/introduction-to-dgxb200.html'>https://docs.nvidia.com/dgx/dgxb200-user-guide/introduction-to-dgxb200.html</a></li>
+<li><b>NVIDIA GB200 NVL72</b>: GB200 rack-scale Blackwell HBM reference. <a href='https://www.nvidia.com/en-us/data-center/gb200-nvl72/'>https://www.nvidia.com/en-us/data-center/gb200-nvl72/</a></li>
+</ul><p>이 결과는 scenario model이며 각 회사의 disclosed production telemetry가 아니다. Custom accelerator의 HBM 및 TPS/MW는 generation-specific disclosure가 확보되기 전까지 placeholder다.</p></section>
+</main></body></html>

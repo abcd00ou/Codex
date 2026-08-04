@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="520" viewBox="0 0 920 520">
+<rect width="100%" height="100%" fill="#f8fafc"/>
+<text x="28" y="38" font-family="Arial" font-size="22" font-weight="700" fill="#0f172a">Generated output token supply by LLM owner, Base 2030</text>
+<text x="28" y="93" font-family="Arial" font-size="14" fill="#334155">Microsoft</text>
+<rect x="190" y="76" width="660.0" height="22" rx="3" fill="#2563eb"/>
+<text x="858.0" y="93" font-family="Arial" font-size="13" fill="#0f172a">0.48 Q tokens/day</text>
+<text x="28" y="131" font-family="Arial" font-size="14" fill="#334155">Meta</text>
+<rect x="190" y="114" width="321.8" height="22" rx="3" fill="#2563eb"/>
+<text x="519.8" y="131" font-family="Arial" font-size="13" fill="#0f172a">0.24 Q tokens/day</text>
+<text x="28" y="169" font-family="Arial" font-size="14" fill="#334155">Tencent</text>
+<rect x="190" y="152" width="314.4" height="22" rx="3" fill="#2563eb"/>
+<text x="512.4" y="169" font-family="Arial" font-size="13" fill="#0f172a">0.23 Q tokens/day</text>
+<text x="28" y="207" font-family="Arial" font-size="14" fill="#334155">xAI</text>
+<rect x="190" y="190" width="195.7" height="22" rx="3" fill="#2563eb"/>
+<text x="393.7" y="207" font-family="Arial" font-size="13" fill="#0f172a">0.14 Q tokens/day</text>
+<text x="28" y="245" font-family="Arial" font-size="14" fill="#334155">OpenAI</text>
+<rect x="190" y="228" width="49.4" height="22" rx="3" fill="#2563eb"/>
+<text x="247.4" y="245" font-family="Arial" font-size="13" fill="#0f172a">0.04 Q tokens/day</text>
+<text x="28" y="283" font-family="Arial" font-size="14" fill="#334155">Google</text>
+<rect x="190" y="266" width="43.3" height="22" rx="3" fill="#2563eb"/>
+<text x="241.3" y="283" font-family="Arial" font-size="13" fill="#0f172a">0.03 Q tokens/day</text>
+<text x="28" y="321" font-family="Arial" font-size="14" fill="#334155">Anthropic</text>
+<rect x="190" y="304" width="34.3" height="22" rx="3" fill="#2563eb"/>
+<text x="232.3" y="321" font-family="Arial" font-size="13" fill="#0f172a">0.03 Q tokens/day</text>
+<text x="28" y="359" font-family="Arial" font-size="14" fill="#334155">Alibaba</text>
+<rect x="190" y="342" width="30.9" height="22" rx="3" fill="#2563eb"/>
+<text x="228.9" y="359" font-family="Arial" font-size="13" fill="#0f172a">0.02 Q tokens/day</text>
+<text x="28" y="397" font-family="Arial" font-size="14" fill="#334155">DeepSeek</text>
+<rect x="190" y="380" width="12.0" height="22" rx="3" fill="#2563eb"/>
+<text x="210.0" y="397" font-family="Arial" font-size="13" fill="#0f172a">0.01 Q tokens/day</text>
+</svg>
