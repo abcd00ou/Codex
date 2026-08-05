@@ -1,6 +1,6 @@
 # InferenceX 데이터 수집 및 정규화 계획
 
-- 기준일: 2026-07-20
+- 기준일: 2026-08-05
 - 목적: InferenceX의 공개 benchmark/app/dump 자료를 A08 tokens/sec/MW, A09 utilization, GPU spec, TCO sanity layer로 반복 수집합니다.
 - 핵심 원칙: dashboard DOM 크롤링보다 GitHub repo, API route, weekly DB dump release, raw CSV/export를 우선합니다.
 

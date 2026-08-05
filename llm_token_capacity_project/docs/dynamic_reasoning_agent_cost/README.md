@@ -94,6 +94,31 @@ token 수는 정확한 tokenizer가 아니라 `max(word_count, chars/4)` 기반�
 | `lats_parallel_reasoning` | tree search/parallel reasoning | high-end reasoning sensitivity |
 | `llmcompiler_structured_planning` | DAG planning + tool overlap | enterprise workflow automation |
 
+## NVIDIA 미래 GPU TPS/MW 설정
+
+`nvidia_gpu_scaling_inputs.csv`가 GPU 스케일링의 사용자 입력 파일이다. H200/B200/B300/GB200/GB300은 공개 HBM bandwidth와 InferenceX all-in power를 사용하고, R200/VR200/R300/VR300/Post Rubin은 두 입력을 비워 둔다.
+
+미래 GPU의 `hbm_bandwidth_tb_s`와 `all_in_kw`를 모두 양수로 입력한 뒤 아래 생성기를 다시 실행한다.
+
+```bash
+python tools/generate_nvidia_gpu_interactivity_reference.py
+```
+
+적용 수식은 다음과 같다.
+
+```text
+target TPS/MW
+= source benchmark TPS/MW
+  * (target HBM bandwidth / target all-in power)
+  / (source HBM bandwidth / source all-in power)
+```
+
+- R200 계열은 `anchor_gpu`를 따라 B300 또는 GB300의 동일 proxy/workload/interactivity 선택 행을 사용한다.
+- HBM bandwidth/all-in power 배율은 TPS/MW에만 적용한다.
+- Interactivity, concurrency, precision, framework는 source InferenceX 행을 그대로 유지한다.
+- 미래 GPU 입력 둘 중 하나가 비어 있으면 TPS/MW도 공란으로 남아 임의의 성능값을 만들지 않는다.
+- 생성 워크북의 `00b_GPU_Scaling`에서도 R200 이후 HBM bandwidth와 all-in power를 직접 입력할 수 있으며, `01b_Interactivity`와 `00a_Proxy_TPS_MW`가 수식으로 갱신된다.
+
 ## InferenceX benchmark에 call multiplier 적용
 
 InferenceX의 main model-config row를 그대로 두고 CoT/agentic call 수만 반영한 TPS/GPU overlay를 추가했다.
