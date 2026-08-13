@@ -1,11 +1,11 @@
 gpu,architecture,anchor_gpu,hbm_bandwidth_tb_s,all_in_kw,source_url,evidence_status,note,bandwidth_efficiency_tb_s_per_kw,scale_vs_anchor,bandwidth_efficiency_index_vs_h200,benchmark_data_max_date,generated_at
-H200,Hopper,B200,4.8,1.37,https://www.nvidia.com/en-us/data-center/h200/,InferenceX_direct_when_available,B200 is used only when an H200 benchmark row is missing; direct H200 rows always override scaling.,3.50364964,0.74890511,1.0,2026-08-04,2026-08-05
-B200,Blackwell,H200,8.0,1.71,https://docs.nvidia.com/enterprise-reference-architectures/hgx-ai-factory/latest/components.html,InferenceX_direct_when_available,Direct benchmark rows override scaling.,4.67836257,1.33528265,1.33528265,2026-08-04,2026-08-05
-B300,Blackwell Ultra,B200,8.0,1.9,https://www.nvidia.com/en-us/data-center/hgx/,InferenceX_direct_when_available,Direct benchmark rows override scaling.,4.21052632,0.9,1.20175439,2026-08-04,2026-08-05
-GB200,Grace Blackwell NVL72,B200,8.0,1.87,https://www.nvidia.com/en-us/data-center/gb200-nvl72/,InferenceX_direct_when_available,Per-GPU bandwidth and all-in power basis.,4.27807487,0.9144385,1.22103387,2026-08-04,2026-08-05
-GB300,Grace Blackwell Ultra NVL72,GB200,8.0,2.12,https://www.nvidia.com/en-us/data-center/gb300-nvl72/,InferenceX_direct_when_available,Per-GPU bandwidth and all-in power basis.,3.77358491,0.88207547,1.07704403,2026-08-04,2026-08-05
-R200,Rubin scenario,B300,,,,editable_scenario_no_direct_benchmark,Enter HBM bandwidth TB/s and all-in kW; TPS/MW stays blank until both are positive.,,,,2026-08-04,2026-08-05
-VR200,Vera Rubin rack-scale scenario,GB300,,,,editable_scenario_no_direct_benchmark,Enter per-GPU HBM bandwidth TB/s and per-GPU all-in kW.,,,,2026-08-04,2026-08-05
-R300,Rubin-next scenario,R200,,,,editable_scenario_no_direct_benchmark,Uses the B300 benchmark curve through the R200 anchor chain.,,,,2026-08-04,2026-08-05
-VR300,Vera Rubin-next rack scenario,VR200,,,,editable_scenario_no_direct_benchmark,Uses the GB300 benchmark curve through the VR200 anchor chain.,,,,2026-08-04,2026-08-05
-Post Rubin,Post-Rubin scenario,VR300,,,,editable_scenario_no_direct_benchmark,Uses the GB300 benchmark curve through the VR300 anchor chain.,,,,2026-08-04,2026-08-05
+H200,Hopper,B200,4.8,1.37,https://www.nvidia.com/en-us/data-center/h200/,InferenceX_direct_when_available,B200 is used only when an H200 benchmark row is missing; direct H200 rows always override scaling.,3.50364964,0.74890511,1.0,2026-08-12,2026-08-13
+B200,Blackwell,H200,8.0,1.71,https://docs.nvidia.com/enterprise-reference-architectures/hgx-ai-factory/latest/components.html,InferenceX_direct_when_available,Direct benchmark rows override scaling.,4.67836257,1.33528265,1.33528265,2026-08-12,2026-08-13
+B300,Blackwell Ultra,B200,8.0,1.9,https://www.nvidia.com/en-us/data-center/hgx/,InferenceX_direct_when_available,Direct benchmark rows override scaling.,4.21052632,0.9,1.20175439,2026-08-12,2026-08-13
+GB200,Grace Blackwell NVL72,B200,8.0,1.87,https://www.nvidia.com/en-us/data-center/gb200-nvl72/,InferenceX_direct_when_available,Per-GPU bandwidth and all-in power basis.,4.27807487,0.9144385,1.22103387,2026-08-12,2026-08-13
+GB300,Grace Blackwell Ultra NVL72,GB200,8.0,2.12,https://www.nvidia.com/en-us/data-center/gb300-nvl72/,InferenceX_direct_when_available,Per-GPU bandwidth and all-in power basis.,3.77358491,0.88207547,1.07704403,2026-08-12,2026-08-13
+R200,Rubin scenario,B300,,,,editable_scenario_no_direct_benchmark,Enter HBM bandwidth TB/s and all-in kW; TPS/MW stays blank until both are positive.,,,,2026-08-12,2026-08-13
+VR200,Vera Rubin rack-scale scenario,GB300,,,,editable_scenario_no_direct_benchmark,Enter per-GPU HBM bandwidth TB/s and per-GPU all-in kW.,,,,2026-08-12,2026-08-13
+R300,Rubin-next scenario,R200,,,,editable_scenario_no_direct_benchmark,Uses the B300 benchmark curve through the R200 anchor chain.,,,,2026-08-12,2026-08-13
+VR300,Vera Rubin-next rack scenario,VR200,,,,editable_scenario_no_direct_benchmark,Uses the GB300 benchmark curve through the VR200 anchor chain.,,,,2026-08-12,2026-08-13
+Post Rubin,Post-Rubin scenario,VR300,,,,editable_scenario_no_direct_benchmark,Uses the GB300 benchmark curve through the VR300 anchor chain.,,,,2026-08-12,2026-08-13
