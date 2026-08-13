@@ -169,6 +169,20 @@ NORMALIZED_HEADERS = [
 
 DUMP_BENCHMARK_HEADERS = NORMALIZED_HEADERS + [
     "benchmark_type",
+    "spec_method",
+    "disagg",
+    "is_multinode",
+    "offload_mode",
+    "prefill_tp",
+    "prefill_ep",
+    "prefill_dp_attention",
+    "prefill_num_workers",
+    "decode_tp",
+    "decode_ep",
+    "decode_dp_attention",
+    "decode_num_workers",
+    "num_prefill_gpu",
+    "num_decode_gpu",
     "config_id",
     "workflow_run_id",
     "error",
@@ -176,8 +190,11 @@ DUMP_BENCHMARK_HEADERS = NORMALIZED_HEADERS + [
     "mean_tpot_ms",
     "median_ttft_ms",
     "median_tpot_ms",
+    "median_itl_ms",
     "mean_e2el_s",
+    "median_e2el_s",
     "p99_e2el_s",
+    "p99_itl_ms",
     "total_tok_s_mw",
     "output_tok_s_mw",
     "input_tok_s_mw",
@@ -515,6 +532,38 @@ def as_float(value: Any) -> float | None:
         return None
 
 
+def seconds_to_ms(value: Any) -> float | None:
+    seconds = as_float(value)
+    return seconds * 1000 if seconds is not None else None
+
+
+def bool_to_int(value: Any) -> int | None:
+    if value in (None, ""):
+        return None
+    if isinstance(value, bool):
+        return int(value)
+    if isinstance(value, (int, float)) and value in (0, 1):
+        return int(value)
+    normalized = str(value).strip().lower()
+    if normalized in {"true", "1", "yes"}:
+        return 1
+    if normalized in {"false", "0", "no"}:
+        return 0
+    raise ValueError(f"Unsupported boolean value: {value!r}")
+
+
+def total_gpu_count(config: dict[str, Any]) -> int | float | None:
+    prefill = as_float(config.get("num_prefill_gpu"))
+    decode = as_float(config.get("num_decode_gpu"))
+    if bool_to_int(config.get("disagg")) == 1:
+        total = (prefill or 0) + (decode or 0)
+        return int(total) if total.is_integer() else total
+    selected = decode if decode is not None else prefill
+    if selected is None:
+        return None
+    return int(selected) if selected.is_integer() else selected
+
+
 def percentile(values: list[float], pct: float) -> float | None:
     vals = sorted(v for v in values if v is not None)
     if not vals:
@@ -583,7 +632,7 @@ def normalize_inferencex_benchmark_row(
         "model_family": config.get("model"),
         "gpu": hardware,
         "gpu_vendor": gpu.get("gpu_vendor", ""),
-        "gpu_count": config.get("num_decode_gpu") or config.get("num_prefill_gpu"),
+        "gpu_count": total_gpu_count(config),
         "framework": config.get("framework"),
         "runtime": record.get("image") or "",
         "precision": config.get("precision"),
@@ -598,14 +647,14 @@ def normalize_inferencex_benchmark_row(
         "metric_name": "tput_per_gpu",
         "metric_value": total_tput,
         "metric_unit": "tokens/s/GPU",
-        "tok_s_user": "",
+        "tok_s_user": metrics.get("median_intvty"),
         "tok_s_gpu": total_tput,
         "tok_s_mw": tok_s_mw,
         "input_tok_s_gpu": input_tput,
         "output_tok_s_gpu": output_tput,
         "joules_token": power_w / output_tput if power_w and output_tput else "",
-        "p99_ttft_ms": metrics.get("p99_ttft"),
-        "p99_tpot_ms": metrics.get("p99_tpot"),
+        "p99_ttft_ms": seconds_to_ms(metrics.get("p99_ttft")),
+        "p99_tpot_ms": seconds_to_ms(metrics.get("p99_tpot")),
         "cost_per_million_tokens_usd": money_per_mtok(as_float(gpu.get("costh")), output_tput),
         "power_w": power_w,
         "benchmark_date": record.get("date"),
@@ -614,15 +663,32 @@ def normalize_inferencex_benchmark_row(
         "evidence_class": "Proxy/Benchmark",
         "caveat": "InferenceX dump row. Benchmark/proxy only; not company production telemetry. Match ISL/OSL/framework/precision before using.",
         "benchmark_type": record.get("benchmark_type"),
+        "spec_method": config.get("spec_method"),
+        "disagg": bool_to_int(config.get("disagg")),
+        "is_multinode": bool_to_int(config.get("is_multinode")),
+        "offload_mode": record.get("offload_mode") or config.get("offload_mode"),
+        "prefill_tp": config.get("prefill_tp"),
+        "prefill_ep": config.get("prefill_ep"),
+        "prefill_dp_attention": bool_to_int(config.get("prefill_dp_attention")),
+        "prefill_num_workers": config.get("prefill_num_workers"),
+        "decode_tp": config.get("decode_tp"),
+        "decode_ep": config.get("decode_ep"),
+        "decode_dp_attention": bool_to_int(config.get("decode_dp_attention")),
+        "decode_num_workers": config.get("decode_num_workers"),
+        "num_prefill_gpu": config.get("num_prefill_gpu"),
+        "num_decode_gpu": config.get("num_decode_gpu"),
         "config_id": record.get("config_id"),
         "workflow_run_id": record.get("workflow_run_id"),
         "error": record.get("error"),
-        "mean_ttft_ms": metrics.get("mean_ttft"),
-        "mean_tpot_ms": metrics.get("mean_tpot"),
-        "median_ttft_ms": metrics.get("median_ttft"),
-        "median_tpot_ms": metrics.get("median_tpot"),
+        "mean_ttft_ms": seconds_to_ms(metrics.get("mean_ttft")),
+        "mean_tpot_ms": seconds_to_ms(metrics.get("mean_tpot")),
+        "median_ttft_ms": seconds_to_ms(metrics.get("median_ttft")),
+        "median_tpot_ms": seconds_to_ms(metrics.get("median_tpot")),
+        "median_itl_ms": seconds_to_ms(metrics.get("median_itl")),
         "mean_e2el_s": metrics.get("mean_e2el"),
+        "median_e2el_s": metrics.get("median_e2el"),
         "p99_e2el_s": metrics.get("p99_e2el"),
+        "p99_itl_ms": seconds_to_ms(metrics.get("p99_itl")),
         "total_tok_s_mw": tok_s_mw,
         "output_tok_s_mw": output_tok_s_mw,
         "input_tok_s_mw": input_tok_s_mw,

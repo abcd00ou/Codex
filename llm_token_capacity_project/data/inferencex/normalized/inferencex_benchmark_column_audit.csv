@@ -1,0 +1,75 @@
+column_name,lineage_type,source_field,transformation,unit,non_null_rows,total_rows,coverage_pct,distinct_values,status,null_policy,notes
+source_file,generated,pipeline metadata,generated,metadata,80013,80013,100.0,2,PASS,required,Compact official API route label; source_url retains the exact request URL.
+source_kind,generated,pipeline metadata,generated,metadata,80013,80013,100.0,1,PASS,required,Constant inferencex_live_api_history.
+benchmark_id,direct,id,direct,identifier,80013,80013,100.0,80013,PASS,required,Globally unique InferenceX result id.
+dashboard_tab,generated,pipeline metadata,generated,metadata,80013,80013,100.0,1,PASS,required,Constant inference_performance.
+model,direct,model,direct,slug,80013,80013,100.0,13,PASS,required,InferenceX DB model key.
+model_family,direct,model,direct alias,slug,80013,80013,100.0,13,PASS,required,Same source key as model.
+gpu,direct,hardware,lower-case base-key normalization,slug,80013,80013,100.0,10,PASS,required,Validated against GPU_REGISTRY.
+gpu_vendor,direct,hardware -> GPU_REGISTRY.vendor,registry lookup,name,80013,80013,100.0,2,PASS,required,Official InferenceX hardware registry.
+gpu_count,derived,"disagg,num_prefill_gpu,num_decode_gpu",disagg: prefill+decode; aggregated: decode or prefill,GPUs,80013,80013,100.0,46,PASS,required,Total GPUs participating in a benchmark configuration.
+framework,direct,framework,direct,slug,80013,80013,100.0,13,PASS,required,Serving framework/orchestrator.
+runtime,direct,image,direct,container image,22379,80013,27.969205,242,PASS,source-optional,Older rows may omit the image.
+precision,direct,precision,direct,slug,80013,80013,100.0,4,PASS,required,Weight/serving precision.
+main_framework,generated,pipeline metadata,generated,metadata,80013,80013,100.0,4,PASS,required,Model-level canonical configuration selected after ingestion.
+main_precision,generated,pipeline metadata,generated,metadata,80013,80013,100.0,3,PASS,required,Model-level canonical configuration selected after ingestion.
+is_main_model_config,generated,pipeline metadata,generated,metadata,80013,80013,100.0,2,PASS,required,Derived match against model-level canonical configuration.
+main_config_reason,generated,pipeline metadata,generated,metadata,80013,80013,100.0,1,PASS,required,Selection rule provenance.
+isl,direct,isl,direct,tokens/request,79505,80013,99.365103,2,PASS,scenario-conditional,Null only for agentic_traces.
+osl,direct,osl,direct,tokens/request,79505,80013,99.365103,2,PASS,scenario-conditional,Null only for agentic_traces.
+concurrency,direct,conc,direct,concurrent requests,80013,80013,100.0,266,PASS,required,Benchmark sweep concurrency.
+batch_size,unavailable,not exposed,none,requests/batch,0,80013,0.0,0,NOT_AVAILABLE,endpoint-unavailable,Concurrency is available; batch size is not.
+metric_name,generated,pipeline metadata,generated,metadata,80013,80013,100.0,1,PASS,required,Constant tput_per_gpu.
+metric_value,derived,metrics.tput_per_gpu,alias of tok_s_gpu,tokens/s/GPU,80013,80013,100.0,80003,PASS,required,Canonical metric value.
+metric_unit,generated,pipeline metadata,generated,metadata,80013,80013,100.0,1,PASS,required,Constant tokens/s/GPU.
+tok_s_user,direct,metrics.median_intvty,direct,tokens/s/user,80013,80013,100.0,79990,PASS,required,Official interactivity metric.
+tok_s_gpu,direct,metrics.tput_per_gpu,direct,tokens/s/GPU,80013,80013,100.0,80003,PASS,required,Combined input+output throughput.
+tok_s_mw,derived,"tok_s_gpu,power_w","tok_s_gpu * 1,000,000 / power_w",tokens/s/MW,80013,80013,100.0,80003,PASS,required,All-in per-GPU power basis.
+input_tok_s_gpu,direct,metrics.input_tput_per_gpu,direct,input tokens/s/GPU,55394,80013,69.23125,55384,PASS,source-optional,Absent in some legacy rows; never imputed.
+output_tok_s_gpu,direct,metrics.output_tput_per_gpu,direct,output tokens/s/GPU,59407,80013,74.246685,59397,PASS,source-optional,Absent in some legacy rows; never imputed.
+joules_token,derived,"power_w,output_tok_s_gpu",alias of j_output_token,J/output token,59407,80013,74.246685,59397,PASS,source-optional,Legacy generic name; output-token basis.
+p99_ttft_ms,direct,metrics.p99_ttft,seconds * 1000,ms,79505,80013,99.365103,79495,PASS,source-optional,Raw InferenceX latency is seconds.
+p99_tpot_ms,direct,metrics.p99_tpot,seconds * 1000,ms/token,79505,80013,99.365103,79495,PASS,source-optional,Raw InferenceX latency is seconds.
+cost_per_million_tokens_usd,derived,"GPU_REGISTRY.costh,output_tok_s_gpu",costh / (output_tok_s_gpu*3600) * 1e6,USD/million output tokens,59407,80013,74.246685,59397,PASS,source-optional,Legacy generic name; hyperscaler/output-token basis.
+power_w,derived,hardware -> GPU_REGISTRY.power,all-in kW/GPU * 1000,W/GPU,80013,80013,100.0,9,PASS,required,Includes per-GPU host/NIC allocation; not chip TDP.
+benchmark_date,direct,date,YYYY-MM-DD -> UTC midnight ISO-8601,UTC date,80013,80013,100.0,247,PASS,required,Benchmark run date.
+github_run_url,direct,run_url,direct,URL,79993,80013,99.975004,873,PASS,source-optional,Twenty legacy rows currently lack a run URL.
+source_url,generated,pipeline metadata,generated,metadata,80013,80013,100.0,36,PASS,required,Exact official API request URL used for the row.
+evidence_class,generated,pipeline metadata,generated,metadata,80013,80013,100.0,1,PASS,required,Constant Proxy/Benchmark.
+caveat,generated,pipeline metadata,generated,metadata,80013,80013,100.0,1,PASS,required,Constant benchmark-use caveat.
+benchmark_type,direct,benchmark_type,direct,enum,80013,80013,100.0,2,PASS,required,single_turn or agentic_traces.
+spec_method,direct,spec_method,direct,slug,80013,80013,100.0,2,PASS,required,Speculative decoding method.
+disagg,direct,disagg,direct,boolean,80013,80013,100.0,2,PASS,required,Prefill/decode disaggregation flag.
+is_multinode,direct,is_multinode,direct,boolean,80013,80013,100.0,2,PASS,required,Multi-node topology flag.
+offload_mode,direct,offload_mode,direct,slug,80013,80013,100.0,2,PASS,required,KV/cache offload mode.
+prefill_tp,direct,prefill_tp,direct,GPU parallel degree,80013,80013,100.0,16,PASS,required,Prefill tensor parallelism.
+prefill_ep,direct,prefill_ep,direct,GPU parallel degree,80013,80013,100.0,6,PASS,required,Prefill expert parallelism.
+prefill_dp_attention,direct,prefill_dp_attention,direct,boolean,80013,80013,100.0,2,PASS,required,Prefill attention data parallel flag.
+prefill_num_workers,direct,prefill_num_workers,direct,workers,80013,80013,100.0,17,PASS,required,Prefill worker count.
+decode_tp,direct,decode_tp,direct,GPU parallel degree,80013,80013,100.0,18,PASS,required,Decode tensor parallelism.
+decode_ep,direct,decode_ep,direct,GPU parallel degree,80013,80013,100.0,12,PASS,required,Decode expert parallelism.
+decode_dp_attention,direct,decode_dp_attention,direct,boolean,80013,80013,100.0,2,PASS,required,Decode attention data parallel flag.
+decode_num_workers,direct,decode_num_workers,direct,workers,80013,80013,100.0,16,PASS,required,Decode worker count.
+num_prefill_gpu,direct,num_prefill_gpu,direct,GPUs,80013,80013,100.0,29,PASS,required,Physical/logical prefill GPU count from API.
+num_decode_gpu,direct,num_decode_gpu,direct,GPUs,80013,80013,100.0,22,PASS,required,Physical/logical decode GPU count from API.
+config_id,unavailable,not exposed,none,identifier,0,80013,0.0,0,NOT_AVAILABLE,endpoint-unavailable,Live history API joins config fields but omits config_id.
+workflow_run_id,direct,run_url,extract /actions/runs/{id},identifier,79993,80013,99.975004,873,PASS,source-optional,Matches GitHub workflow URL when present.
+error,unavailable,not exposed,none,text,0,80013,0.0,0,NOT_AVAILABLE,endpoint-unavailable,Benchmark history endpoint returns successful result rows.
+mean_ttft_ms,direct,metrics.mean_ttft,seconds * 1000,ms,8224,80013,10.27833,8223,PASS,source-optional,Enriched from latest API where available; history view omits it.
+mean_tpot_ms,direct,metrics.mean_tpot,seconds * 1000,ms/token,8224,80013,10.27833,8194,PASS,source-optional,Enriched from latest API where available; history view omits it.
+median_ttft_ms,direct,metrics.median_ttft,seconds * 1000,ms,80013,80013,100.0,80001,PASS,required,Raw InferenceX latency is seconds.
+median_tpot_ms,direct,metrics.median_tpot,seconds * 1000,ms/token,80013,80013,100.0,79969,PASS,required,Raw InferenceX latency is seconds.
+median_itl_ms,direct,metrics.median_itl,seconds * 1000,ms/token,80013,80013,100.0,79968,PASS,required,Inter-token latency; agentic interactivity identity uses this field.
+mean_e2el_s,direct,metrics.mean_e2el,direct,s,8224,80013,10.27833,8224,PASS,source-optional,Enriched from latest API where available; history view omits it.
+median_e2el_s,direct,metrics.median_e2el,direct,s,80013,80013,100.0,80003,PASS,required,End-to-end latency.
+p99_e2el_s,direct,metrics.p99_e2el,direct,s,79505,80013,99.365103,79495,PASS,source-optional,Not emitted for agentic history rows.
+p99_itl_ms,direct,metrics.p99_itl,seconds * 1000,ms/token,79674,80013,99.576319,79664,PASS,source-optional,Not emitted for some agentic history rows.
+total_tok_s_mw,derived,"tok_s_gpu,power_w",alias of tok_s_mw,tokens/s/MW,80013,80013,100.0,80003,PASS,required,Combined-token energy throughput.
+output_tok_s_mw,derived,"output_tok_s_gpu,power_w","output_tok_s_gpu * 1,000,000 / power_w",output tokens/s/MW,59407,80013,74.246685,59397,PASS,source-optional,Null when source output throughput is absent.
+input_tok_s_mw,derived,"input_tok_s_gpu,power_w","input_tok_s_gpu * 1,000,000 / power_w",input tokens/s/MW,55394,80013,69.23125,55384,PASS,source-optional,Null when source input throughput is absent.
+j_total_token,derived,"power_w,tok_s_gpu",power_w / tok_s_gpu,J/total token,80013,80013,100.0,80003,PASS,required,Combined input+output token energy.
+j_output_token,derived,"power_w,output_tok_s_gpu",power_w / output_tok_s_gpu,J/output token,59407,80013,74.246685,59397,PASS,source-optional,Null when output throughput is absent.
+j_input_token,derived,"power_w,input_tok_s_gpu",power_w / input_tok_s_gpu,J/input token,55394,80013,69.23125,55384,PASS,source-optional,Null when input throughput is absent.
+cost_hyperscaler_per_mtok_usd,derived,"GPU_REGISTRY.costh,output_tok_s_gpu",costh / (output_tok_s_gpu*3600) * 1e6,USD/million output tokens,59407,80013,74.246685,59397,PASS,source-optional,Official hyperscaler rate assumption.
+cost_neocloud_per_mtok_usd,derived,"GPU_REGISTRY.costn,output_tok_s_gpu",costn / (output_tok_s_gpu*3600) * 1e6,USD/million output tokens,59407,80013,74.246685,59397,PASS,source-optional,Official neocloud rate assumption.
+cost_retail_per_mtok_usd,derived,"GPU_REGISTRY.costr,output_tok_s_gpu",costr / (output_tok_s_gpu*3600) * 1e6,USD/million output tokens,59407,80013,74.246685,59397,PASS,source-optional,Official retail rate assumption.

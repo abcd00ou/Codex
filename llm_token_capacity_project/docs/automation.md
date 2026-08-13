@@ -8,12 +8,15 @@
 .venv/bin/python -m py_compile llm_token_capacity_project/tools/fetch_inferencex_data.py
 .venv/bin/python -m py_compile llm_token_capacity_project/tools/generate_llm_token_capacity_report.py
 .venv/bin/python llm_token_capacity_project/tools/fetch_inferencex_data.py
+.venv/bin/python llm_token_capacity_project/tools/refresh_inferencex_live_db.py
 .venv/bin/python llm_token_capacity_project/tools/generate_llm_token_capacity_report.py
 ```
 
 ## 검증 명령
 
 ```bash
+.venv/bin/python llm_token_capacity_project/tools/query_inferencex_benchmark_db.py sql "SELECT status, COUNT(*) FROM benchmark_column_audit GROUP BY status"
+.venv/bin/python llm_token_capacity_project/tools/query_inferencex_benchmark_db.py sql "SELECT status, COUNT(*), SUM(failed_rows) FROM benchmark_quality_checks GROUP BY status"
 .venv/bin/python llm_token_capacity_project/tools/validate_assumption_agents.py
 .venv/bin/python - <<'PY'
 import json, zipfile

@@ -123,9 +123,7 @@ def tpot_to_tok_s_user(value: Any) -> float:
     tpot = fnum(value)
     if tpot <= 0:
         return 0.0
-    # InferenceX dump fields are named *_ms, but recent rows store seconds-scale
-    # TPOT values such as 0.0218 for about 45.9 tok/s/user.
-    return 1.0 / tpot if tpot < 1 else 1000.0 / tpot
+    return 1000.0 / tpot
 
 
 def build_overlay_rows(rows: list[sqlite3.Row]) -> list[dict[str, Any]]:

@@ -196,16 +196,16 @@ def select_max_tps_sample(samples: list[dict[str, str]]) -> tuple[float, str]:
 
 
 def output_tok_s_user(row: dict[str, str], multiplier: float = 1.0) -> float | None:
+    if row.get("tok_s_user"):
+        try:
+            return float(row["tok_s_user"]) * multiplier
+        except ValueError:
+            return None
     if row.get("output_tok_s_gpu") and row.get("concurrency"):
         try:
             concurrency = float(row["concurrency"])
             if concurrency > 0:
                 return float(row["output_tok_s_gpu"]) * multiplier / concurrency
-        except ValueError:
-            return None
-    if row.get("tok_s_user"):
-        try:
-            return float(row["tok_s_user"]) * multiplier
         except ValueError:
             return None
     return None

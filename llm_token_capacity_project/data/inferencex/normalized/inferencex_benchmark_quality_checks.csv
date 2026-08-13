@@ -1,0 +1,16 @@
+check_id,status,checked_rows,failed_rows,details
+unique_benchmark_id,PASS,80013,0,benchmark_id must be globally unique
+required_field_completeness,PASS,80013,0,"benchmark_id,model,gpu,gpu_vendor,gpu_count,framework,precision,concurrency,tok_s_user,tok_s_gpu,tok_s_mw,power_w,benchmark_date,benchmark_type,median_ttft_ms,median_tpot_ms,median_itl_ms,median_e2el_s"
+positive_core_metrics,PASS,80013,0,"gpu_count,concurrency,tok_s_user,tok_s_gpu,tok_s_mw,power_w"
+metric_value_alias,PASS,80013,0,metric_value must equal tok_s_gpu
+total_tps_mw_formula,PASS,80013,0,tok_s_mw = tok_s_gpu * 1e6 / power_w
+total_tps_mw_alias,PASS,80013,0,total_tok_s_mw must equal tok_s_mw
+joules_total_formula,PASS,80013,0,j_total_token = power_w / tok_s_gpu
+output_energy_formulas,PASS,59407,0,Output TPS/MW and joules/token identities
+gpu_count_topology_formula,PASS,80013,0,disagg uses prefill+decode; aggregated uses one shared pool
+interactivity_latency_identity,PASS,80013,0,median_intvty = 1000/median_tpot_ms for single_turn and 1000/median_itl_ms for agentic_traces
+single_turn_sequence_lengths,PASS,79505,0,single_turn rows require ISL and OSL
+agentic_sequence_null_policy,PASS,508,0,"agentic_traces use trace shapes, so fixed ISL/OSL must be null"
+disaggregated_gpu_sum,PASS,7654,0,gpu_count = num_prefill_gpu + num_decode_gpu
+known_gpu_registry,PASS,80013,0,All hardware keys require official power and cost metadata
+latency_percentile_order,PASS,79505,0,p99 latency must be >= median latency

@@ -60,6 +60,11 @@ source_file, source_kind, benchmark_id, dashboard_tab, model, model_family, gpu,
 - tokens/sec/MW는 A08 sensitivity 또는 benchmark sanity layer에만 먼저 반영합니다.
 - latency/SLO, concurrency, P/D disaggregation 정보는 A09 utilization sensitivity로 분리합니다.
 - TCO calculator 값은 memory marketing 및 cost/token narrative용이며 company capacity forecast를 직접 바꾸지 않습니다.
+- `tok_s_user`는 공식 `metrics.median_intvty`를 사용합니다. `output_tok_s_gpu / concurrency`로 대체하지 않습니다.
+- API latency는 초 단위입니다. 이름이 `_ms`인 정규화 컬럼에는 `원본 초 × 1000`으로 저장합니다.
+- disaggregated 구성의 `gpu_count`는 `num_prefill_gpu + num_decode_gpu`, aggregated 구성은 공유 GPU pool 한쪽 값을 사용합니다.
+- `disagg`, `is_multinode`, `*_dp_attention`은 SQLite `INTEGER 0/1`로 저장합니다.
+- `inferencex_benchmark_column_audit.csv`에서 74개 컬럼의 원본 계보·단위·NULL 정책을, `inferencex_benchmark_quality_checks.csv`에서 공식 지표 및 파생식 검사를 확인합니다.
 
 ## 실행
 
@@ -67,6 +72,7 @@ source_file, source_kind, benchmark_id, dashboard_tab, model, model_family, gpu,
 .venv/bin/python llm_token_capacity_project/tools/fetch_inferencex_data.py
 .venv/bin/python llm_token_capacity_project/tools/fetch_inferencex_data.py --input-dir /path/to/inferencex-dump
 .venv/bin/python llm_token_capacity_project/tools/fetch_inferencex_data.py --download-latest-dump
+.venv/bin/python llm_token_capacity_project/tools/refresh_inferencex_live_db.py
 ```
 
 `--download-latest-dump`는 최신 release asset이 1GB 이상일 수 있으므로 필요할 때만 실행합니다.
@@ -79,4 +85,5 @@ source_file, source_kind, benchmark_id, dashboard_tab, model, model_family, gpu,
 - main simulation workbook의 `12_inferencex_source_index`, `12a_inferencex_schema`, `12b_inferencex_tab_rules`
 - full dump 처리 시 `inferencex_benchmark_results.csv`, `inferencex_metric_profile.csv`, `inferencex_accuracy_evals.csv`, `inferencex_dump_inventory.csv`
 - GPU 비교 전용: `inferencex_main_config_by_model.csv`, `inferencex_main_config_validation.csv`, `inferencex_gpu_comparable_metric_profile.csv`
+- 데이터 감사: `inferencex_benchmark_column_audit.csv`, `inferencex_benchmark_quality_checks.csv`
 - agentic traces: `inferencex_agentic_trace_profile.csv`
