@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import gzip
 import hashlib
 import json
 import os
@@ -274,18 +275,19 @@ DUMP_INVENTORY_HEADERS = [
 ]
 
 GPU_REGISTRY = {
-    # Source: InferenceX-app packages/constants/src/gpu-keys.ts, fetched 2026-05-19.
+    # Source: InferenceX-app packages/constants/src/gpu-keys.ts, fetched 2026-08-13.
     # power is kW per GPU and is intentionally higher than chip TDP because the
     # dashboard models datacenter system-level power for energy/cost charts.
-    "h100": {"gpu_vendor": "NVIDIA", "label": "H100", "tdp_w": 700, "power_kw": 1.73, "costh": 1.30, "costn": 1.69, "costr": 1.30},
-    "h200": {"gpu_vendor": "NVIDIA", "label": "H200", "tdp_w": 700, "power_kw": 1.73, "costh": 1.41, "costn": 1.74, "costr": 1.60},
-    "b200": {"gpu_vendor": "NVIDIA", "label": "B200", "tdp_w": 1000, "power_kw": 2.17, "costh": 1.95, "costn": 2.34, "costr": 2.90},
-    "b300": {"gpu_vendor": "NVIDIA", "label": "B300", "tdp_w": 1200, "power_kw": 2.17, "costh": 2.34, "costn": 2.808, "costr": 3.48},
-    "gb200": {"gpu_vendor": "NVIDIA", "label": "GB200 NVL72", "tdp_w": 1200, "power_kw": 2.10, "costh": 2.21, "costn": 2.75, "costr": 3.30},
-    "gb300": {"gpu_vendor": "NVIDIA", "label": "GB300 NVL72", "tdp_w": 1400, "power_kw": 2.10, "costh": 2.652, "costn": 3.30, "costr": 3.96},
-    "mi300x": {"gpu_vendor": "AMD", "label": "MI300X", "tdp_w": 750, "power_kw": 1.79, "costh": 1.12, "costn": 1.40, "costr": 1.55},
-    "mi325x": {"gpu_vendor": "AMD", "label": "MI325X", "tdp_w": 1000, "power_kw": 2.18, "costh": 1.28, "costn": 1.59, "costr": 1.80},
-    "mi355x": {"gpu_vendor": "AMD", "label": "MI355X", "tdp_w": 1400, "power_kw": 2.65, "costh": 1.48, "costn": 1.90, "costr": 2.10},
+    "h100": {"gpu_vendor": "NVIDIA", "label": "H100", "tdp_w": 700, "power_kw": 1.37, "costh": 1.17, "costn": 1.55, "costr": 1.78},
+    "h200": {"gpu_vendor": "NVIDIA", "label": "H200", "tdp_w": 700, "power_kw": 1.37, "costh": 1.22, "costn": 1.59, "costr": 2.05},
+    "b200": {"gpu_vendor": "NVIDIA", "label": "B200", "tdp_w": 1000, "power_kw": 1.71, "costh": 1.73, "costn": 2.07, "costr": 2.60},
+    "b300": {"gpu_vendor": "NVIDIA", "label": "B300", "tdp_w": 1200, "power_kw": 1.90, "costh": 2.26, "costn": 2.52, "costr": 3.00},
+    "gb200": {"gpu_vendor": "NVIDIA", "label": "GB200 NVL72", "tdp_w": 1200, "power_kw": 1.87, "costh": 1.86, "costn": 2.26, "costr": 2.60},
+    "gb300": {"gpu_vendor": "NVIDIA", "label": "GB300 NVL72", "tdp_w": 1400, "power_kw": 2.12, "costh": 2.31, "costn": 2.79, "costr": 3.30},
+    "mi300x": {"gpu_vendor": "AMD", "label": "MI300X", "tdp_w": 750, "power_kw": 1.39, "costh": 0.95, "costn": 1.16, "costr": 1.30},
+    "mi325x": {"gpu_vendor": "AMD", "label": "MI325X", "tdp_w": 1000, "power_kw": 1.69, "costh": 1.10, "costn": 1.32, "costr": 1.60},
+    "mi355x": {"gpu_vendor": "AMD", "label": "MI355X", "tdp_w": 1400, "power_kw": 2.09, "costh": 1.50, "costn": 2.09, "costr": 2.10},
+    "rtx6000pro": {"gpu_vendor": "NVIDIA", "label": "RTX PRO 6000", "tdp_w": 600, "power_kw": 0.975, "costh": 0.68, "costn": 0.75, "costr": 0.52},
 }
 
 FIELD_ALIASES = {
@@ -418,7 +420,9 @@ def fetch_bytes(url: str) -> tuple[bytes, dict[str, str]]:
 
 
 def fetch_json(url: str) -> Any:
-    body, _headers = fetch_bytes(url)
+    body, headers = fetch_bytes(url)
+    if headers.get("content-encoding", "").lower() == "gzip" or body.startswith(b"\x1f\x8b"):
+        body = gzip.decompress(body)
     return json.loads(body.decode("utf-8"))
 
 
