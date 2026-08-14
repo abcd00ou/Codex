@@ -6,6 +6,11 @@ among rows whose median interactivity meets the target.  Precision, framework,
 speculative-decoding method and concurrency therefore come from that selected
 benchmark row; they are not assigned by a separate workload model.
 
+The workbook-facing workload taxonomy intentionally has only two classes:
+``general_chat`` is the comparable single-turn 8K input / 1K output benchmark,
+and ``agentic`` is the native InferenceX agentic-traces benchmark.  The sparse
+1K/1K short-chat slice is not mixed into the general-chat reference.
+
 When a GPU has no rows for that model/workload, the configured benchmark
 anchor's measured NVIDIA curve is scaled by the ratio of HBM-bandwidth per
 all-in kW. Interactivity, concurrency, precision and framework remain those of
@@ -34,6 +39,7 @@ OUT_JSON = OUT_DIR / "nvidia_gpu_interactivity_reference.json"
 
 TARGETS = (30, 50, 70, 100)
 DIRECT_GPUS = ("H200", "B200", "B300", "GB200", "GB300")
+WORKLOADS = ("general_chat", "agentic")
 
 PROXIES = (
     {
@@ -141,11 +147,11 @@ def load_json_rows(filename: str) -> list[dict[str, Any]]:
 
 
 def is_workload_row(row: dict[str, Any], workload: str) -> bool:
-    if workload == "short":
-        return row.get("benchmark_type") == "single_turn" and row.get("isl") == 1024 and row.get("osl") == 1024
-    if workload == "long":
+    if workload == "general_chat":
         return row.get("benchmark_type") == "single_turn" and row.get("isl") == 8192 and row.get("osl") == 1024
-    return row.get("benchmark_type") == "agentic_traces"
+    if workload == "agentic":
+        return row.get("benchmark_type") == "agentic_traces"
+    raise ValueError(f"Unsupported workload: {workload}")
 
 
 def valid_row(row: dict[str, Any]) -> bool:
@@ -266,7 +272,7 @@ def blank_detail(
         "spec_method": "",
         "concurrency": "",
         "benchmark_type": "agentic_traces" if workload == "agentic" else "single_turn",
-        "selected_isl": "" if workload == "agentic" else (1024 if workload == "short" else 8192),
+        "selected_isl": "" if workload == "agentic" else 8192,
         "selected_osl": "" if workload == "agentic" else 1024,
         "candidate_rows": info.get("candidate_rows", 0),
         "eligible_rows": 0,
@@ -291,7 +297,7 @@ def build_detail_rows() -> tuple[list[dict[str, Any]], str]:
     detail: list[dict[str, Any]] = []
     max_date = ""
     for proxy in PROXIES:
-        for workload in ("short", "long", "agentic"):
+        for workload in WORKLOADS:
             rows, source_model, fallback_used = workload_rows(proxy, workload)
             for gpu_row in GPU_SCALING:
                 gpu = gpu_row["gpu"]
@@ -345,7 +351,7 @@ def build_detail_rows() -> tuple[list[dict[str, Any]], str]:
                     )
     order_proxy = {row["proxy_model"]: i for i, row in enumerate(PROXIES)}
     order_gpu = {row["gpu"]: i for i, row in enumerate(GPU_SCALING)}
-    order_workload = {name: i for i, name in enumerate(("short", "long", "agentic"))}
+    order_workload = {name: i for i, name in enumerate(WORKLOADS)}
     detail.sort(
         key=lambda row: (
             order_proxy[row["proxy_model"]],
@@ -368,27 +374,22 @@ def build_summary_rows(detail: list[dict[str, Any]]) -> list[dict[str, Any]]:
             for target in TARGETS:
                 selected = {
                     workload: by_key[(proxy["proxy_model"], gpu_row["gpu"], target, workload)]
-                    for workload in ("short", "long", "agentic")
+                    for workload in WORKLOADS
                 }
                 output.append(
                     {
                         "proxy_model": proxy["proxy_model"],
                         "gpu": gpu_row["gpu"],
                         "interactivity_tok_s_user": target,
-                        "short_tps_per_mw": selected["short"]["effective_output_tps_per_mw"],
-                        "long_tps_per_mw": selected["long"]["effective_output_tps_per_mw"],
+                        "general_chat_tps_per_mw": selected["general_chat"]["effective_output_tps_per_mw"],
                         "agentic_tps_per_mw": selected["agentic"]["effective_output_tps_per_mw"],
-                        "short_concurrency": selected["short"]["concurrency"],
-                        "long_concurrency": selected["long"]["concurrency"],
+                        "general_chat_concurrency": selected["general_chat"]["concurrency"],
                         "agentic_concurrency": selected["agentic"]["concurrency"],
-                        "short_precision": selected["short"]["precision"],
-                        "long_precision": selected["long"]["precision"],
+                        "general_chat_precision": selected["general_chat"]["precision"],
                         "agentic_precision": selected["agentic"]["precision"],
-                        "short_framework": selected["short"]["framework"],
-                        "long_framework": selected["long"]["framework"],
+                        "general_chat_framework": selected["general_chat"]["framework"],
                         "agentic_framework": selected["agentic"]["framework"],
-                        "short_source_type": selected["short"]["source_type"],
-                        "long_source_type": selected["long"]["source_type"],
+                        "general_chat_source_type": selected["general_chat"]["source_type"],
                         "agentic_source_type": selected["agentic"]["source_type"],
                     }
                 )
@@ -440,6 +441,10 @@ def main() -> None:
                     "source": "https://inferencex.semianalysis.com/api/v1/benchmarks",
                     "benchmark_data_max_date": max_date,
                     "targets_tok_s_user": list(TARGETS),
+                    "workloads": {
+                        "general_chat": "single_turn, ISL=8192, OSL=1024",
+                        "agentic": "benchmark_type=agentic_traces",
+                    },
                     "interactivity_metric": "metrics.median_intvty",
                     "tps_mw_metric": "metrics.output_tput_per_gpu * 1000 / InferenceX all-in kW",
                     "missing_gpu_scaling_formula": "source TPS/MW * ((target HBM TB/s / target all-in kW) / (source HBM TB/s / source all-in kW))",

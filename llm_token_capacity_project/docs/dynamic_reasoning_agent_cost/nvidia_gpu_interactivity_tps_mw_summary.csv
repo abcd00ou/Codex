@@ -1,201 +1,201 @@
-proxy_model,gpu,interactivity_tok_s_user,short_tps_per_mw,long_tps_per_mw,agentic_tps_per_mw,short_concurrency,long_concurrency,agentic_concurrency,short_precision,long_precision,agentic_precision,short_framework,long_framework,agentic_framework,short_source_type,long_source_type,agentic_source_type
-DeepSeek V4 Pro,H200,30,95793.950843,26985.672563,25811.934307,32,8,8,fp8,fp8,fp8,vllm,sglang,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-DeepSeek V4 Pro,H200,50,71446.97451,20410.369987,25811.934307,16,4,8,fp8,fp8,fp8,sglang,sglang,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-DeepSeek V4 Pro,H200,70,48586.916765,13217.209329,25811.934307,8,2,8,fp8,fp8,fp8,vllm,vllm,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-DeepSeek V4 Pro,H200,100,24061.236782,13217.209329,14938.773723,2,2,4,fp8,fp8,fp8,vllm,vllm,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-DeepSeek V4 Pro,B200,30,788432.664843,2666084.383025,119077.040936,256,4096,72,fp4,fp4,fp4,trt,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-DeepSeek V4 Pro,B200,50,788432.664843,1766862.520101,81649.391813,256,1024,40,fp4,fp4,fp4,trt,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-DeepSeek V4 Pro,B200,70,271993.18069,426771.870546,39404.520468,64,256,16,fp4,fp4,fp4,trt,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-DeepSeek V4 Pro,B200,100,59907.247405,110825.248109,31261.426901,8,128,12,fp4,fp4,fp4,vllm,dynamo-sglang,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-DeepSeek V4 Pro,B300,30,1538008.897642,2837835.016764,212034.078947,1024,3072,128,fp4,fp4,fp4,trt,dynamo-sglang,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-DeepSeek V4 Pro,B300,50,381313.522391,1400983.543572,71586.210526,64,1024,16,fp4,fp4,fp4,trt,dynamo-sglang,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-DeepSeek V4 Pro,B300,70,158275.470027,444662.903186,71586.210526,16,256,16,fp4,fp4,fp4,vllm,dynamo-sglang,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-DeepSeek V4 Pro,B300,100,106813.080969,108903.627904,44693.952632,8,64,8,fp4,fp4,fp4,vllm,dynamo-sglang,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-DeepSeek V4 Pro,GB200,30,72466.303346,2252081.955332,108888.631016,32,16384,72,fp4,fp4,fp4,dynamo-vllm,dynamo-sglang,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_scaled_exact_model
-DeepSeek V4 Pro,GB200,50,26792.140242,2252081.955332,74663.347594,8,16384,40,fp4,fp4,fp4,dynamo-vllm,dynamo-sglang,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_scaled_exact_model
-DeepSeek V4 Pro,GB200,70,2817.421407,1527370.082392,36033.010695,1,6144,16,fp4,fp4,fp4,dynamo-vllm,dynamo-sglang,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_scaled_exact_model
-DeepSeek V4 Pro,GB200,100,,769357.42216,28586.652406,,2048,12,,fp4,fp4,,dynamo-sglang,vllm,InferenceX_exact_model_unavailable,InferenceX_direct_exact_model,InferenceX_scaled_exact_model
-DeepSeek V4 Pro,GB300,30,3939721.851134,3351414.681049,259761.235849,4301,2253,1536,fp4,fp4,fp4,dynamo-trt,dynamo-trt,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-DeepSeek V4 Pro,GB300,50,2816060.185385,1669415.886722,235161.108491,4301,1229,768,fp4,fp4,fp4,dynamo-trt,dynamo-trt,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-DeepSeek V4 Pro,GB300,70,1875330.328851,1669415.886722,140344.306604,2253,1229,256,fp4,fp4,fp4,dynamo-trt,dynamo-trt,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-DeepSeek V4 Pro,GB300,100,656307.415419,628688.538904,38554.872642,615,615,8,fp4,fp4,fp4,dynamo-trt,dynamo-trt,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-DeepSeek V4 Pro,R200,30,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-DeepSeek V4 Pro,R200,50,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-DeepSeek V4 Pro,R200,70,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-DeepSeek V4 Pro,R200,100,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-DeepSeek V4 Pro,VR200,30,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-DeepSeek V4 Pro,VR200,50,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-DeepSeek V4 Pro,VR200,70,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-DeepSeek V4 Pro,VR200,100,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-DeepSeek V4 Pro,R300,30,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-DeepSeek V4 Pro,R300,50,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-DeepSeek V4 Pro,R300,70,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-DeepSeek V4 Pro,R300,100,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-DeepSeek V4 Pro,VR300,30,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-DeepSeek V4 Pro,VR300,50,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-DeepSeek V4 Pro,VR300,70,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-DeepSeek V4 Pro,VR300,100,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-DeepSeek V4 Pro,Post Rubin,30,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-DeepSeek V4 Pro,Post Rubin,50,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-DeepSeek V4 Pro,Post Rubin,70,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-DeepSeek V4 Pro,Post Rubin,100,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Kimi K2.5,H200,30,190201.654401,64866.509818,,64,16,,int4,int4,,vllm,vllm,,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
-Kimi K2.5,H200,50,91147.876559,48406.761177,,16,8,,int4,int4,,vllm,vllm,,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
-Kimi K2.5,H200,70,60785.503006,48406.761177,,8,8,,int4,int4,,vllm,vllm,,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
-Kimi K2.5,H200,100,37024.279977,,,4,,,int4,,,vllm,,,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Kimi K2.5,B200,30,607272.283624,2335371.457059,,128,1127,,fp4,fp4,,vllm,dynamo-trt,,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
-Kimi K2.5,B200,50,265130.03328,316457.63603,,32,512,,fp4,fp4,,vllm,dynamo-vllm,,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
-Kimi K2.5,B200,70,181730.656567,193807.711585,,16,115,,fp4,fp4,,vllm,dynamo-trt,,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
-Kimi K2.5,B200,100,117663.179702,121421.699544,,8,60,,fp4,fp4,,vllm,dynamo-trt,,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
-Kimi K2.5,B300,30,558962.190034,275353.667577,,128,64,,fp4,fp4,,vllm,vllm,,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
-Kimi K2.5,B300,50,249783.742153,205221.176275,,32,32,,fp4,fp4,,vllm,vllm,,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
-Kimi K2.5,B300,70,230833.413974,147315.165594,,16,16,,fp4,fp4,,vllm,vllm,,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
-Kimi K2.5,B300,100,230833.413974,61516.42725,,16,4,,fp4,fp4,,vllm,vllm,,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
-Kimi K2.5,GB200,30,4798956.730083,2462470.372289,,4301,2253,,fp4,fp4,,dynamo-trt,dynamo-trt,,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
-Kimi K2.5,GB200,50,3043267.567684,985185.484085,,4301,1229,,fp4,fp4,,dynamo-trt,dynamo-trt,,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
-Kimi K2.5,GB200,70,1169891.082143,594793.835839,,1127,666,,fp4,fp4,,dynamo-trt,dynamo-trt,,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
-Kimi K2.5,GB200,100,117030.148647,109937.641485,,60,60,,fp4,fp4,,dynamo-trt,dynamo-trt,,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
-Kimi K2.5,GB300,30,4529174.537271,2177077.36017,,4301,2253,,fp4,fp4,,dynamo-trt,dynamo-trt,,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
-Kimi K2.5,GB300,50,2888665.817598,877936.375657,,4301,1229,,fp4,fp4,,dynamo-trt,dynamo-trt,,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
-Kimi K2.5,GB300,70,1069827.842115,520354.890274,,1229,615,,fp4,fp4,,dynamo-trt,dynamo-trt,,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
-Kimi K2.5,GB300,100,105347.631625,97638.697318,,60,60,,fp4,fp4,,dynamo-trt,dynamo-trt,,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
-Kimi K2.5,R200,30,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Kimi K2.5,R200,50,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Kimi K2.5,R200,70,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Kimi K2.5,R200,100,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Kimi K2.5,VR200,30,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Kimi K2.5,VR200,50,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Kimi K2.5,VR200,70,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Kimi K2.5,VR200,100,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Kimi K2.5,R300,30,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Kimi K2.5,R300,50,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Kimi K2.5,R300,70,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Kimi K2.5,R300,100,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Kimi K2.5,VR300,30,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Kimi K2.5,VR300,50,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Kimi K2.5,VR300,70,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Kimi K2.5,VR300,100,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Kimi K2.5,Post Rubin,30,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Kimi K2.5,Post Rubin,50,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Kimi K2.5,Post Rubin,70,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Kimi K2.5,Post Rubin,100,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-MiniMax M3,H200,30,445699.1349,155730.779498,26884.240876,64,32,14,fp8,fp8,fp8,vllm,vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-MiniMax M3,H200,50,314636.176628,135691.469024,9404.255474,32,16,4,fp8,fp8,fp8,vllm,vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-MiniMax M3,H200,70,230135.556075,105930.582375,7841.635036,16,8,2,fp8,fp8,fp8,vllm,vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-MiniMax M3,H200,100,152538.334888,78790.855009,7841.635036,8,4,2,fp8,fp8,fp8,vllm,vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-MiniMax M3,B200,30,2094081.042946,1286379.917054,171556.321637,512,1024,40,fp4,fp4,fp4,vllm,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-MiniMax M3,B200,50,1443591.071124,1286379.917054,171556.321637,128,1024,40,fp4,fp4,fp4,vllm,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-MiniMax M3,B200,70,819457.128987,981729.157947,171556.321637,512,512,40,fp4,fp4,fp4,vllm,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-MiniMax M3,B200,100,594930.682834,471919.176318,160702.146199,64,96,30,fp4,fp4,fp4,vllm,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-MiniMax M3,B300,30,3127503.890493,1632147.233619,205917.621053,2048,4096,50,fp4,fp4,fp4,dynamo-vllm,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-MiniMax M3,B300,50,1717686.211242,1488755.976908,205917.621053,128,512,50,fp4,fp4,fp4,vllm,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-MiniMax M3,B300,70,767318.033959,1488755.976908,205917.621053,64,512,50,fp4,fp4,fp4,vllm,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-MiniMax M3,B300,100,549118.354624,1488755.976908,194740.463158,32,512,40,fp4,fp4,fp4,vllm,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-MiniMax M3,GB200,30,1869224.53497,1845708.355198,156877.705882,1024,4096,40,fp8,fp8,fp4,dynamo-vllm,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_scaled_exact_model
-MiniMax M3,GB200,50,473214.466145,373792.816408,156877.705882,128,512,40,fp8,fp8,fp4,dynamo-vllm,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_scaled_exact_model
-MiniMax M3,GB200,70,183554.624877,264585.7052,156877.705882,64,128,40,fp8,fp8,fp4,dynamo-vllm,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_scaled_exact_model
-MiniMax M3,GB200,100,64184.936386,110364.097447,146952.229947,16,32,30,fp8,fp8,fp4,dynamo-vllm,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_scaled_exact_model
-MiniMax M3,GB300,30,1174704.677332,2103130.536847,138377.976415,1024,2048,40,fp8,fp8,fp4,dynamo-vllm,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_scaled_exact_model
-MiniMax M3,GB300,50,419788.867094,2103130.536847,138377.976415,256,2048,40,fp8,fp8,fp4,dynamo-vllm,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_scaled_exact_model
-MiniMax M3,GB300,70,258703.594996,1431262.726168,138377.976415,64,2048,40,fp8,fp8,fp4,dynamo-vllm,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_scaled_exact_model
-MiniMax M3,GB300,100,98311.575414,985339.712801,129622.957547,16,256,30,fp8,fp8,fp4,dynamo-vllm,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_scaled_exact_model
-MiniMax M3,R200,30,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-MiniMax M3,R200,50,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-MiniMax M3,R200,70,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-MiniMax M3,R200,100,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-MiniMax M3,VR200,30,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-MiniMax M3,VR200,50,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-MiniMax M3,VR200,70,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-MiniMax M3,VR200,100,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-MiniMax M3,R300,30,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-MiniMax M3,R300,50,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-MiniMax M3,R300,70,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-MiniMax M3,R300,100,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-MiniMax M3,VR300,30,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-MiniMax M3,VR300,50,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-MiniMax M3,VR300,70,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-MiniMax M3,VR300,100,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-MiniMax M3,Post Rubin,30,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-MiniMax M3,Post Rubin,50,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-MiniMax M3,Post Rubin,70,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-MiniMax M3,Post Rubin,100,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-GLM 5.2,H200,30,144300.371741,54658.735326,5541.729927,64,16,12,fp8,fp8,fp8,sglang,sglang,dynamo-sglang,InferenceX_direct_model_fallback,InferenceX_direct_model_fallback,InferenceX_direct_exact_model
-GLM 5.2,H200,50,81537.655952,40178.25014,5541.729927,16,8,12,fp8,fp8,fp8,sglang,sglang,dynamo-sglang,InferenceX_direct_model_fallback,InferenceX_direct_model_fallback,InferenceX_direct_exact_model
-GLM 5.2,H200,70,53837.778518,28242.557768,5541.729927,8,4,12,fp8,fp8,fp8,sglang,sglang,dynamo-sglang,InferenceX_direct_model_fallback,InferenceX_direct_model_fallback,InferenceX_direct_exact_model
-GLM 5.2,H200,100,34731.983833,,,4,,,fp8,,,sglang,,,InferenceX_direct_model_fallback,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
-GLM 5.2,B200,30,370871.940865,197590.989834,30934.690058,64,32,12,fp4,fp4,fp4,sglang,sglang,sglang,InferenceX_direct_model_fallback,InferenceX_direct_model_fallback,InferenceX_direct_exact_model
-GLM 5.2,B200,50,265805.844963,147269.188915,30934.690058,32,16,12,fp4,fp4,fp4,sglang,sglang,sglang,InferenceX_direct_model_fallback,InferenceX_direct_model_fallback,InferenceX_direct_exact_model
-GLM 5.2,B200,70,183059.447498,104081.377299,30934.690058,16,8,12,fp4,fp4,fp4,sglang,sglang,sglang,InferenceX_direct_model_fallback,InferenceX_direct_model_fallback,InferenceX_direct_exact_model
-GLM 5.2,B200,100,124359.821116,71040.235259,30934.690058,8,4,12,fp4,fp4,fp4,sglang,sglang,sglang,InferenceX_direct_model_fallback,InferenceX_direct_model_fallback,InferenceX_direct_exact_model
-GLM 5.2,B300,30,502149.6801,185732.996618,40645.121053,128,32,16,fp4,fp4,fp4,sglang,sglang,sglang,InferenceX_direct_model_fallback,InferenceX_direct_model_fallback,InferenceX_direct_exact_model
-GLM 5.2,B300,50,452482.829041,133518.890679,40645.121053,64,16,16,fp4,fp4,fp4,sglang,sglang,sglang,InferenceX_direct_model_fallback,InferenceX_direct_model_fallback,InferenceX_direct_exact_model
-GLM 5.2,B300,70,304367.385567,94619.071867,40645.121053,32,8,16,fp4,fp4,fp4,sglang,sglang,sglang,InferenceX_direct_model_fallback,InferenceX_direct_model_fallback,InferenceX_direct_exact_model
-GLM 5.2,B300,100,120916.677544,63499.903269,40645.121053,8,4,16,fp4,fp4,fp4,sglang,sglang,sglang,InferenceX_direct_model_fallback,InferenceX_direct_model_fallback,InferenceX_direct_exact_model
-GLM 5.2,GB200,30,3848103.724153,2480998.816075,28287.871658,4301,2253,12,fp4,fp4,fp4,dynamo-trt,dynamo-trt,sglang,InferenceX_direct_model_fallback,InferenceX_direct_model_fallback,InferenceX_scaled_exact_model
-GLM 5.2,GB200,50,2144633.211945,1747386.062728,28287.871658,1229,1127,12,fp4,fp4,fp4,dynamo-trt,dynamo-trt,sglang,InferenceX_direct_model_fallback,InferenceX_direct_model_fallback,InferenceX_scaled_exact_model
-GLM 5.2,GB200,70,1373865.024521,1231212.80607,28287.871658,615,615,12,fp4,fp4,fp4,dynamo-trt,dynamo-trt,sglang,InferenceX_direct_model_fallback,InferenceX_direct_model_fallback,InferenceX_scaled_exact_model
-GLM 5.2,GB200,100,449612.680198,222604.13847,28287.871658,308,180,12,fp4,fp4,fp4,dynamo-trt,dynamo-trt,sglang,InferenceX_direct_model_fallback,InferenceX_direct_model_fallback,InferenceX_scaled_exact_model
-GLM 5.2,GB300,30,3832469.521354,2341921.279411,24952.037736,4301,2253,12,fp4,fp4,fp4,dynamo-trt,dynamo-trt,sglang,InferenceX_direct_model_fallback,InferenceX_direct_model_fallback,InferenceX_scaled_exact_model
-GLM 5.2,GB300,50,2946477.10102,1564640.034254,24952.037736,2253,1229,12,fp4,fp4,fp4,dynamo-trt,dynamo-trt,sglang,InferenceX_direct_model_fallback,InferenceX_direct_model_fallback,InferenceX_scaled_exact_model
-GLM 5.2,GB300,70,1245834.223679,1112080.881832,24952.037736,666,615,12,fp4,fp4,fp4,dynamo-trt,dynamo-trt,sglang,InferenceX_direct_model_fallback,InferenceX_direct_model_fallback,InferenceX_scaled_exact_model
-GLM 5.2,GB300,100,398021.60831,360544.012388,24952.037736,333,333,12,fp4,fp4,fp4,dynamo-trt,dynamo-trt,sglang,InferenceX_direct_model_fallback,InferenceX_direct_model_fallback,InferenceX_scaled_exact_model
-GLM 5.2,R200,30,,,,,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
-GLM 5.2,R200,50,,,,,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
-GLM 5.2,R200,70,,,,,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
-GLM 5.2,R200,100,,,,,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
-GLM 5.2,VR200,30,,,,,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
-GLM 5.2,VR200,50,,,,,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
-GLM 5.2,VR200,70,,,,,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
-GLM 5.2,VR200,100,,,,,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
-GLM 5.2,R300,30,,,,,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
-GLM 5.2,R300,50,,,,,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
-GLM 5.2,R300,70,,,,,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
-GLM 5.2,R300,100,,,,,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
-GLM 5.2,VR300,30,,,,,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
-GLM 5.2,VR300,50,,,,,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
-GLM 5.2,VR300,70,,,,,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
-GLM 5.2,VR300,100,,,,,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
-GLM 5.2,Post Rubin,30,,,,,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
-GLM 5.2,Post Rubin,50,,,,,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
-GLM 5.2,Post Rubin,70,,,,,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
-GLM 5.2,Post Rubin,100,,,,,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
-Qwen 3.5,H200,30,237432.62675,146202.631124,61095.408759,64,32,16,fp8,fp8,fp8,sglang,sglang,sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-Qwen 3.5,H200,50,185973.398608,146202.631124,61095.408759,32,32,16,fp8,fp8,fp8,sglang,sglang,sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-Qwen 3.5,H200,70,136754.574985,116502.74887,61095.408759,16,16,16,fp8,fp8,fp8,sglang,sglang,sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-Qwen 3.5,H200,100,102472.884335,87161.075287,61095.408759,8,8,16,fp8,fp8,fp8,sglang,sglang,sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-Qwen 3.5,B200,30,2795628.297503,856935.883405,369845.28655,1024,256,32,fp4,fp4,fp4,trt,trt,sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-Qwen 3.5,B200,50,2323600.281369,856935.883405,369845.28655,512,256,32,fp4,fp4,fp4,trt,trt,sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-Qwen 3.5,B200,70,1598940.975526,643417.251735,369845.28655,256,128,32,fp4,fp4,fp4,trt,trt,sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-Qwen 3.5,B200,100,1598940.975526,488749.395224,369845.28655,256,16,32,fp4,fp4,fp4,trt,trt,sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-Qwen 3.5,B300,30,1929110.547064,1071155.438705,532687.931579,128,128,56,fp4,fp4,fp4,sglang,sglang,sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-Qwen 3.5,B300,50,1929110.547064,862894.053402,532687.931579,128,64,56,fp4,fp4,fp4,sglang,sglang,sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-Qwen 3.5,B300,70,1342686.933129,668917.034841,532687.931579,64,32,56,fp4,fp4,fp4,sglang,sglang,sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-Qwen 3.5,B300,100,902488.172508,486372.096388,457441.084211,64,16,44,fp4,fp4,fp4,sglang,sglang,sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-Qwen 3.5,GB200,30,2030856.484673,2262307.43934,294547.320856,2048,2304,56,fp8,fp8,fp4,dynamo-sglang,dynamo-sglang,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-Qwen 3.5,GB200,50,744451.726157,2182337.314926,294547.320856,512,1920,56,fp8,fp8,fp4,dynamo-sglang,dynamo-sglang,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-Qwen 3.5,GB200,70,339483.344781,1635282.54844,294547.320856,32,1280,56,fp8,fp8,fp4,dynamo-sglang,dynamo-sglang,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-Qwen 3.5,GB200,100,211172.374858,817479.855796,294547.320856,16,480,56,fp8,fp8,fp4,dynamo-sglang,dynamo-sglang,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-Qwen 3.5,GB300,30,3197283.650938,3251808.168415,458490.382075,4096,1536,64,fp8,fp4,fp4,dynamo-sglang,dynamo-trt,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-Qwen 3.5,GB300,50,699591.768364,2366497.25644,448277.037736,512,1536,52,fp8,fp4,fp4,dynamo-sglang,dynamo-trt,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-Qwen 3.5,GB300,70,519033.262052,2366497.25644,448277.037736,64,1536,52,fp8,fp4,fp4,dynamo-sglang,dynamo-trt,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-Qwen 3.5,GB300,100,206083.327442,1046468.561133,386529.933962,16,384,72,fp8,fp4,fp4,dynamo-sglang,dynamo-trt,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model,InferenceX_direct_exact_model
-Qwen 3.5,R200,30,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Qwen 3.5,R200,50,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Qwen 3.5,R200,70,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Qwen 3.5,R200,100,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Qwen 3.5,VR200,30,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Qwen 3.5,VR200,50,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Qwen 3.5,VR200,70,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Qwen 3.5,VR200,100,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Qwen 3.5,R300,30,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Qwen 3.5,R300,50,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Qwen 3.5,R300,70,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Qwen 3.5,R300,100,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Qwen 3.5,VR300,30,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Qwen 3.5,VR300,50,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Qwen 3.5,VR300,70,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Qwen 3.5,VR300,100,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Qwen 3.5,Post Rubin,30,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Qwen 3.5,Post Rubin,50,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Qwen 3.5,Post Rubin,70,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
-Qwen 3.5,Post Rubin,100,,,,,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+proxy_model,gpu,interactivity_tok_s_user,general_chat_tps_per_mw,agentic_tps_per_mw,general_chat_concurrency,agentic_concurrency,general_chat_precision,agentic_precision,general_chat_framework,agentic_framework,general_chat_source_type,agentic_source_type
+DeepSeek V4 Pro,H200,30,26985.672563,25811.934307,8,8,fp8,fp8,sglang,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+DeepSeek V4 Pro,H200,50,20410.369987,25811.934307,4,8,fp8,fp8,sglang,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+DeepSeek V4 Pro,H200,70,13217.209329,25811.934307,2,8,fp8,fp8,vllm,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+DeepSeek V4 Pro,H200,100,13217.209329,14938.773723,2,4,fp8,fp8,vllm,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+DeepSeek V4 Pro,B200,30,2666084.383025,119077.040936,4096,72,fp4,fp4,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+DeepSeek V4 Pro,B200,50,1766862.520101,81649.391813,1024,40,fp4,fp4,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+DeepSeek V4 Pro,B200,70,426771.870546,39404.520468,256,16,fp4,fp4,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+DeepSeek V4 Pro,B200,100,110825.248109,31261.426901,128,12,fp4,fp4,dynamo-sglang,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+DeepSeek V4 Pro,B300,30,2837835.016764,212034.078947,3072,128,fp4,fp4,dynamo-sglang,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+DeepSeek V4 Pro,B300,50,1400983.543572,71586.210526,1024,16,fp4,fp4,dynamo-sglang,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+DeepSeek V4 Pro,B300,70,444662.903186,71586.210526,256,16,fp4,fp4,dynamo-sglang,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+DeepSeek V4 Pro,B300,100,108903.627904,44693.952632,64,8,fp4,fp4,dynamo-sglang,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+DeepSeek V4 Pro,GB200,30,2252081.955332,108888.631016,16384,72,fp4,fp4,dynamo-sglang,vllm,InferenceX_direct_exact_model,InferenceX_scaled_exact_model
+DeepSeek V4 Pro,GB200,50,2252081.955332,74663.347594,16384,40,fp4,fp4,dynamo-sglang,vllm,InferenceX_direct_exact_model,InferenceX_scaled_exact_model
+DeepSeek V4 Pro,GB200,70,1527370.082392,36033.010695,6144,16,fp4,fp4,dynamo-sglang,vllm,InferenceX_direct_exact_model,InferenceX_scaled_exact_model
+DeepSeek V4 Pro,GB200,100,769357.42216,28586.652406,2048,12,fp4,fp4,dynamo-sglang,vllm,InferenceX_direct_exact_model,InferenceX_scaled_exact_model
+DeepSeek V4 Pro,GB300,30,3351414.681049,259761.235849,2253,1536,fp4,fp4,dynamo-trt,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+DeepSeek V4 Pro,GB300,50,1669415.886722,235161.108491,1229,768,fp4,fp4,dynamo-trt,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+DeepSeek V4 Pro,GB300,70,1669415.886722,140344.306604,1229,256,fp4,fp4,dynamo-trt,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+DeepSeek V4 Pro,GB300,100,628688.538904,38554.872642,615,8,fp4,fp4,dynamo-trt,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+DeepSeek V4 Pro,R200,30,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+DeepSeek V4 Pro,R200,50,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+DeepSeek V4 Pro,R200,70,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+DeepSeek V4 Pro,R200,100,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+DeepSeek V4 Pro,VR200,30,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+DeepSeek V4 Pro,VR200,50,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+DeepSeek V4 Pro,VR200,70,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+DeepSeek V4 Pro,VR200,100,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+DeepSeek V4 Pro,R300,30,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+DeepSeek V4 Pro,R300,50,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+DeepSeek V4 Pro,R300,70,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+DeepSeek V4 Pro,R300,100,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+DeepSeek V4 Pro,VR300,30,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+DeepSeek V4 Pro,VR300,50,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+DeepSeek V4 Pro,VR300,70,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+DeepSeek V4 Pro,VR300,100,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+DeepSeek V4 Pro,Post Rubin,30,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+DeepSeek V4 Pro,Post Rubin,50,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+DeepSeek V4 Pro,Post Rubin,70,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+DeepSeek V4 Pro,Post Rubin,100,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Kimi K2.5,H200,30,64866.509818,,16,,int4,,vllm,,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
+Kimi K2.5,H200,50,48406.761177,,8,,int4,,vllm,,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
+Kimi K2.5,H200,70,48406.761177,,8,,int4,,vllm,,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
+Kimi K2.5,H200,100,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Kimi K2.5,B200,30,2335371.457059,,1127,,fp4,,dynamo-trt,,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
+Kimi K2.5,B200,50,316457.63603,,512,,fp4,,dynamo-vllm,,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
+Kimi K2.5,B200,70,193807.711585,,115,,fp4,,dynamo-trt,,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
+Kimi K2.5,B200,100,121421.699544,,60,,fp4,,dynamo-trt,,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
+Kimi K2.5,B300,30,275353.667577,,64,,fp4,,vllm,,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
+Kimi K2.5,B300,50,205221.176275,,32,,fp4,,vllm,,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
+Kimi K2.5,B300,70,147315.165594,,16,,fp4,,vllm,,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
+Kimi K2.5,B300,100,61516.42725,,4,,fp4,,vllm,,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
+Kimi K2.5,GB200,30,2462470.372289,,2253,,fp4,,dynamo-trt,,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
+Kimi K2.5,GB200,50,985185.484085,,1229,,fp4,,dynamo-trt,,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
+Kimi K2.5,GB200,70,594793.835839,,666,,fp4,,dynamo-trt,,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
+Kimi K2.5,GB200,100,109937.641485,,60,,fp4,,dynamo-trt,,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
+Kimi K2.5,GB300,30,2177077.36017,,2253,,fp4,,dynamo-trt,,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
+Kimi K2.5,GB300,50,877936.375657,,1229,,fp4,,dynamo-trt,,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
+Kimi K2.5,GB300,70,520354.890274,,615,,fp4,,dynamo-trt,,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
+Kimi K2.5,GB300,100,97638.697318,,60,,fp4,,dynamo-trt,,InferenceX_direct_exact_model,InferenceX_exact_model_unavailable
+Kimi K2.5,R200,30,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Kimi K2.5,R200,50,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Kimi K2.5,R200,70,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Kimi K2.5,R200,100,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Kimi K2.5,VR200,30,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Kimi K2.5,VR200,50,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Kimi K2.5,VR200,70,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Kimi K2.5,VR200,100,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Kimi K2.5,R300,30,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Kimi K2.5,R300,50,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Kimi K2.5,R300,70,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Kimi K2.5,R300,100,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Kimi K2.5,VR300,30,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Kimi K2.5,VR300,50,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Kimi K2.5,VR300,70,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Kimi K2.5,VR300,100,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Kimi K2.5,Post Rubin,30,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Kimi K2.5,Post Rubin,50,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Kimi K2.5,Post Rubin,70,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Kimi K2.5,Post Rubin,100,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+MiniMax M3,H200,30,155730.779498,26884.240876,32,14,fp8,fp8,vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+MiniMax M3,H200,50,135691.469024,9404.255474,16,4,fp8,fp8,vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+MiniMax M3,H200,70,105930.582375,7841.635036,8,2,fp8,fp8,vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+MiniMax M3,H200,100,78790.855009,7841.635036,4,2,fp8,fp8,vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+MiniMax M3,B200,30,1286379.917054,171556.321637,1024,40,fp4,fp4,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+MiniMax M3,B200,50,1286379.917054,171556.321637,1024,40,fp4,fp4,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+MiniMax M3,B200,70,981729.157947,171556.321637,512,40,fp4,fp4,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+MiniMax M3,B200,100,471919.176318,160702.146199,96,30,fp4,fp4,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+MiniMax M3,B300,30,1632147.233619,205917.621053,4096,50,fp4,fp4,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+MiniMax M3,B300,50,1488755.976908,205917.621053,512,50,fp4,fp4,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+MiniMax M3,B300,70,1488755.976908,205917.621053,512,50,fp4,fp4,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+MiniMax M3,B300,100,1488755.976908,194740.463158,512,40,fp4,fp4,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+MiniMax M3,GB200,30,1845708.355198,156877.705882,4096,40,fp8,fp4,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_scaled_exact_model
+MiniMax M3,GB200,50,373792.816408,156877.705882,512,40,fp8,fp4,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_scaled_exact_model
+MiniMax M3,GB200,70,264585.7052,156877.705882,128,40,fp8,fp4,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_scaled_exact_model
+MiniMax M3,GB200,100,110364.097447,146952.229947,32,30,fp8,fp4,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_scaled_exact_model
+MiniMax M3,GB300,30,2103130.536847,138377.976415,2048,40,fp8,fp4,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_scaled_exact_model
+MiniMax M3,GB300,50,2103130.536847,138377.976415,2048,40,fp8,fp4,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_scaled_exact_model
+MiniMax M3,GB300,70,1431262.726168,138377.976415,2048,40,fp8,fp4,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_scaled_exact_model
+MiniMax M3,GB300,100,985339.712801,129622.957547,256,30,fp8,fp4,dynamo-vllm,vllm,InferenceX_direct_exact_model,InferenceX_scaled_exact_model
+MiniMax M3,R200,30,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+MiniMax M3,R200,50,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+MiniMax M3,R200,70,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+MiniMax M3,R200,100,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+MiniMax M3,VR200,30,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+MiniMax M3,VR200,50,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+MiniMax M3,VR200,70,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+MiniMax M3,VR200,100,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+MiniMax M3,R300,30,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+MiniMax M3,R300,50,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+MiniMax M3,R300,70,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+MiniMax M3,R300,100,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+MiniMax M3,VR300,30,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+MiniMax M3,VR300,50,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+MiniMax M3,VR300,70,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+MiniMax M3,VR300,100,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+MiniMax M3,Post Rubin,30,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+MiniMax M3,Post Rubin,50,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+MiniMax M3,Post Rubin,70,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+MiniMax M3,Post Rubin,100,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+GLM 5.2,H200,30,54658.735326,5541.729927,16,12,fp8,fp8,sglang,dynamo-sglang,InferenceX_direct_model_fallback,InferenceX_direct_exact_model
+GLM 5.2,H200,50,40178.25014,5541.729927,8,12,fp8,fp8,sglang,dynamo-sglang,InferenceX_direct_model_fallback,InferenceX_direct_exact_model
+GLM 5.2,H200,70,28242.557768,5541.729927,4,12,fp8,fp8,sglang,dynamo-sglang,InferenceX_direct_model_fallback,InferenceX_direct_exact_model
+GLM 5.2,H200,100,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
+GLM 5.2,B200,30,197590.989834,30934.690058,32,12,fp4,fp4,sglang,sglang,InferenceX_direct_model_fallback,InferenceX_direct_exact_model
+GLM 5.2,B200,50,147269.188915,30934.690058,16,12,fp4,fp4,sglang,sglang,InferenceX_direct_model_fallback,InferenceX_direct_exact_model
+GLM 5.2,B200,70,104081.377299,30934.690058,8,12,fp4,fp4,sglang,sglang,InferenceX_direct_model_fallback,InferenceX_direct_exact_model
+GLM 5.2,B200,100,71040.235259,30934.690058,4,12,fp4,fp4,sglang,sglang,InferenceX_direct_model_fallback,InferenceX_direct_exact_model
+GLM 5.2,B300,30,185732.996618,40645.121053,32,16,fp4,fp4,sglang,sglang,InferenceX_direct_model_fallback,InferenceX_direct_exact_model
+GLM 5.2,B300,50,133518.890679,40645.121053,16,16,fp4,fp4,sglang,sglang,InferenceX_direct_model_fallback,InferenceX_direct_exact_model
+GLM 5.2,B300,70,94619.071867,40645.121053,8,16,fp4,fp4,sglang,sglang,InferenceX_direct_model_fallback,InferenceX_direct_exact_model
+GLM 5.2,B300,100,63499.903269,40645.121053,4,16,fp4,fp4,sglang,sglang,InferenceX_direct_model_fallback,InferenceX_direct_exact_model
+GLM 5.2,GB200,30,2480998.816075,28287.871658,2253,12,fp4,fp4,dynamo-trt,sglang,InferenceX_direct_model_fallback,InferenceX_scaled_exact_model
+GLM 5.2,GB200,50,1747386.062728,28287.871658,1127,12,fp4,fp4,dynamo-trt,sglang,InferenceX_direct_model_fallback,InferenceX_scaled_exact_model
+GLM 5.2,GB200,70,1231212.80607,28287.871658,615,12,fp4,fp4,dynamo-trt,sglang,InferenceX_direct_model_fallback,InferenceX_scaled_exact_model
+GLM 5.2,GB200,100,222604.13847,28287.871658,180,12,fp4,fp4,dynamo-trt,sglang,InferenceX_direct_model_fallback,InferenceX_scaled_exact_model
+GLM 5.2,GB300,30,2341921.279411,24952.037736,2253,12,fp4,fp4,dynamo-trt,sglang,InferenceX_direct_model_fallback,InferenceX_scaled_exact_model
+GLM 5.2,GB300,50,1564640.034254,24952.037736,1229,12,fp4,fp4,dynamo-trt,sglang,InferenceX_direct_model_fallback,InferenceX_scaled_exact_model
+GLM 5.2,GB300,70,1112080.881832,24952.037736,615,12,fp4,fp4,dynamo-trt,sglang,InferenceX_direct_model_fallback,InferenceX_scaled_exact_model
+GLM 5.2,GB300,100,360544.012388,24952.037736,333,12,fp4,fp4,dynamo-trt,sglang,InferenceX_direct_model_fallback,InferenceX_scaled_exact_model
+GLM 5.2,R200,30,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
+GLM 5.2,R200,50,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
+GLM 5.2,R200,70,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
+GLM 5.2,R200,100,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
+GLM 5.2,VR200,30,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
+GLM 5.2,VR200,50,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
+GLM 5.2,VR200,70,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
+GLM 5.2,VR200,100,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
+GLM 5.2,R300,30,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
+GLM 5.2,R300,50,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
+GLM 5.2,R300,70,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
+GLM 5.2,R300,100,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
+GLM 5.2,VR300,30,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
+GLM 5.2,VR300,50,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
+GLM 5.2,VR300,70,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
+GLM 5.2,VR300,100,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
+GLM 5.2,Post Rubin,30,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
+GLM 5.2,Post Rubin,50,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
+GLM 5.2,Post Rubin,70,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
+GLM 5.2,Post Rubin,100,,,,,,,,,InferenceX_model_fallback_unavailable,InferenceX_exact_model_unavailable
+Qwen 3.5,H200,30,146202.631124,61095.408759,32,16,fp8,fp8,sglang,sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+Qwen 3.5,H200,50,146202.631124,61095.408759,32,16,fp8,fp8,sglang,sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+Qwen 3.5,H200,70,116502.74887,61095.408759,16,16,fp8,fp8,sglang,sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+Qwen 3.5,H200,100,87161.075287,61095.408759,8,16,fp8,fp8,sglang,sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+Qwen 3.5,B200,30,856935.883405,369845.28655,256,32,fp4,fp4,trt,sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+Qwen 3.5,B200,50,856935.883405,369845.28655,256,32,fp4,fp4,trt,sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+Qwen 3.5,B200,70,643417.251735,369845.28655,128,32,fp4,fp4,trt,sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+Qwen 3.5,B200,100,488749.395224,369845.28655,16,32,fp4,fp4,trt,sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+Qwen 3.5,B300,30,1071155.438705,532687.931579,128,56,fp4,fp4,sglang,sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+Qwen 3.5,B300,50,862894.053402,532687.931579,64,56,fp4,fp4,sglang,sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+Qwen 3.5,B300,70,668917.034841,532687.931579,32,56,fp4,fp4,sglang,sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+Qwen 3.5,B300,100,486372.096388,457441.084211,16,44,fp4,fp4,sglang,sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+Qwen 3.5,GB200,30,2262307.43934,294547.320856,2304,56,fp8,fp4,dynamo-sglang,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+Qwen 3.5,GB200,50,2182337.314926,294547.320856,1920,56,fp8,fp4,dynamo-sglang,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+Qwen 3.5,GB200,70,1635282.54844,294547.320856,1280,56,fp8,fp4,dynamo-sglang,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+Qwen 3.5,GB200,100,817479.855796,294547.320856,480,56,fp8,fp4,dynamo-sglang,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+Qwen 3.5,GB300,30,3251808.168415,458490.382075,1536,64,fp4,fp4,dynamo-trt,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+Qwen 3.5,GB300,50,2366497.25644,448277.037736,1536,52,fp4,fp4,dynamo-trt,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+Qwen 3.5,GB300,70,2366497.25644,448277.037736,1536,52,fp4,fp4,dynamo-trt,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+Qwen 3.5,GB300,100,1046468.561133,386529.933962,384,72,fp4,fp4,dynamo-trt,dynamo-sglang,InferenceX_direct_exact_model,InferenceX_direct_exact_model
+Qwen 3.5,R200,30,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Qwen 3.5,R200,50,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Qwen 3.5,R200,70,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Qwen 3.5,R200,100,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Qwen 3.5,VR200,30,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Qwen 3.5,VR200,50,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Qwen 3.5,VR200,70,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Qwen 3.5,VR200,100,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Qwen 3.5,R300,30,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Qwen 3.5,R300,50,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Qwen 3.5,R300,70,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Qwen 3.5,R300,100,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Qwen 3.5,VR300,30,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Qwen 3.5,VR300,50,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Qwen 3.5,VR300,70,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Qwen 3.5,VR300,100,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Qwen 3.5,Post Rubin,30,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Qwen 3.5,Post Rubin,50,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Qwen 3.5,Post Rubin,70,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
+Qwen 3.5,Post Rubin,100,,,,,,,,,InferenceX_exact_model_unavailable,InferenceX_exact_model_unavailable
