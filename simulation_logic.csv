@@ -1,0 +1,5 @@
+Step,Formula,Explanation
+1_Effective_tok_per_s,Contracted_Capacity*Inference_Allocation*Weighted_tok/s/unit*U*D*SLO_Headroom,계약 용량을 실서비스 유효 처리량으로 환산
+2_Tokens_per_day,Effective_tok_per_s*86400,초->일 변환
+3_Tokens_per_month,Tokens_per_day*30,30일 단순 환산
+4_Multi_HW_weighted_tok/s,SUM(HW_share_i*tok/s_i),예: H100/H200/B200/MI300X 혼합 구성
